@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Habit } from '../types/habit';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useHabits } from '../contexts/HabitContext';
-import { getTodayString, isHabitCompletedToday, calculateStreak } from '../utils/habitUtils';
+import { useResponsive } from '../hooks/useResponsive';
+import { Habit } from '../types/habit';
+import { calculateStreak, getTodayString, isHabitCompletedToday } from '../utils/habitUtils';
 
 interface HabitCardProps {
   habit: Habit;
@@ -11,6 +12,7 @@ interface HabitCardProps {
 
 export const HabitCard: React.FC<HabitCardProps> = ({ habit, onPress }) => {
   const { habitEntries, toggleHabitCompletion } = useHabits();
+  const { spacing, fontSizes, isMobile } = useResponsive();
   const today = getTodayString();
   const isCompleted = isHabitCompletedToday(habit.id, habitEntries);
   const streak = calculateStreak(habit.id, habitEntries);
@@ -25,17 +27,25 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onPress }) => {
 
   return (
     <TouchableOpacity
-      style={[styles.container, { borderLeftColor: habit.color }]}
+      style={[
+        styles.container,
+        {
+          borderLeftColor: habit.color,
+          padding: spacing.md,
+          marginVertical: spacing.xs,
+          marginHorizontal: isMobile ? spacing.md : spacing.xs,
+        }
+      ]}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, { marginBottom: spacing.sm }]}>
         <View style={styles.titleRow}>
-          <Text style={styles.icon}>{habit.icon}</Text>
+          <Text style={[styles.icon, { fontSize: fontSizes.xl, marginRight: spacing.sm }]}>{habit.icon}</Text>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>{habit.name}</Text>
+            <Text style={[styles.title, { fontSize: fontSizes.md }]}>{habit.name}</Text>
             {habit.description && (
-              <Text style={styles.description} numberOfLines={1}>
+              <Text style={[styles.description, { fontSize: fontSizes.sm }]} numberOfLines={1}>
                 {habit.description}
               </Text>
             )}
@@ -45,24 +55,29 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onPress }) => {
         <TouchableOpacity
           style={[
             styles.checkbox,
-            { backgroundColor: isCompleted ? habit.color : '#f0f0f0' }
+            {
+              backgroundColor: isCompleted ? habit.color : '#f0f0f0',
+              width: isMobile ? 32 : 40,
+              height: isMobile ? 32 : 40,
+              borderRadius: isMobile ? 16 : 20,
+            }
           ]}
           onPress={handleToggleCompletion}
         >
           {isCompleted && (
-            <Text style={styles.checkmark}>✓</Text>
+            <Text style={[styles.checkmark, { fontSize: fontSizes.md }]}>✓</Text>
           )}
         </TouchableOpacity>
       </View>
 
       <View style={styles.footer}>
-        <View style={styles.category}>
-          <Text style={styles.categoryText}>{habit.category}</Text>
+        <View style={[styles.category, { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs / 2 }]}>
+          <Text style={[styles.categoryText, { fontSize: fontSizes.xs }]}>{habit.category}</Text>
         </View>
 
         <View style={styles.streakContainer}>
-          <Text style={styles.streakLabel}>Streak:</Text>
-          <Text style={[styles.streakValue, { color: habit.color }]}>
+          <Text style={[styles.streakLabel, { fontSize: fontSizes.xs, marginRight: spacing.xs }]}>Streak:</Text>
+          <Text style={[styles.streakValue, { color: habit.color, fontSize: fontSizes.sm }]}>
             {streak.currentStreak} days
           </Text>
         </View>
@@ -75,21 +90,18 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 16,
-    marginVertical: 6,
-    marginHorizontal: 16,
     borderLeftWidth: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    flex: 1, // Important for grid layout
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
   },
   titleRow: {
     flexDirection: 'row',
@@ -97,26 +109,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   icon: {
-    fontSize: 24,
-    marginRight: 12,
+    // fontSize handled dynamically
   },
   titleContainer: {
     flex: 1,
   },
   title: {
-    fontSize: 18,
     fontWeight: '600',
     color: '#333',
     marginBottom: 2,
   },
   description: {
-    fontSize: 14,
     color: '#666',
   },
   checkbox: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -124,7 +130,6 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: '#fff',
-    fontSize: 18,
     fontWeight: 'bold',
   },
   footer: {
@@ -134,12 +139,9 @@ const styles = StyleSheet.create({
   },
   category: {
     backgroundColor: '#f8f9fa',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
     borderRadius: 12,
   },
   categoryText: {
-    fontSize: 12,
     color: '#666',
     fontWeight: '500',
   },
@@ -148,12 +150,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   streakLabel: {
-    fontSize: 12,
     color: '#666',
-    marginRight: 4,
   },
   streakValue: {
-    fontSize: 14,
     fontWeight: '600',
   },
 });

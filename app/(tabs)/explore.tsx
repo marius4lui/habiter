@@ -1,23 +1,22 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LineChart } from 'react-native-chart-kit';
 import { useHabits } from '@/src/contexts/HabitContext';
-import { calculateHabitStats, getWeeklyData } from '@/src/utils/habitUtils';
+import { useResponsive } from '@/src/hooks/useResponsive';
 import { AIInsight } from '@/src/types/habit';
-
-const screenWidth = Dimensions.get('window').width;
+import { calculateHabitStats, getWeeklyData } from '@/src/utils/habitUtils';
+import { useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AnalyticsScreen() {
   const { habits, habitEntries, aiInsights, markInsightAsRead } = useHabits();
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
+  const { isMobile, isTablet, isDesktop, width, spacing, fontSizes, maxContentWidth, numColumns } = useResponsive();
 
   const activeHabits = habits.filter(habit => habit.isActive);
   const selectedHabit = selectedHabitId ? habits.find(h => h.id === selectedHabitId) : null;
@@ -81,14 +80,14 @@ export default function AnalyticsScreen() {
         onPress={() => markInsightAsRead(insight.id)}
       >
         <View style={styles.insightHeader}>
-          <Text style={styles.insightIcon}>{getInsightIcon(insight.type)}</Text>
+          <Text style={[styles.insightIcon, { fontSize: fontSizes.lg }]}>{getInsightIcon(insight.type)}</Text>
           <View style={styles.insightTitleContainer}>
-            <Text style={styles.insightTitle}>{insight.title}</Text>
+            <Text style={[styles.insightTitle, { fontSize: fontSizes.md }]}>{insight.title}</Text>
             <Text style={styles.insightType}>{insight.type.toUpperCase()}</Text>
           </View>
           {!insight.isRead && <View style={styles.unreadDot} />}
         </View>
-        <Text style={styles.insightMessage}>{insight.message}</Text>
+        <Text style={[styles.insightMessage, { fontSize: fontSizes.sm }]}>{insight.message}</Text>
         <Text style={styles.insightConfidence}>
           Confidence: {Math.round(insight.confidence * 100)}%
         </Text>
@@ -96,123 +95,145 @@ export default function AnalyticsScreen() {
     );
   };
 
+  const chartWidth = Math.min(width - (spacing.md * 2), 800); // Max width for chart
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Analytics & Insights</Text>
+        <Text style={[styles.title, { fontSize: fontSizes.xl }]}>Analytics & Insights</Text>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Overall Stats */}
-        <View style={styles.statsContainer}>
-          <Text style={styles.sectionTitle}>Overview</Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{totalHabits}</Text>
-              <Text style={styles.statLabel}>Active Habits</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{totalCompletions}</Text>
-              <Text style={styles.statLabel}>Total Completions</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{Math.round(avgCompletionRate)}%</Text>
-              <Text style={styles.statLabel}>Avg. Success Rate</Text>
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ alignItems: 'center' }}
+      >
+        <View style={{ width: '100%', maxWidth: maxContentWidth }}>
+          {/* Overall Stats */}
+          <View style={[styles.statsContainer, { margin: spacing.md }]}>
+            <Text style={[styles.sectionTitle, { fontSize: fontSizes.lg, marginBottom: spacing.sm }]}>Overview</Text>
+            <View style={[styles.statsRow, { gap: spacing.sm }]}>
+              <View style={[styles.statCard, { padding: spacing.md }]}>
+                <Text style={[styles.statValue, { fontSize: fontSizes.xl }]}>{totalHabits}</Text>
+                <Text style={[styles.statLabel, { fontSize: fontSizes.xs }]}>Active Habits</Text>
+              </View>
+              <View style={[styles.statCard, { padding: spacing.md }]}>
+                <Text style={[styles.statValue, { fontSize: fontSizes.xl }]}>{totalCompletions}</Text>
+                <Text style={[styles.statLabel, { fontSize: fontSizes.xs }]}>Total Completions</Text>
+              </View>
+              <View style={[styles.statCard, { padding: spacing.md }]}>
+                <Text style={[styles.statValue, { fontSize: fontSizes.xl }]}>{Math.round(avgCompletionRate)}%</Text>
+                <Text style={[styles.statLabel, { fontSize: fontSizes.xs }]}>Avg. Success Rate</Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* Habit Selection for Chart */}
-        {activeHabits.length > 0 && (
-          <View style={styles.chartSection}>
-            <Text style={styles.sectionTitle}>Weekly Progress</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.habitSelector}>
-              {activeHabits.map((habit) => (
-                <TouchableOpacity
-                  key={habit.id}
-                  style={[
-                    styles.habitChip,
-                    { borderColor: habit.color },
-                    selectedHabitId === habit.id && { backgroundColor: habit.color }
-                  ]}
-                  onPress={() => setSelectedHabitId(habit.id)}
-                >
-                  <Text style={styles.habitChipIcon}>{habit.icon}</Text>
-                  <Text
+          {/* Habit Selection for Chart */}
+          {activeHabits.length > 0 && (
+            <View style={[styles.chartSection, { margin: spacing.md }]}>
+              <Text style={[styles.sectionTitle, { fontSize: fontSizes.lg, marginBottom: spacing.sm }]}>Weekly Progress</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={[styles.habitSelector, { marginBottom: spacing.md }]}>
+                {activeHabits.map((habit) => (
+                  <TouchableOpacity
+                    key={habit.id}
                     style={[
-                      styles.habitChipText,
-                      selectedHabitId === habit.id && styles.habitChipTextSelected
+                      styles.habitChip,
+                      { borderColor: habit.color, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
+                      selectedHabitId === habit.id && { backgroundColor: habit.color }
                     ]}
+                    onPress={() => setSelectedHabitId(habit.id)}
                   >
-                    {habit.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+                    <Text style={[styles.habitChipIcon, { fontSize: fontSizes.sm, marginRight: spacing.xs }]}>{habit.icon}</Text>
+                    <Text
+                      style={[
+                        styles.habitChipText,
+                        { fontSize: fontSizes.sm },
+                        selectedHabitId === habit.id && styles.habitChipTextSelected
+                      ]}
+                    >
+                      {habit.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
 
-            {/* Chart */}
-            {selectedHabitId && getChartData() && (
-              <View style={styles.chartContainer}>
-                <LineChart
-                  data={getChartData()!}
-                  width={screenWidth - 32}
-                  height={220}
-                  chartConfig={chartConfig}
-                  bezier
-                  style={styles.chart}
-                />
+              {/* Chart */}
+              {selectedHabitId && getChartData() && (
+                <View style={styles.chartContainer}>
+                  <LineChart
+                    data={getChartData()!}
+                    width={chartWidth}
+                    height={220}
+                    chartConfig={chartConfig}
+                    bezier
+                    style={styles.chart}
+                  />
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Habit Stats */}
+          {activeHabits.length > 0 && (
+            <View style={[styles.habitsStatsSection, { margin: spacing.md }]}>
+              <Text style={[styles.sectionTitle, { fontSize: fontSizes.lg, marginBottom: spacing.sm }]}>Habit Statistics</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
+                {activeHabits.map((habit) => {
+                  const stats = calculateHabitStats(habit, habitEntries);
+                  return (
+                    <View
+                      key={habit.id}
+                      style={[
+                        styles.habitStatCard,
+                        {
+                          borderLeftColor: habit.color,
+                          padding: spacing.md,
+                          width: isMobile ? '100%' : `calc(${100 / numColumns}% - ${spacing.md}px)`,
+                          flexBasis: isMobile ? '100%' : `calc(${100 / numColumns}% - ${spacing.md}px)`
+                        }
+                      ]}
+                    >
+                      <View style={[styles.habitStatHeader, { marginBottom: spacing.sm }]}>
+                        <Text style={[styles.habitStatIcon, { fontSize: fontSizes.lg, marginRight: spacing.sm }]}>{habit.icon}</Text>
+                        <Text style={[styles.habitStatName, { fontSize: fontSizes.md }]}>{habit.name}</Text>
+                      </View>
+                      <View style={styles.habitStatDetails}>
+                        <View style={styles.habitStatItem}>
+                          <Text style={[styles.habitStatValue, { fontSize: fontSizes.md }]}>{stats.streakData.currentStreak}</Text>
+                          <Text style={[styles.habitStatLabel, { fontSize: fontSizes.xs }]}>Streak</Text>
+                        </View>
+                        <View style={styles.habitStatItem}>
+                          <Text style={[styles.habitStatValue, { fontSize: fontSizes.md }]}>{Math.round(stats.completionRate)}%</Text>
+                          <Text style={[styles.habitStatLabel, { fontSize: fontSizes.xs }]}>Success</Text>
+                        </View>
+                        <View style={styles.habitStatItem}>
+                          <Text style={[styles.habitStatValue, { fontSize: fontSizes.md }]}>{stats.totalCompletions}</Text>
+                          <Text style={[styles.habitStatLabel, { fontSize: fontSizes.xs }]}>Total</Text>
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+
+          {/* AI Insights */}
+          <View style={[styles.insightsSection, { margin: spacing.md, marginBottom: spacing.xl }]}>
+            <Text style={[styles.sectionTitle, { fontSize: fontSizes.lg, marginBottom: spacing.sm }]}>AI Insights</Text>
+            {aiInsights.length > 0 ? (
+              <View style={[styles.insightsList, { gap: spacing.sm }]}>
+                {aiInsights.slice(0, 5).map(renderInsightCard)}
+              </View>
+            ) : (
+              <View style={[styles.emptyInsights, { padding: spacing.xl }]}>
+                <Text style={[styles.emptyInsightsIcon, { fontSize: fontSizes.xxl }]}>🤖</Text>
+                <Text style={[styles.emptyInsightsText, { fontSize: fontSizes.md }]}>
+                  AI insights will appear here as you build more habit data
+                </Text>
               </View>
             )}
           </View>
-        )}
-
-        {/* Habit Stats */}
-        {activeHabits.length > 0 && (
-          <View style={styles.habitsStatsSection}>
-            <Text style={styles.sectionTitle}>Habit Statistics</Text>
-            {activeHabits.map((habit) => {
-              const stats = calculateHabitStats(habit, habitEntries);
-              return (
-                <View key={habit.id} style={[styles.habitStatCard, { borderLeftColor: habit.color }]}>
-                  <View style={styles.habitStatHeader}>
-                    <Text style={styles.habitStatIcon}>{habit.icon}</Text>
-                    <Text style={styles.habitStatName}>{habit.name}</Text>
-                  </View>
-                  <View style={styles.habitStatDetails}>
-                    <View style={styles.habitStatItem}>
-                      <Text style={styles.habitStatValue}>{stats.streakData.currentStreak}</Text>
-                      <Text style={styles.habitStatLabel}>Current Streak</Text>
-                    </View>
-                    <View style={styles.habitStatItem}>
-                      <Text style={styles.habitStatValue}>{Math.round(stats.completionRate)}%</Text>
-                      <Text style={styles.habitStatLabel}>Success Rate</Text>
-                    </View>
-                    <View style={styles.habitStatItem}>
-                      <Text style={styles.habitStatValue}>{stats.totalCompletions}</Text>
-                      <Text style={styles.habitStatLabel}>Total Done</Text>
-                    </View>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        )}
-
-        {/* AI Insights */}
-        <View style={styles.insightsSection}>
-          <Text style={styles.sectionTitle}>AI Insights</Text>
-          {aiInsights.length > 0 ? (
-            <View style={styles.insightsList}>
-              {aiInsights.slice(0, 5).map(renderInsightCard)}
-            </View>
-          ) : (
-            <View style={styles.emptyInsights}>
-              <Text style={styles.emptyInsightsIcon}>🤖</Text>
-              <Text style={styles.emptyInsightsText}>
-                AI insights will appear here as you build more habit data
-              </Text>
-            </View>
-          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -232,7 +253,6 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e1e5e9',
   },
   title: {
-    fontSize: 28,
     fontWeight: 'bold',
     color: '#333',
   },
@@ -240,13 +260,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statsContainer: {
-    margin: 16,
+    // margin handled dynamically
   },
   sectionTitle: {
-    fontSize: 20,
     fontWeight: '600',
     color: '#333',
-    marginBottom: 12,
   },
   statsRow: {
     flexDirection: 'row',
@@ -255,10 +273,8 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-    marginHorizontal: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -266,38 +282,32 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   statValue: {
-    fontSize: 24,
     fontWeight: 'bold',
     color: '#007AFF',
   },
   statLabel: {
-    fontSize: 12,
     color: '#666',
     textAlign: 'center',
     marginTop: 4,
   },
   chartSection: {
-    margin: 16,
+    // margin handled dynamically
   },
   habitSelector: {
-    marginBottom: 16,
+    // marginBottom handled dynamically
   },
   habitChip: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
     borderRadius: 20,
     marginRight: 8,
     borderWidth: 2,
   },
   habitChipIcon: {
-    fontSize: 16,
-    marginRight: 6,
+    // fontSize handled dynamically
   },
   habitChipText: {
-    fontSize: 14,
     color: '#333',
     fontWeight: '500',
   },
@@ -311,13 +321,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   habitsStatsSection: {
-    margin: 16,
+    // margin handled dynamically
   },
   habitStatCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
     borderLeftWidth: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -328,14 +336,11 @@ const styles = StyleSheet.create({
   habitStatHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
   },
   habitStatIcon: {
-    fontSize: 20,
-    marginRight: 8,
+    // fontSize handled dynamically
   },
   habitStatName: {
-    fontSize: 16,
     fontWeight: '600',
     color: '#333',
   },
@@ -347,21 +352,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   habitStatValue: {
-    fontSize: 18,
     fontWeight: 'bold',
     color: '#007AFF',
   },
   habitStatLabel: {
-    fontSize: 12,
     color: '#666',
     marginTop: 2,
   },
   insightsSection: {
-    margin: 16,
-    marginBottom: 32,
+    // margin handled dynamically
   },
   insightsList: {
-    gap: 12,
+    // gap handled dynamically
   },
   insightCard: {
     backgroundColor: '#fff',
@@ -382,14 +384,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   insightIcon: {
-    fontSize: 20,
     marginRight: 8,
   },
   insightTitleContainer: {
     flex: 1,
   },
   insightTitle: {
-    fontSize: 16,
     fontWeight: '600',
     color: '#333',
   },
@@ -406,7 +406,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
   },
   insightMessage: {
-    fontSize: 14,
     color: '#666',
     lineHeight: 20,
     marginBottom: 8,
@@ -417,14 +416,11 @@ const styles = StyleSheet.create({
   },
   emptyInsights: {
     alignItems: 'center',
-    padding: 32,
   },
   emptyInsightsIcon: {
-    fontSize: 48,
     marginBottom: 12,
   },
   emptyInsightsText: {
-    fontSize: 16,
     color: '#666',
     textAlign: 'center',
   },

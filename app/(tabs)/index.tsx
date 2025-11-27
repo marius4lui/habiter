@@ -1,22 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  RefreshControl,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useHabits } from '@/src/contexts/HabitContext';
-import { HabitCard } from '@/src/components/HabitCard';
 import { AddHabitModal } from '@/src/components/AddHabitModal';
 import { AISetupModal } from '@/src/components/AISetupModal';
+import { HabitCard } from '@/src/components/HabitCard';
+import { useHabits } from '@/src/contexts/HabitContext';
+import { useResponsive } from '@/src/hooks/useResponsive';
+import { AIManager, useAIManager } from '@/src/services/aiManager';
 import { Habit } from '@/src/types/habit';
 import { formatDisplayDate, getTodayString } from '@/src/utils/habitUtils';
-import { AIManager, useAIManager } from '@/src/services/aiManager';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const { habits, loading, error, refreshData } = useHabits();
@@ -25,6 +26,7 @@ export default function HomeScreen() {
   const [showAISetup, setShowAISetup] = useState(false);
   const [generatingInsights, setGeneratingInsights] = useState(false);
   const { generateInsights, isConfigured } = useAIManager();
+  const { numColumns, spacing, maxContentWidth, isMobile } = useResponsive();
 
   useEffect(() => {
     // Initialize AI service on app start
@@ -150,9 +152,18 @@ export default function HomeScreen() {
         renderItem={renderHabitCard}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
+        numColumns={numColumns}
+        key={numColumns} // Force re-render when columns change
+        columnWrapperStyle={numColumns > 1 ? { gap: spacing.md } : undefined}
         contentContainerStyle={[
           styles.listContent,
           activeHabits.length === 0 && styles.emptyListContent,
+          {
+            maxWidth: maxContentWidth,
+            alignSelf: 'center',
+            width: '100%',
+            paddingHorizontal: isMobile ? spacing.md : spacing.xl,
+          }
         ]}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

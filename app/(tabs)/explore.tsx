@@ -1,3 +1,4 @@
+import { Theme } from '@/constants/theme';
 import { useHabits } from '@/src/contexts/HabitContext';
 import { useResponsive } from '@/src/hooks/useResponsive';
 import { AIInsight } from '@/src/types/habit';
@@ -5,6 +6,7 @@ import { calculateHabitStats, getWeeklyData } from '@/src/utils/habitUtils';
 import { useState } from 'react';
 import {
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -40,25 +42,25 @@ export default function AnalyticsScreen() {
       datasets: [{
         data: weeklyData.map(week => week.completions),
         strokeWidth: 3,
-        color: () => selectedHabit?.color || '#007AFF',
+        color: () => selectedHabit?.color || Theme.colors.primary,
       }]
     };
   };
 
   const chartConfig = {
-    backgroundColor: '#fff',
-    backgroundGradientFrom: '#fff',
-    backgroundGradientTo: '#fff',
+    backgroundColor: Theme.colors.surface,
+    backgroundGradientFrom: Theme.colors.surface,
+    backgroundGradientTo: Theme.colors.surface,
     decimalPlaces: 0,
-    color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(102, 102, 102, ${opacity})`,
+    color: (opacity = 1) => `rgba(99, 102, 241, ${opacity})`, // Indigo
+    labelColor: (opacity = 1) => `rgba(100, 116, 139, ${opacity})`, // Slate 500
     style: {
       borderRadius: 16,
     },
     propsForDots: {
       r: '6',
       strokeWidth: '2',
-      stroke: '#fff'
+      stroke: Theme.colors.surface
     }
   };
 
@@ -80,7 +82,9 @@ export default function AnalyticsScreen() {
         onPress={() => markInsightAsRead(insight.id)}
       >
         <View style={styles.insightHeader}>
-          <Text style={[styles.insightIcon, { fontSize: fontSizes.lg }]}>{getInsightIcon(insight.type)}</Text>
+          <View style={[styles.insightIconContainer, { backgroundColor: `${Theme.colors.primary}15` }]}>
+            <Text style={[styles.insightIcon, { fontSize: fontSizes.lg }]}>{getInsightIcon(insight.type)}</Text>
+          </View>
           <View style={styles.insightTitleContainer}>
             <Text style={[styles.insightTitle, { fontSize: fontSizes.md }]}>{insight.title}</Text>
             <Text style={styles.insightType}>{insight.type.toUpperCase()}</Text>
@@ -98,7 +102,8 @@ export default function AnalyticsScreen() {
   const chartWidth = Math.min(width - (spacing.md * 2), 800); // Max width for chart
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <StatusBar barStyle="dark-content" backgroundColor={Theme.colors.background} />
       <View style={styles.header}>
         <Text style={[styles.title, { fontSize: fontSizes.xl }]}>Analytics & Insights</Text>
       </View>
@@ -106,7 +111,7 @@ export default function AnalyticsScreen() {
       <ScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ alignItems: 'center' }}
+        contentContainerStyle={{ alignItems: 'center', paddingBottom: spacing.xl }}
       >
         <View style={{ width: '100%', maxWidth: maxContentWidth }}>
           {/* Overall Stats */}
@@ -167,6 +172,11 @@ export default function AnalyticsScreen() {
                     chartConfig={chartConfig}
                     bezier
                     style={styles.chart}
+                    withDots={true}
+                    withInnerLines={false}
+                    withOuterLines={false}
+                    withVerticalLines={false}
+                    withHorizontalLines={true}
                   />
                 </View>
               )}
@@ -243,18 +253,16 @@ export default function AnalyticsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: Theme.colors.background,
   },
   header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e1e5e9',
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Theme.spacing.md,
+    backgroundColor: Theme.colors.background,
   },
   title: {
-    fontWeight: 'bold',
-    color: '#333',
+    ...Theme.typography.h1,
+    color: Theme.colors.text,
   },
   content: {
     flex: 1,
@@ -263,8 +271,8 @@ const styles = StyleSheet.create({
     // margin handled dynamically
   },
   sectionTitle: {
-    fontWeight: '600',
-    color: '#333',
+    ...Theme.typography.h2,
+    color: Theme.colors.text,
   },
   statsRow: {
     flexDirection: 'row',
@@ -272,21 +280,17 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: Theme.colors.surface,
+    borderRadius: Theme.borderRadius.lg,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...Theme.shadows.sm,
   },
   statValue: {
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: Theme.colors.primary,
   },
   statLabel: {
-    color: '#666',
+    color: Theme.colors.textSecondary,
     textAlign: 'center',
     marginTop: 4,
   },
@@ -299,16 +303,16 @@ const styles = StyleSheet.create({
   habitChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 20,
+    backgroundColor: Theme.colors.surface,
+    borderRadius: Theme.borderRadius.full,
     marginRight: 8,
-    borderWidth: 2,
+    borderWidth: 1,
   },
   habitChipIcon: {
     // fontSize handled dynamically
   },
   habitChipText: {
-    color: '#333',
+    color: Theme.colors.text,
     fontWeight: '500',
   },
   habitChipTextSelected: {
@@ -316,6 +320,10 @@ const styles = StyleSheet.create({
   },
   chartContainer: {
     alignItems: 'center',
+    backgroundColor: Theme.colors.surface,
+    borderRadius: Theme.borderRadius.lg,
+    padding: Theme.spacing.md,
+    ...Theme.shadows.sm,
   },
   chart: {
     borderRadius: 16,
@@ -324,14 +332,10 @@ const styles = StyleSheet.create({
     // margin handled dynamically
   },
   habitStatCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: Theme.colors.surface,
+    borderRadius: Theme.borderRadius.lg,
     borderLeftWidth: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...Theme.shadows.sm,
   },
   habitStatHeader: {
     flexDirection: 'row',
@@ -342,7 +346,7 @@ const styles = StyleSheet.create({
   },
   habitStatName: {
     fontWeight: '600',
-    color: '#333',
+    color: Theme.colors.text,
   },
   habitStatDetails: {
     flexDirection: 'row',
@@ -353,10 +357,10 @@ const styles = StyleSheet.create({
   },
   habitStatValue: {
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: Theme.colors.primary,
   },
   habitStatLabel: {
-    color: '#666',
+    color: Theme.colors.textSecondary,
     marginTop: 2,
   },
   insightsSection: {
@@ -366,53 +370,61 @@ const styles = StyleSheet.create({
     // gap handled dynamically
   },
   insightCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: Theme.colors.surface,
+    borderRadius: Theme.borderRadius.lg,
+    padding: Theme.spacing.md,
+    ...Theme.shadows.sm,
+    borderWidth: 1,
+    borderColor: Theme.colors.border,
   },
   insightCardRead: {
     opacity: 0.7,
+    backgroundColor: Theme.colors.background,
   },
   insightHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
   },
+  insightIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
   insightIcon: {
-    marginRight: 8,
+    // fontSize handled dynamically
   },
   insightTitleContainer: {
     flex: 1,
   },
   insightTitle: {
     fontWeight: '600',
-    color: '#333',
+    color: Theme.colors.text,
   },
   insightType: {
     fontSize: 10,
-    color: '#007AFF',
-    fontWeight: '500',
+    color: Theme.colors.primary,
+    fontWeight: '600',
     marginTop: 2,
+    letterSpacing: 0.5,
   },
   unreadDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#007AFF',
+    backgroundColor: Theme.colors.primary,
   },
   insightMessage: {
-    color: '#666',
+    color: Theme.colors.textSecondary,
     lineHeight: 20,
     marginBottom: 8,
   },
   insightConfidence: {
     fontSize: 12,
-    color: '#999',
+    color: Theme.colors.textTertiary,
   },
   emptyInsights: {
     alignItems: 'center',
@@ -421,7 +433,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   emptyInsightsText: {
-    color: '#666',
+    color: Theme.colors.textSecondary,
     textAlign: 'center',
   },
 });

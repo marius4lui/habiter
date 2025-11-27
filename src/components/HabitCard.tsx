@@ -1,5 +1,6 @@
+import { Theme } from '@/constants/theme';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useHabits } from '../contexts/HabitContext';
 import { useResponsive } from '../hooks/useResponsive';
 import { Habit } from '../types/habit';
@@ -17,6 +18,24 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onPress }) => {
   const isCompleted = isHabitCompletedToday(habit.id, habitEntries);
   const streak = calculateStreak(habit.id, habitEntries);
 
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.97,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 3,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  };
+
   const handleToggleCompletion = async () => {
     try {
       await toggleHabitCompletion(habit.id, today);
@@ -26,77 +45,107 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onPress }) => {
   };
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.container,
-        {
-          borderLeftColor: habit.color,
-          padding: spacing.md,
-          marginVertical: spacing.xs,
-          marginHorizontal: isMobile ? spacing.md : spacing.xs,
-        }
-      ]}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <View style={[styles.header, { marginBottom: spacing.sm }]}>
-        <View style={styles.titleRow}>
-          <Text style={[styles.icon, { fontSize: fontSizes.xl, marginRight: spacing.sm }]}>{habit.icon}</Text>
-          <View style={styles.titleContainer}>
-            <Text style={[styles.title, { fontSize: fontSizes.md }]}>{habit.name}</Text>
-            {habit.description && (
-              <Text style={[styles.description, { fontSize: fontSizes.sm }]} numberOfLines={1}>
-                {habit.description}
-              </Text>
+    <Animated.View style={{ transform: [{ scale: scaleAnim }], flex: 1 }}>
+      <TouchableOpacity
+        style={[
+          styles.container,
+          {
+            padding: spacing.md,
+            marginVertical: spacing.sm,
+            marginHorizontal: isMobile ? spacing.md : spacing.xs,
+          }
+        ]}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={1}
+      >
+        {/* Gradient Border Effect */}
+        <View style={[styles.gradientBorder, { borderColor: habit.color }]} />
+
+        <View style={styles.content}>
+          {/* Header */}
+          <View style={[styles.header, { marginBottom: spacing.sm }]}>
+            <View style={styles.titleRow}>
+              {/* Icon with gradient background */}
+              <View style={[styles.iconContainer, { backgroundColor: `${habit.color}15` }]}>
+                <Text style={[styles.icon, { fontSize: fontSizes.xl }]}>{habit.icon}</Text>
+              </View>
+
+              <View style={styles.titleContainer}>
+                <Text style={[styles.title, { fontSize: fontSizes.md }]} numberOfLines={1}>
+                  {habit.name}
+                </Text>
+                {habit.description && (
+                  <Text style={[styles.description, { fontSize: fontSizes.sm }]} numberOfLines={1}>
+                    {habit.description}
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            {/* Checkbox with animation */}
+            <TouchableOpacity
+              style={[
+                styles.checkbox,
+                {
+                  borderColor: isCompleted ? habit.color : Theme.colors.border,
+                  backgroundColor: isCompleted ? habit.color : Theme.colors.surface,
+                  width: isMobile ? 36 : 40,
+                  height: isMobile ? 36 : 40,
+                  borderRadius: isMobile ? 18 : 20,
+                  ...Theme.shadows.md,
+                }
+              ]}
+              onPress={handleToggleCompletion}
+            >
+              {isCompleted && (
+                <Text style={[styles.checkmark, { fontSize: fontSizes.md }]}>✓</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <View style={[styles.category, { paddingHorizontal: spacing.sm, paddingVertical: 6 }]}>
+              <Text style={[styles.categoryText, { fontSize: 10 }]}>{habit.category.toUpperCase()}</Text>
+            </View>
+
+            {streak.currentStreak > 0 && (
+              <View style={styles.streakContainer}>
+                <Text style={styles.streakEmoji}>🔥</Text>
+                <Text style={[styles.streakValue, { fontSize: fontSizes.sm }]}>
+                  {streak.currentStreak}
+                  <Text style={styles.streakLabel}> day{streak.currentStreak !== 1 ? 's' : ''}</Text>
+                </Text>
+              </View>
             )}
           </View>
         </View>
-
-        <TouchableOpacity
-          style={[
-            styles.checkbox,
-            {
-              backgroundColor: isCompleted ? habit.color : '#f0f0f0',
-              width: isMobile ? 32 : 40,
-              height: isMobile ? 32 : 40,
-              borderRadius: isMobile ? 16 : 20,
-            }
-          ]}
-          onPress={handleToggleCompletion}
-        >
-          {isCompleted && (
-            <Text style={[styles.checkmark, { fontSize: fontSizes.md }]}>✓</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.footer}>
-        <View style={[styles.category, { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs / 2 }]}>
-          <Text style={[styles.categoryText, { fontSize: fontSizes.xs }]}>{habit.category}</Text>
-        </View>
-
-        <View style={styles.streakContainer}>
-          <Text style={[styles.streakLabel, { fontSize: fontSizes.xs, marginRight: spacing.xs }]}>Streak:</Text>
-          <Text style={[styles.streakValue, { color: habit.color, fontSize: fontSizes.sm }]}>
-            {streak.currentStreak} days
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    flex: 1, // Important for grid layout
+    backgroundColor: Theme.colors.surface,
+    borderRadius: Theme.borderRadius.xl,
+    ...Theme.shadows.md,
+    flex: 1,
+    overflow: 'hidden',
+  },
+  gradientBorder: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+    borderTopLeftRadius: Theme.borderRadius.xl,
+    borderTopRightRadius: Theme.borderRadius.xl,
+  },
+  content: {
+    paddingTop: 4,
   },
   header: {
     flexDirection: 'row',
@@ -107,26 +156,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    marginRight: 12,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: Theme.borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
   icon: {
     // fontSize handled dynamically
   },
   titleContainer: {
     flex: 1,
+    justifyContent: 'center',
   },
   title: {
-    fontWeight: '600',
-    color: '#333',
+    ...Theme.typography.h3,
+    fontSize: 17,
     marginBottom: 2,
   },
   description: {
-    color: '#666',
+    ...Theme.typography.bodySmall,
+    color: Theme.colors.textTertiary,
   },
   checkbox: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#ddd',
+    borderWidth: 2.5,
   },
   checkmark: {
     color: '#fff',
@@ -136,23 +195,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: 8,
   },
   category: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+    backgroundColor: Theme.colors.backgroundDark,
+    borderRadius: Theme.borderRadius.full,
+    borderWidth: 1,
+    borderColor: Theme.colors.borderLight,
   },
   categoryText: {
-    color: '#666',
-    fontWeight: '500',
+    ...Theme.typography.label,
+    color: Theme.colors.textSecondary,
   },
   streakContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
   },
-  streakLabel: {
-    color: '#666',
+  streakEmoji: {
+    fontSize: 14,
   },
   streakValue: {
-    fontWeight: '600',
+    fontWeight: '700',
+    color: Theme.colors.text,
+  },
+  streakLabel: {
+    fontWeight: '400',
+    color: Theme.colors.textSecondary,
   },
 });

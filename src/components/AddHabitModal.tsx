@@ -1,17 +1,19 @@
+import { Theme } from '@/constants/theme';
 import React, { useState } from 'react';
 import {
-  View,
+  Alert,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Alert,
+  View,
 } from 'react-native';
-import { Habit } from '../types/habit';
 import { useHabits } from '../contexts/HabitContext';
-import { getRandomColor, getHabitIconSuggestions } from '../utils/habitUtils';
+import { Habit } from '../types/habit';
+import { getHabitIconSuggestions, getRandomColor } from '../utils/habitUtils';
 
 interface AddHabitModalProps {
   visible: boolean;
@@ -109,11 +111,11 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({ visible, onClose }
     >
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose}>
+          <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <Text style={styles.cancelButton}>Cancel</Text>
           </TouchableOpacity>
           <Text style={styles.title}>New Habit</Text>
-          <TouchableOpacity onPress={handleSubmit}>
+          <TouchableOpacity onPress={handleSubmit} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <Text style={styles.saveButton}>Save</Text>
           </TouchableOpacity>
         </View>
@@ -121,12 +123,13 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({ visible, onClose }
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Habit Name */}
           <View style={styles.section}>
-            <Text style={styles.label}>Name *</Text>
+            <Text style={styles.label}>Name</Text>
             <TextInput
               style={styles.input}
               value={formData.name}
               onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
-              placeholder="Enter habit name"
+              placeholder="e.g., Read 30 mins"
+              placeholderTextColor={Theme.colors.textTertiary}
               maxLength={50}
             />
           </View>
@@ -139,6 +142,7 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({ visible, onClose }
               value={formData.description}
               onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
               placeholder="Add a description (optional)"
+              placeholderTextColor={Theme.colors.textTertiary}
               multiline
               numberOfLines={3}
               maxLength={200}
@@ -233,6 +237,8 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({ visible, onClose }
               ))}
             </View>
           </View>
+
+          <View style={{ height: 40 }} />
         </ScrollView>
       </View>
     </Modal>
@@ -242,76 +248,80 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({ visible, onClose }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Theme.colors.surface,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Theme.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e5e9',
+    borderBottomColor: Theme.colors.border,
+    backgroundColor: Theme.colors.surface,
   },
   title: {
+    ...Theme.typography.h3,
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
   },
   cancelButton: {
     fontSize: 16,
-    color: '#666',
+    color: Theme.colors.textSecondary,
   },
   saveButton: {
     fontSize: 16,
-    color: '#007AFF',
+    color: Theme.colors.primary,
     fontWeight: '600',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: Theme.spacing.md,
   },
   section: {
-    marginVertical: 16,
+    marginTop: Theme.spacing.lg,
   },
   label: {
-    fontSize: 16,
+    ...Theme.typography.body,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: Theme.spacing.sm,
+    color: Theme.colors.text,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e1e5e9',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    borderColor: Theme.colors.border,
+    borderRadius: Theme.borderRadius.md,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
     fontSize: 16,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: Theme.colors.background,
+    color: Theme.colors.text,
   },
   textArea: {
-    height: 80,
+    height: 100,
     textAlignVertical: 'top',
+    paddingTop: 12,
   },
   categoryScroll: {
     flexGrow: 0,
+    marginHorizontal: -Theme.spacing.md,
+    paddingHorizontal: Theme.spacing.md,
   },
   categoryChip: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: Theme.colors.background,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: Theme.borderRadius.full,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: '#e1e5e9',
+    borderColor: Theme.colors.border,
   },
   categoryChipSelected: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
+    backgroundColor: Theme.colors.primary,
+    borderColor: Theme.colors.primary,
   },
   categoryChipText: {
     fontSize: 14,
-    color: '#666',
+    color: Theme.colors.textSecondary,
     fontWeight: '500',
   },
   categoryChipTextSelected: {
@@ -319,21 +329,23 @@ const styles = StyleSheet.create({
   },
   iconScroll: {
     flexGrow: 0,
+    marginHorizontal: -Theme.spacing.md,
+    paddingHorizontal: Theme.spacing.md,
   },
   iconChip: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: Theme.colors.background,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
-    borderWidth: 2,
-    borderColor: '#e1e5e9',
+    borderWidth: 1,
+    borderColor: Theme.colors.border,
   },
   iconChipSelected: {
-    borderColor: '#007AFF',
-    backgroundColor: '#e3f2fd',
+    borderColor: Theme.colors.primary,
+    backgroundColor: `${Theme.colors.primary}20`, // 20% opacity
   },
   iconText: {
     fontSize: 24,
@@ -341,39 +353,38 @@ const styles = StyleSheet.create({
   colorRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 12,
   },
   colorChip: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 12,
-    marginBottom: 8,
     borderWidth: 3,
     borderColor: 'transparent',
   },
   colorChipSelected: {
-    borderColor: '#333',
+    borderColor: Theme.colors.text,
   },
   frequencyRow: {
     flexDirection: 'row',
+    gap: 8,
   },
   frequencyChip: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: Theme.colors.background,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: Theme.borderRadius.md,
     alignItems: 'center',
-    marginRight: 8,
     borderWidth: 1,
-    borderColor: '#e1e5e9',
+    borderColor: Theme.colors.border,
   },
   frequencyChipSelected: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
+    backgroundColor: Theme.colors.primary,
+    borderColor: Theme.colors.primary,
   },
   frequencyChipText: {
     fontSize: 14,
-    color: '#666',
+    color: Theme.colors.textSecondary,
     fontWeight: '500',
   },
   frequencyChipTextSelected: {

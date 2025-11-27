@@ -1,65 +1,101 @@
-import React, { useState, useEffect } from 'react';
+import { Theme } from '@/constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
+  View,
 } from 'react-native';
-import { AIManager, useAIManager } from '../services/aiManager';
+import { AIManager, AIProvider, getAvailableModels, getDefaultModel, StoredAIConfig, useAIManager } from '../services/aiManager';
 
 interface AISetupModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
+const PROVIDERS = [
+  { id: 'glm' as AIProvider, name: 'GLM (ZhipuAI)', description: 'Chinese AI, affordable', emoji: '🇨🇳' },
+  { id: 'openai' as AIProvider, name: 'OpenAI', description: 'Industry leader, GPT models', emoji: '🤖' },
+  { id: 'openrouter' as AIProvider, name: 'OpenRouter', description: 'Access 100+ models', emoji: '🌐' },
+];
+
+const PROVIDER_HELP = {
+  glm: {
+    url: 'https://open.bigmodel.cn',
+    howTo: 'Sign up at open.bigmodel.cn and get your API key from the dashboard.',
+  },
+  openai: {
+    url: 'https://platform.openai.com/api-keys',
+    howTo: 'Go to platform.openai.com, navigate to API keys, and create a new key.',
+  },
+  openrouter: {
+    url: 'https://openrouter.ai/keys',
+    howTo: 'Visit openrouter.ai, sign in, and generate an API key.',
+  },
+};
+
 export const AISetupModal: React.FC<AISetupModalProps> = ({ visible, onClose }) => {
+  const [provider, setProvider] = useState<AIProvider>('openai');
   const [apiKey, setApiKey] = useState('');
+  const [selectedModel, setSelectedModel] = useState('');
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [existingKey, setExistingKey] = useState<string | null>(null);
-  const { testConnection, setupApiKey, isConfigured } = useAIManager();
+  const [existingConfig, setExistingConfig] = useState<StoredAIConfig | null>(null);
+  const { testConnection, setupAI, getCurrentConfig, isConfigured } = useAIManager();
 
   useEffect(() => {
-    const loadExistingKey = async () => {
-      const key = await AIManager.getApiKey();
-      setExistingKey(key);
-      if (key) {
-        // Mask the key for display
-        setApiKey(key.substring(0, 8) + '...' + key.substring(key.length - 4));
+    const loadConfig = async () => {
+      const config = await getCurrentConfig();
+      setExistingConfig(config);
+      if (config) {
+        setProvider(config.provider);
+        setSelectedModel(config.model);
+        // Mask the API key
+        setApiKey(config.apiKey.substring(0, 8) + '...' + config.apiKey.substring(config.apiKey.length - 4));
+      } else {
+        setSelectedModel(getDefaultModel('openai'));
       }
     };
 
     if (visible) {
-      loadExistingKey();
+      loadConfig();
     }
   }, [visible]);
 
-  const handleTestConnection = async () => {
+  useEffect(() => {
+    // Update model when provider changes
+    if (!existingConfig || existingConfig.provider !== provider) {
+      setSelectedModel(getDefaultModel(provider));
+    }
+  }, [provider]);
+
+  const handleTest = async () => {
     if (!apiKey.trim()) {
-      Alert.alert('Error', 'Please enter your GLM API key');
+      Alert.alert('Error', 'Please enter your API key');
       return;
     }
 
     setTesting(true);
     try {
-      // Save the key temporarily for testing
-      await setupApiKey(apiKey.trim());
+      await setupAI({ provider, apiKey: apiKey.trim(), model: selectedModel });
       await AIManager.initializeService();
 
       const isConnected = await testConnection();
 
       if (isConnected) {
-        Alert.alert('Success', 'GLM AI connection successful!');
+        Alert.alert('Success! ✨', 'AI connection successful! Your insights will be powered by cutting-edge AI.');
       } else {
-        Alert.alert('Error', 'Failed to connect to GLM AI. Please check your API key.');
+        Alert.alert('Connection Failed', 'Please check your API key and try again.');
       }
-    } catch {
-      Alert.alert('Error', 'Failed to test connection. Please check your API key.');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to test connection');
     } finally {
       setTesting(false);
     }
@@ -67,28 +103,28 @@ export const AISetupModal: React.FC<AISetupModalProps> = ({ visible, onClose }) 
 
   const handleSave = async () => {
     if (!apiKey.trim()) {
-      Alert.alert('Error', 'Please enter your GLM API key');
+      Alert.alert('Error', 'Please enter your API key');
       return;
     }
 
     setSaving(true);
     try {
-      await setupApiKey(apiKey.trim());
+      await setupAI({ provider, apiKey: apiKey.trim(), model: selectedModel });
       await AIManager.initializeService();
-      Alert.alert('Success', 'GLM API key saved successfully!', [
+      Alert.alert('Saved! 🎉', 'Your AI settings have been saved successfully.', [
         { text: 'OK', onPress: onClose }
       ]);
-    } catch {
-      Alert.alert('Error', 'Failed to save API key');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to save settings');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleClearKey = async () => {
+  const handleClear = async () => {
     Alert.alert(
-      'Clear API Key',
-      'Are you sure you want to remove the GLM API key? This will disable AI features.',
+      'Clear AI Settings?',
+      'This will remove your API key and disable AI features.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -96,12 +132,14 @@ export const AISetupModal: React.FC<AISetupModalProps> = ({ visible, onClose }) 
           style: 'destructive',
           onPress: async () => {
             try {
-              await AIManager.clearApiKey();
+              await AIManager.clearConfig();
               setApiKey('');
-              setExistingKey(null);
-              Alert.alert('Success', 'API key cleared');
-            } catch {
-              Alert.alert('Error', 'Failed to clear API key');
+              setExistingConfig(null);
+              setProvider('openai');
+              setSelectedModel(getDefaultModel('openai'));
+              Alert.alert('Cleared', 'AI settings have been removed.');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to clear settings');
             }
           }
         }
@@ -109,10 +147,7 @@ export const AISetupModal: React.FC<AISetupModalProps> = ({ visible, onClose }) 
     );
   };
 
-  // const resetForm = () => {
-  //   setApiKey('');
-  //   setExistingKey(null);
-  // };
+  const availableModels = getAvailableModels(provider);
 
   return (
     <Modal
@@ -122,14 +157,15 @@ export const AISetupModal: React.FC<AISetupModalProps> = ({ visible, onClose }) 
       onRequestClose={onClose}
     >
       <View style={styles.container}>
+        {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose}>
+          <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <Text style={styles.cancelButton}>Cancel</Text>
           </TouchableOpacity>
           <Text style={styles.title}>AI Setup</Text>
-          <TouchableOpacity onPress={handleSave} disabled={saving}>
+          <TouchableOpacity onPress={handleSave} disabled={saving} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             {saving ? (
-              <ActivityIndicator size="small" color="#007AFF" />
+              <ActivityIndicator size="small" color={Theme.colors.primary} />
             ) : (
               <Text style={styles.saveButton}>Save</Text>
             )}
@@ -139,96 +175,141 @@ export const AISetupModal: React.FC<AISetupModalProps> = ({ visible, onClose }) 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Introduction */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🤖 AI-Powered Insights</Text>
-            <Text style={styles.description}>
-              Connect your GLM AI to get personalized habit recommendations, motivational messages,
-              and intelligent insights about your progress.
+            <LinearGradient
+              colors={Theme.gradients.primary}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.headerGradient}
+            >
+              <Text style={styles.headerEmoji}>✨</Text>
+              <Text style={styles.headerTitle}>AI-Powered Insights</Text>
+              <Text style={styles.headerSubtitle}>
+                Get personalized recommendations, motivation, and pattern analysis
+              </Text>
+            </LinearGradient>
+          </View>
+
+          {/* Provider Selection */}
+          <View style={styles.section}>
+            <Text style={styles.label}>AI Provider</Text>
+            <View style={styles.providersContainer}>
+              {PROVIDERS.map((p) => (
+                <TouchableOpacity
+                  key={p.id}
+                  style={[
+                    styles.providerCard,
+                    provider === p.id && styles.providerCardSelected,
+                  ]}
+                  onPress={() => setProvider(p.id)}
+                >
+                  <Text style={styles.providerEmoji}>{p.emoji}</Text>
+                  <Text style={[styles.providerName, provider === p.id && styles.providerNameSelected]}>
+                    {p.name}
+                  </Text>
+                  <Text style={styles.providerDescription}>{p.description}</Text>
+                  {provider === p.id && (
+                    <View style={styles.selectedBadge}>
+                      <Text style={styles.selectedBadgeText}>✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Model Selection */}
+          <View style={styles.section}>
+            <Text style={styles.label}>Model</Text>
+            <View style={styles.modelsContainer}>
+              {availableModels.map((model) => (
+                <TouchableOpacity
+                  key={model}
+                  style={[
+                    styles.modelChip,
+                    selectedModel === model && styles.modelChipSelected,
+                  ]}
+                  onPress={() => setSelectedModel(model)}
+                >
+                  <Text style={[
+                    styles.modelChipText,
+                    selectedModel === model && styles.modelChipTextSelected,
+                  ]}>
+                    {model}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <Text style={styles.helpText}>
+              Recommended: {provider === 'glm' ? 'glm-4-flash' : provider === 'openai' ? 'gpt-4o-mini' : 'claude-3.5-sonnet'} (best balance of quality and speed)
             </Text>
           </View>
 
           {/* API Key Input */}
           <View style={styles.section}>
-            <Text style={styles.label}>GLM API Key</Text>
+            <Text style={styles.label}>API Key</Text>
             <TextInput
               style={styles.input}
               value={apiKey}
               onChangeText={setApiKey}
-              placeholder="Enter your GLM API key"
-              secureTextEntry={existingKey ? true : false}
+              placeholder={`Enter your ${PROVIDERS.find(p => p.id === provider)?.name} API key`}
+              placeholderTextColor={Theme.colors.textTertiary}
+              secureTextEntry={existingConfig ? true : false}
               autoCapitalize="none"
               autoCorrect={false}
             />
-            <Text style={styles.helpText}>
-              Get your API key from the GLM AI dashboard at open.bigmodel.cn
-            </Text>
-          </View>
-
-          {/* Test Connection */}
-          <View style={styles.section}>
-            <TouchableOpacity
-              style={[styles.testButton, testing && styles.testButtonDisabled]}
-              onPress={handleTestConnection}
-              disabled={testing}
-            >
-              {testing ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Text style={styles.testButtonText}>Test Connection</Text>
-              )}
+            <TouchableOpacity onPress={() => Alert.alert('Get API Key', PROVIDER_HELP[provider].howTo)}>
+              <Text style={styles.helpLink}>How to get API key? →</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Features List */}
+          {/* Test Button */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>AI Features</Text>
+            <TouchableOpacity
+              style={styles.testButton}
+              onPress={handleTest}
+              disabled={testing}
+            >
+              <LinearGradient
+                colors={testing ? [Theme.colors.textSecondary, Theme.colors.textSecondary] : Theme.gradients.secondary}
+                style={styles.testButtonGradient}
+              >
+                {testing ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.testButtonText}>Test Connection</Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+
+          {/* What You Get */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>What You'll Get</Text>
             <View style={styles.featuresList}>
-              <View style={styles.featureItem}>
-                <Text style={styles.featureIcon}>💡</Text>
-                <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Smart Recommendations</Text>
-                  <Text style={styles.featureDescription}>
-                    Get personalized habit suggestions based on your current routines
-                  </Text>
+              {[
+                { emoji: '💡', title: 'Smart Recommendations', desc: 'Personalized habit suggestions based on your routine' },
+                { emoji: '🔥', title: 'Streak Motivation', desc: 'Encouraging messages to keep you going' },
+                { emoji: '📊', title: 'Pattern Analysis', desc: 'Deep insights into your habit performance' },
+                { emoji: '🔮', title: 'Success Predictions', desc: 'AI-powered forecasts for long-term success' },
+              ].map((feat, i) => (
+                <View key={i} style={styles.featureItem}>
+                  <View style={styles.featureIconContainer}>
+                    <Text style={styles.featureEmoji}>{feat.emoji}</Text>
+                  </View>
+                  <View style={styles.featureContent}>
+                    <Text style={styles.featureTitle}>{feat.title}</Text>
+                    <Text style={styles.featureDescription}>{feat.desc}</Text>
+                  </View>
                 </View>
-              </View>
-
-              <View style={styles.featureItem}>
-                <Text style={styles.featureIcon}>🚀</Text>
-                <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Motivational Coaching</Text>
-                  <Text style={styles.featureDescription}>
-                    Receive encouraging messages to maintain your streaks
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.featureItem}>
-                <Text style={styles.featureIcon}>📊</Text>
-                <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Pattern Analysis</Text>
-                  <Text style={styles.featureDescription}>
-                    Understand your habit patterns and identify improvement areas
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.featureItem}>
-                <Text style={styles.featureIcon}>🔮</Text>
-                <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Success Predictions</Text>
-                  <Text style={styles.featureDescription}>
-                    AI-powered predictions about your habit success likelihood
-                  </Text>
-                </View>
-              </View>
+              ))}
             </View>
           </View>
 
-          {/* Clear Key Option */}
-          {existingKey && (
+          {/* Clear Button */}
+          {existingConfig && (
             <View style={styles.section}>
-              <TouchableOpacity style={styles.clearButton} onPress={handleClearKey}>
-                <Text style={styles.clearButtonText}>Clear API Key</Text>
+              <TouchableOpacity style={styles.clearButton} onPress={handleClear}>
+                <Text style={styles.clearButtonText}>Clear AI Settings</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -237,11 +318,13 @@ export const AISetupModal: React.FC<AISetupModalProps> = ({ visible, onClose }) 
           <View style={styles.section}>
             <View style={[styles.statusCard, isConfigured ? styles.statusSuccess : styles.statusWarning]}>
               <Text style={styles.statusIcon}>{isConfigured ? '✅' : '⚠️'}</Text>
-              <Text style={styles.statusText}>
-                {isConfigured ? 'AI features are enabled' : 'AI features are disabled'}
+              <Text style={[styles.statusText, isConfigured ? styles.statusTextSuccess : styles.statusTextWarning]}>
+                {isConfigured ? `AI enabled with ${existingConfig?.provider.toUpperCase()}` : 'AI features are disabled'}
               </Text>
             </View>
           </View>
+
+          <View style={{ height: 40 }} />
         </ScrollView>
       </View>
     </Modal>
@@ -251,139 +334,252 @@ export const AISetupModal: React.FC<AISetupModalProps> = ({ visible, onClose }) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Theme.colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Theme.spacing.md,
+    backgroundColor: Theme.colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e5e9',
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.sm,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    ...Theme.typography.h2,
+    fontSize: 20,
   },
   cancelButton: {
     fontSize: 16,
-    color: '#666',
+    color: Theme.colors.textSecondary,
   },
   saveButton: {
     fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '600',
+    color: Theme.colors.primary,
+    fontWeight: '700',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: Theme.spacing.md,
   },
   section: {
-    marginVertical: 16,
+    marginTop: Theme.spacing.lg,
+  },
+  headerGradient: {
+    padding: Theme.spacing.xl,
+    borderRadius: Theme.borderRadius.xl,
+    alignItems: 'center',
+  },
+  headerEmoji: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.9)',
+    textAlign: 'center',
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 16,
-    color: '#666',
-    lineHeight: 22,
+    ...Theme.typography.h3,
+    marginBottom: Theme.spacing.md,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    ...Theme.typography.bodyMedium,
+    fontWeight: '700',
+    marginBottom: Theme.spacing.sm,
+  },
+  providersContainer: {
+    gap: 12,
+  },
+  providerCard: {
+    padding: Theme.spacing.md,
+    borderRadius: Theme.borderRadius.lg,
+    borderWidth: 2,
+    borderColor: Theme.colors.border,
+    backgroundColor: Theme.colors.surface,
+  },
+  providerCardSelected: {
+    borderColor: Theme.colors.primary,
+    backgroundColor: Theme.colors.primaryLight + '10',
+  },
+  providerEmoji: {
+    fontSize: 28,
     marginBottom: 8,
+  },
+  providerName: {
+    ...Theme.typography.h3,
+    fontSize: 17,
+    marginBottom: 4,
+  },
+  providerNameSelected: {
+    color: Theme.colors.primary,
+  },
+  providerDescription: {
+    ...Theme.typography.bodySmall,
+    color: Theme.colors.textSecondary,
+  },
+  selectedBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectedBadgeText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modelsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
+  },
+  modelChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: Theme.borderRadius.full,
+    backgroundColor: Theme.colors.backgroundDark,
+    borderWidth: 1.5,
+    borderColor: Theme.colors.border,
+  },
+  modelChipSelected: {
+    backgroundColor: Theme.colors.primary,
+    borderColor: Theme.colors.primary,
+  },
+  modelChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Theme.colors.text,
+  },
+  modelChipTextSelected: {
+    color: '#fff',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e1e5e9',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 16,
-    backgroundColor: '#f8f9fa',
+    borderColor: Theme.colors.border,
+    borderRadius: Theme.borderRadius.lg,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Platform.OS === 'ios' ? 14 : 12,
+    fontSize: 15,
+    backgroundColor: Theme.colors.surface,
+    color: Theme.colors.text,
+    ...Theme.shadows.sm,
   },
   helpText: {
-    fontSize: 14,
-    color: '#666',
+    ...Theme.typography.caption,
     marginTop: 6,
   },
-  testButton: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
+  helpLink: {
+    ...Theme.typography.caption,
+    color: Theme.colors.primary,
+    fontWeight: '600',
+    marginTop: 8,
   },
-  testButtonDisabled: {
-    opacity: 0.6,
+  testButton: {
+    borderRadius: Theme.borderRadius.lg,
+    overflow: 'hidden',
+    ...Theme.shadows.md,
+  },
+  testButtonGradient: {
+    paddingVertical: 14,
+    alignItems: 'center',
   },
   testButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   featuresList: {
-    gap: 16,
+    gap: 12,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    backgroundColor: Theme.colors.surface,
+    padding: Theme.spacing.md,
+    borderRadius: Theme.borderRadius.lg,
+    ...Theme.shadows.sm,
   },
-  featureIcon: {
-    fontSize: 24,
+  featureIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Theme.colors.backgroundDark,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 12,
-    marginTop: 2,
+  },
+  featureEmoji: {
+    fontSize: 20,
   },
   featureContent: {
     flex: 1,
   },
   featureTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    fontWeight: '700',
+    color: Theme.colors.text,
+    marginBottom: 2,
   },
   featureDescription: {
     fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
+    color: Theme.colors.textSecondary,
+    lineHeight: 19,
   },
   clearButton: {
-    backgroundColor: '#ff4757',
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: Theme.colors.errorLight,
+    paddingVertical: 14,
+    borderRadius: Theme.borderRadius.lg,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Theme.colors.error,
   },
   clearButtonText: {
-    color: '#fff',
+    color: Theme.colors.error,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   statusCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: Theme.borderRadius.lg,
+    borderWidth: 1.5,
   },
   statusSuccess: {
-    backgroundColor: '#d4edda',
+    backgroundColor: Theme.colors.successLight,
+    borderColor: Theme.colors.success,
   },
   statusWarning: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: Theme.colors.warningLight,
+    borderColor: Theme.colors.warning,
   },
   statusIcon: {
     fontSize: 20,
-    marginRight: 8,
+    marginRight: 12,
   },
   statusText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  statusTextSuccess: {
+    color: Theme.colors.success,
+  },
+  statusTextWarning: {
+    color: Theme.colors.warning,
   },
 });

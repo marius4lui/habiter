@@ -1,95 +1,95 @@
 
-// Premium Color Palette - Modern & Vibrant
+// Clean & Minimal Color Palette
 export const Palette = {
-  // Primary - Rich Purple Gradient
-  primary: '#8B5CF6',
-  primaryDark: '#7C3AED',
-  primaryLight: '#A78BFA',
-  primaryGradient: ['#8B5CF6', '#EC4899'], // Purple to Pink
+  // Primary - Modern Blue
+  primary: '#0066FF',
+  primaryDark: '#0052CC',
+  primaryLight: '#3385FF',
+  primaryGradient: ['#0066FF', '#0052CC'],
 
-  // Secondary - Vibrant Cyan
-  secondary: '#06B6D4',
-  secondaryDark: '#0891B2',
+  // Secondary - Subtle Accent
+  secondary: '#00C7BE',
+  secondaryDark: '#00A399',
 
-  // Background - Clean & Modern
-  background: '#FAFAFA',
-  backgroundDark: '#F5F5F7',
+  // Background - Ultra Clean
+  background: '#F8F9FA',
+  backgroundDark: '#ECEFF1',
   surface: '#FFFFFF',
   surfaceElevated: '#FFFFFF',
 
   // Text
-  text: '#0F172A',
-  textSecondary: '#475569',
-  textTertiary: '#94A3B8',
+  text: '#1A1A1A',
+  textSecondary: '#6B7280',
+  textTertiary: '#9CA3AF',
   textInverse: '#FFFFFF',
 
-  // Borders
-  border: '#E2E8F0',
-  borderLight: '#F1F5F9',
+  // Borders - Subtle
+  border: '#E5E7EB',
+  borderLight: '#F3F4F6',
 
-  // Status Colors - Vibrant & Clear
-  success: '#10B981',
-  successLight: '#D1FAE5',
-  warning: '#F59E0B',
-  warningLight: '#FEF3C7',
-  error: '#EF4444',
-  errorLight: '#FEE2E2',
-  info: '#3B82F6',
-  infoLight: '#DBEAFE',
+  // Status Colors - Clean & Clear
+  success: '#00C896',
+  successLight: '#E6F9F4',
+  warning: '#FFB020',
+  warningLight: '#FFF4E5',
+  error: '#FF4757',
+  errorLight: '#FFE8EB',
+  info: '#0066FF',
+  infoLight: '#E5F0FF',
 
-  // Accent Colors for Cards
-  accent1: '#F59E0B', // Amber
-  accent2: '#EC4899', // Pink
+  // Accent Colors for Cards - Refined
+  accent1: '#00C896', // Teal
+  accent2: '#FF6B9D', // Pink
   accent3: '#8B5CF6', // Purple
-  accent4: '#06B6D4', // Cyan
-  accent5: '#10B981', // Emerald
-  accent6: '#F97316', // Orange
+  accent4: '#00C7BE', // Cyan
+  accent5: '#FFB020', // Amber
+  accent6: '#FF4757', // Red
 };
 
 export const Gradients = {
-  primary: ['#8B5CF6', '#EC4899'],
-  secondary: ['#06B6D4', '#3B82F6'],
-  success: ['#10B981', '#34D399'],
-  warm: ['#F59E0B', '#F97316'],
-  cool: ['#3B82F6', '#8B5CF6'],
-  sunset: ['#F97316', '#EC4899'],
+  primary: ['#0066FF', '#0052CC'],
+  secondary: ['#00C7BE', '#00A399'],
+  success: ['#00C896', '#00A077'],
+  warm: ['#FFB020', '#FF9500'],
+  cool: ['#0066FF', '#8B5CF6'],
+  sunset: ['#FF6B9D', '#FF4757'],
 };
 
 export const Shadows = {
   sm: {
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   md: {
-    shadowColor: '#0F172A',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  lg: {
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 4,
   },
-  lg: {
-    shadowColor: '#0F172A',
+  xl: {
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.1,
     shadowRadius: 16,
-    elevation: 8,
-  },
-  xl: {
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    elevation: 12,
-  },
-  colored: (color: string, opacity: number = 0.3) => ({
-    shadowColor: color,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: opacity,
-    shadowRadius: 12,
     elevation: 6,
+  },
+  colored: (color: string, opacity: number = 0.15) => ({
+    shadowColor: color,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: opacity,
+    shadowRadius: 8,
+    elevation: 3,
   }),
 };
 

@@ -50,26 +50,23 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onPress }) => {
         style={[
           styles.container,
           {
-            padding: spacing.md,
-            marginVertical: spacing.sm,
-            marginHorizontal: isMobile ? spacing.md : spacing.xs,
+            padding: spacing.lg,
+            marginVertical: spacing.xs,
+            marginHorizontal: isMobile ? 0 : spacing.xs,
           }
         ]}
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        activeOpacity={1}
+        activeOpacity={0.7}
       >
-        {/* Gradient Border Effect */}
-        <View style={[styles.gradientBorder, { borderColor: habit.color }]} />
-
         <View style={styles.content}>
           {/* Header */}
-          <View style={[styles.header, { marginBottom: spacing.sm }]}>
+          <View style={[styles.header, { marginBottom: spacing.md }]}>
             <View style={styles.titleRow}>
-              {/* Icon with gradient background */}
-              <View style={[styles.iconContainer, { backgroundColor: `${habit.color}15` }]}>
-                <Text style={[styles.icon, { fontSize: fontSizes.xl }]}>{habit.icon}</Text>
+              {/* Icon - Minimalist Circle */}
+              <View style={[styles.iconContainer, { backgroundColor: `${habit.color}10` }]}>
+                <Text style={[styles.icon, { fontSize: fontSizes.lg }]}>{habit.icon}</Text>
               </View>
 
               <View style={styles.titleContainer}>
@@ -77,49 +74,49 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onPress }) => {
                   {habit.name}
                 </Text>
                 {habit.description && (
-                  <Text style={[styles.description, { fontSize: fontSizes.sm }]} numberOfLines={1}>
+                  <Text style={[styles.description, { fontSize: fontSizes.xs }]} numberOfLines={1}>
                     {habit.description}
                   </Text>
                 )}
               </View>
             </View>
 
-            {/* Checkbox with animation */}
+            {/* Clean Checkbox */}
             <TouchableOpacity
               style={[
                 styles.checkbox,
                 {
-                  borderColor: isCompleted ? habit.color : Theme.colors.border,
-                  backgroundColor: isCompleted ? habit.color : Theme.colors.surface,
-                  width: isMobile ? 36 : 40,
-                  height: isMobile ? 36 : 40,
-                  borderRadius: isMobile ? 18 : 20,
-                  ...Theme.shadows.md,
+                  borderColor: isCompleted ? habit.color : Theme.colors.borderLight,
+                  backgroundColor: isCompleted ? habit.color : 'transparent',
+                  width: 28,
+                  height: 28,
+                  borderRadius: 14,
                 }
               ]}
               onPress={handleToggleCompletion}
             >
               {isCompleted && (
-                <Text style={[styles.checkmark, { fontSize: fontSizes.md }]}>✓</Text>
+                <Text style={[styles.checkmark, { fontSize: 16 }]}>✓</Text>
               )}
             </TouchableOpacity>
           </View>
 
-          {/* Footer */}
+          {/* Footer - Minimal */}
           <View style={styles.footer}>
-            <View style={[styles.category, { paddingHorizontal: spacing.sm, paddingVertical: 6 }]}>
-              <Text style={[styles.categoryText, { fontSize: 10 }]}>{habit.category.toUpperCase()}</Text>
-            </View>
-
             {streak.currentStreak > 0 && (
               <View style={styles.streakContainer}>
-                <Text style={styles.streakEmoji}>🔥</Text>
-                <Text style={[styles.streakValue, { fontSize: fontSizes.sm }]}>
-                  {streak.currentStreak}
-                  <Text style={styles.streakLabel}> day{streak.currentStreak !== 1 ? 's' : ''}</Text>
-                </Text>
+                <View style={[styles.streakBadge, { backgroundColor: `${habit.color}10` }]}>
+                  <Text style={styles.streakEmoji}>🔥</Text>
+                  <Text style={[styles.streakValue, { fontSize: fontSizes.sm, color: habit.color }]}>
+                    {streak.currentStreak} day{streak.currentStreak !== 1 ? 's' : ''}
+                  </Text>
+                </View>
               </View>
             )}
+
+            <View style={[styles.category, { paddingHorizontal: spacing.sm, paddingVertical: 4 }]}>
+              <Text style={[styles.categoryText, { fontSize: 9 }]}>{habit.category}</Text>
+            </View>
           </View>
         </View>
       </TouchableOpacity>
@@ -130,22 +127,14 @@ export const HabitCard: React.FC<HabitCardProps> = ({ habit, onPress }) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.xl,
-    ...Theme.shadows.md,
+    borderRadius: Theme.borderRadius.lg,
+    ...Theme.shadows.sm,
     flex: 1,
-    overflow: 'hidden',
-  },
-  gradientBorder: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 4,
-    borderTopLeftRadius: Theme.borderRadius.xl,
-    borderTopRightRadius: Theme.borderRadius.xl,
+    borderWidth: 1,
+    borderColor: Theme.colors.borderLight,
   },
   content: {
-    paddingTop: 4,
+    // No extra padding
   },
   header: {
     flexDirection: 'row',
@@ -159,9 +148,9 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: Theme.borderRadius.md,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -174,53 +163,56 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    ...Theme.typography.h3,
-    fontSize: 17,
+    fontSize: 16,
+    fontWeight: '600',
+    color: Theme.colors.text,
     marginBottom: 2,
   },
   description: {
-    ...Theme.typography.bodySmall,
+    fontSize: 13,
     color: Theme.colors.textTertiary,
   },
   checkbox: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2.5,
+    borderWidth: 2,
   },
   checkmark: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 8,
   },
   category: {
     backgroundColor: Theme.colors.backgroundDark,
-    borderRadius: Theme.borderRadius.full,
-    borderWidth: 1,
-    borderColor: Theme.colors.borderLight,
+    borderRadius: Theme.borderRadius.sm,
   },
   categoryText: {
-    ...Theme.typography.label,
-    color: Theme.colors.textSecondary,
+    fontSize: 9,
+    fontWeight: '600',
+    color: Theme.colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   streakContainer: {
+    flex: 1,
+  },
+  streakBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: Theme.borderRadius.full,
+    gap: 6,
   },
   streakEmoji: {
     fontSize: 14,
   },
   streakValue: {
-    fontWeight: '700',
-    color: Theme.colors.text,
-  },
-  streakLabel: {
-    fontWeight: '400',
-    color: Theme.colors.textSecondary,
+    fontWeight: '600',
   },
 });

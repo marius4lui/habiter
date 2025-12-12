@@ -152,45 +152,22 @@ export default function HomeScreen() {
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
             <StatusBar barStyle="dark-content" backgroundColor={Theme.colors.background} />
 
-            {/* Header with gradient background */}
+            {/* Clean Header */}
             <View style={styles.headerContainer}>
                 <View style={styles.header}>
                     <View style={styles.titleContainer}>
-                        <View style={styles.greetingRow}>
-                            <Text style={styles.greetingEmoji}>{getGreetingEmoji()}</Text>
-                            <Text style={styles.greeting}>{getGreeting()}</Text>
-                        </View>
+                        <Text style={styles.greeting}>{getGreeting()}</Text>
                         <Text style={styles.date}>{formatDisplayDate(today)}</Text>
-
-                        {/* Progress indicator */}
-                        {activeHabits.length > 0 && (
-                            <View style={styles.progressContainer}>
-                                <View style={styles.progressBar}>
-                                    <LinearGradient
-                                        colors={Theme.gradients.primary}
-                                        start={{ x: 0, y: 0 }}
-                                        end={{ x: 1, y: 0 }}
-                                        style={[
-                                            styles.progressFill,
-                                            { width: `${Math.round((completedToday / activeHabits.length) * 100)}%` }
-                                        ]}
-                                    />
-                                </View>
-                                <Text style={styles.progressText}>
-                                    {completedToday}/{activeHabits.length} completed today
-                                </Text>
-                            </View>
-                        )}
                     </View>
 
                     <View style={styles.headerButtons}>
                         <TouchableOpacity
-                            style={[styles.iconButton, !isConfigured && styles.iconButtonWarning]}
+                            style={styles.iconButton}
                             onPress={isConfigured ? handleGenerateInsights : () => setShowAISetup(true)}
                             disabled={generatingInsights}
                         >
                             {generatingInsights ? (
-                                <ActivityIndicator size="small" color={Theme.colors.primary} />
+                                <ActivityIndicator size="small" color={Theme.colors.textSecondary} />
                             ) : (
                                 <Text style={styles.iconButtonText}>✨</Text>
                             )}
@@ -200,15 +177,33 @@ export default function HomeScreen() {
                             style={styles.addButton}
                             onPress={() => setShowAddModal(true)}
                         >
-                            <LinearGradient
-                                colors={Theme.gradients.primary}
-                                style={styles.addButtonGradient}
-                            >
-                                <Text style={styles.addButtonText}>+</Text>
-                            </LinearGradient>
+                            <Text style={styles.addButtonText}>+</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
+
+                {/* Progress indicator */}
+                {activeHabits.length > 0 && (
+                    <View style={styles.progressContainer}>
+                        <View style={styles.progressInfo}>
+                            <Text style={styles.progressLabel}>Today's Progress</Text>
+                            <Text style={styles.progressText}>
+                                {completedToday}/{activeHabits.length}
+                            </Text>
+                        </View>
+                        <View style={styles.progressBar}>
+                            <View
+                                style={[
+                                    styles.progressFill,
+                                    {
+                                        width: `${Math.round((completedToday / activeHabits.length) * 100)}%`,
+                                        backgroundColor: Theme.colors.primary
+                                    }
+                                ]}
+                            />
+                        </View>
+                    </View>
+                )}
             </View>
 
             <FlatList
@@ -259,100 +254,98 @@ const styles = StyleSheet.create({
         backgroundColor: Theme.colors.background,
     },
     headerContainer: {
-        backgroundColor: Theme.colors.surface,
-        borderBottomLeftRadius: Theme.borderRadius.xxl,
-        borderBottomRightRadius: Theme.borderRadius.xxl,
-        ...Theme.shadows.sm,
+        backgroundColor: Theme.colors.background,
+        paddingBottom: Theme.spacing.md,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'flex-start',
         justifyContent: 'space-between',
-        paddingHorizontal: Theme.spacing.md,
-        paddingTop: Theme.spacing.md,
-        paddingBottom: Theme.spacing.lg,
+        paddingHorizontal: Theme.spacing.lg,
+        paddingTop: Theme.spacing.sm,
+        paddingBottom: Theme.spacing.md,
     },
     titleContainer: {
         flex: 1,
         marginRight: Theme.spacing.md,
     },
-    greetingRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 4,
-    },
-    greetingEmoji: {
-        fontSize: 24,
-    },
     greeting: {
-        ...Theme.typography.h1,
-        fontSize: 26,
+        fontSize: 28,
+        fontWeight: '700',
+        color: Theme.colors.text,
+        letterSpacing: -0.5,
+        marginBottom: 2,
     },
     date: {
-        ...Theme.typography.caption,
-        marginTop: 2,
-        marginBottom: 12,
+        fontSize: 14,
+        color: Theme.colors.textSecondary,
+        fontWeight: '500',
     },
     progressContainer: {
-        marginTop: 8,
+        paddingHorizontal: Theme.spacing.lg,
+        paddingTop: Theme.spacing.sm,
+    },
+    progressInfo: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    progressLabel: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: Theme.colors.textSecondary,
+    },
+    progressText: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: Theme.colors.primary,
     },
     progressBar: {
-        height: 6,
+        height: 4,
         backgroundColor: Theme.colors.borderLight,
         borderRadius: Theme.borderRadius.full,
         overflow: 'hidden',
-        marginBottom: 6,
     },
     progressFill: {
         height: '100%',
         borderRadius: Theme.borderRadius.full,
     },
-    progressText: {
-        ...Theme.typography.caption,
-        fontSize: 11,
-    },
     headerButtons: {
-        gap: 10,
-        alignItems: 'flex-end',
+        flexDirection: 'row',
+        gap: 8,
+        alignItems: 'center',
     },
     iconButton: {
-        width: 44,
-        height: 44,
-        borderRadius: Theme.borderRadius.md,
-        backgroundColor: Theme.colors.backgroundDark,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: Theme.colors.surface,
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,
-        borderColor: Theme.colors.borderLight,
-    },
-    iconButtonWarning: {
-        borderColor: Theme.colors.warning,
-        backgroundColor: Theme.colors.warningLight,
+        borderColor: Theme.colors.border,
     },
     iconButtonText: {
-        fontSize: 20,
+        fontSize: 18,
     },
     addButton: {
-        width: 52,
-        height: 52,
-        borderRadius: Theme.borderRadius.xl,
-        overflow: 'hidden',
-        ...Theme.shadows.lg,
-    },
-    addButtonGradient: {
-        flex: 1,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: Theme.colors.primary,
         alignItems: 'center',
         justifyContent: 'center',
+        ...Theme.shadows.sm,
     },
     addButtonText: {
-        fontSize: 30,
+        fontSize: 24,
         color: '#fff',
-        fontWeight: '300',
-        marginTop: -2,
+        fontWeight: '400',
+        marginTop: -1,
     },
     listContent: {
-        paddingTop: Theme.spacing.lg,
+        paddingTop: Theme.spacing.md,
         paddingBottom: Theme.spacing.xl,
     },
     emptyListContent: {
@@ -362,52 +355,54 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        paddingHorizontal: 32,
+        paddingHorizontal: 40,
     },
     emptyIconContainer: {
-        width: 100,
-        height: 100,
-        borderRadius: Theme.borderRadius.full,
-        backgroundColor: Theme.colors.primaryLight + '20',
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: Theme.colors.backgroundDark,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 24,
+        marginBottom: 20,
     },
     emptyIcon: {
-        fontSize: 48,
+        fontSize: 40,
     },
     emptyTitle: {
-        ...Theme.typography.h1,
-        fontSize: 28,
-        marginBottom: 12,
+        fontSize: 24,
+        fontWeight: '700',
+        color: Theme.colors.text,
+        marginBottom: 8,
         textAlign: 'center',
     },
     emptyText: {
-        ...Theme.typography.body,
+        fontSize: 15,
         color: Theme.colors.textSecondary,
         textAlign: 'center',
-        marginBottom: 32,
-        lineHeight: 24,
+        marginBottom: 28,
+        lineHeight: 22,
     },
     addFirstHabitButton: {
-        borderRadius: Theme.borderRadius.xl,
+        borderRadius: Theme.borderRadius.lg,
         overflow: 'hidden',
-        ...Theme.shadows.lg,
+        backgroundColor: Theme.colors.primary,
+        ...Theme.shadows.md,
     },
     addFirstHabitGradient: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
-        paddingHorizontal: 28,
-        paddingVertical: 16,
+        gap: 6,
+        paddingHorizontal: 24,
+        paddingVertical: 14,
     },
     addFirstHabitText: {
         color: '#fff',
-        fontSize: 17,
+        fontSize: 16,
         fontWeight: '600',
     },
     addFirstHabitEmoji: {
-        fontSize: 18,
+        fontSize: 16,
     },
     loadingContainer: {
         flex: 1,

@@ -105,7 +105,7 @@ export default function AnalyticsScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor={Theme.colors.background} />
       <View style={styles.header}>
-        <Text style={[styles.title, { fontSize: fontSizes.xl }]}>Analytics & Insights</Text>
+        <Text style={styles.title}>Analytics</Text>
       </View>
 
       <ScrollView
@@ -256,13 +256,16 @@ const styles = StyleSheet.create({
     backgroundColor: Theme.colors.background,
   },
   header: {
-    paddingHorizontal: Theme.spacing.md,
-    paddingVertical: Theme.spacing.md,
+    paddingHorizontal: Theme.spacing.lg,
+    paddingTop: Theme.spacing.sm,
+    paddingBottom: Theme.spacing.md,
     backgroundColor: Theme.colors.background,
   },
   title: {
-    ...Theme.typography.h1,
+    fontSize: 28,
+    fontWeight: '700',
     color: Theme.colors.text,
+    letterSpacing: -0.5,
   },
   content: {
     flex: 1,
@@ -271,7 +274,8 @@ const styles = StyleSheet.create({
     // margin handled dynamically
   },
   sectionTitle: {
-    ...Theme.typography.h2,
+    fontSize: 18,
+    fontWeight: '700',
     color: Theme.colors.text,
   },
   statsRow: {
@@ -281,18 +285,21 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.lg,
+    borderRadius: Theme.borderRadius.md,
     alignItems: 'center',
-    ...Theme.shadows.sm,
+    borderWidth: 1,
+    borderColor: Theme.colors.borderLight,
   },
   statValue: {
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: Theme.colors.primary,
   },
   statLabel: {
+    fontSize: 12,
     color: Theme.colors.textSecondary,
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: 2,
+    fontWeight: '500',
   },
   chartSection: {
     // margin handled dynamically
@@ -306,24 +313,26 @@ const styles = StyleSheet.create({
     backgroundColor: Theme.colors.surface,
     borderRadius: Theme.borderRadius.full,
     marginRight: 8,
-    borderWidth: 1,
+    borderWidth: 1.5,
   },
   habitChipIcon: {
     // fontSize handled dynamically
   },
   habitChipText: {
     color: Theme.colors.text,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   habitChipTextSelected: {
     color: '#fff',
+    fontWeight: '600',
   },
   chartContainer: {
     alignItems: 'center',
     backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.lg,
+    borderRadius: Theme.borderRadius.md,
     padding: Theme.spacing.md,
-    ...Theme.shadows.sm,
+    borderWidth: 1,
+    borderColor: Theme.colors.borderLight,
   },
   chart: {
     borderRadius: 16,
@@ -333,9 +342,10 @@ const styles = StyleSheet.create({
   },
   habitStatCard: {
     backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.lg,
-    borderLeftWidth: 4,
-    ...Theme.shadows.sm,
+    borderRadius: Theme.borderRadius.md,
+    borderLeftWidth: 3,
+    borderWidth: 1,
+    borderColor: Theme.colors.borderLight,
   },
   habitStatHeader: {
     flexDirection: 'row',
@@ -371,15 +381,14 @@ const styles = StyleSheet.create({
   },
   insightCard: {
     backgroundColor: Theme.colors.surface,
-    borderRadius: Theme.borderRadius.lg,
+    borderRadius: Theme.borderRadius.md,
     padding: Theme.spacing.md,
-    ...Theme.shadows.sm,
     borderWidth: 1,
-    borderColor: Theme.colors.border,
+    borderColor: Theme.colors.borderLight,
   },
   insightCardRead: {
-    opacity: 0.7,
-    backgroundColor: Theme.colors.background,
+    opacity: 0.6,
+    backgroundColor: Theme.colors.backgroundDark,
   },
   insightHeader: {
     flexDirection: 'row',

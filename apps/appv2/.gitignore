@@ -1,0 +1,24 @@
+# Flutter/Dart/Pub related
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Platform builds
+ios/Pods/
+ios/Flutter/.last_build_id
+macos/Pods/
+windows/flutter/ephemeral/
+linux/flutter/ephemeral/
+
+# VS Code/IntelliJ
+.vscode/
+.idea/
+
+# Generated files
+generated_plugin_registrant.*
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+pubspec.lock

@@ -93,82 +93,110 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: AppGradients.primary,
+                          borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.3),
+                          boxShadow: AppShadows.elevated,
+                        ),
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: Stack(
+                          children: [
+                            const Positioned.fill(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(gradient: AppGradients.halo),
+                              ),
+                            ),
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  _greeting(),
-                                  style: AppTextStyles.h1,
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _greeting(),
+                                            style: AppTextStyles.h1.copyWith(
+                                              color: Colors.white,
+                                              letterSpacing: -0.8,
+                                            ),
+                                          ),
+                                          Text(
+                                            formatDisplayDate(today),
+                                            style: AppTextStyles.bodySecondary.copyWith(
+                                              color: Colors.white.withValues(alpha: 0.8),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    _GlassIconButton(
+                                      icon: Icons.auto_awesome,
+                                      onTap: () => _generateInsights(context),
+                                    ),
+                                    const SizedBox(width: AppSpacing.sm),
+                                    _GlassIconButton(
+                                      icon: Icons.settings,
+                                      onTap: () => _openAISetup(context),
+                                    ),
+                                  ],
                                 ),
-                                Text(
-                                  formatDisplayDate(today),
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.textSecondary,
-                                    fontWeight: FontWeight.w600,
+                                const SizedBox(height: AppSpacing.md),
+                                Row(
+                                  children: [
+                                    _HeroStat(
+                                      title: 'Completion',
+                                      value: '${(completionRate * 100).round()}%',
+                                      icon: Icons.bolt,
+                                      accent: Colors.white,
+                                    ),
+                                    const SizedBox(width: AppSpacing.md),
+                                    _HeroStat(
+                                      title: 'Active habits',
+                                      value: '${activeHabits.length}',
+                                      icon: Icons.check_circle_outline,
+                                      accent: Colors.white,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: AppSpacing.md),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                                  child: LinearProgressIndicator(
+                                    value: completionRate,
+                                    minHeight: 12,
+                                    backgroundColor: Colors.white.withValues(alpha: 0.18),
+                                    valueColor: const AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
                                   ),
+                                ),
+                                const SizedBox(height: AppSpacing.sm),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "Today's momentum",
+                                      style: AppTextStyles.bodySecondary.copyWith(
+                                        color: Colors.white.withValues(alpha: 0.82),
+                                      ),
+                                    ),
+                                    Text(
+                                      '$completedToday/${activeHabits.length}',
+                                      style: AppTextStyles.h3.copyWith(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ),
-                          IconButton.filledTonal(
-                            onPressed: () => _generateInsights(context),
-                            icon: const Icon(Icons.auto_awesome),
-                            tooltip: 'Generate AI insights',
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          IconButton.filled(
-                            onPressed: () => _openAISetup(context),
-                            icon: const Icon(Icons.settings),
-                            tooltip: 'AI setup',
-                          ),
-                        ],
-                      ),
-                      if (activeHabits.isNotEmpty) ...[
-                        const SizedBox(height: AppSpacing.md),
-                        Container(
-                          padding: const EdgeInsets.all(AppSpacing.md),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                            border: Border.all(color: AppColors.borderLight),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    "Today's progress",
-                                    style: AppTextStyles.bodySecondary,
-                                  ),
-                                  Text(
-                                    '$completedToday/${activeHabits.length}',
-                                    style: AppTextStyles.h3.copyWith(
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: AppSpacing.sm),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                                child: LinearProgressIndicator(
-                                  value: completionRate,
-                                  minHeight: 8,
-                                  backgroundColor: AppColors.borderLight,
-                                  valueColor: const AlwaysStoppedAnimation<Color>(
-                                    AppColors.primary,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ],
                   ),
                 ),
@@ -246,10 +274,10 @@ class _EmptyState extends StatelessWidget {
             child: const Icon(Icons.flag, size: 34, color: AppColors.primary),
           ),
           const SizedBox(height: AppSpacing.md),
-          const Text('Start your journey', style: AppTextStyles.h2),
+          Text('Start your journey', style: AppTextStyles.h2),
           const SizedBox(height: AppSpacing.sm),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: Text(
               'Create your first habit to begin tracking and building momentum.',
               textAlign: TextAlign.center,
@@ -277,6 +305,90 @@ class _EmptyState extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HeroStat extends StatelessWidget {
+  const _HeroStat({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.accent,
+  });
+
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(AppBorderRadius.full),
+              ),
+              child: Icon(icon, color: accent, size: 20),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: AppTextStyles.h3.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  title,
+                  style: AppTextStyles.caption.copyWith(
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassIconButton extends StatelessWidget {
+  const _GlassIconButton({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkResponse(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppBorderRadius.full),
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(AppBorderRadius.full),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        ),
+        child: Icon(icon, color: Colors.white),
       ),
     );
   }

@@ -85,7 +85,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('New Habit', style: AppTextStyles.h2),
+                  Text('New Habit', style: AppTextStyles.h2),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close),
@@ -121,7 +121,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    const Text('Category', style: AppTextStyles.h3),
+                    Text('Category', style: AppTextStyles.h3),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: AppSpacing.sm,
@@ -145,7 +145,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Icon', style: AppTextStyles.h3),
+                        Text('Icon', style: AppTextStyles.h3),
                         Text(
                           'Tap to select',
                           style: AppTextStyles.caption.copyWith(
@@ -187,7 +187,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    const Text('Color', style: AppTextStyles.h3),
+                    Text('Color', style: AppTextStyles.h3),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: AppSpacing.sm,
@@ -215,7 +215,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                           .toList(),
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    const Text('Frequency', style: AppTextStyles.h3),
+                    Text('Frequency', style: AppTextStyles.h3),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: AppSpacing.sm,
@@ -233,7 +233,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Target per day', style: AppTextStyles.h3),
+                        Text('Target per day', style: AppTextStyles.h3),
                         Row(
                           children: [
                             IconButton(

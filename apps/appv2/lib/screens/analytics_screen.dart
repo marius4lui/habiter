@@ -51,8 +51,36 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text('Analytics', style: AppTextStyles.h1),
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Analytics', style: AppTextStyles.h1),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Spot trends, celebrate wins, and course-correct early.',
+                      style: AppTextStyles.bodySecondary,
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.backgroundDark,
+                    borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.auto_graph, size: 18, color: AppColors.primary),
+                      const SizedBox(width: 6),
+                      Text('Live overview', style: AppTextStyles.caption),
+                    ],
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -149,17 +177,34 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        gradient: LinearGradient(
+          colors: [
+            color.withValues(alpha: 0.15),
+            Colors.white,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppShadows.soft,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color),
-          const SizedBox(height: AppSpacing.sm),
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(AppBorderRadius.full),
+              border: Border.all(color: color.withValues(alpha: 0.3)),
+            ),
+            child: Icon(icon, color: color),
+          ),
+          const SizedBox(height: AppSpacing.md),
           Text(title, style: AppTextStyles.caption),
           const SizedBox(height: 2),
           Text(value, style: AppTextStyles.h2.copyWith(color: color)),
@@ -188,11 +233,16 @@ class _WeeklyChartCard extends StatelessWidget {
     final data = habit == null ? <WeeklyData>[] : getWeeklyData(habit.id, entries);
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        gradient: const LinearGradient(
+          colors: [AppColors.surface, AppColors.backgroundDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppShadows.soft,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,25 +250,36 @@ class _WeeklyChartCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Weekly progress', style: AppTextStyles.h3),
-              DropdownButton<String>(
-                value: habit?.id,
-                underline: const SizedBox(),
-                items: habits
-                    .map((h) => DropdownMenuItem(
-                          value: h.id,
-                          child: Text(h.name),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) onSelectHabit(value);
-                },
+              Text('Weekly progress', style: AppTextStyles.h3),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: habit?.id,
+                      items: habits
+                          .map((h) => DropdownMenuItem(
+                                value: h.id,
+                                child: Text(h.name),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        if (value != null) onSelectHabit(value);
+                      },
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
           if (data.isEmpty)
-            const Text(
+            Text(
               'Track a habit to see weekly performance.',
               style: AppTextStyles.bodySecondary,
             )
@@ -226,8 +287,8 @@ class _WeeklyChartCard extends StatelessWidget {
             SizedBox(
               height: 220,
               child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(show: false),
+                  LineChartData(
+                  gridData: const FlGridData(show: false),
                   titlesData: FlTitlesData(
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
@@ -267,9 +328,25 @@ class _WeeklyChartCard extends StatelessWidget {
                   lineBarsData: [
                     LineChartBarData(
                       isCurved: true,
-                      color: _fromHex(habit!.color),
+                      gradient: LinearGradient(
+                        colors: [
+                          _fromHex(habit!.color),
+                          AppColors.primary,
+                        ],
+                      ),
                       barWidth: 3,
-                      dotData: FlDotData(show: true),
+                      dotData: const FlDotData(show: true),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          colors: [
+                            _fromHex(habit.color).withValues(alpha: 0.18),
+                            AppColors.primary.withValues(alpha: 0.05),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
                       spots: [
                         for (var i = 0; i < data.length; i++)
                           FlSpot(i.toDouble(), data[i].completions.toDouble()),
@@ -307,9 +384,14 @@ class _HabitStatsGrid extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              gradient: const LinearGradient(
+                colors: [AppColors.surface, AppColors.backgroundDark],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               border: Border.all(color: AppColors.borderLight),
+              boxShadow: AppShadows.soft,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -358,7 +440,7 @@ class _HabitBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: _fromHex(colorHex).withOpacity(0.15),
+        color: _fromHex(colorHex).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppBorderRadius.full),
       ),
       child: Text(icon, style: const TextStyle(fontSize: 18)),
@@ -410,22 +492,27 @@ class _AIInsightsSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        gradient: const LinearGradient(
+          colors: [AppColors.surface, AppColors.backgroundDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppShadows.soft,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text('AI Insights', style: AppTextStyles.h3),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
           if (insights.isEmpty)
-            const Text(
+            Text(
               'Insights will appear here after you track a few days and generate AI suggestions.',
               style: AppTextStyles.bodySecondary,
             )
@@ -438,7 +525,7 @@ class _AIInsightsSection extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppBorderRadius.md),
                     side: BorderSide(
-                      color: insight.isRead ? AppColors.border : color.withOpacity(0.3),
+                      color: insight.isRead ? AppColors.border : color.withValues(alpha: 0.3),
                     ),
                   ),
                   child: ListTile(
@@ -451,7 +538,7 @@ class _AIInsightsSection extends StatelessWidget {
                             vertical: AppSpacing.xs,
                           ),
                           decoration: BoxDecoration(
-                            color: color.withOpacity(0.12),
+                            color: color.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(AppBorderRadius.full),
                           ),
                           child: Text(

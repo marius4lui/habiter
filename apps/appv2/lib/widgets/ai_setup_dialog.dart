@@ -62,13 +62,13 @@ class _AISetupDialogState extends State<AISetupDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Store your API key locally to enable AI-generated insights.',
               style: AppTextStyles.bodySecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             DropdownButtonFormField<String>(
-              value: _provider,
+              initialValue: _provider,
               decoration: const InputDecoration(labelText: 'Provider'),
               items: const [
                 DropdownMenuItem(value: 'openai', child: Text('OpenAI compatible')),

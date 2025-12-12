@@ -21,101 +21,143 @@ class HabitCard extends StatelessWidget {
     final today = getTodayString();
     final isCompleted = isHabitCompletedToday(habit.id, entries);
     final streak = calculateStreak(habit.id, entries);
+    final accent = _fromHex(habit.color);
 
     return Material(
-      color: AppColors.surface,
-      elevation: 1,
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        onTap: () async {
-          await provider.toggleHabitCompletion(habit.id, today);
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: Ink(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.surface,
+              accent.withValues(alpha: 0.06),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: AppShadows.soft,
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+          onTap: () async {
+            await provider.toggleHabitCompletion(habit.id, today);
+          },
+          child: Stack(
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _HabitIcon(colorHex: habit.color, icon: habit.icon),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
+              Positioned(
+                top: 0,
+                bottom: 0,
+                left: 0,
+                child: Container(
+                  width: 5,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        accent.withValues(alpha: 0.9),
+                        accent.withValues(alpha: 0.4),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(AppBorderRadius.lg),
+                      bottomLeft: Radius.circular(AppBorderRadius.lg),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          habit.name,
-                          style: AppTextStyles.h3,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (habit.description != null && habit.description!.isNotEmpty)
-                          Text(
-                            habit.description!,
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textTertiary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        _HabitIcon(colorHex: habit.color, icon: habit.icon),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                habit.name,
+                                style: AppTextStyles.h3,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (habit.description != null && habit.description!.isNotEmpty)
+                                Text(
+                                  habit.description!,
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.textTertiary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
                           ),
+                        ),
+                        _CompletionToggle(
+                          colorHex: habit.color,
+                          completed: isCompleted,
+                          onToggle: () => provider.toggleHabitCompletion(habit.id, today),
+                        ),
                       ],
                     ),
-                  ),
-                  _CompletionToggle(
-                    colorHex: habit.color,
-                    completed: isCompleted,
-                    onToggle: () => provider.toggleHabitCompletion(habit.id, today),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (streak.currentStreak > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _fromHex(habit.color).withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.local_fire_department, size: 16, color: AppColors.primary),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${streak.currentStreak} day streak',
-                            style: AppTextStyles.caption.copyWith(
-                              color: _fromHex(habit.color),
-                              fontWeight: FontWeight.w700,
+                    const SizedBox(height: AppSpacing.md),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (streak.currentStreak > 0)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: accent.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.local_fire_department, size: 16, color: AppColors.primary),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '${streak.currentStreak} day streak',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: accent,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.backgroundDark,
+                            borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Text(
+                            habit.category.toUpperCase(),
+                            style: AppTextStyles.caption.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundDark,
-                      borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                    ),
-                    child: Text(
-                      habit.category.toUpperCase(),
-                      style: AppTextStyles.caption.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.6,
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -137,7 +179,7 @@ class _HabitIcon extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: _fromHex(colorHex).withOpacity(0.12),
+        color: _fromHex(colorHex).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppBorderRadius.full),
       ),
       alignment: Alignment.center,

@@ -28,14 +28,7 @@ class HabitCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppBorderRadius.lg),
       child: Ink(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.surface,
-              accent.withValues(alpha: 0.06),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          gradient: AppGradients.cardSheen,
           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
           border: Border.all(color: AppColors.borderLight),
           boxShadow: AppShadows.soft,
@@ -51,13 +44,14 @@ class HabitCard extends StatelessWidget {
                 top: 0,
                 bottom: 0,
                 left: 0,
-                child: Container(
-                  width: 5,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  width: 6,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        accent.withValues(alpha: 0.9),
-                        accent.withValues(alpha: 0.4),
+                        accent.withValues(alpha: isCompleted ? 0.95 : 0.7),
+                        accent.withValues(alpha: 0.35),
                       ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -66,6 +60,18 @@ class HabitCard extends StatelessWidget {
                       topLeft: Radius.circular(AppBorderRadius.lg),
                       bottomLeft: Radius.circular(AppBorderRadius.lg),
                     ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: -18,
+                right: -10,
+                child: Container(
+                  width: 110,
+                  height: 110,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: accent.withValues(alpha: 0.08),
                   ),
                 ),
               ),
@@ -108,34 +114,26 @@ class HabitCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.sm),
+                    Row(
+                      children: [
+                        _AccentPill(
+                          icon: Icons.local_fire_department,
+                          label: '${streak.currentStreak} Tage',
+                          color: accent,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        _AccentPill(
+                          icon: Icons.calendar_today_rounded,
+                          label: '${habit.targetCount}x ${habit.frequency.name}',
+                          color: AppColors.textSecondary,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        if (streak.currentStreak > 0)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.sm,
-                              vertical: AppSpacing.xs,
-                            ),
-                            decoration: BoxDecoration(
-                              color: accent.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.local_fire_department, size: 16, color: AppColors.primary),
-                                const SizedBox(width: 6),
-                                Text(
-                                  '${streak.currentStreak} day streak',
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: accent,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.sm,
@@ -152,6 +150,26 @@ class HabitCard extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.6,
                             ),
+                          ),
+                        ),
+                        AnimatedOpacity(
+                          duration: const Duration(milliseconds: 160),
+                          opacity: isCompleted ? 1 : 0.75,
+                          child: Row(
+                            children: [
+                              Icon(
+                                isCompleted ? Icons.check_circle : Icons.circle_outlined,
+                                size: 18,
+                                color: isCompleted ? accent : AppColors.textTertiary,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                isCompleted ? 'Heute erledigt' : 'Noch offen',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: isCompleted ? accent : AppColors.textTertiary,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -217,6 +235,7 @@ class _CompletionToggle extends StatelessWidget {
             width: 2,
           ),
           color: completed ? color : Colors.transparent,
+          boxShadow: completed ? AppShadows.soft : null,
         ),
         alignment: Alignment.center,
         child: AnimatedOpacity(
@@ -230,3 +249,39 @@ class _CompletionToggle extends StatelessWidget {
 }
 
 Color _fromHex(String hex) => Color(int.parse(hex.replaceFirst('#', '0xff')));
+
+class _AccentPill extends StatelessWidget {
+  const _AccentPill({required this.icon, required this.label, required this.color});
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppBorderRadius.full),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: AppTextStyles.caption.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

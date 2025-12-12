@@ -68,14 +68,17 @@ class HomeScreen extends StatelessWidget {
         .length;
     final completionRate =
         activeHabits.isEmpty ? 0.0 : completedToday / activeHabits.length;
+    final greeting = _greeting();
 
     return Scaffold(
+      extendBody: true,
+      backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openAddHabitSheet(context),
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.primaryDark,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Habit'),
+        label: const Text('Neues Habit'),
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -93,110 +96,38 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: AppGradients.primary,
-                          borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.3),
-                          boxShadow: AppShadows.elevated,
-                        ),
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        child: Stack(
+                      _HeroHeader(
+                        today: today,
+                        greeting: greeting,
+                        activeHabits: activeHabits.length,
+                        completionRate: completionRate,
+                        completedToday: completedToday,
+                        onGenerateInsights: () => _generateInsights(context),
+                        onOpenSetup: () => _openAISetup(context),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      if (activeHabits.isNotEmpty)
+                        Wrap(
+                          spacing: AppSpacing.sm,
+                          runSpacing: AppSpacing.sm,
                           children: [
-                            const Positioned.fill(
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(gradient: AppGradients.halo),
-                              ),
+                            _QuickPill(
+                              label: 'AI Kickstart',
+                              icon: Icons.bolt,
+                              onTap: () => _generateInsights(context),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            _greeting(),
-                                            style: AppTextStyles.h1.copyWith(
-                                              color: Colors.white,
-                                              letterSpacing: -0.8,
-                                            ),
-                                          ),
-                                          Text(
-                                            formatDisplayDate(today),
-                                            style: AppTextStyles.bodySecondary.copyWith(
-                                              color: Colors.white.withValues(alpha: 0.8),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    _GlassIconButton(
-                                      icon: Icons.auto_awesome,
-                                      onTap: () => _generateInsights(context),
-                                    ),
-                                    const SizedBox(width: AppSpacing.sm),
-                                    _GlassIconButton(
-                                      icon: Icons.settings,
-                                      onTap: () => _openAISetup(context),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: AppSpacing.md),
-                                Row(
-                                  children: [
-                                    _HeroStat(
-                                      title: 'Completion',
-                                      value: '${(completionRate * 100).round()}%',
-                                      icon: Icons.bolt,
-                                      accent: Colors.white,
-                                    ),
-                                    const SizedBox(width: AppSpacing.md),
-                                    _HeroStat(
-                                      title: 'Active habits',
-                                      value: '${activeHabits.length}',
-                                      icon: Icons.check_circle_outline,
-                                      accent: Colors.white,
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: AppSpacing.md),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                                  child: LinearProgressIndicator(
-                                    value: completionRate,
-                                    minHeight: 12,
-                                    backgroundColor: Colors.white.withValues(alpha: 0.18),
-                                    valueColor: const AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: AppSpacing.sm),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "Today's momentum",
-                                      style: AppTextStyles.bodySecondary.copyWith(
-                                        color: Colors.white.withValues(alpha: 0.82),
-                                      ),
-                                    ),
-                                    Text(
-                                      '$completedToday/${activeHabits.length}',
-                                      style: AppTextStyles.h3.copyWith(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                            _QuickPill(
+                              label: 'Automation',
+                              icon: Icons.settings_suggest,
+                              onTap: () => _openAISetup(context),
+                            ),
+                            _QuickPill(
+                              label: 'Refresh',
+                              icon: Icons.refresh,
+                              onTap: provider.refresh,
                             ),
                           ],
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -210,16 +141,16 @@ class HomeScreen extends StatelessWidget {
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.lg,
-                    AppSpacing.sm,
+                    AppSpacing.md,
                     AppSpacing.lg,
-                    AppSpacing.xl + 72, // allow for FAB
+                    AppSpacing.xl + 72,
                   ),
                   sliver: SliverLayoutBuilder(
                     builder: (context, constraints) {
                       final width = constraints.crossAxisExtent;
                       final crossAxisCount = width > 900
                           ? 3
-                          : width > 600
+                          : width > 620
                               ? 2
                               : 1;
                       return SliverGrid(
@@ -231,7 +162,7 @@ class HomeScreen extends StatelessWidget {
                           crossAxisCount: crossAxisCount,
                           crossAxisSpacing: AppSpacing.md,
                           mainAxisSpacing: AppSpacing.md,
-                          childAspectRatio: 1.15,
+                          childAspectRatio: 1.1,
                         ),
                       );
                     },
@@ -252,6 +183,132 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+class _HeroHeader extends StatelessWidget {
+  const _HeroHeader({
+    required this.today,
+    required this.greeting,
+    required this.activeHabits,
+    required this.completionRate,
+    required this.completedToday,
+    required this.onGenerateInsights,
+    required this.onOpenSetup,
+  });
+
+  final String today;
+  final String greeting;
+  final int activeHabits;
+  final double completionRate;
+  final int completedToday;
+  final VoidCallback onGenerateInsights;
+  final VoidCallback onOpenSetup;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        gradient: AppGradients.hero,
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.6),
+        boxShadow: AppShadows.glow,
+      ),
+      child: Stack(
+        children: [
+          const Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(gradient: AppGradients.halo),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          greeting,
+                          style: AppTextStyles.h1.copyWith(
+                            color: Colors.white,
+                            letterSpacing: -0.8,
+                          ),
+                        ),
+                        Text(
+                          formatDisplayDate(today),
+                          style: AppTextStyles.bodySecondary.copyWith(
+                            color: Colors.white.withValues(alpha: 0.86),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _GlassIconButton(
+                    icon: Icons.auto_awesome,
+                    onTap: onGenerateInsights,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  _GlassIconButton(
+                    icon: Icons.settings,
+                    onTap: onOpenSetup,
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  _HeroStat(
+                    title: 'Completion',
+                    value: '${(completionRate * 100).round()}%',
+                    icon: Icons.bolt,
+                    accent: Colors.white,
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  _HeroStat(
+                    title: 'Active',
+                    value: '$activeHabits',
+                    icon: Icons.blur_circular,
+                    accent: Colors.white,
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                child: LinearProgressIndicator(
+                  value: completionRate,
+                  minHeight: 14,
+                  backgroundColor: Colors.white.withValues(alpha: 0.15),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Today's momentum",
+                    style: AppTextStyles.bodySecondary.copyWith(
+                      color: Colors.white.withValues(alpha: 0.82),
+                    ),
+                  ),
+                  Text(
+                    '$completedToday/$activeHabits',
+                    style: AppTextStyles.h3.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _EmptyState extends StatelessWidget {
   const _EmptyState({required this.onAdd});
 
@@ -259,52 +316,65 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.backgroundDark,
-              borderRadius: BorderRadius.circular(AppBorderRadius.full),
-            ),
-            alignment: Alignment.center,
-            child: const Icon(Icons.flag, size: 34, color: AppColors.primary),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text('Start your journey', style: AppTextStyles.h2),
-          const SizedBox(height: AppSpacing.sm),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: Text(
-              'Create your first habit to begin tracking and building momentum.',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodySecondary,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          ElevatedButton.icon(
-            onPressed: onAdd,
-            icon: const Icon(Icons.add),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.md,
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          gradient: AppGradients.cardSheen,
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.2),
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: AppShadows.soft,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 92,
+              height: 92,
+              decoration: BoxDecoration(
+                gradient: AppGradients.primary,
+                borderRadius: BorderRadius.circular(AppBorderRadius.full),
               ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppBorderRadius.md),
+              alignment: Alignment.center,
+              child: const Icon(Icons.flag_rounded, size: 38, color: Colors.white),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text('Starte dein Momentum', style: AppTextStyles.h2),
+            const SizedBox(height: AppSpacing.sm),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              child: Text(
+                'Lege dein erstes Habit an und schau zu, wie die Routine wachsen kann.',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodySecondary,
               ),
             ),
-            label: const Text(
-              'Create a habit',
-              style: TextStyle(fontWeight: FontWeight.w700),
+            const SizedBox(height: AppSpacing.lg),
+            ElevatedButton.icon(
+              onPressed: onAdd,
+              icon: const Icon(Icons.add),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.md,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                ),
+              ),
+              label: const Text(
+                'Habit erstellen',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -331,7 +401,14 @@ class _HeroStat extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.26)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x22000000),
+              blurRadius: 14,
+              offset: Offset(0, 10),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -339,7 +416,7 @@ class _HeroStat extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.18),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(AppBorderRadius.full),
               ),
               child: Icon(icon, color: accent, size: 20),
@@ -381,14 +458,58 @@ class _GlassIconButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppBorderRadius.full),
       child: Container(
-        width: 44,
-        height: 44,
+        width: 46,
+        height: 46,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.14),
+          color: Colors.white.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(AppBorderRadius.full),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
         ),
         child: Icon(icon, color: Colors.white),
+      ),
+    );
+  }
+}
+
+class _QuickPill extends StatelessWidget {
+  const _QuickPill({required this.label, required this.icon, required this.onTap});
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppBorderRadius.full),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppBorderRadius.full),
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: AppShadows.soft,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18, color: AppColors.primary),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                label,
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

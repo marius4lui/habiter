@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  static const primary = Color(0xFF0EA5E9);
-  static const primaryDark = Color(0xFF0A6EE0);
-  static const primaryLight = Color(0xFF7CD3F7);
-  static const secondary = Color(0xFF06C69A);
-  static const accent = Color(0xFFFF8450);
-  static const background = Color(0xFFF5F7FB);
-  static const backgroundDark = Color(0xFFE7EDF6);
+  static const primary = Color(0xFF2563F0);
+  static const primaryDark = Color(0xFF1B3FD4);
+  static const primaryLight = Color(0xFF7AB6FF);
+  static const secondary = Color(0xFF0FCFBB);
+  static const accent = Color(0xFFFF9C55);
+  static const background = Color(0xFFF2F6FD);
+  static const backgroundDark = Color(0xFFE8EDF7);
   static const surface = Color(0xFFFFFFFF);
-  static const text = Color(0xFF0F172A);
-  static const textSecondary = Color(0xFF475569);
-  static const textTertiary = Color(0xFF94A3B8);
-  static const border = Color(0xFFD0D8E6);
-  static const borderLight = Color(0xFFE6EDF7);
+  static const surfaceMuted = Color(0xFFF5F7FE);
+  static const text = Color(0xFF0B1220);
+  static const textSecondary = Color(0xFF4B5565);
+  static const textTertiary = Color(0xFF9AA3B5);
+  static const border = Color(0xFFD5DFF0);
+  static const borderLight = Color(0xFFE6EDFA);
   static const success = Color(0xFF10B981);
   static const warning = Color(0xFFFFB020);
   static const error = Color(0xFFFF4757);
@@ -39,24 +40,33 @@ class AppBorderRadius {
 class AppShadows {
   static const soft = [
     BoxShadow(
-      color: Color(0x1A0F172A),
-      blurRadius: 14,
-      offset: Offset(0, 8),
+      color: Color(0x150B1220),
+      blurRadius: 18,
+      offset: Offset(0, 10),
     ),
   ];
 
   static const elevated = [
     BoxShadow(
-      color: Color(0x1F0F172A),
-      blurRadius: 20,
+      color: Color(0x1F0B1220),
+      blurRadius: 22,
       spreadRadius: -2,
-      offset: Offset(0, 12),
+      offset: Offset(0, 16),
     ),
     BoxShadow(
-      color: Color(0x140F172A),
-      blurRadius: 30,
+      color: Color(0x140B1220),
+      blurRadius: 36,
+      spreadRadius: -10,
+      offset: Offset(0, 26),
+    ),
+  ];
+
+  static const glow = [
+    BoxShadow(
+      color: Color(0x332563EB),
+      blurRadius: 36,
       spreadRadius: -8,
-      offset: Offset(0, 24),
+      offset: Offset(0, 18),
     ),
   ];
 }
@@ -64,12 +74,22 @@ class AppShadows {
 class AppGradients {
   static const primary = LinearGradient(
     colors: [
-      Color(0xFF0EA5E9),
-      Color(0xFF2563EB),
-      Color(0xFF06C69A),
+      Color(0xFF2563F0),
+      Color(0xFF14B8A6),
+      Color(0xFF0FCFBB),
     ],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
+  );
+
+  static const hero = LinearGradient(
+    colors: [
+      Color(0xFF0B6BFF),
+      Color(0xFF1FD1D7),
+      Color(0xFF22D7A7),
+    ],
+    begin: Alignment(-1, -1),
+    end: Alignment(1, 1),
   );
 
   static const halo = RadialGradient(
@@ -81,24 +101,42 @@ class AppGradients {
     radius: 1.1,
     center: Alignment.topRight,
   );
+
+  static const appShell = LinearGradient(
+    colors: [
+      Color(0xFFF5F7FE),
+      Color(0xFFE9F0FF),
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const cardSheen = LinearGradient(
+    colors: [
+      Colors.white,
+      Color(0xFFF4F7FF),
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }
 
 class AppTextStyles {
-  static final h1 = GoogleFonts.plusJakartaSans(
+  static final h1 = GoogleFonts.spaceGrotesk(
     fontSize: 32,
     fontWeight: FontWeight.w800,
     color: AppColors.text,
-    letterSpacing: -1,
+    letterSpacing: -0.8,
   );
 
-  static final h2 = GoogleFonts.plusJakartaSans(
+  static final h2 = GoogleFonts.spaceGrotesk(
     fontSize: 24,
     fontWeight: FontWeight.w700,
     color: AppColors.text,
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
   );
 
-  static final h3 = GoogleFonts.plusJakartaSans(
+  static final h3 = GoogleFonts.spaceGrotesk(
     fontSize: 20,
     fontWeight: FontWeight.w700,
     color: AppColors.text,
@@ -123,7 +161,7 @@ class AppTextStyles {
     fontSize: 12,
     fontWeight: FontWeight.w700,
     color: AppColors.textTertiary,
-    letterSpacing: 0.4,
+    letterSpacing: 0.35,
   );
 }
 
@@ -131,18 +169,21 @@ ThemeData buildAppTheme() {
   final base = ThemeData(
     useMaterial3: true,
     fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
+    visualDensity: VisualDensity.adaptivePlatformDensity,
   );
   final textTheme = GoogleFonts.plusJakartaSansTextTheme(base.textTheme);
   return base.copyWith(
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       surface: AppColors.surface,
+      brightness: Brightness.light,
     ),
     scaffoldBackgroundColor: AppColors.background,
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.transparent,
       elevation: 0,
       foregroundColor: AppColors.text,
+      surfaceTintColor: Colors.transparent,
     ),
     cardTheme: CardThemeData(
       color: AppColors.surface,
@@ -151,7 +192,7 @@ ThemeData buildAppTheme() {
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         side: const BorderSide(color: AppColors.borderLight),
       ),
-      shadowColor: const Color(0x160F172A),
+      shadowColor: const Color(0x160B1220),
     ),
     textTheme: textTheme.copyWith(
       displayLarge: AppTextStyles.h1,
@@ -162,9 +203,16 @@ ThemeData buildAppTheme() {
       bodySmall: AppTextStyles.caption,
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: AppColors.surface,
-      indicatorColor: AppColors.primary.withValues(alpha: 0.12),
-      height: 70,
+      backgroundColor: Colors.transparent,
+      indicatorColor: AppColors.primary.withValues(alpha: 0.16),
+      height: 74,
+      surfaceTintColor: Colors.transparent,
+      iconTheme: WidgetStateProperty.resolveWith(
+        (states) => IconThemeData(
+          color: states.contains(WidgetState.selected) ? AppColors.primaryDark : AppColors.textSecondary,
+          size: 22,
+        ),
+      ),
       labelTextStyle: WidgetStatePropertyAll(
         AppTextStyles.caption.copyWith(
           color: AppColors.textSecondary,
@@ -190,13 +238,15 @@ ThemeData buildAppTheme() {
         borderSide: const BorderSide(color: AppColors.primary),
       ),
       labelStyle: AppTextStyles.bodySecondary,
+      hintStyle: AppTextStyles.bodySecondary.copyWith(color: AppColors.textTertiary),
     ),
     chipTheme: ChipThemeData(
-      backgroundColor: AppColors.backgroundDark,
-      selectedColor: AppColors.primary,
+      backgroundColor: AppColors.surfaceMuted,
+      selectedColor: AppColors.primary.withValues(alpha: 0.18),
       labelStyle: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
       secondaryLabelStyle: AppTextStyles.caption.copyWith(color: Colors.white),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      side: const BorderSide(color: AppColors.borderLight),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: AppColors.primaryDark,
@@ -215,6 +265,12 @@ ThemeData buildAppTheme() {
         elevation: 0,
         shadowColor: const Color(0x1F0EA5E9),
       ),
+    ),
+    dividerColor: AppColors.borderLight,
+    listTileTheme: const ListTileThemeData(
+      tileColor: Colors.transparent,
+      dense: true,
+      contentPadding: EdgeInsets.zero,
     ),
   );
 }

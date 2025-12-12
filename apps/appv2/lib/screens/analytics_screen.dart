@@ -40,6 +40,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     selectedHabit ??= activeHabits.isNotEmpty ? activeHabits.first : null;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
@@ -49,39 +50,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             AppSpacing.xl,
           ),
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Analytics', style: AppTextStyles.h1),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Spot trends, celebrate wins, and course-correct early.',
-                      style: AppTextStyles.bodySecondary,
-                    ),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.backgroundDark,
-                    borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.auto_graph, size: 18, color: AppColors.primary),
-                      const SizedBox(width: 6),
-                      Text('Live overview', style: AppTextStyles.caption),
-                    ],
-                  ),
-                ),
-              ],
+            _AnalyticsHero(
+              activeHabits: activeHabits.length,
+              totalCompletions: totalCompletions,
+              avgCompletionRate: avgCompletionRate,
             ),
             const SizedBox(height: AppSpacing.lg),
             _OverviewRow(
@@ -107,6 +79,156 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             _AIInsightsSection(
               insights: provider.aiInsights,
               onMarkRead: provider.markInsightAsRead,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AnalyticsHero extends StatelessWidget {
+  const _AnalyticsHero({
+    required this.activeHabits,
+    required this.totalCompletions,
+    required this.avgCompletionRate,
+  });
+
+  final int activeHabits;
+  final int totalCompletions;
+  final double avgCompletionRate;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        gradient: AppGradients.hero,
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.4),
+        boxShadow: AppShadows.glow,
+      ),
+      child: Stack(
+        children: [
+          const Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(gradient: AppGradients.halo),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Analytics', style: AppTextStyles.h1.copyWith(color: Colors.white)),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Trends live verfolgen, Peaks feiern, früh korrigieren.',
+                          style: AppTextStyles.bodySecondary.copyWith(
+                            color: Colors.white.withValues(alpha: 0.82),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.auto_graph, size: 18, color: Colors.white),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Live overview',
+                          style: AppTextStyles.caption.copyWith(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  _HeroNumber(
+                    label: 'Active habits',
+                    value: '$activeHabits',
+                    icon: Icons.blur_circular,
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  _HeroNumber(
+                    label: 'Total wins',
+                    value: '$totalCompletions',
+                    icon: Icons.check_circle,
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  _HeroNumber(
+                    label: 'Avg success',
+                    value: '${avgCompletionRate.toStringAsFixed(0)}%',
+                    icon: Icons.trending_up,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroNumber extends StatelessWidget {
+  const _HeroNumber({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.16),
+          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(AppBorderRadius.full),
+              ),
+              child: Icon(icon, color: Colors.white),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(value, style: AppTextStyles.h3.copyWith(color: Colors.white)),
+                Text(
+                  label,
+                  style: AppTextStyles.caption.copyWith(color: Colors.white.withValues(alpha: 0.8)),
+                ),
+              ],
             ),
           ],
         ),
@@ -179,35 +301,53 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            color.withValues(alpha: 0.15),
-            Colors.white,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppGradients.cardSheen,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(color: AppColors.borderLight),
         boxShadow: AppShadows.soft,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(AppBorderRadius.full),
-              border: Border.all(color: color.withValues(alpha: 0.3)),
+          Positioned(
+            right: -10,
+            top: -20,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withValues(alpha: 0.08),
+              ),
             ),
-            child: Icon(icon, color: color),
           ),
-          const SizedBox(height: AppSpacing.md),
-          Text(title, style: AppTextStyles.caption),
-          const SizedBox(height: 2),
-          Text(value, style: AppTextStyles.h2.copyWith(color: color)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      color.withValues(alpha: 0.2),
+                      color.withValues(alpha: 0.05),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                  border: Border.all(color: color.withValues(alpha: 0.2)),
+                ),
+                child: Icon(icon, color: color),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text(title, style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: AppTextStyles.h2.copyWith(color: AppColors.text),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -235,11 +375,7 @@ class _WeeklyChartCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.surface, AppColors.backgroundDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppGradients.cardSheen,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(color: AppColors.borderLight),
         boxShadow: AppShadows.soft,
@@ -253,7 +389,7 @@ class _WeeklyChartCard extends StatelessWidget {
               Text('Weekly progress', style: AppTextStyles.h3),
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: AppColors.background,
+                  color: AppColors.surfaceMuted,
                   borderRadius: BorderRadius.circular(AppBorderRadius.full),
                   border: Border.all(color: AppColors.border),
                 ),
@@ -262,6 +398,7 @@ class _WeeklyChartCard extends StatelessWidget {
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: habit?.id,
+                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
                       items: habits
                           .map((h) => DropdownMenuItem(
                                 value: h.id,
@@ -277,17 +414,17 @@ class _WeeklyChartCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          if (data.isEmpty)
-            Text(
-              'Track a habit to see weekly performance.',
-              style: AppTextStyles.bodySecondary,
-            )
+            const SizedBox(height: AppSpacing.md),
+            if (data.isEmpty)
+              Text(
+                'Track a habit to see weekly performance.',
+                style: AppTextStyles.bodySecondary,
+              )
           else
             SizedBox(
               height: 220,
               child: LineChart(
-                  LineChartData(
+                LineChartData(
                   gridData: const FlGridData(show: false),
                   titlesData: FlTitlesData(
                     leftTitles: AxisTitles(
@@ -384,11 +521,7 @@ class _HabitStatsGrid extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.surface, AppColors.backgroundDark],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              gradient: AppGradients.cardSheen,
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               border: Border.all(color: AppColors.borderLight),
               boxShadow: AppShadows.soft,
@@ -440,8 +573,9 @@ class _HabitBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: _fromHex(colorHex).withValues(alpha: 0.15),
+        color: _fromHex(colorHex).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppBorderRadius.full),
+        border: Border.all(color: _fromHex(colorHex).withValues(alpha: 0.25)),
       ),
       child: Text(icon, style: const TextStyle(fontSize: 18)),
     );
@@ -492,11 +626,7 @@ class _AIInsightsSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.surface, AppColors.backgroundDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppGradients.cardSheen,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         border: Border.all(color: AppColors.borderLight),
         boxShadow: AppShadows.soft,
@@ -507,7 +637,13 @@ class _AIInsightsSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('AI Insights', style: AppTextStyles.h3),
+              Row(
+                children: [
+                  const Icon(Icons.auto_awesome, color: AppColors.primary),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text('AI Insights', style: AppTextStyles.h3),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -521,7 +657,7 @@ class _AIInsightsSection extends StatelessWidget {
               children: insights.take(6).map((insight) {
                 final color = _typeColor(insight.type);
                 return Card(
-                  color: insight.isRead ? AppColors.backgroundDark : AppColors.surface,
+                  color: insight.isRead ? AppColors.surfaceMuted : AppColors.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppBorderRadius.md),
                     side: BorderSide(

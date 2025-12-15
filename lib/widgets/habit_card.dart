@@ -23,28 +23,21 @@ class HabitCard extends StatefulWidget {
 }
 
 class _HabitCardState extends State<HabitCard> {
-  bool _isCompleted = false;
+  bool _localIsCompleted = false;
+  bool _isProcessingCompletion = false;
   bool _isDismissed = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final provider = context.watch<HabitProvider>();
-    final entries = provider.habitEntries;
-    // We only care about "today" state for UI initial display
-    _isCompleted = isHabitCompletedToday(widget.habit.id, entries);
-  }
 
   Future<void> _handleCompletion() async {
     // 1. Immediate Haptic & Visual Feedback
-    HapticFeedback.heavyImpact();
+    await HapticFeedback.heavyImpact();
     
     // Update local state to trigger "complete" animation
     setState(() {
-      _isCompleted = true;
+      _isProcessingCompletion = true;
+      _localIsCompleted = true;
     });
 
-    // 2. Wait for the "Glow & Scale" animation (approx 400-600ms)
+    // 2. Wait for the "Glow & Scale" animation (approx 400ms)
     await Future.delayed(400.ms);
 
     if (!mounted) return;
@@ -55,7 +48,6 @@ class _HabitCardState extends State<HabitCard> {
     });
 
     // 4. Wait for exit animation to finish before updating data
-    // The fadeOut effect below is 300ms + 400ms delay = 700ms total sequence
     await Future.delayed(300.ms);
 
     if (mounted) {
@@ -67,11 +59,24 @@ class _HabitCardState extends State<HabitCard> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch for external updates
+    final provider = context.watch<HabitProvider>();
+    final entries = provider.habitEntries;
+    final isCompletedInStore = isHabitCompletedToday(widget.habit.id, entries);
+
+    // Sync local state if we are not currently animating a user action
+    if (!_isProcessingCompletion) {
+      _localIsCompleted = isCompletedInStore;
+    }
+
     // If we have visually dismissed it, hide it to prevent layout jumps 
-    // until the parent List rebuilds from the data change.
+    // Note: If the store updates and says "not completed" (e.g. undo), we should reappear? 
+    // For now, if dismissed locally, we stay hidden until parent rebuilds with new list order or we get recycled.
+    // Ideally, the parent List would remove this item from the tree once the provider updates.
     if (_isDismissed) return const SizedBox.shrink();
 
     return Animate(
+      key: ValueKey('habit_${widget.habit.id}'),
       effects: const [
         FadeEffect(duration: Duration(milliseconds: 600), curve: Curves.easeOutQuad),
         SlideEffect(
@@ -84,7 +89,7 @@ class _HabitCardState extends State<HabitCard> {
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
         child: _SwipeableGlassCard(
           habit: widget.habit,
-          isCompleted: _isCompleted,
+          isCompleted: _localIsCompleted,
           onComplete: _handleCompletion,
         ),
       ),
@@ -167,7 +172,7 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
               height: 120, // Should match card height roughly or be adaptive
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
-                color: Colors.black.withOpacity(0.05), // Subtle track behind
+                color: Colors.black.withValues(alpha: 0.05), // Subtle track behind
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
@@ -183,8 +188,8 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
                          decoration: BoxDecoration(
                            gradient: LinearGradient(
                              colors: [
-                               accentColor.withOpacity(0.4),
-                               accentColor.withOpacity(0.1),
+                               accentColor.withValues(alpha: 0.4),
+                               accentColor.withValues(alpha: 0.1),
                              ],
                            ),
                          ),
@@ -198,7 +203,7 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
                       child: Center(
                         child: Icon(
                           Icons.check_rounded,
-                          color: accentColor.withOpacity(opacity.clamp(0.2, 1.0)),
+                          color: accentColor.withValues(alpha: opacity.clamp(0.2, 1.0)),
                           size: 32 + (8 * opacity),
                         ),
                       ),
@@ -225,7 +230,7 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
                   duration: 400.ms,
                   builder: (context, value, child) {
                     final glow = value * 15;
-                    final glowColor = accentColor.withOpacity(0.6 * value);
+                    final glowColor = accentColor.withValues(alpha: 0.6 * value);
                     return Container(
                       decoration: BoxDecoration(
                          borderRadius: BorderRadius.circular(24),
@@ -283,18 +288,18 @@ class _GlassHabitCardContent extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 120),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.65),
+            color: Colors.white.withValues(alpha: 0.65),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               width: 1.0,
             ),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withOpacity(0.8),
-                Colors.white.withOpacity(0.4),
+                Colors.white.withValues(alpha: 0.8),
+                Colors.white.withValues(alpha: 0.4),
               ],
             ),
           ),
@@ -310,7 +315,7 @@ class _GlassHabitCardContent extends StatelessWidget {
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: accentColor.withOpacity(0.12),
+                      color: accentColor.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
@@ -342,7 +347,7 @@ class _GlassHabitCardContent extends StatelessWidget {
                              child: Text(
                               habit.description!,
                               style: AppTextStyles.caption.copyWith(
-                                color: AppColors.textSecondary.withOpacity(0.8),
+                                color: AppColors.textSecondary.withValues(alpha: 0.8),
                                 fontSize: 13,
                                 letterSpacing: 0.0,
                               ),
@@ -370,7 +375,7 @@ class _GlassHabitCardContent extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                      decoration: BoxDecoration(
-                      color: AppColors.background.withOpacity(0.5),
+                      color: AppColors.background.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(100),
                     ),
                     child: Text(
@@ -409,9 +414,9 @@ class _GlassChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.4),
+        color: Colors.white.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

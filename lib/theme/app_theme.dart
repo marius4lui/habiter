@@ -165,6 +165,25 @@ class AppTextStyles {
   );
 }
 
+class AppStyles {
+  static final glassLow = BoxDecoration(
+    color: Colors.white.withValues(alpha: 0.05),
+    border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.0),
+    borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+  );
+
+  static final glassHigh = BoxDecoration(
+    color: Colors.white.withValues(alpha: 0.15),
+    border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.0),
+    borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+  );
+
+  static final glassBorder = Border.all(
+    color: Colors.white.withValues(alpha: 0.1),
+    width: 1.0,
+  );
+}
+
 ThemeData buildAppTheme() {
   final base = ThemeData(
     useMaterial3: true,

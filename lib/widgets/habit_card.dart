@@ -1,4 +1,8 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
 import '../models/habit.dart';
@@ -6,7 +10,7 @@ import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/habit_utils.dart';
 
-class HabitCard extends StatelessWidget {
+class HabitCard extends StatefulWidget {
   const HabitCard({
     super.key,
     required this.habit,
@@ -15,167 +19,371 @@ class HabitCard extends StatelessWidget {
   final Habit habit;
 
   @override
-  Widget build(BuildContext context) {
+  State<HabitCard> createState() => _HabitCardState();
+}
+
+class _HabitCardState extends State<HabitCard> {
+  bool _isCompleted = false;
+  bool _isDismissed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     final provider = context.watch<HabitProvider>();
     final entries = provider.habitEntries;
-    final today = getTodayString();
-    final isCompleted = isHabitCompletedToday(habit.id, entries);
-    final streak = calculateStreak(habit.id, entries);
-    final accent = _fromHex(habit.color);
+    // We only care about "today" state for UI initial display
+    _isCompleted = isHabitCompletedToday(widget.habit.id, entries);
+  }
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-      child: Ink(
-        decoration: BoxDecoration(
-          gradient: AppGradients.cardSheen,
-          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-          border: Border.all(color: AppColors.borderLight),
-          boxShadow: AppShadows.soft,
+  Future<void> _handleCompletion() async {
+    // 1. Immediate Haptic & Visual Feedback
+    HapticFeedback.heavyImpact();
+    
+    // Update local state to trigger "complete" animation
+    setState(() {
+      _isCompleted = true;
+    });
+
+    // 2. Wait for the "Glow & Scale" animation (approx 400-600ms)
+    await Future.delayed(400.ms);
+
+    if (!mounted) return;
+
+    // 3. Start dismissal/exit animation
+    setState(() {
+      _isDismissed = true;
+    });
+
+    // 4. Wait for exit animation to finish before updating data
+    // The fadeOut effect below is 300ms + 400ms delay = 700ms total sequence
+    await Future.delayed(300.ms);
+
+    if (mounted) {
+       final provider = context.read<HabitProvider>();
+       final today = getTodayString();
+       await provider.toggleHabitCompletion(widget.habit.id, today);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // If we have visually dismissed it, hide it to prevent layout jumps 
+    // until the parent List rebuilds from the data change.
+    if (_isDismissed) return const SizedBox.shrink();
+
+    return Animate(
+      effects: const [
+        FadeEffect(duration: Duration(milliseconds: 600), curve: Curves.easeOutQuad),
+        SlideEffect(
+            begin: Offset(0, 0.1),
+            end: Offset.zero,
+            duration: Duration(milliseconds: 600),
+            curve: Curves.easeOutBack),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        child: _SwipeableGlassCard(
+          habit: widget.habit,
+          isCompleted: _isCompleted,
+          onComplete: _handleCompletion,
         ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-          onTap: () async {
-            await provider.toggleHabitCompletion(habit.id, today);
-          },
-          child: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                bottom: 0,
-                left: 0,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  width: 6,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        accent.withValues(alpha: isCompleted ? 0.95 : 0.7),
-                        accent.withValues(alpha: 0.35),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(AppBorderRadius.lg),
-                      bottomLeft: Radius.circular(AppBorderRadius.lg),
-                    ),
-                  ),
-                ),
+      ),
+    );
+  }
+}
+
+class _SwipeableGlassCard extends StatefulWidget {
+  const _SwipeableGlassCard({
+    required this.habit,
+    required this.isCompleted,
+    required this.onComplete,
+  });
+
+  final Habit habit;
+  final bool isCompleted;
+  final VoidCallback onComplete;
+
+  @override
+  State<_SwipeableGlassCard> createState() => _SwipeableGlassCardState();
+}
+
+class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
+  double _dragExtent = 0.0;
+  final double _threshold = 100.0;
+  
+  int _lastHapticStep = 0;
+
+  void _onDragUpdate(DragUpdateDetails details) {
+    if (widget.isCompleted) return; // No dragging if already done
+
+    setState(() {
+      _dragExtent += details.delta.dx;
+      // Clamp: allow some resistance on left (<0) but mainly right (>0)
+      _dragExtent = _dragExtent.clamp(-20.0, 200.0);
+    });
+
+    // Haptics during drag
+    final step = (_dragExtent / 20).floor();
+    if (step > 0 && step != _lastHapticStep) {
+      HapticFeedback.selectionClick();
+      _lastHapticStep = step;
+    }
+  }
+
+  void _onDragEnd(DragEndDetails details) {
+     if (widget.isCompleted) return;
+     
+    if (_dragExtent >= _threshold) {
+      // Swipe Successful
+      widget.onComplete();
+      // Visually keep it snapped to the right while we animate out
+      setState(() {
+        _dragExtent = 200.0; 
+      });
+    } else {
+      // Swipe Cancelled - Snap Back
+      HapticFeedback.lightImpact();
+      setState(() {
+        _dragExtent = 0.0;
+        _lastHapticStep = 0;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final accentColor = _fromHex(widget.habit.color);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate progress 0.0 -> 1.0 based on drag
+        final double opacity = (_dragExtent / _threshold).clamp(0.0, 1.0);
+        
+        return Stack(
+          alignment: Alignment.centerLeft,
+          children: [
+            // BACKGROUND LAYER (The "Reveal" area)
+            Container(
+              height: 120, // Should match card height roughly or be adaptive
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                color: Colors.black.withOpacity(0.05), // Subtle track behind
               ),
-              Positioned(
-                top: -18,
-                right: -10,
-                child: Container(
-                  width: 110,
-                  height: 110,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: accent.withValues(alpha: 0.08),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Stack(
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _HabitIcon(colorHex: habit.color, icon: habit.icon),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                habit.name,
-                                style: AppTextStyles.h3,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              if (habit.description != null && habit.description!.isNotEmpty)
-                                Text(
-                                  habit.description!,
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.textTertiary,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                            ],
-                          ),
-                        ),
-                        _CompletionToggle(
-                          colorHex: habit.color,
-                          completed: isCompleted,
-                          onToggle: () => provider.toggleHabitCompletion(habit.id, today),
-                        ),
-                      ],
+                    // Gradient Fill that follows the swipe
+                    Positioned(
+                       left: 0,
+                       top: 0,
+                       bottom: 0,
+                       width: (constraints.maxWidth * opacity).clamp(0.0, constraints.maxWidth), 
+                       child: Container(
+                         decoration: BoxDecoration(
+                           gradient: LinearGradient(
+                             colors: [
+                               accentColor.withOpacity(0.4),
+                               accentColor.withOpacity(0.1),
+                             ],
+                           ),
+                         ),
+                       ),
                     ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      children: [
-                        _AccentPill(
-                          icon: Icons.local_fire_department,
-                          label: '${streak.currentStreak} Tage',
-                          color: accent,
+                    // Check Icon fixed on the left
+                    Positioned(
+                      left: 32,
+                      top: 0,
+                      bottom: 0,
+                      child: Center(
+                        child: Icon(
+                          Icons.check_rounded,
+                          color: accentColor.withOpacity(opacity.clamp(0.2, 1.0)),
+                          size: 32 + (8 * opacity),
                         ),
-                        const SizedBox(width: AppSpacing.sm),
-                        _AccentPill(
-                          icon: Icons.calendar_today_rounded,
-                          label: '${habit.targetCount}x ${habit.frequency.name}',
-                          color: AppColors.textSecondary,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xs,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.backgroundDark,
-                            borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          child: Text(
-                            habit.category.toUpperCase(),
-                            style: AppTextStyles.caption.copyWith(
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.6,
-                            ),
-                          ),
-                        ),
-                        AnimatedOpacity(
-                          duration: const Duration(milliseconds: 160),
-                          opacity: isCompleted ? 1 : 0.75,
-                          child: Row(
-                            children: [
-                              Icon(
-                                isCompleted ? Icons.check_circle : Icons.circle_outlined,
-                                size: 18,
-                                color: isCompleted ? accent : AppColors.textTertiary,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                isCompleted ? 'Heute erledigt' : 'Noch offen',
-                                style: AppTextStyles.caption.copyWith(
-                                  color: isCompleted ? accent : AppColors.textTertiary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
+              ),
+            ),
+
+            // FOREGROUND CARD (The Draggable)
+            Transform.translate(
+              offset: Offset(_dragExtent, 0),
+              child: GestureDetector(
+                onHorizontalDragStart: (_) => HapticFeedback.lightImpact(),
+                onHorizontalDragUpdate: _onDragUpdate,
+                onHorizontalDragEnd: _onDragEnd,
+                child: _GlassHabitCardContent(
+                  habit: widget.habit,
+                  isCompleted: widget.isCompleted,
+                )
+                .animate(target: widget.isCompleted ? 1 : 0)
+                // On Complete: Glow effect
+                .custom(
+                  duration: 400.ms,
+                  builder: (context, value, child) {
+                    final glow = value * 15;
+                    final glowColor = accentColor.withOpacity(0.6 * value);
+                    return Container(
+                      decoration: BoxDecoration(
+                         borderRadius: BorderRadius.circular(24),
+                         boxShadow: [
+                           if (value > 0)
+                             BoxShadow(
+                               color: glowColor,
+                               blurRadius: 20 + glow,
+                               spreadRadius: glow,
+                             ),
+                         ],
+                      ),
+                      child: child,
+                    );
+                  }
+                )
+                // On Complete: Scale down slightly
+                .scale(
+                  end: const Offset(0.92, 0.92),
+                  curve: Curves.easeInOut,
+                )
+                // Finally fade out
+                .fadeOut(
+                  delay: 400.ms,
+                  duration: 300.ms,
+                ),
+              ),
+            ),
+          ],
+        );
+      }
+    );
+  }
+}
+
+class _GlassHabitCardContent extends StatelessWidget {
+  const _GlassHabitCardContent({
+    required this.habit,
+    required this.isCompleted,
+  });
+
+  final Habit habit;
+  final bool isCompleted;
+
+  @override
+  Widget build(BuildContext context) {
+    final accentColor = _fromHex(habit.color);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Container(
+          // Card dimensions and padding
+          constraints: const BoxConstraints(minHeight: 120),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.65),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.4),
+              width: 1.0,
+            ),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.8),
+                Colors.white.withOpacity(0.4),
+              ],
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ICON
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: accentColor.withOpacity(0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      habit.icon,
+                      style: const TextStyle(fontSize: 26),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  
+                  // TEXT
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          habit.name,
+                          style: AppTextStyles.h3.copyWith(
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.5, // Tight editorial tracking
+                            fontSize: 19,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (habit.description != null && habit.description!.isNotEmpty)
+                           Padding(
+                             padding: const EdgeInsets.only(top: 4),
+                             child: Text(
+                              habit.description!,
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.textSecondary.withOpacity(0.8),
+                                fontSize: 13,
+                                letterSpacing: 0.0,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                             ),
+                           ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // META INFO
+              Row(
+                children: [
+                  _GlassChip(
+                    icon: Icons.repeat_rounded,
+                    label: '${habit.targetCount}x ${habit.frequency.name}',
+                    color: AppColors.textSecondary,
+                  ),
+                  const Spacer(),
+                  // Category Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                     decoration: BoxDecoration(
+                      color: AppColors.background.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Text(
+                      habit.category.toUpperCase(),
+                      style: AppTextStyles.caption.copyWith(
+                         color: AppColors.textTertiary,
+                         fontSize: 10,
+                         letterSpacing: 1.2,
+                         fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  )
+                ],
               ),
             ],
           ),
@@ -185,73 +393,12 @@ class HabitCard extends StatelessWidget {
   }
 }
 
-class _HabitIcon extends StatelessWidget {
-  const _HabitIcon({required this.colorHex, required this.icon});
-
-  final String colorHex;
-  final String icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: _fromHex(colorHex).withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(AppBorderRadius.full),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        icon,
-        style: const TextStyle(fontSize: 24),
-      ),
-    );
-  }
-}
-
-class _CompletionToggle extends StatelessWidget {
-  const _CompletionToggle({
-    required this.colorHex,
-    required this.completed,
-    required this.onToggle,
+class _GlassChip extends StatelessWidget {
+  const _GlassChip({
+    required this.icon,
+    required this.label,
+    required this.color,
   });
-
-  final String colorHex;
-  final bool completed;
-  final VoidCallback onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _fromHex(colorHex);
-    return GestureDetector(
-      onTap: onToggle,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppBorderRadius.full),
-          border: Border.all(
-            color: completed ? color : AppColors.border,
-            width: 2,
-          ),
-          color: completed ? color : Colors.transparent,
-          boxShadow: completed ? AppShadows.soft : null,
-        ),
-        alignment: Alignment.center,
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 150),
-          opacity: completed ? 1 : 0,
-          child: const Icon(Icons.check, color: Colors.white, size: 18),
-        ),
-      ),
-    );
-  }
-}
-
-Color _fromHex(String hex) => Color(int.parse(hex.replaceFirst('#', '0xff')));
-
-class _AccentPill extends StatelessWidget {
-  const _AccentPill({required this.icon, required this.label, required this.color});
 
   final IconData icon;
   final String label;
@@ -260,28 +407,35 @@ class _AccentPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(AppBorderRadius.full),
+        color: Colors.white.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: color),
+          Icon(icon, size: 14, color: color),
           const SizedBox(width: 6),
           Text(
             label,
             style: AppTextStyles.caption.copyWith(
               color: color,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+// Utility to parse color safely
+Color _fromHex(String hex) {
+  try {
+    return Color(int.parse(hex.replaceFirst('#', '0xff')));
+  } catch (e) {
+    return AppColors.primary;
   }
 }

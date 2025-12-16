@@ -74,6 +74,7 @@ class HabitProvider extends ChangeNotifier {
     required int targetCount,
     required String color,
     required String icon,
+    List<int>? customDays,
   }) async {
     final habit = Habit(
       id: _uuid.v4(),
@@ -84,6 +85,7 @@ class HabitProvider extends ChangeNotifier {
       frequency: frequency,
       targetCount: targetCount,
       category: category,
+      customDays: customDays,
       createdAt: DateTime.now(),
       isActive: true,
     );

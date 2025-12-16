@@ -86,7 +86,7 @@ class _HabitCardState extends State<HabitCard> {
             begin: Offset(0, 0.1),
             end: Offset.zero,
             duration: Duration(milliseconds: 600),
-            curve: Curves.easeOutBack),
+            curve: Curves.easeOutCubic), // Smoother, less cartoonish
       ],
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -383,7 +383,7 @@ class _GlassHabitCardContent extends StatelessWidget {
                 children: [
                   _GlassChip(
                     icon: Icons.repeat_rounded,
-                    label: '${habit.targetCount}x ${habit.frequency.name}',
+                    label: _getFrequencyLabel(habit),
                     color: AppColors.textSecondary,
                   ),
                   const Spacer(),
@@ -458,5 +458,20 @@ Color _fromHex(String hex) {
     return Color(int.parse(hex.replaceFirst('#', '0xff')));
   } catch (e) {
     return AppColors.primary;
+  }
+}
+
+String _getFrequencyLabel(Habit habit) {
+  final count = habit.targetCount;
+  switch (habit.frequency) {
+    case HabitFrequency.daily:
+      return '$count/day';
+    case HabitFrequency.weekly:
+      return '$count/week';
+    case HabitFrequency.custom:
+      if (habit.customDays != null && habit.customDays!.isNotEmpty) {
+        return '$count on ${habit.customDays!.length} days';
+      }
+      return '$count x Custom';
   }
 }

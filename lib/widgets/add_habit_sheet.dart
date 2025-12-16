@@ -23,6 +23,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
   int _targetCount = 1;
   late String _color;
   late String _icon;
+  final Set<int> _selectedWeekdays = {};
   bool _saving = false;
 
   Map<String, List<String>> get _iconSuggestions => getHabitIconSuggestions();
@@ -57,6 +58,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
       targetCount: _targetCount,
       color: _color,
       icon: _icon,
+      customDays: _frequency == HabitFrequency.custom ? _selectedWeekdays.toList() : null,
     );
     if (!mounted) return;
     Navigator.of(context).pop();
@@ -229,6 +231,57 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                           )
                           .toList(),
                     ),
+                    if (_frequency == HabitFrequency.custom) ...[
+                      const SizedBox(height: AppSpacing.md),
+                      Text('Select Days', style: AppTextStyles.h3),
+                      const SizedBox(height: AppSpacing.sm),
+                      Wrap(
+                        spacing: AppSpacing.xs,
+                        children: List.generate(7, (index) {
+                          final dayIndex = index + 1; // 1 = Monday
+                          final isSelected = _selectedWeekdays.contains(dayIndex);
+                          final dayName = ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index];
+                          return InkWell(
+                            onTap: () {
+                              setState(() {
+                                if (isSelected) {
+                                  _selectedWeekdays.remove(dayIndex);
+                                } else {
+                                  _selectedWeekdays.add(dayIndex);
+                                }
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.surface,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.borderLight,
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                dayName,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : AppColors.textSecondary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ],
                     const SizedBox(height: AppSpacing.lg),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

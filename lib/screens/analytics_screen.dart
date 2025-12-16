@@ -135,9 +135,9 @@ class _AnalyticsHero extends StatelessWidget {
                       vertical: AppSpacing.sm,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.16),
+                      color: Colors.white.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      border: Border.all(color: Colors.white.withOpacity(0.15)),
                     ),
                     child: Row(
                       children: [
@@ -199,40 +199,28 @@ class _HeroNumber extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.16),
+          color: Colors.white.withOpacity(0.12),
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          border: Border.all(color: Colors.white.withOpacity(0.24)),
+          border: Border.all(color: Colors.white.withOpacity(0.1)), // Thinner/Subtler border
         ),
-        child: Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(AppBorderRadius.full),
-              ),
-              child: Icon(icon, color: Colors.white),
+             // Hide icon on very small screens or layout to avoid cramped rows
+             // For now, removing icon to give space to text as requested
+            Text(
+              value,
+              style: AppTextStyles.h2.copyWith(color: Colors.white, fontSize: 22), // Larger text
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    value,
-                    style: AppTextStyles.h3.copyWith(color: Colors.white),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                  Text(
-                    label,
-                    style: AppTextStyles.caption.copyWith(color: Colors.white.withOpacity(0.8)),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                ],
-              ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: AppTextStyles.caption.copyWith(color: Colors.white.withOpacity(0.8), fontSize: 11),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ],
         ),

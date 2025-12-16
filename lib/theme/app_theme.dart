@@ -187,6 +187,12 @@ ThemeData buildAppTheme() {
     useMaterial3: true,
     fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
     visualDensity: VisualDensity.adaptivePlatformDensity,
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: ZoomPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      },
+    ),
   );
   final textTheme = GoogleFonts.plusJakartaSansTextTheme(base.textTheme);
   return base.copyWith(

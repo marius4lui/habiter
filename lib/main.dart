@@ -40,7 +40,33 @@ class _RootShell extends StatefulWidget {
 
 class _RootShellState extends State<_RootShell> {
   int _index = 0;
+  late final PageController _pageController;
   final _pages = const [HomeScreen(), AnalyticsScreen()];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onNavChange(int index) {
+    setState(() => _index = index);
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _onPageChanged(int index) {
+    setState(() => _index = index);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +78,12 @@ class _RootShellState extends State<_RootShell> {
           Scaffold(
             extendBody: true,
             backgroundColor: Colors.transparent,
-            body: IndexedStack(index: _index, children: _pages),
+            body: PageView(
+              controller: _pageController,
+              onPageChanged: _onPageChanged,
+              physics: const BouncingScrollPhysics(),
+              children: _pages,
+            ),
             bottomNavigationBar: Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.md,
@@ -62,7 +93,7 @@ class _RootShellState extends State<_RootShell> {
               ),
               child: _GlassNavBar(
                 index: _index,
-                onChange: (i) => setState(() => _index = i),
+                onChange: _onNavChange,
               ),
             ),
           ),

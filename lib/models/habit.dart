@@ -16,6 +16,7 @@ class Habit {
     required this.frequency,
     required this.targetCount,
     required this.category,
+    this.customDays,
     required this.createdAt,
     required this.isActive,
   });
@@ -28,6 +29,7 @@ class Habit {
   final HabitFrequency frequency;
   final int targetCount;
   final String category;
+  final List<int>? customDays;
   final DateTime createdAt;
   final bool isActive;
 
@@ -40,6 +42,7 @@ class Habit {
     HabitFrequency? frequency,
     int? targetCount,
     String? category,
+    List<int>? customDays,
     DateTime? createdAt,
     bool? isActive,
   }) {
@@ -52,6 +55,7 @@ class Habit {
       frequency: frequency ?? this.frequency,
       targetCount: targetCount ?? this.targetCount,
       category: category ?? this.category,
+      customDays: customDays ?? this.customDays,
       createdAt: createdAt ?? this.createdAt,
       isActive: isActive ?? this.isActive,
     );
@@ -67,6 +71,7 @@ class Habit {
       'frequency': frequency.name,
       'targetCount': targetCount,
       'category': category,
+      'customDays': customDays,
       'createdAt': createdAt.toIso8601String(),
       'isActive': isActive,
     };
@@ -85,6 +90,7 @@ class Habit {
       ),
       targetCount: (map['targetCount'] as num?)?.toInt() ?? 1,
       category: map['category'] as String? ?? 'General',
+      customDays: (map['customDays'] as List<dynamic>?)?.map((e) => e as int).toList(),
       createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ?? DateTime.now(),
       isActive: map['isActive'] as bool? ?? true,
     );

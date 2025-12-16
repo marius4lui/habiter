@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  static const primary = Color(0xFF2563F0);
-  static const primaryDark = Color(0xFF1B3FD4);
-  static const primaryLight = Color(0xFF7AB6FF);
-  static const secondary = Color(0xFF0FCFBB);
-  static const accent = Color(0xFFFF9C55);
-  static const background = Color(0xFFF2F6FD);
-  static const backgroundDark = Color(0xFFE8EDF7);
+  static const primary = Color(0xFFD4A373); // Warm Beige/Tan
+  static const primaryDark = Color(0xFFA97142); // Darker Tan
+  static const primaryLight = Color(0xFFE9DCC9); // Light Cream
+  static const secondary = Color(0xFFCCD5AE); // Sage Green (Soft)
+  static const accent = Color(0xFFE76F51); // Terracotta
+  static const background = Color(0xFFFAFAF5); // Very Light Cream/Off-white
+  static const backgroundDark = Color(0xFFF0EBE0); // Slightly darker background
   static const surface = Color(0xFFFFFFFF);
-  static const surfaceMuted = Color(0xFFF5F7FE);
-  static const text = Color(0xFF0B1220);
-  static const textSecondary = Color(0xFF4B5565);
-  static const textTertiary = Color(0xFF9AA3B5);
-  static const border = Color(0xFFD5DFF0);
-  static const borderLight = Color(0xFFE6EDFA);
-  static const success = Color(0xFF10B981);
-  static const warning = Color(0xFFFFB020);
-  static const error = Color(0xFFFF4757);
+  static const surfaceMuted = Color(0xFFF7F4EB); // Warm Muted Surface
+  static const text = Color(0xFF4A4036); // Dark Brown/Charcoal
+  static const textSecondary = Color(0xFF8C7E72); // Muted Brown
+  static const textTertiary = Color(0xFFBDB3AA); // Light Brown/Gray
+  static const border = Color(0xFFE6E0D4); // Warm Border
+  static const borderLight = Color(0xFFF2EFE9); // Light Warm Border
+  static const success = Color(0xFF8CB369); // Muted Green
+  static const warning = Color(0xFFF4A261); // Muted Orange
+  static const error = Color(0xFFE76F51); // Soft Red/Terracotta
 }
 
 class AppSpacing {
@@ -40,7 +40,7 @@ class AppBorderRadius {
 class AppShadows {
   static const soft = [
     BoxShadow(
-      color: Color(0x150B1220),
+      color: Color(0x0D4A4036), // Warm shadow
       blurRadius: 18,
       offset: Offset(0, 10),
     ),
@@ -48,13 +48,13 @@ class AppShadows {
 
   static const elevated = [
     BoxShadow(
-      color: Color(0x1F0B1220),
+      color: Color(0x144A4036),
       blurRadius: 22,
       spreadRadius: -2,
       offset: Offset(0, 16),
     ),
     BoxShadow(
-      color: Color(0x140B1220),
+      color: Color(0x0A4A4036),
       blurRadius: 36,
       spreadRadius: -10,
       offset: Offset(0, 26),
@@ -63,7 +63,7 @@ class AppShadows {
 
   static const glow = [
     BoxShadow(
-      color: Color(0x332563EB),
+      color: Color(0x22D4A373), // Warm glow
       blurRadius: 36,
       spreadRadius: -8,
       offset: Offset(0, 18),
@@ -74,9 +74,8 @@ class AppShadows {
 class AppGradients {
   static const primary = LinearGradient(
     colors: [
-      Color(0xFF2563F0),
-      Color(0xFF14B8A6),
-      Color(0xFF0FCFBB),
+      Color(0xFFD4A373),
+      Color(0xFFE9C46A),
     ],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -84,9 +83,8 @@ class AppGradients {
 
   static const hero = LinearGradient(
     colors: [
-      Color(0xFF0B6BFF),
-      Color(0xFF1FD1D7),
-      Color(0xFF22D7A7),
+      Color(0xFFD4A373),
+      Color(0xFFE76F51),
     ],
     begin: Alignment(-1, -1),
     end: Alignment(1, 1),
@@ -94,8 +92,8 @@ class AppGradients {
 
   static const halo = RadialGradient(
     colors: [
-      Color(0x5534D399),
-      Color(0x330EA5E9),
+      Color(0x55E9C46A),
+      Color(0x33E76F51),
       Colors.transparent,
     ],
     radius: 1.1,
@@ -104,8 +102,8 @@ class AppGradients {
 
   static const appShell = LinearGradient(
     colors: [
-      Color(0xFFF5F7FE),
-      Color(0xFFE9F0FF),
+      Color(0xFFFAFAF5),
+      Color(0xFFF2EFE9),
     ],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -114,7 +112,7 @@ class AppGradients {
   static const cardSheen = LinearGradient(
     colors: [
       Colors.white,
-      Color(0xFFF4F7FF),
+      Color(0xFFFDFBF7),
     ],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -167,19 +165,19 @@ class AppTextStyles {
 
 class AppStyles {
   static final glassLow = BoxDecoration(
-    color: Colors.white.withValues(alpha: 0.05),
-    border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.0),
+    color: Colors.white.withOpacity(0.05),
+    border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.0),
     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
   );
 
   static final glassHigh = BoxDecoration(
-    color: Colors.white.withValues(alpha: 0.15),
-    border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.0),
+    color: Colors.white.withOpacity(0.15),
+    border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.0),
     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
   );
 
   static final glassBorder = Border.all(
-    color: Colors.white.withValues(alpha: 0.1),
+    color: Colors.white.withOpacity(0.1),
     width: 1.0,
   );
 }
@@ -223,7 +221,7 @@ ThemeData buildAppTheme() {
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: Colors.transparent,
-      indicatorColor: AppColors.primary.withValues(alpha: 0.16),
+      indicatorColor: AppColors.primary.withOpacity(0.16),
       height: 74,
       surfaceTintColor: Colors.transparent,
       iconTheme: WidgetStateProperty.resolveWith(
@@ -261,7 +259,7 @@ ThemeData buildAppTheme() {
     ),
     chipTheme: ChipThemeData(
       backgroundColor: AppColors.surfaceMuted,
-      selectedColor: AppColors.primary.withValues(alpha: 0.18),
+      selectedColor: AppColors.primary.withOpacity(0.18),
       labelStyle: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
       secondaryLabelStyle: AppTextStyles.caption.copyWith(color: Colors.white),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),

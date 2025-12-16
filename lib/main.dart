@@ -86,7 +86,7 @@ class _GlassNavBar extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.9),
+            color: AppColors.surface.withOpacity(0.9),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(color: AppColors.borderLight),
             boxShadow: AppShadows.soft,
@@ -96,12 +96,12 @@ class _GlassNavBar extends StatelessWidget {
             onDestinationSelected: onChange,
             destinations: const [
               NavigationDestination(
-                icon: Icon(Icons.checklist_rtl_outlined),
+                icon: Icon(Icons.checklist_rtl),
                 selectedIcon: Icon(Icons.checklist_rtl),
                 label: 'Habits',
               ),
               NavigationDestination(
-                icon: Icon(Icons.query_stats_outlined),
+                icon: Icon(Icons.query_stats),
                 selectedIcon: Icon(Icons.query_stats),
                 label: 'Analytics',
               ),

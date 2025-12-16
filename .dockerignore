@@ -1,0 +1,30 @@
+# Build outputs
+build/
+.dart_tool/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+CLAUDE.md
+
+# Platform-specific folders (not needed for web build)
+android/
+ios/
+linux/
+macos/
+windows/
+
+# Tests
+test/
+
+# Misc
+*.log
+.DS_Store

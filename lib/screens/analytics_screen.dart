@@ -128,7 +128,7 @@ class _AnalyticsHero extends StatelessWidget {
                         Text(
                           'Trends live verfolgen, Peaks feiern, früh korrigieren.',
                           style: AppTextStyles.bodySecondary.copyWith(
-                            color: Colors.white.withValues(alpha: 0.82),
+                            color: Colors.white.withOpacity(0.82),
                           ),
                         ),
                       ],
@@ -140,9 +140,9 @@ class _AnalyticsHero extends StatelessWidget {
                       vertical: AppSpacing.sm,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.16),
+                      color: Colors.white.withOpacity(0.16),
                       borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
                     ),
                     child: Row(
                       children: [
@@ -204,9 +204,9 @@ class _HeroNumber extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.16),
+          color: Colors.white.withOpacity(0.16),
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
+          border: Border.all(color: Colors.white.withOpacity(0.24)),
         ),
         child: Row(
           children: [
@@ -214,7 +214,7 @@ class _HeroNumber extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(AppBorderRadius.full),
               ),
               child: Icon(icon, color: Colors.white),
@@ -226,7 +226,7 @@ class _HeroNumber extends StatelessWidget {
                 Text(value, style: AppTextStyles.h3.copyWith(color: Colors.white)),
                 Text(
                   label,
-                  style: AppTextStyles.caption.copyWith(color: Colors.white.withValues(alpha: 0.8)),
+                  style: AppTextStyles.caption.copyWith(color: Colors.white.withOpacity(0.8)),
                 ),
               ],
             ),

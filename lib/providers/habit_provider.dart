@@ -36,6 +36,24 @@ class HabitProvider extends ChangeNotifier {
       aiInsights = await StorageService.getAIInsights();
       preferences = await StorageService.getUserPreferences();
 
+      // Mock Data Initialization
+      if (habits.isEmpty) {
+        final mockHabit = Habit(
+          id: _uuid.v4(),
+          name: 'Drink Water',
+          description: 'Stay hydrated! 💧',
+          color: '0xFF4ECDC4', // Teal/Cyan accent for visibility
+          icon: '💧',
+          frequency: HabitFrequency.daily,
+          targetCount: 8,
+          category: 'Health',
+          createdAt: DateTime.now(),
+          isActive: true,
+        );
+        habits = [mockHabit];
+        await StorageService.addHabit(mockHabit);
+      }
+
       loading = false;
       error = null;
     } catch (e) {
@@ -70,7 +88,7 @@ class HabitProvider extends ChangeNotifier {
       isActive: true,
     );
 
-    habits = [...habits, habit];
+    habits = [habit, ...habits];
     await StorageService.addHabit(habit);
     notifyListeners();
   }

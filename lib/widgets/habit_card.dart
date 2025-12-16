@@ -9,6 +9,7 @@ import '../models/habit.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/habit_utils.dart';
+import 'visuals/particle_burst.dart';
 
 class HabitCard extends StatefulWidget {
   const HabitCard({
@@ -26,15 +27,17 @@ class _HabitCardState extends State<HabitCard> {
   bool _localIsCompleted = false;
   bool _isProcessingCompletion = false;
   bool _isDismissed = false;
+  bool _showParticles = false;
 
   Future<void> _handleCompletion() async {
     // 1. Immediate Haptic & Visual Feedback
     await HapticFeedback.heavyImpact();
     
-    // Update local state to trigger "complete" animation
+    // Update local state to trigger "complete" animation & Particles
     setState(() {
       _isProcessingCompletion = true;
       _localIsCompleted = true;
+      _showParticles = true;
     });
 
     // 2. Wait for the "Glow & Scale" animation (approx 400ms)
@@ -87,10 +90,23 @@ class _HabitCardState extends State<HabitCard> {
       ],
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-        child: _SwipeableGlassCard(
-          habit: widget.habit,
-          isCompleted: _localIsCompleted,
-          onComplete: _handleCompletion,
+        child: Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            _SwipeableGlassCard(
+              habit: widget.habit,
+              isCompleted: _localIsCompleted,
+              onComplete: _handleCompletion,
+            ),
+            if (_showParticles)
+              Positioned(
+                right: 40, // Approximate location of the checkmark/end of swipe
+                child: ParticleBurst(
+                  color: _fromHex(widget.habit.color),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -172,7 +188,7 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
               height: 120, // Should match card height roughly or be adaptive
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
-                color: Colors.black.withValues(alpha: 0.05), // Subtle track behind
+                color: Colors.black.withOpacity(0.05), // Subtle track behind
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
@@ -188,8 +204,8 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
                          decoration: BoxDecoration(
                            gradient: LinearGradient(
                              colors: [
-                               accentColor.withValues(alpha: 0.4),
-                               accentColor.withValues(alpha: 0.1),
+                               accentColor.withOpacity(0.4),
+                               accentColor.withOpacity(0.1),
                              ],
                            ),
                          ),
@@ -203,7 +219,7 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
                       child: Center(
                         child: Icon(
                           Icons.check_rounded,
-                          color: accentColor.withValues(alpha: opacity.clamp(0.2, 1.0)),
+                          color: accentColor.withOpacity(opacity.clamp(0.2, 1.0)),
                           size: 32 + (8 * opacity),
                         ),
                       ),
@@ -230,7 +246,7 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
                   duration: 400.ms,
                   builder: (context, value, child) {
                     final glow = value * 15;
-                    final glowColor = accentColor.withValues(alpha: 0.6 * value);
+                    final glowColor = accentColor.withOpacity(0.6 * value);
                     return Container(
                       decoration: BoxDecoration(
                          borderRadius: BorderRadius.circular(24),
@@ -288,18 +304,18 @@ class _GlassHabitCardContent extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 120),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.65),
+            color: Colors.white.withOpacity(0.65),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.4),
+              color: Colors.white.withOpacity(0.4),
               width: 1.0,
             ),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withValues(alpha: 0.8),
-                Colors.white.withValues(alpha: 0.4),
+                Colors.white.withOpacity(0.8),
+                Colors.white.withOpacity(0.4),
               ],
             ),
           ),
@@ -315,7 +331,7 @@ class _GlassHabitCardContent extends StatelessWidget {
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: accentColor.withValues(alpha: 0.12),
+                      color: accentColor.withOpacity(0.12),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
@@ -347,7 +363,7 @@ class _GlassHabitCardContent extends StatelessWidget {
                              child: Text(
                               habit.description!,
                               style: AppTextStyles.caption.copyWith(
-                                color: AppColors.textSecondary.withValues(alpha: 0.8),
+                                color: AppColors.textSecondary.withOpacity(0.8),
                                 fontSize: 13,
                                 letterSpacing: 0.0,
                               ),
@@ -375,7 +391,7 @@ class _GlassHabitCardContent extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                      decoration: BoxDecoration(
-                      color: AppColors.background.withValues(alpha: 0.5),
+                      color: AppColors.background.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(100),
                     ),
                     child: Text(
@@ -414,9 +430,9 @@ class _GlassChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.4),
+        color: Colors.white.withOpacity(0.4),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

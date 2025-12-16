@@ -237,7 +237,7 @@ class _HeroHeader extends StatelessWidget {
                         Text(
                           formatDisplayDate(today),
                           style: AppTextStyles.bodySecondary.copyWith(
-                            color: Colors.white.withValues(alpha: 0.86),
+                            color: Colors.white.withOpacity(0.86),
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -279,7 +279,7 @@ class _HeroHeader extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: completionRate,
                   minHeight: 14,
-                  backgroundColor: Colors.white.withValues(alpha: 0.15),
+                  backgroundColor: Colors.white.withOpacity(0.15),
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
@@ -290,7 +290,7 @@ class _HeroHeader extends StatelessWidget {
                   Text(
                     "Today's momentum",
                     style: AppTextStyles.bodySecondary.copyWith(
-                      color: Colors.white.withValues(alpha: 0.82),
+                      color: Colors.white.withOpacity(0.82),
                     ),
                   ),
                   Text(
@@ -399,9 +399,9 @@ class _HeroStat extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.12),
+          color: Colors.white.withOpacity(0.12),
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.26)),
+          border: Border.all(color: Colors.white.withOpacity(0.26)),
           boxShadow: const [
             BoxShadow(
               color: Color(0x22000000),
@@ -416,7 +416,7 @@ class _HeroStat extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(AppBorderRadius.full),
               ),
               child: Icon(icon, color: accent, size: 20),
@@ -434,7 +434,7 @@ class _HeroStat extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.caption.copyWith(
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: Colors.white.withOpacity(0.8),
                   ),
                 ),
               ],
@@ -461,9 +461,9 @@ class _GlassIconButton extends StatelessWidget {
         width: 46,
         height: 46,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: Colors.white.withOpacity(0.2),
           borderRadius: BorderRadius.circular(AppBorderRadius.full),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
+          border: Border.all(color: Colors.white.withOpacity(0.28)),
         ),
         child: Icon(icon, color: Colors.white),
       ),

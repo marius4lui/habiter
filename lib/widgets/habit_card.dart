@@ -157,7 +157,7 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
     // Haptics during drag
     final step = (_dragExtent / 20).floor();
     if (step > 0 && step != _lastHapticStep) {
-      HapticFeedback.selectionClick();
+      if (!widget.isCompleted) HapticFeedback.selectionClick();
       _lastHapticStep = step;
     }
   }
@@ -242,16 +242,38 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
 
             // FOREGROUND CARD (The Draggable)
             Transform.translate(
-              offset: Offset(_dragExtent, 0),
-              child: GestureDetector(
-                onHorizontalDragStart: (_) => HapticFeedback.lightImpact(),
-                onHorizontalDragUpdate: _onDragUpdate,
-                onHorizontalDragEnd: _onDragEnd,
-                child: _GlassHabitCardContent(
-                  habit: widget.habit,
-                  isCompleted: widget.isCompleted,
-                )
-                .animate(target: widget.isCompleted ? 1 : 0)
+                 offset: Offset(_dragExtent, 0),
+                 child: GestureDetector(
+                   onHorizontalDragStart: (_) {
+                     if (!widget.isCompleted) HapticFeedback.lightImpact();
+                   },
+                   onHorizontalDragUpdate: _onDragUpdate,
+                   onHorizontalDragEnd: _onDragEnd,
+                   child: Stack(
+                     children: [
+                        // Hint Text behind the card (revealed by glass transparency or just visible on right)
+                        if (!widget.isCompleted && _dragExtent == 0)
+                           Positioned(
+                             right: 16,
+                             top: 0,
+                             bottom: 0,
+                             child: Center(
+                               child: Text(
+                                 'Slide >>',
+                                 style: TextStyle(
+                                   color: AppColors.textSecondary.withOpacity(0.4),
+                                   fontWeight: FontWeight.w600,
+                                   fontSize: 12,
+                                   letterSpacing: 1.5,
+                                 ),
+                               ),
+                             ),
+                           ),
+                        _GlassHabitCardContent(
+                         habit: widget.habit,
+                         isCompleted: widget.isCompleted,
+                       )
+                       .animate(target: widget.isCompleted ? 1 : 0)
                 // On Complete: Glow effect
                 .custom(
                   duration: 400.ms,
@@ -284,9 +306,11 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
                   delay: 400.ms,
                   duration: 300.ms,
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
+        ),
+        ],
         );
       }
     );
@@ -312,8 +336,8 @@ class _GlassHabitCardContent extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
         child: Container(
           // Card dimensions and padding
-          constraints: const BoxConstraints(minHeight: 120),
-          padding: const EdgeInsets.all(20),
+          constraints: const BoxConstraints(minHeight: 88), // Reduced from 120
+          padding: const EdgeInsets.all(14), // Reduced from 20
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.65),
             borderRadius: BorderRadius.circular(24),
@@ -358,16 +382,16 @@ class _GlassHabitCardContent extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          habit.name,
-                          style: AppTextStyles.h3.copyWith(
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.5, // Tight editorial tracking
-                            fontSize: 19,
+                          Text(
+                            habit.name,
+                            style: AppTextStyles.h3.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.5,
+                              fontSize: 17, // Reduced from 19
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
                         if (habit.description != null && habit.description!.isNotEmpty)
                            Padding(
                              padding: const EdgeInsets.only(top: 4),

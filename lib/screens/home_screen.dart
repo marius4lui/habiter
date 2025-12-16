@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/habit_utils.dart';
+import '../models/habit.dart';
 import '../widgets/add_habit_sheet.dart';
 
 import 'package:flutter_animate/flutter_animate.dart';
@@ -47,13 +48,24 @@ class HomeScreen extends StatelessWidget {
       );
     }
 
-    final activeHabits = provider.habits.where((h) => h.isActive).toList();
+    final allActiveHabits = provider.habits.where((h) => h.isActive).toList();
     final today = getTodayString();
-    final completedToday = activeHabits
-        .where((habit) => isHabitCompletedToday(habit.id, provider.habitEntries))
-        .length;
-    final completionRate =
-        activeHabits.isEmpty ? 0.0 : completedToday / activeHabits.length;
+    
+    // Split into Pending and Completed
+    final pendingHabits = <Habit>[];
+    final completedHabits = <Habit>[];
+    
+    for (final habit in allActiveHabits) {
+      if (isHabitCompletedToday(habit.id, provider.habitEntries)) {
+        completedHabits.add(habit);
+      } else {
+        pendingHabits.add(habit);
+      }
+    }
+
+    final completedToday = completedHabits.length;
+    final totalActive = allActiveHabits.length;
+    final completionRate = totalActive == 0 ? 0.0 : completedToday / totalActive;
     final greeting = _greeting();
 
     return Scaffold(
@@ -85,7 +97,7 @@ class HomeScreen extends StatelessWidget {
                       _HeroHeader(
                         today: today,
                         greeting: greeting,
-                        activeHabits: activeHabits.length,
+                        activeHabits: totalActive,
                         completionRate: completionRate,
                         completedToday: completedToday,
                         onAddHabit: () => _openAddHabitSheet(context),
@@ -96,7 +108,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              if (activeHabits.isEmpty)
+              if (allActiveHabits.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
                   child: _EmptyState(onAdd: () => _openAddHabitSheet(context)),
@@ -120,26 +132,33 @@ class HomeScreen extends StatelessWidget {
                       return SliverGrid(
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
-                            return HabitCard(habit: activeHabits[index])
-                                .animate(delay: (index * 100).ms)
+                            return HabitCard(habit: pendingHabits[index])
+                                .animate(delay: (index * 50).ms) // Faster stagger
                                 .slideY(
-                                  begin: 0.5,
+                                  begin: 0.2, // Subtle slide
                                   end: 0,
-                                  duration: 500.ms,
+                                  duration: 400.ms,
                                   curve: Curves.easeOutCubic,
                                 )
-                                .fadeIn(duration: 500.ms);
+                                .fadeIn(duration: 400.ms);
                           },
-                          childCount: activeHabits.length,
+                          childCount: pendingHabits.length,
                         ),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: crossAxisCount,
-                          crossAxisSpacing: AppSpacing.md,
-                          mainAxisSpacing: AppSpacing.md,
-                          childAspectRatio: 1.1,
+                          crossAxisSpacing: AppSpacing.sm, // Tighter spacing
+                          mainAxisSpacing: AppSpacing.sm,
+                          childAspectRatio: 2.5, // Much flatter/wider aspect ratio for compact cards
                         ),
                       );
                     },
+                  ),
+                ),
+              if (completedHabits.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                    child: _CompletedHabitsSection(habits: completedHabits),
                   ),
                 ),
             ],
@@ -439,3 +458,55 @@ class _GlassIconButton extends StatelessWidget {
 }
 
 
+class _CompletedHabitsSection extends StatefulWidget {
+  const _CompletedHabitsSection({required this.habits});
+
+  final List<Habit> habits;
+
+  @override
+  State<_CompletedHabitsSection> createState() => _CompletedHabitsSectionState();
+}
+
+class _CompletedHabitsSectionState extends State<_CompletedHabitsSection> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: () => setState(() => _expanded = !_expanded),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            color: Colors.transparent,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Completed (${widget.habits.length})',
+                  style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+                ),
+                Icon(
+                  _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                  size: 16,
+                  color: AppColors.textTertiary,
+                ),
+              ],
+            ),
+          ),
+        ),
+        AnimatedCrossFade(
+          firstChild: const SizedBox(width: double.infinity),
+          secondChild: Column(
+             children: widget.habits.map((h) => Opacity(
+               opacity: 0.6,
+               child: HabitCard(habit: h),
+             )).toList(),
+          ),
+          crossFadeState: _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 300),
+        ),
+      ],
+    );
+  }
+}

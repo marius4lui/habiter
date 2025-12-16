@@ -5,7 +5,7 @@ import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/habit_utils.dart';
 import '../widgets/add_habit_sheet.dart';
-import '../widgets/ai_setup_dialog.dart';
+
 import '../widgets/habit_card.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -20,22 +20,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _openAISetup(BuildContext context) async {
-    await showDialog(
-      context: context,
-      builder: (_) => const AISetupDialog(),
-    );
-  }
 
-  Future<void> _generateInsights(BuildContext context) async {
-    final provider = context.read<HabitProvider>();
-    await provider.generateInsights();
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('AI insights generated')),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,32 +87,10 @@ class HomeScreen extends StatelessWidget {
                         activeHabits: activeHabits.length,
                         completionRate: completionRate,
                         completedToday: completedToday,
-                        onGenerateInsights: () => _generateInsights(context),
-                        onOpenSetup: () => _openAISetup(context),
+                        onAddHabit: () => _openAddHabitSheet(context),
                       ),
                       const SizedBox(height: AppSpacing.md),
-                      if (activeHabits.isNotEmpty)
-                        Wrap(
-                          spacing: AppSpacing.sm,
-                          runSpacing: AppSpacing.sm,
-                          children: [
-                            _QuickPill(
-                              label: 'AI Kickstart',
-                              icon: Icons.bolt,
-                              onTap: () => _generateInsights(context),
-                            ),
-                            _QuickPill(
-                              label: 'Automation',
-                              icon: Icons.settings_suggest,
-                              onTap: () => _openAISetup(context),
-                            ),
-                            _QuickPill(
-                              label: 'Refresh',
-                              icon: Icons.refresh,
-                              onTap: provider.refresh,
-                            ),
-                          ],
-                        ),
+
                     ],
                   ),
                 ),
@@ -190,8 +153,7 @@ class _HeroHeader extends StatelessWidget {
     required this.activeHabits,
     required this.completionRate,
     required this.completedToday,
-    required this.onGenerateInsights,
-    required this.onOpenSetup,
+    required this.onAddHabit,
   });
 
   final String today;
@@ -199,8 +161,7 @@ class _HeroHeader extends StatelessWidget {
   final int activeHabits;
   final double completionRate;
   final int completedToday;
-  final VoidCallback onGenerateInsights;
-  final VoidCallback onOpenSetup;
+  final VoidCallback onAddHabit;
 
   @override
   Widget build(BuildContext context) {
@@ -245,13 +206,8 @@ class _HeroHeader extends StatelessWidget {
                     ),
                   ),
                   _GlassIconButton(
-                    icon: Icons.auto_awesome,
-                    onTap: onGenerateInsights,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  _GlassIconButton(
-                    icon: Icons.settings,
-                    onTap: onOpenSetup,
+                    icon: Icons.add,
+                    onTap: onAddHabit,
                   ),
                 ],
               ),
@@ -471,46 +427,4 @@ class _GlassIconButton extends StatelessWidget {
   }
 }
 
-class _QuickPill extends StatelessWidget {
-  const _QuickPill({required this.label, required this.icon, required this.onTap});
 
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppBorderRadius.full),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppBorderRadius.full),
-          border: Border.all(color: AppColors.borderLight),
-          boxShadow: AppShadows.soft,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 18, color: AppColors.primary),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                label,
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

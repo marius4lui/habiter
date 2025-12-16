@@ -56,12 +56,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               avgCompletionRate: avgCompletionRate,
             ),
             const SizedBox(height: AppSpacing.lg),
-            _OverviewRow(
-              activeHabits: activeHabits.length,
-              totalCompletions: totalCompletions,
-              avgCompletionRate: avgCompletionRate,
-            ),
-            const SizedBox(height: AppSpacing.lg),
+
             if (activeHabits.isNotEmpty) ...[
               _WeeklyChartCard(
                 habits: activeHabits,
@@ -220,15 +215,24 @@ class _HeroNumber extends StatelessWidget {
               child: Icon(icon, color: Colors.white),
             ),
             const SizedBox(width: AppSpacing.sm),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(value, style: AppTextStyles.h3.copyWith(color: Colors.white)),
-                Text(
-                  label,
-                  style: AppTextStyles.caption.copyWith(color: Colors.white.withOpacity(0.8)),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    value,
+                    style: AppTextStyles.h3.copyWith(color: Colors.white),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  Text(
+                    label,
+                    style: AppTextStyles.caption.copyWith(color: Colors.white.withOpacity(0.8)),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ],
+              ),
             ),
           ],
         ),

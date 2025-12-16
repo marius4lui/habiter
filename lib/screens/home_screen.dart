@@ -6,6 +6,7 @@ import '../theme/app_theme.dart';
 import '../utils/habit_utils.dart';
 import '../widgets/add_habit_sheet.dart';
 
+import 'package:flutter_animate/flutter_animate.dart';
 import '../widgets/habit_card.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -118,7 +119,17 @@ class HomeScreen extends StatelessWidget {
                               : 1;
                       return SliverGrid(
                         delegate: SliverChildBuilderDelegate(
-                          (context, index) => HabitCard(habit: activeHabits[index]),
+                          (context, index) {
+                            return HabitCard(habit: activeHabits[index])
+                                .animate(delay: (index * 100).ms)
+                                .slideY(
+                                  begin: 0.5,
+                                  end: 0,
+                                  duration: 500.ms,
+                                  curve: Curves.easeOutCubic,
+                                )
+                                .fadeIn(duration: 500.ms);
+                          },
                           childCount: activeHabits.length,
                         ),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

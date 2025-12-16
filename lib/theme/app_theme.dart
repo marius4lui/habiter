@@ -40,9 +40,9 @@ class AppBorderRadius {
 class AppShadows {
   static const soft = [
     BoxShadow(
-      color: Color(0x0D4A4036), // Warm shadow
-      blurRadius: 18,
-      offset: Offset(0, 10),
+      color: Color(0x084A4036), // Very subtle
+      blurRadius: 24,
+      offset: Offset(0, 8),
     ),
   ];
 
@@ -63,10 +63,10 @@ class AppShadows {
 
   static const glow = [
     BoxShadow(
-      color: Color(0x22D4A373), // Warm glow
-      blurRadius: 36,
-      spreadRadius: -8,
-      offset: Offset(0, 18),
+      color: Color(0x1AD4A373), // Reduced opacity from 0x22
+      blurRadius: 40, // Increased blur
+      spreadRadius: -12, // Reduced spread
+      offset: Offset(0, 20),
     ),
   ];
 }

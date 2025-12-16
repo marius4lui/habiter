@@ -28,6 +28,7 @@ class _HabitCardState extends State<HabitCard> {
   bool _isProcessingCompletion = false;
   bool _isDismissed = false;
   bool _showParticles = false;
+  bool _isPressed = false;
 
   Future<void> _handleCompletion() async {
     // 1. Immediate Haptic & Visual Feedback
@@ -90,23 +91,33 @@ class _HabitCardState extends State<HabitCard> {
       ],
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-        child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            _SwipeableGlassCard(
-              habit: widget.habit,
-              isCompleted: _localIsCompleted,
-              onComplete: _handleCompletion,
-            ),
-            if (_showParticles)
-              Positioned(
-                right: 40, // Approximate location of the checkmark/end of swipe
-                child: ParticleBurst(
-                  color: _fromHex(widget.habit.color),
+        child: GestureDetector(
+          onTapDown: (_) => setState(() => _isPressed = true),
+          onTapUp: (_) => setState(() => _isPressed = false),
+          onTapCancel: () => setState(() => _isPressed = false),
+          child: AnimatedScale(
+            scale: _isPressed ? 0.96 : 1.0,
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeInOut,
+            child: Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                _SwipeableGlassCard(
+                  habit: widget.habit,
+                  isCompleted: _localIsCompleted,
+                  onComplete: _handleCompletion,
                 ),
-              ),
-          ],
+                if (_showParticles)
+                  Positioned(
+                    right: 40,
+                    child: ParticleBurst(
+                      color: _fromHex(widget.habit.color),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );

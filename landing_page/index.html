@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0;url=en/">
+    <script>
+        // Automatic Language Detection
+        (function () {
+            var userLang = navigator.language || navigator.userLanguage;
+            if (userLang.startsWith('de')) {
+                window.location.replace("de/");
+            } else {
+                window.location.replace("en/");
+            }
+        })();
+    </script>
+    <title>Redirecting...</title>
+</head>
+
+<body>
+    <p>If you are not redirected automatically, follow this link to the <a href="en/">English version</a> or <a
+            href="de/">deutsche Version</a>.</p>
+</body>
+
+</html>

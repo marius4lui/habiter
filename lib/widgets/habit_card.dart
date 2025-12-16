@@ -199,7 +199,7 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
               height: 120, // Should match card height roughly or be adaptive
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
-                color: Colors.black.withOpacity(0.05), // Subtle track behind
+                color: Colors.transparent, // Fix "brown" field artifact
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
@@ -274,38 +274,10 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
                          isCompleted: widget.isCompleted,
                        )
                        .animate(target: widget.isCompleted ? 1 : 0)
-                // On Complete: Glow effect
-                .custom(
-                  duration: 400.ms,
-                  builder: (context, value, child) {
-                    final glow = value * 15;
-                    final glowColor = accentColor.withOpacity(0.6 * value);
-                    return Container(
-                      decoration: BoxDecoration(
-                         borderRadius: BorderRadius.circular(24),
-                         boxShadow: [
-                           if (value > 0)
-                             BoxShadow(
-                               color: glowColor,
-                               blurRadius: 20 + glow,
-                               spreadRadius: glow,
-                             ),
-                         ],
-                      ),
-                      child: child,
-                    );
-                  }
-                )
-                // On Complete: Scale down slightly
-                .scale(
-                  end: const Offset(0.92, 0.92),
-                  curve: Curves.easeInOut,
-                )
-                // Finally fade out
-                .fadeOut(
-                  delay: 400.ms,
-                  duration: 300.ms,
-                ),
+                       .scale(
+                         end: const Offset(0.98, 0.98), // Very subtle scale, or 1.0 if we want "normal"
+                         curve: Curves.easeInOut,
+                       ),
               ],
             ),
           ),
@@ -441,6 +413,24 @@ class _GlassHabitCardContent extends StatelessWidget {
                   )
                 ],
               ),
+              if (isCompleted)
+                 Padding(
+                   padding: const EdgeInsets.only(top: 8.0),
+                   child: Row(
+                     children: [
+                       Icon(Icons.check_circle, size: 14, color: AppColors.success),
+                       const SizedBox(width: 4),
+                       Text(
+                         'COMPLETED',
+                         style: AppTextStyles.caption.copyWith(
+                           color: AppColors.success,
+                           fontWeight: FontWeight.w800,
+                           letterSpacing: 1.0,
+                         ),
+                       ),
+                     ],
+                   ),
+                 ),
             ],
           ),
         ),

@@ -311,18 +311,18 @@ class _GlassHabitCardContent extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 88), // Reduced from 120
           padding: const EdgeInsets.all(14), // Reduced from 20
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.65),
+            color: Colors.white.withOpacity(0.90), // Much more solid (was 0.65)
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withOpacity(0.6), // Stronger border (was 0.4)
               width: 1.0,
             ),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withOpacity(0.8),
-                Colors.white.withOpacity(0.4),
+                Colors.white.withOpacity(0.95), // Nearly opaque
+                Colors.white.withOpacity(0.85),
               ],
             ),
           ),

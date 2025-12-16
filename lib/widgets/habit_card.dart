@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
 import '../models/habit.dart';
+import 'add_habit_sheet.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/habit_utils.dart';
@@ -92,6 +93,14 @@ class _HabitCardState extends State<HabitCard> {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
         child: GestureDetector(
+          onTap: () {
+             showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              useSafeArea: true,
+              builder: (_) => AddHabitSheet(habit: widget.habit),
+            );
+          },
           onTapDown: (_) => setState(() => _isPressed = true),
           onTapUp: (_) => setState(() => _isPressed = false),
           onTapCancel: () => setState(() => _isPressed = false),

@@ -7,7 +7,9 @@ import '../theme/app_theme.dart';
 import '../utils/habit_utils.dart';
 
 class AddHabitSheet extends StatefulWidget {
-  const AddHabitSheet({super.key});
+  const AddHabitSheet({super.key, this.habit});
+
+  final Habit? habit;
 
   @override
   State<AddHabitSheet> createState() => _AddHabitSheetState();
@@ -31,10 +33,22 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
   @override
   void initState() {
     super.initState();
-    _category = _iconSuggestions.keys.first;
-    _frequency = HabitFrequency.daily;
-    _color = getRandomColor();
-    _icon = _iconSuggestions[_category]?.first ?? '✅';
+    if (widget.habit != null) {
+      final h = widget.habit!;
+      _nameController.text = h.name;
+      if (h.description != null) _descriptionController.text = h.description!;
+      _category = h.category;
+      _frequency = h.frequency;
+      _targetCount = h.targetCount;
+      _color = h.color;
+      _icon = h.icon;
+      if (h.customDays != null) _selectedWeekdays.addAll(h.customDays!);
+    } else {
+      _category = _iconSuggestions.keys.first;
+      _frequency = HabitFrequency.daily;
+      _color = getRandomColor();
+      _icon = _iconSuggestions[_category]?.first ?? '✅';
+    }
   }
 
   @override
@@ -48,20 +62,61 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     final provider = context.read<HabitProvider>();
-    await provider.addHabit(
-      name: _nameController.text.trim(),
-      description: _descriptionController.text.trim().isEmpty
-          ? null
-          : _descriptionController.text.trim(),
-      category: _category,
-      frequency: _frequency,
-      targetCount: _targetCount,
-      color: _color,
-      icon: _icon,
-      customDays: _frequency == HabitFrequency.custom ? _selectedWeekdays.toList() : null,
-    );
+    if (widget.habit != null) {
+      await provider.updateHabit(
+        widget.habit!.id,
+        widget.habit!.copyWith(
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim().isEmpty
+              ? null
+              : _descriptionController.text.trim(),
+          category: _category,
+          frequency: _frequency,
+          targetCount: _targetCount,
+          color: _color,
+          icon: _icon,
+          customDays: _frequency == HabitFrequency.custom ? _selectedWeekdays.toList() : null,
+        ),
+      );
+    } else {
+      await provider.addHabit(
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        category: _category,
+        frequency: _frequency,
+        targetCount: _targetCount,
+        color: _color,
+        icon: _icon,
+        customDays: _frequency == HabitFrequency.custom ? _selectedWeekdays.toList() : null,
+      );
+    }
     if (!mounted) return;
     Navigator.of(context).pop();
+  }
+
+  Future<void> _deleteHabit() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Habit?'),
+        content: const Text('This action cannot be undone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Delete', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      if (!mounted) return;
+      await context.read<HabitProvider>().deleteHabit(widget.habit!.id);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -87,7 +142,11 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('New Habit', style: AppTextStyles.h2),
+                  Text(widget.habit != null ? 'Edit Habit' : 'New Habit', style: AppTextStyles.h2),
+                  if (widget.habit != null)
+                    IconButton(
+                        onPressed: _deleteHabit,
+                        icon: const Icon(Icons.delete_outline, color: Colors.red)),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close),
@@ -328,9 +387,9 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                                 width: 20,
                                 child: CircularProgressIndicator(strokeWidth: 2),
                               )
-                            : const Text(
-                                'Create Habit',
-                                style: TextStyle(
+                            : Text(
+                                widget.habit != null ? 'Update Habit' : 'Create Habit',
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 16,
                                 ),

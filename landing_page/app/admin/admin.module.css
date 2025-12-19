@@ -1,0 +1,300 @@
+.adminContainer {
+    min-height: 100vh;
+    background: var(--background);
+}
+
+.header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    -webkit-text-fill-color: white;
+}
+
+.header p {
+    opacity: 0.9;
+    color: white;
+}
+
+.main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.actions {
+    margin-bottom: 2rem;
+}
+
+.createBtn {
+    width: 100%;
+    padding: 1rem !important;
+}
+
+/* Form */
+.form {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.form h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.field {
+    margin-bottom: 1.25rem;
+}
+
+.field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.field input,
+.field textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.field textarea {
+    min-height: 100px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.field input:focus,
+.field textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+}
+
+.field small {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.checkbox input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary);
+}
+
+.formActions {
+    display: flex;
+    gap: 1rem;
+}
+
+.cancelBtn {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+}
+
+/* Tests List */
+.testsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--glass-bg);
+    border-radius: 24px;
+    color: var(--text-muted);
+}
+
+.testCard {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 1.5rem;
+}
+
+.testHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.testHeader h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+}
+
+.active,
+.inactive {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+}
+
+.active {
+    background: rgba(78, 205, 196, 0.2);
+    color: var(--primary);
+}
+
+.inactive {
+    background: rgba(255, 100, 100, 0.2);
+    color: #e74c3c;
+}
+
+.testActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.testActions button {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.testActions button:hover {
+    background: var(--surface);
+}
+
+.testDescription {
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.testLinks {
+    padding: 1rem;
+    background: var(--surface);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+}
+
+.testLinks div {
+    margin-bottom: 0.5rem;
+}
+
+.testLinks div:last-child {
+    margin-bottom: 0;
+}
+
+.testLinks a {
+    color: var(--primary);
+    word-break: break-all;
+}
+
+/* Registrations */
+.registrations {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+.regHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.regHeader h4 {
+    font-size: 1rem;
+}
+
+.exportBtn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.exportBtn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.noRegs {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.regTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.regTable th,
+.regTable td {
+    text-align: left;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.regTable th {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.pending {
+    color: #f39c12;
+}
+
+.approved {
+    color: var(--primary);
+}
+
+.rejected {
+    color: #e74c3c;
+}
+
+@media (max-width: 768px) {
+    .regTable {
+        display: block;
+        overflow-x: auto;
+    }
+}

@@ -1,3 +1,4 @@
+import { LocaleProvider } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -23,7 +24,9 @@ export default function RootLayout({
   return (
     <html suppressHydrationWarning>
       <body className={inter.className}>
-        {children}
+        <LocaleProvider>
+          {children}
+        </LocaleProvider>
       </body>
     </html>
   );

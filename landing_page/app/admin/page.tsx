@@ -1,10 +1,15 @@
 "use client";
 
+import { getPriorityLabel, useLocale } from "@/lib/i18n";
 import { BetaRegistration, BetaTest, supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import styles from "./admin.module.css";
 
 export default function AdminPage() {
+    const { t, locale, setLocale } = useLocale();
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
     const [tests, setTests] = useState<BetaTest[]>([]);
     const [registrations, setRegistrations] = useState<Record<string, BetaRegistration[]>>({});
     const [showForm, setShowForm] = useState(false);
@@ -12,25 +17,58 @@ export default function AdminPage() {
     const [formData, setFormData] = useState({
         name: "",
         description: "",
+        tester_method: "google_groups" as "google_groups" | "csv",
         google_groups_link: "",
         playstore_link: "",
+        priority: 1,
         is_active: true,
     });
 
     useEffect(() => {
-        loadTests();
+        checkAuth();
     }, []);
+
+    async function checkAuth() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            window.location.href = "/admin/login";
+            return;
+        }
+
+        // Check if user is in admins table
+        const { data: adminData, error: adminError } = await supabase
+            .from("admins")
+            .select("id")
+            .eq("email", user.email)
+            .single();
+
+        if (adminError || !adminData) {
+            // User is not an admin - sign out and redirect
+            await supabase.auth.signOut();
+            window.location.href = "/admin/login?error=unauthorized";
+            return;
+        }
+
+        setUser(user);
+        setLoading(false);
+        loadTests();
+    }
+
+    async function handleLogout() {
+        await supabase.auth.signOut();
+        window.location.href = "/admin/login";
+    }
 
     async function loadTests() {
         const { data: testsData } = await supabase
             .from("beta_tests")
             .select("*")
+            .order("priority", { ascending: true })
             .order("created_at", { ascending: false });
 
         if (testsData) {
             setTests(testsData);
 
-            // Load registrations for each test
             const regs: Record<string, BetaRegistration[]> = {};
             for (const test of testsData) {
                 const { data: regData } = await supabase
@@ -49,13 +87,20 @@ export default function AdminPage() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
 
+        let result;
         if (editingTest) {
-            await supabase
+            result = await supabase
                 .from("beta_tests")
                 .update(formData)
                 .eq("id", editingTest.id);
         } else {
-            await supabase.from("beta_tests").insert(formData);
+            result = await supabase.from("beta_tests").insert(formData);
+        }
+
+        if (result.error) {
+            console.error("Supabase error:", result.error);
+            alert(`Fehler: ${result.error.message}\n\nDetails: ${result.error.details || result.error.hint || "Keine weiteren Details"}`);
+            return;
         }
 
         resetForm();
@@ -63,7 +108,7 @@ export default function AdminPage() {
     }
 
     async function handleDelete(id: string) {
-        if (confirm("Diesen Test wirklich löschen?")) {
+        if (confirm(t.admin.deleteConfirm)) {
             await supabase.from("beta_registrations").delete().eq("test_id", id);
             await supabase.from("beta_tests").delete().eq("id", id);
             loadTests();
@@ -75,8 +120,10 @@ export default function AdminPage() {
         setFormData({
             name: test.name,
             description: test.description,
-            google_groups_link: test.google_groups_link,
+            tester_method: test.tester_method || "google_groups",
+            google_groups_link: test.google_groups_link || "",
             playstore_link: test.playstore_link,
+            priority: test.priority,
             is_active: test.is_active,
         });
         setShowForm(true);
@@ -86,8 +133,10 @@ export default function AdminPage() {
         setFormData({
             name: "",
             description: "",
+            tester_method: "google_groups",
             google_groups_link: "",
             playstore_link: "",
+            priority: 1,
             is_active: true,
         });
         setEditingTest(null);
@@ -96,16 +145,17 @@ export default function AdminPage() {
 
     function exportCSV(testId: string, testName: string) {
         const regs = registrations[testId] || [];
-        const headers = ["Name", "Email", "Status", "Datum"];
+        const headers = [t.test.form.firstName, t.test.form.lastName, t.test.form.email, t.admin.status, t.admin.date];
         const rows = regs.map((r) => [
-            r.name,
+            r.first_name,
+            r.last_name,
             r.email,
             r.status,
-            new Date(r.created_at).toLocaleDateString("de-DE"),
+            new Date(r.created_at).toLocaleDateString(locale === "de" ? "de-DE" : "en-US"),
         ]);
 
         const csv = [headers, ...rows].map((row) => row.join(";")).join("\n");
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
@@ -113,61 +163,122 @@ export default function AdminPage() {
         link.click();
     }
 
+    const otherLocale = locale === "de" ? "en" : "de";
+
+    if (loading) {
+        return (
+            <div className={styles.loadingContainer}>
+                <p>{t.common.loading}</p>
+            </div>
+        );
+    }
+
     return (
         <div className={styles.adminContainer}>
             <header className={styles.header}>
-                <h1>🛠️ Admin Panel</h1>
-                <p>Beta-Test Verwaltung</p>
+                <div>
+                    <h1>🛠️ {t.admin.title}</h1>
+                    <p>{t.admin.subtitle}</p>
+                </div>
+                <div className={styles.headerActions}>
+                    <button onClick={() => setLocale(otherLocale)} className={styles.langBtn}>
+                        {locale.toUpperCase()} → {otherLocale.toUpperCase()}
+                    </button>
+                    <button onClick={handleLogout} className={styles.logoutBtn}>
+                        {t.admin.logout}
+                    </button>
+                </div>
             </header>
 
             <main className={styles.main}>
                 <div className={styles.actions}>
                     <button
-                        className={`btn btn-primary ${styles.createBtn}`}
+                        className={styles.createBtn}
                         onClick={() => setShowForm(!showForm)}
                     >
-                        {showForm ? "Abbrechen" : "+ Neuen Test erstellen"}
+                        {showForm ? t.common.cancel : t.admin.createTest}
                     </button>
                 </div>
 
                 {showForm && (
                     <form onSubmit={handleSubmit} className={styles.form}>
-                        <h2>{editingTest ? "Test bearbeiten" : "Neuen Test erstellen"}</h2>
+                        <h2>{editingTest ? t.admin.editTest : t.admin.createTest}</h2>
 
                         <div className={styles.field}>
-                            <label>Test Name</label>
+                            <label>{t.admin.testName}</label>
                             <input
                                 type="text"
                                 required
-                                placeholder="z.B. Habiter v1.0 Beta"
+                                placeholder={t.admin.testNamePlaceholder}
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             />
                         </div>
 
                         <div className={styles.field}>
-                            <label>Beschreibung</label>
+                            <label>{t.admin.description}</label>
                             <textarea
-                                placeholder="Kurze Beschreibung des Tests..."
+                                placeholder={t.admin.descPlaceholder}
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             />
                         </div>
 
                         <div className={styles.field}>
-                            <label>Google Groups Link</label>
-                            <input
-                                type="url"
-                                required
-                                placeholder="https://groups.google.com/g/..."
-                                value={formData.google_groups_link}
-                                onChange={(e) => setFormData({ ...formData, google_groups_link: e.target.value })}
-                            />
-                            <small>Link zur Google Group für interne Tester</small>
+                            <label>{t.admin.priority}</label>
+                            <select
+                                value={formData.priority}
+                                onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
+                            >
+                                <option value={0}>{t.test.priority.stable}</option>
+                                <option value={1}>{t.test.priority.beta}</option>
+                                <option value={2}>{t.test.priority.alpha}</option>
+                                <option value={3}>{t.test.priority.nightly}</option>
+                            </select>
                         </div>
 
                         <div className={styles.field}>
-                            <label>Play Store Test Link</label>
+                            <label>Tester Methode</label>
+                            <div className={styles.radioGroup}>
+                                <label className={styles.radioLabel}>
+                                    <input
+                                        type="radio"
+                                        name="tester_method"
+                                        value="google_groups"
+                                        checked={formData.tester_method === "google_groups"}
+                                        onChange={() => setFormData({ ...formData, tester_method: "google_groups" })}
+                                    />
+                                    Google Groups (automatisch)
+                                </label>
+                                <label className={styles.radioLabel}>
+                                    <input
+                                        type="radio"
+                                        name="tester_method"
+                                        value="csv"
+                                        checked={formData.tester_method === "csv"}
+                                        onChange={() => setFormData({ ...formData, tester_method: "csv" })}
+                                    />
+                                    CSV Export (manuell)
+                                </label>
+                            </div>
+                        </div>
+
+                        {formData.tester_method === "google_groups" && (
+                            <div className={styles.field}>
+                                <label>{t.admin.googleGroups}</label>
+                                <input
+                                    type="url"
+                                    required
+                                    placeholder="https://groups.google.com/g/..."
+                                    value={formData.google_groups_link}
+                                    onChange={(e) => setFormData({ ...formData, google_groups_link: e.target.value })}
+                                />
+                                <small>{t.admin.googleGroupsHint}</small>
+                            </div>
+                        )}
+
+                        <div className={styles.field}>
+                            <label>{t.admin.playStore}</label>
                             <input
                                 type="url"
                                 required
@@ -175,7 +286,7 @@ export default function AdminPage() {
                                 value={formData.playstore_link}
                                 onChange={(e) => setFormData({ ...formData, playstore_link: e.target.value })}
                             />
-                            <small>Link zum Play Store Test Opt-in</small>
+                            <small>{t.admin.playStoreHint}</small>
                         </div>
 
                         <div className={styles.checkbox}>
@@ -185,15 +296,15 @@ export default function AdminPage() {
                                 checked={formData.is_active}
                                 onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                             />
-                            <label htmlFor="is_active">Test ist aktiv (akzeptiert Registrierungen)</label>
+                            <label htmlFor="is_active">{t.admin.isActive}</label>
                         </div>
 
                         <div className={styles.formActions}>
-                            <button type="submit" className="btn btn-primary">
-                                {editingTest ? "Speichern" : "Test erstellen"}
+                            <button type="submit" className={styles.submitBtn}>
+                                {editingTest ? t.common.save : t.common.submit}
                             </button>
                             <button type="button" className={styles.cancelBtn} onClick={resetForm}>
-                                Abbrechen
+                                {t.common.cancel}
                             </button>
                         </div>
                     </form>
@@ -202,17 +313,20 @@ export default function AdminPage() {
                 <div className={styles.testsList}>
                     {tests.length === 0 ? (
                         <div className={styles.empty}>
-                            <p>Noch keine Tests erstellt.</p>
-                            <p>Erstelle deinen ersten Beta-Test!</p>
+                            <p>{t.admin.noTests}</p>
+                            <p>{t.admin.createFirst}</p>
                         </div>
                     ) : (
                         tests.map((test) => (
                             <div key={test.id} className={styles.testCard}>
                                 <div className={styles.testHeader}>
                                     <h3>
+                                        <span className={`${styles.priorityBadge} ${styles[`priority${test.priority}`]}`}>
+                                            {getPriorityLabel(test.priority, t)}
+                                        </span>
                                         {test.name}
                                         <span className={test.is_active ? styles.active : styles.inactive}>
-                                            {test.is_active ? "Aktiv" : "Inaktiv"}
+                                            {test.is_active ? "●" : "○"}
                                         </span>
                                     </h3>
                                     <div className={styles.testActions}>
@@ -227,13 +341,19 @@ export default function AdminPage() {
 
                                 <div className={styles.testLinks}>
                                     <div>
-                                        <strong>Google Groups:</strong>{" "}
-                                        <a href={test.google_groups_link} target="_blank" rel="noopener noreferrer">
-                                            {test.google_groups_link}
-                                        </a>
+                                        <strong>Methode:</strong>{" "}
+                                        {test.tester_method === "google_groups" ? "Google Groups" : "CSV"}
                                     </div>
+                                    {test.tester_method === "google_groups" && test.google_groups_link && (
+                                        <div>
+                                            <strong>{t.admin.googleGroups}:</strong>{" "}
+                                            <a href={test.google_groups_link} target="_blank" rel="noopener noreferrer">
+                                                {test.google_groups_link}
+                                            </a>
+                                        </div>
+                                    )}
                                     <div>
-                                        <strong>Play Store:</strong>{" "}
+                                        <strong>{t.admin.playStore}:</strong>{" "}
                                         <a href={test.playstore_link} target="_blank" rel="noopener noreferrer">
                                             {test.playstore_link}
                                         </a>
@@ -243,34 +363,36 @@ export default function AdminPage() {
                                 <div className={styles.registrations}>
                                     <div className={styles.regHeader}>
                                         <h4>
-                                            Registrierungen ({(registrations[test.id] || []).length})
+                                            {t.admin.registrations} ({(registrations[test.id] || []).length})
                                         </h4>
                                         {(registrations[test.id] || []).length > 0 && (
                                             <button
                                                 className={styles.exportBtn}
                                                 onClick={() => exportCSV(test.id, test.name)}
                                             >
-                                                📥 CSV Export
+                                                {t.admin.csvExport}
                                             </button>
                                         )}
                                     </div>
 
                                     {(registrations[test.id] || []).length === 0 ? (
-                                        <p className={styles.noRegs}>Noch keine Registrierungen.</p>
+                                        <p className={styles.noRegs}>{t.admin.noRegistrations}</p>
                                     ) : (
                                         <table className={styles.regTable}>
                                             <thead>
                                                 <tr>
-                                                    <th>Name</th>
-                                                    <th>Email</th>
-                                                    <th>Status</th>
-                                                    <th>Datum</th>
+                                                    <th>{t.test.form.firstName}</th>
+                                                    <th>{t.test.form.lastName}</th>
+                                                    <th>{t.test.form.email}</th>
+                                                    <th>{t.admin.status}</th>
+                                                    <th>{t.admin.date}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {(registrations[test.id] || []).map((reg) => (
                                                     <tr key={reg.id}>
-                                                        <td>{reg.name}</td>
+                                                        <td>{reg.first_name}</td>
+                                                        <td>{reg.last_name}</td>
                                                         <td>{reg.email}</td>
                                                         <td>
                                                             <span className={styles[reg.status]}>
@@ -278,7 +400,7 @@ export default function AdminPage() {
                                                             </span>
                                                         </td>
                                                         <td>
-                                                            {new Date(reg.created_at).toLocaleDateString("de-DE")}
+                                                            {new Date(reg.created_at).toLocaleDateString(locale === "de" ? "de-DE" : "en-US")}
                                                         </td>
                                                     </tr>
                                                 ))}

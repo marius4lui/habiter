@@ -7,18 +7,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import styles from "./test.module.css";
 
-export default function TestPage() {
+export default function TestOverviewPage() {
     const { t, locale, setLocale } = useLocale();
     const [tests, setTests] = useState<BetaTest[]>([]);
-    const [selectedTest, setSelectedTest] = useState<string>("");
-    const [formData, setFormData] = useState({
-        firstName: "",
-        lastName: "",
-        email: "",
-    });
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         loadTests();
@@ -32,42 +24,15 @@ export default function TestPage() {
             .order("priority", { ascending: true }) // Stable (0) first
             .order("created_at", { ascending: false });
 
+        setLoading(false);
         if (data) {
             setTests(data);
-            if (data.length > 0) {
-                setSelectedTest(data[0].id);
-            }
         }
         if (error) console.error("Error loading tests:", error);
     }
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        setLoading(true);
-        setError("");
-
-        const { error } = await supabase.from("beta_registrations").insert({
-            test_id: selectedTest,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            email: formData.email,
-            status: "pending",
-        });
-
-        setLoading(false);
-
-        if (error) {
-            setError(t.test.errorMsg);
-            console.error(error);
-        } else {
-            setSuccess(true);
-        }
-    }
-
-    const currentTest = tests.find((tt) => tt.id === selectedTest);
     const otherLocale = locale === "de" ? "en" : "de";
 
-    // Header component inline
     const Header = () => (
         <header className={styles.header}>
             <Link href="/" className={styles.brand}>
@@ -86,7 +51,6 @@ export default function TestPage() {
         </header>
     );
 
-    // Footer component inline
     const Footer = () => (
         <footer className={styles.footer}>
             <div className={styles.footerLinks}>
@@ -98,36 +62,12 @@ export default function TestPage() {
         </footer>
     );
 
-    if (success && currentTest) {
+    if (loading) {
         return (
             <div className={styles.container}>
                 <Header />
-                <div className={styles.successContainer}>
-                    <div className={styles.successCard}>
-                        <span className={styles.successIcon}>✅</span>
-                        <h1>{t.test.success.title}</h1>
-                        <p>{t.test.success.thanks}</p>
-
-                        <div className={styles.nextSteps}>
-                            <h2>{t.test.success.nextSteps}</h2>
-                            <ol>
-                                {currentTest.tester_method === "google_groups" && currentTest.google_groups_link && (
-                                    <li>
-                                        <strong>{t.test.success.joinGroup}</strong>
-                                        <a href={currentTest.google_groups_link} target="_blank" rel="noopener noreferrer">
-                                            {currentTest.google_groups_link}
-                                        </a>
-                                    </li>
-                                )}
-                                <li>
-                                    <strong>{t.test.success.downloadApp}</strong>
-                                    <a href={currentTest.playstore_link} target="_blank" rel="noopener noreferrer">
-                                        {t.test.success.openStore}
-                                    </a>
-                                </li>
-                            </ol>
-                        </div>
-                    </div>
+                <div className={styles.loadingContainer}>
+                    <p>{t.common.loading}</p>
                 </div>
                 <Footer />
             </div>
@@ -138,102 +78,46 @@ export default function TestPage() {
         <div className={styles.container}>
             <Header />
 
-            <div className={styles.testPage}>
-                {/* Left: Registration Form */}
-                <div className={styles.formSection}>
-                    <h1>{t.test.title}</h1>
-                    <p className={styles.intro}>{t.test.intro}</p>
+            <div className={styles.overviewPage}>
+                <h1>{t.test.title}</h1>
+                <p className={styles.intro}>{t.test.intro}</p>
 
-                    <div className={styles.infoBox}>
-                        <h3>{t.test.dataInfo.title}</h3>
-                        <ul>
-                            {t.test.dataInfo.items.map((item, i) => (
-                                <li key={i}>{item}</li>
-                            ))}
-                        </ul>
+                {tests.length === 0 ? (
+                    <div className={styles.noTests}>
+                        <p>{t.test.noTests}</p>
                     </div>
-
-                    <div className={styles.infoBox}>
-                        <h3>{t.test.howTo.title}</h3>
-                        <ol>
-                            {t.test.howTo.steps.map((step, i) => (
-                                <li key={i}>{step}</li>
-                            ))}
-                        </ol>
+                ) : (
+                    <div className={styles.testGrid}>
+                        {tests.map((test) => (
+                            <Link
+                                key={test.id}
+                                href={`/test/${test.id}`}
+                                className={styles.testCard}
+                            >
+                                <div className={styles.testCardHeader}>
+                                    <span className={`${styles.priorityBadge} ${styles[`priority${test.priority}`]}`}>
+                                        {getPriorityLabel(test.priority, t)}
+                                    </span>
+                                    {test.priority === 0 && (
+                                        <span className={styles.recommendedBadge}>⭐ Empfohlen</span>
+                                    )}
+                                </div>
+                                <h2>{test.name}</h2>
+                                {test.description && (
+                                    <p className={styles.testCardDesc}>{test.description}</p>
+                                )}
+                                <div className={styles.testCardFooter}>
+                                    <span className={styles.testCardMethod}>
+                                        {test.tester_method === "google_groups" ? "🔗 Google Groups" : "📋 Email-Liste"}
+                                    </span>
+                                    <span className={styles.testCardArrow}>→</span>
+                                </div>
+                            </Link>
+                        ))}
                     </div>
+                )}
 
-                    {tests.length === 0 ? (
-                        <div className={styles.noTests}>
-                            <p>{t.test.noTests}</p>
-                        </div>
-                    ) : (
-                        <form onSubmit={handleSubmit} className={styles.form}>
-                            {/* Test Selection with Priority Badges */}
-                            <div className={styles.testSelection}>
-                                {tests.map((test) => (
-                                    <button
-                                        key={test.id}
-                                        type="button"
-                                        className={`${styles.testOption} ${selectedTest === test.id ? styles.selected : ""}`}
-                                        onClick={() => setSelectedTest(test.id)}
-                                    >
-                                        <span className={`${styles.priorityBadge} ${styles[`priority${test.priority}`]}`}>
-                                            {getPriorityLabel(test.priority, t)}
-                                        </span>
-                                        <span className={styles.testName}>{test.name}</span>
-                                        {test.description && (
-                                            <span className={styles.testDesc}>{test.description}</span>
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <div className={styles.formFields}>
-                                <div className={styles.field}>
-                                    <label>{t.test.form.firstName}</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder={t.test.form.firstNamePlaceholder}
-                                        value={formData.firstName}
-                                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                    />
-                                </div>
-
-                                <div className={styles.field}>
-                                    <label>{t.test.form.lastName}</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder={t.test.form.lastNamePlaceholder}
-                                        value={formData.lastName}
-                                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className={styles.field}>
-                                <label>{t.test.form.email}</label>
-                                <input
-                                    type="email"
-                                    required
-                                    placeholder={t.test.form.emailPlaceholder}
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                />
-                                <small>{t.test.form.emailHint}</small>
-                            </div>
-
-                            {error && <p className={styles.error}>{error}</p>}
-
-                            <button type="submit" className={styles.submitBtn} disabled={loading}>
-                                {loading ? t.test.form.submitting : t.test.form.submit}
-                            </button>
-                        </form>
-                    )}
-                </div>
-
-                {/* Right: Demo Preview */}
+                {/* Demo Preview Column */}
                 <div className={styles.demoSection}>
                     <div className={styles.demoCard}>
                         <h3>{t.test.demo.title}</h3>

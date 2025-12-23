@@ -14,6 +14,7 @@ class AppColors {
   static const text = Color(0xFF4A4036); // Dark Brown/Charcoal
   static const textSecondary = Color(0xFF8C7E72); // Muted Brown
   static const textTertiary = Color(0xFFBDB3AA); // Light Brown/Gray
+  static const textMuted = textTertiary; // Alias for consistency
   static const border = Color(0xFFE6E0D4); // Warm Border
   static const borderLight = Color(0xFFF2EFE9); // Light Warm Border
   static const success = Color(0xFF8CB369); // Muted Green

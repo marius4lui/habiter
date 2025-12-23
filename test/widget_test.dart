@@ -5,14 +5,42 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
-import 'package:appv2/main.dart';
+import 'package:appv2/providers/habit_provider.dart';
+import 'package:appv2/providers/app_lock_provider.dart';
+import 'package:appv2/theme/app_theme.dart';
 
 void main() {
   testWidgets('Shell renders nav destinations', (WidgetTester tester) async {
-    await tester.pumpWidget(const HabiterApp());
-    await tester.pumpAndSettle();
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => HabitProvider()),
+          ChangeNotifierProvider(create: (_) => AppLockProvider()),
+        ],
+        child: MaterialApp(
+          theme: buildAppTheme(),
+          home: Scaffold(
+            bottomNavigationBar: NavigationBar(
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.checklist_rtl),
+                  label: 'Habits',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.query_stats),
+                  label: 'Analytics',
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
 
     expect(find.text('Habits'), findsOneWidget);
     expect(find.text('Analytics'), findsOneWidget);

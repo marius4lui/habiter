@@ -3,15 +3,20 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'providers/app_lock_provider.dart';
 import 'providers/habit_provider.dart';
 import 'screens/analytics_screen.dart';
+import 'screens/app_lock_screen.dart';
 import 'screens/home_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => HabitProvider()..load(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => HabitProvider()..load()),
+        ChangeNotifierProvider(create: (_) => AppLockProvider()..load()),
+      ],
       child: const HabiterApp(),
     ),
   );
@@ -47,6 +52,30 @@ class _RootShellState extends State<_RootShell> {
   void initState() {
     super.initState();
     _pageController = PageController();
+    
+    // Listen to habit changes to update app lock status
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupHabitListener();
+    });
+  }
+  
+  void _setupHabitListener() {
+    final habitProvider = context.read<HabitProvider>();
+    final appLockProvider = context.read<AppLockProvider>();
+    
+    // Initial check
+    appLockProvider.updateHabitCompletion(
+      habits: habitProvider.habits,
+      entries: habitProvider.habitEntries,
+    );
+    
+    // Listen for changes
+    habitProvider.addListener(() {
+      appLockProvider.updateHabitCompletion(
+        habits: habitProvider.habits,
+        entries: habitProvider.habitEntries,
+      );
+    });
   }
 
   @override
@@ -68,6 +97,12 @@ class _RootShellState extends State<_RootShell> {
     setState(() => _index = index);
   }
 
+  void _openAppLock() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const AppLockScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
@@ -84,6 +119,25 @@ class _RootShellState extends State<_RootShell> {
               physics: const BouncingScrollPhysics(),
               children: _pages,
             ),
+            floatingActionButton: Consumer<AppLockProvider>(
+              builder: (context, appLock, _) {
+                if (!appLock.isSupported) return const SizedBox.shrink();
+                return FloatingActionButton.small(
+                  onPressed: _openAppLock,
+                  backgroundColor: appLock.isEnabled
+                      ? AppColors.primary
+                      : AppColors.surface,
+                  child: Icon(
+                    appLock.isEnabled ? Icons.lock : Icons.lock_open,
+                    color: appLock.isEnabled
+                        ? Colors.white
+                        : AppColors.textSecondary,
+                    size: 20,
+                  ),
+                );
+              },
+            ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
             bottomNavigationBar: Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.md,

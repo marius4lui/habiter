@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/habit.dart';
+import '../models/locked_app.dart';
 
 class StorageService {
   static const _habitsKey = 'habiter_habits';
@@ -10,6 +11,7 @@ class StorageService {
   static const _aiInsightsKey = 'habiter_ai_insights';
   static const _userPreferencesKey = 'habiter_user_preferences';
   static const _aiConfigKey = 'habiter_ai_config';
+  static const _appLockConfigKey = 'habiter_app_lock_config';
 
   static Future<SharedPreferences> _prefs() => SharedPreferences.getInstance();
 
@@ -162,6 +164,19 @@ class StorageService {
     await prefs.remove(_aiConfigKey);
   }
 
+  // App Lock config
+  static Future<AppLockConfig> getAppLockConfig() async {
+    final prefs = await _prefs();
+    final stored = prefs.getString(_appLockConfigKey);
+    if (stored == null) return const AppLockConfig();
+    return AppLockConfig.fromMap(jsonDecode(stored) as Map<String, dynamic>);
+  }
+
+  static Future<void> saveAppLockConfig(AppLockConfig config) async {
+    final prefs = await _prefs();
+    await prefs.setString(_appLockConfigKey, jsonEncode(config.toMap()));
+  }
+
   static Future<void> clearAll() async {
     final prefs = await _prefs();
     await prefs.remove(_habitsKey);
@@ -169,5 +184,6 @@ class StorageService {
     await prefs.remove(_aiInsightsKey);
     await prefs.remove(_userPreferencesKey);
     await prefs.remove(_aiConfigKey);
+    await prefs.remove(_appLockConfigKey);
   }
 }

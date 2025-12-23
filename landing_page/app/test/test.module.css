@@ -536,3 +536,94 @@
     font-size: 1.5rem;
     margin-bottom: 1rem;
 }
+
+/* Overview Page */
+.overviewPage {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.overviewPage h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0;
+    -webkit-text-fill-color: var(--text);
+}
+
+/* Test Grid */
+.testGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.testCard {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.testCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(78, 205, 196, 0.2);
+    border-color: var(--primary);
+}
+
+.testCardHeader {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.recommendedBadge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+    border-radius: 50px;
+    font-weight: 600;
+}
+
+.testCard h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.testCardDesc {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    flex: 1;
+    margin-bottom: 1rem;
+}
+
+.testCardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.testCardMethod {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.testCardArrow {
+    font-size: 1.5rem;
+    color: var(--primary);
+    transition: transform 0.2s;
+}
+
+.testCard:hover .testCardArrow {
+    transform: translateX(4px);
+}

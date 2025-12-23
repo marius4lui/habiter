@@ -456,3 +456,83 @@
     color: var(--primary);
     word-break: break-all;
 }
+
+/* Loading & Not Found */
+.loadingContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 50vh;
+    color: var(--text-muted);
+}
+
+.notFoundContainer {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.notFoundContainer h1 {
+    font-size: 5rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.backLink {
+    display: inline-block;
+    margin-top: 1.5rem;
+    color: var(--primary);
+    text-decoration: none;
+}
+
+/* Test Detail Page */
+.testDetailPage {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.testInfoCard {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 2rem;
+}
+
+.testInfoHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.testInfoHeader h1 {
+    font-size: 2rem;
+    -webkit-text-fill-color: var(--text);
+    margin: 0;
+}
+
+.testInfoDesc {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+.testInfoMeta {
+    display: flex;
+    gap: 2rem;
+    padding: 1rem;
+    background: var(--surface);
+    border-radius: 12px;
+    font-size: 0.9rem;
+}
+
+.testInfoMeta a {
+    color: var(--primary);
+}
+
+.formSection h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}

@@ -6,6 +6,34 @@ import { User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import styles from "./admin.module.css";
 
+// Pre-defined templates for quick test creation
+const TEMPLATES = {
+    stable: {
+        name: "Habiter Stable",
+        description: "Stabile, getestete Version für alle Benutzer.",
+        priority: 0,
+        tester_method: "csv" as const,
+    },
+    beta: {
+        name: "Habiter Beta",
+        description: "Neue Features testen bevor sie live gehen.",
+        priority: 1,
+        tester_method: "google_groups" as const,
+    },
+    alpha: {
+        name: "Habiter Alpha",
+        description: "Frühe Entwicklungsversion - kann Bugs enthalten.",
+        priority: 2,
+        tester_method: "google_groups" as const,
+    },
+    nightly: {
+        name: "Habiter Nightly",
+        description: "Tägliche Builds mit neuesten Änderungen - experimentell!",
+        priority: 3,
+        tester_method: "csv" as const,
+    },
+};
+
 export default function AdminPage() {
     const { t, locale, setLocale } = useLocale();
     const [user, setUser] = useState<User | null>(null);
@@ -203,6 +231,34 @@ export default function AdminPage() {
                 {showForm && (
                     <form onSubmit={handleSubmit} className={styles.form}>
                         <h2>{editingTest ? t.admin.editTest : t.admin.createTest}</h2>
+
+                        {/* Template Selector */}
+                        {!editingTest && (
+                            <div className={styles.templateSection}>
+                                <label>📋 Schnellstart-Template:</label>
+                                <div className={styles.templateButtons}>
+                                    {Object.entries(TEMPLATES).map(([key, tmpl]) => (
+                                        <button
+                                            key={key}
+                                            type="button"
+                                            className={styles.templateBtn}
+                                            onClick={() => setFormData({
+                                                ...formData,
+                                                name: tmpl.name,
+                                                description: tmpl.description,
+                                                priority: tmpl.priority,
+                                                tester_method: tmpl.tester_method,
+                                            })}
+                                        >
+                                            <span className={`${styles.priorityBadge} ${styles[`priority${tmpl.priority}`]}`}>
+                                                {getPriorityLabel(tmpl.priority, t)}
+                                            </span>
+                                            {tmpl.name.replace("Habiter ", "")}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         <div className={styles.field}>
                             <label>{t.admin.testName}</label>

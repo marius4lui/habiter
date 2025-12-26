@@ -15,6 +15,7 @@ const translations = {
         features: "Funktionen",
         download: "Download",
         home: "Home",
+        liveDemo: "Live Demo",
         feedback: "Feedback",
         langSwitch: "EN",
         langSwitchLocale: "en",
@@ -23,6 +24,7 @@ const translations = {
         features: "Features",
         download: "Download",
         home: "Home",
+        liveDemo: "Live Demo",
         feedback: "Feedback",
         langSwitch: "DE",
         langSwitchLocale: "de",
@@ -66,6 +68,9 @@ export function Header({ locale, showFeatures = true, showDownload = true }: Hea
                         {t.home}
                     </Link>
                 )}
+                <Link href={`${basePath}/live`} className="nav-link">
+                    {t.liveDemo}
+                </Link>
                 <Link href={`${basePath}/feedback`} className="nav-link">
                     {t.feedback}
                 </Link>

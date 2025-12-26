@@ -1,0 +1,504 @@
+.demoPage {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #D4A373, #E76F51);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+/* Phone Container */
+.phoneContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.phoneFrame {
+    width: 100%;
+    max-width: 375px;
+    background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 40px;
+    padding: 12px;
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    position: relative;
+}
+
+.phoneNotch {
+    width: 120px;
+    height: 28px;
+    background: #0a0a14;
+    border-radius: 20px;
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.phoneScreen {
+    background: linear-gradient(180deg, #FAFAF5 0%, #F0EBE0 100%);
+    border-radius: 32px;
+    min-height: 650px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Hero Header */
+.heroHeader {
+    background: linear-gradient(135deg, #D4A373 0%, #E76F51 100%);
+    padding: 3rem 1.25rem 1.5rem;
+    border-radius: 0 0 24px 24px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.heroHeader::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(233, 196, 106, 0.3) 0%, transparent 50%);
+}
+
+.heroContent {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+}
+
+.heroLeft {
+    flex: 1;
+}
+
+.greeting {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin: 0 0 0.25rem;
+    letter-spacing: -0.5px;
+}
+
+.date {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    font-weight: 600;
+    margin: 0;
+}
+
+.addBtn {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(10px);
+}
+
+.addBtn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* Stats */
+.statsRow {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.statIcon {
+    font-size: 1.25rem;
+}
+
+.statValue {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.statLabel {
+    font-size: 0.75rem;
+    opacity: 0.85;
+}
+
+/* Progress Bar */
+.progressContainer {
+    height: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    margin-top: 1rem;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+.progressBar {
+    height: 100%;
+    background: white;
+    border-radius: 50px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.momentumRow {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+}
+
+.momentumCount {
+    font-weight: 700;
+}
+
+/* Habit List */
+.habitList {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Habit Card Wrapper */
+.habitCardWrapper {
+    position: relative;
+    animation: slideIn 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Swipe Reveal Background */
+.swipeReveal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    padding-left: 1.5rem;
+}
+
+.revealCheck {
+    font-size: 1.5rem;
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+/* Habit Card */
+.habitCard {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 0.5rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 20px rgba(74, 64, 54, 0.08);
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.1s ease-out, box-shadow 0.3s;
+    position: relative;
+}
+
+.habitCard:active {
+    cursor: grabbing;
+}
+
+.habitCard.completing {
+    animation: completeGlow 0.4s ease-out;
+}
+
+@keyframes completeGlow {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 4px 20px rgba(74, 64, 54, 0.08);
+    }
+
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 8px 40px rgba(212, 163, 115, 0.3);
+    }
+
+    100% {
+        transform: scale(0.95);
+        opacity: 0.5;
+    }
+}
+
+.habitIconCircle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    grid-row: span 2;
+}
+
+.habitInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.habitName {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #4A4036;
+    letter-spacing: -0.3px;
+}
+
+.habitDesc {
+    font-size: 0.8rem;
+    color: #8C7E72;
+}
+
+.habitMeta {
+    display: flex;
+    gap: 0.5rem;
+    grid-column: 2 / 4;
+    align-items: center;
+}
+
+.frequency {
+    font-size: 0.75rem;
+    color: #8C7E72;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.category {
+    font-size: 0.65rem;
+    color: #BDB3AA;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    background: rgba(250, 250, 245, 0.5);
+    padding: 0.25rem 0.5rem;
+    border-radius: 50px;
+}
+
+.slideHint {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: rgba(140, 126, 114, 0.4);
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* Particles */
+.particles {
+    position: absolute;
+    top: 50%;
+    right: 2rem;
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: burst 0.6s ease-out forwards;
+}
+
+@keyframes burst {
+    0% {
+        transform: rotate(var(--angle, 0deg)) translateY(0) scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: rotate(var(--angle, 0deg)) translateY(-40px) scale(0);
+        opacity: 0;
+    }
+}
+
+/* Completed Section */
+.completedSection {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(212, 163, 115, 0.2);
+}
+
+.completedSection h3 {
+    font-size: 0.85rem;
+    color: #8CB369;
+    margin-bottom: 0.75rem;
+}
+
+.completedCard {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(140, 179, 105, 0.1);
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+}
+
+.completedCard .habitIcon {
+    font-size: 1.25rem;
+}
+
+.completedCard .habitName {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #8CB369;
+}
+
+.checkmark {
+    color: #8CB369;
+    font-weight: bold;
+}
+
+/* All Done */
+.allDone {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.allDone span {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.allDone p {
+    color: #8CB369;
+    font-weight: 600;
+}
+
+/* Helper Text */
+.tryIt {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.resetBtn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.resetBtn:hover {
+    background: var(--surface);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* CTA Section */
+.ctaSection {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: var(--glass-bg);
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
+}
+
+.ctaSection h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.ctaBtn {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #D4A373 0%, #E76F51 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 20px rgba(212, 163, 115, 0.4);
+    transition: all 0.3s;
+}
+
+.ctaBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(212, 163, 115, 0.5);
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .phoneFrame {
+        border-radius: 30px;
+        padding: 8px;
+    }
+
+    .phoneScreen {
+        border-radius: 24px;
+    }
+
+    .phoneNotch {
+        width: 100px;
+        height: 24px;
+        top: 14px;
+    }
+}

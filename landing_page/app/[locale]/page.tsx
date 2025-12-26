@@ -2,25 +2,100 @@
 
 import { Footer, Header } from "@/components";
 import { Locale, translations } from "@/lib/i18n";
+import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function LocaleHomePage() {
     const params = useParams();
     const locale = (params.locale as Locale) || "de";
     const t = translations[locale] || translations.de;
+    const [demoProgress, setDemoProgress] = useState(0);
+
+    // Animate demo progress
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setDemoProgress(prev => (prev + 1) % 101);
+        }, 50);
+        return () => clearInterval(timer);
+    }, []);
+
+    const content = {
+        de: {
+            howItWorks: "So funktioniert's",
+            steps: [
+                { icon: "📝", title: "Habits erstellen", desc: "Definiere deine täglichen Gewohnheiten mit Zielen und Kategorien" },
+                { icon: "👆", title: "Wischen & Abhaken", desc: "Swipe nach rechts um Habits als erledigt zu markieren" },
+                { icon: "📊", title: "Fortschritt verfolgen", desc: "Behalte deine Streaks und Statistiken im Blick" },
+            ],
+            tryDemo: "Probier es aus!",
+            tryDemoDesc: "Teste die App direkt im Browser",
+            openDemo: "Live Demo öffnen →",
+            stats: {
+                title: "Zahlen, die überzeugen",
+                items: [
+                    { value: "30+", label: "Sekunden zum Start" },
+                    { value: "100%", label: "Offline nutzbar" },
+                    { value: "0€", label: "Keine Kosten" },
+                ],
+            },
+            moreFeatures: "Noch mehr Features",
+            features2: [
+                { icon: "🔒", title: "App Lock", desc: "Sperre ablenkendeApps bis du deine Habits erledigt hast" },
+                { icon: "📈", title: "Statistiken", desc: "Detaillierte Einblicke in deine Gewohnheiten" },
+                { icon: "🌙", title: "Dark Mode", desc: "Schont deine Augen bei Nacht" },
+                { icon: "🔔", title: "Erinnerungen", desc: "Nie wieder einen Habit vergessen" },
+            ],
+        },
+        en: {
+            howItWorks: "How it works",
+            steps: [
+                { icon: "📝", title: "Create Habits", desc: "Define your daily habits with goals and categories" },
+                { icon: "👆", title: "Swipe & Check", desc: "Swipe right to mark habits as completed" },
+                { icon: "📊", title: "Track Progress", desc: "Keep an eye on your streaks and statistics" },
+            ],
+            tryDemo: "Try it out!",
+            tryDemoDesc: "Test the app right in your browser",
+            openDemo: "Open Live Demo →",
+            stats: {
+                title: "Numbers that convince",
+                items: [
+                    { value: "30+", label: "Seconds to start" },
+                    { value: "100%", label: "Works offline" },
+                    { value: "$0", label: "No cost" },
+                ],
+            },
+            moreFeatures: "Even more features",
+            features2: [
+                { icon: "🔒", title: "App Lock", desc: "Lock distracting apps until you complete your habits" },
+                { icon: "📈", title: "Statistics", desc: "Detailed insights into your habits" },
+                { icon: "🌙", title: "Dark Mode", desc: "Easy on your eyes at night" },
+                { icon: "🔔", title: "Reminders", desc: "Never forget a habit again" },
+            ],
+        },
+    };
+
+    const c = content[locale] || content.de;
 
     return (
         <div className="container">
             <Header locale={locale} />
 
+            {/* Hero Section */}
             <section className="hero">
                 <h1>{t.home.title}</h1>
                 <p className="subtitle">{t.home.subtitle}</p>
-                <a href="#download" className="btn btn-primary">
-                    {t.home.downloadBtn}
-                </a>
+                <div className="hero-buttons">
+                    <a href="#download" className="btn btn-primary">
+                        {t.home.downloadBtn}
+                    </a>
+                    <Link href={`/${locale}/live`} className="btn btn-secondary">
+                        {c.openDemo}
+                    </Link>
+                </div>
             </section>
 
+            {/* Features */}
             <section id="features" className="features">
                 <div className="card">
                     <span className="feature-icon">✨</span>
@@ -39,14 +114,108 @@ export default function LocaleHomePage() {
                 </div>
             </section>
 
-            <section id="download" className="hero" style={{ paddingTop: 0 }}>
+            {/* How It Works */}
+            <section className="how-it-works">
+                <h2>{c.howItWorks}</h2>
+                <div className="steps">
+                    {c.steps.map((step, i) => (
+                        <div key={i} className="step">
+                            <div className="step-number">{i + 1}</div>
+                            <span className="step-icon">{step.icon}</span>
+                            <h3>{step.title}</h3>
+                            <p>{step.desc}</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* Demo Preview */}
+            <section className="demo-preview">
+                <div className="demo-content">
+                    <h2>{c.tryDemo}</h2>
+                    <p>{c.tryDemoDesc}</p>
+                    <Link href={`/${locale}/live`} className="btn btn-primary">
+                        {c.openDemo}
+                    </Link>
+                </div>
+                <div className="demo-phone">
+                    <div className="demo-screen">
+                        <div className="demo-header-bar">
+                            <div className="demo-greeting">
+                                {locale === "de" ? "Guten Tag" : "Good afternoon"}
+                            </div>
+                            <div className="demo-date">
+                                {new Date().toLocaleDateString(locale === "de" ? "de-DE" : "en-US", { weekday: "short", day: "numeric", month: "short" })}
+                            </div>
+                        </div>
+                        <div className="demo-progress-section">
+                            <div className="demo-progress-bar">
+                                <div
+                                    className="demo-progress-fill"
+                                    style={{ width: `${Math.min(demoProgress, 75)}%` }}
+                                ></div>
+                            </div>
+                            <div className="demo-progress-text">{Math.min(demoProgress, 75)}%</div>
+                        </div>
+                        <div className="demo-habits">
+                            <div className="demo-habit completed">
+                                <span>🧘</span>
+                                <span>Meditieren</span>
+                                <span className="check">✓</span>
+                            </div>
+                            <div className="demo-habit completed">
+                                <span>💧</span>
+                                <span>Wasser trinken</span>
+                                <span className="check">✓</span>
+                            </div>
+                            <div className="demo-habit">
+                                <span>📚</span>
+                                <span>Lesen</span>
+                                <span className="arrow">→</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Stats */}
+            <section className="stats-section">
+                <h2>{c.stats.title}</h2>
+                <div className="stats-grid">
+                    {c.stats.items.map((stat, i) => (
+                        <div key={i} className="stat-card">
+                            <div className="stat-value">{stat.value}</div>
+                            <div className="stat-label">{stat.label}</div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* More Features */}
+            <section className="more-features">
+                <h2>{c.moreFeatures}</h2>
+                <div className="features-grid">
+                    {c.features2.map((feature, i) => (
+                        <div key={i} className="feature-item">
+                            <span className="feature-icon">{feature.icon}</span>
+                            <div>
+                                <h4>{feature.title}</h4>
+                                <p>{feature.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* Download CTA */}
+            <section id="download" className="hero cta-section">
                 <h2>{t.home.startJourney}</h2>
                 <p style={{ marginBottom: "1.5rem", color: "var(--text-muted)" }}>
                     🚀 {locale === "de"
                         ? "Die App befindet sich aktuell in der Beta-Phase. Werde Teil unserer Tester-Community!"
                         : "The app is currently in beta. Join our tester community!"}
                 </p>
-                <a href={`/${locale}/test`} className="btn btn-primary">
+                <a href={`/${locale}/test`} className="btn btn-primary btn-large">
                     {locale === "de" ? "Beta-Tester werden →" : "Become a Beta Tester →"}
                 </a>
             </section>
@@ -55,3 +224,4 @@ export default function LocaleHomePage() {
         </div>
     );
 }
+

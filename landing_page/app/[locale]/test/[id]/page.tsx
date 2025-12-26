@@ -1,6 +1,6 @@
 "use client";
 
-import { getPriorityLabel, useLocale } from "@/lib/i18n";
+import { getPriorityLabel, Locale, translations } from "@/lib/i18n";
 import { BetaTest, supabase } from "@/lib/supabase";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,9 +9,10 @@ import { useEffect, useState } from "react";
 import styles from "../test.module.css";
 
 export default function TestDetailPage() {
-    const { t, locale, setLocale } = useLocale();
     const params = useParams();
+    const locale = (params.locale as Locale) || "de";
     const testId = params.id as string;
+    const t = translations[locale] || translations.de;
 
     const [test, setTest] = useState<BetaTest | null>(null);
     const [loading, setLoading] = useState(true);
@@ -74,19 +75,16 @@ export default function TestDetailPage() {
 
     const Header = () => (
         <header className={styles.header}>
-            <Link href="/" className={styles.brand}>
+            <Link href={`/${locale}`} className={styles.brand}>
                 <Image src="/icon.png" alt="Habiter Logo" width={32} height={32} className={styles.brandLogo} />
                 {t.common.habiter}
             </Link>
             <nav className={styles.navLinks}>
-                <Link href="/de" className={styles.navLink}>{t.common.home}</Link>
-                <Link href="/de/test" className={styles.navLink}>Tests</Link>
-                <button
-                    onClick={() => setLocale(otherLocale)}
-                    className={`${styles.navLink} ${styles.langSwitch}`}
-                >
+                <Link href={`/${locale}`} className={styles.navLink}>{t.common.home}</Link>
+                <Link href={`/${locale}/test`} className={styles.navLink}>Tests</Link>
+                <Link href={`/${otherLocale}/test/${testId}`} className={`${styles.navLink} ${styles.langSwitch}`}>
                     {t.nav.langSwitch}
-                </button>
+                </Link>
             </nav>
         </header>
     );
@@ -94,9 +92,9 @@ export default function TestDetailPage() {
     const Footer = () => (
         <footer className={styles.footer}>
             <div className={styles.footerLinks}>
-                <Link href="/de/privacy">{t.nav.privacy}</Link>
-                <Link href="/de/terms">{t.nav.terms}</Link>
-                <Link href="/de/imprint">{t.nav.imprint}</Link>
+                <Link href={`/${locale}/privacy`}>{t.nav.privacy}</Link>
+                <Link href={`/${locale}/terms`}>{t.nav.terms}</Link>
+                <Link href={`/${locale}/imprint`}>{t.nav.imprint}</Link>
             </div>
             <p>{t.common.copyright}</p>
         </footer>
@@ -120,9 +118,9 @@ export default function TestDetailPage() {
                 <Header />
                 <div className={styles.notFoundContainer}>
                     <h1>404</h1>
-                    <p>Test nicht gefunden oder nicht mehr aktiv.</p>
-                    <Link href="/de/test" className={styles.backLink}>
-                        ← Alle Tests anzeigen
+                    <p>{locale === "de" ? "Test nicht gefunden oder nicht mehr aktiv." : "Test not found or no longer active."}</p>
+                    <Link href={`/${locale}/test`} className={styles.backLink}>
+                        ← {locale === "de" ? "Alle Tests anzeigen" : "View all tests"}
                     </Link>
                 </div>
                 <Footer />
@@ -185,13 +183,13 @@ export default function TestDetailPage() {
 
                     <div className={styles.testInfoMeta}>
                         <div>
-                            <strong>Methode:</strong>{" "}
+                            <strong>{locale === "de" ? "Methode:" : "Method:"}</strong>{" "}
                             {test?.tester_method === "google_groups" ? "Google Groups" : "CSV Export"}
                         </div>
                         <div>
                             <strong>Play Store:</strong>{" "}
                             <a href={test?.playstore_link} target="_blank" rel="noopener noreferrer">
-                                Link öffnen
+                                {locale === "de" ? "Link öffnen" : "Open link"}
                             </a>
                         </div>
                     </div>

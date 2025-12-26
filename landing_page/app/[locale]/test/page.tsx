@@ -1,14 +1,18 @@
 "use client";
 
-import { getPriorityLabel, useLocale } from "@/lib/i18n";
+import { getPriorityLabel, Locale, translations } from "@/lib/i18n";
 import { BetaTest, supabase } from "@/lib/supabase";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import styles from "./test.module.css";
 
 export default function TestOverviewPage() {
-    const { t, locale, setLocale } = useLocale();
+    const params = useParams();
+    const locale = (params.locale as Locale) || "de";
+    const t = translations[locale] || translations.de;
+
     const [tests, setTests] = useState<BetaTest[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -21,7 +25,7 @@ export default function TestOverviewPage() {
             .from("beta_tests")
             .select("*")
             .eq("is_active", true)
-            .order("priority", { ascending: true }) // Stable (0) first
+            .order("priority", { ascending: true })
             .order("created_at", { ascending: false });
 
         setLoading(false);
@@ -35,18 +39,15 @@ export default function TestOverviewPage() {
 
     const Header = () => (
         <header className={styles.header}>
-            <Link href="/" className={styles.brand}>
+            <Link href={`/${locale}`} className={styles.brand}>
                 <Image src="/icon.png" alt="Habiter Logo" width={32} height={32} className={styles.brandLogo} />
                 {t.common.habiter}
             </Link>
             <nav className={styles.navLinks}>
-                <Link href="/en" className={styles.navLink}>{t.common.home}</Link>
-                <button
-                    onClick={() => setLocale(otherLocale)}
-                    className={`${styles.navLink} ${styles.langSwitch}`}
-                >
+                <Link href={`/${locale}`} className={styles.navLink}>{t.common.home}</Link>
+                <Link href={`/${otherLocale}/test`} className={`${styles.navLink} ${styles.langSwitch}`}>
                     {t.nav.langSwitch}
-                </button>
+                </Link>
             </nav>
         </header>
     );
@@ -54,9 +55,9 @@ export default function TestOverviewPage() {
     const Footer = () => (
         <footer className={styles.footer}>
             <div className={styles.footerLinks}>
-                <Link href="/en/privacy">{t.nav.privacy}</Link>
-                <Link href="/en/terms">{t.nav.terms}</Link>
-                <Link href="/en/imprint">{t.nav.imprint}</Link>
+                <Link href={`/${locale}/privacy`}>{t.nav.privacy}</Link>
+                <Link href={`/${locale}/terms`}>{t.nav.terms}</Link>
+                <Link href={`/${locale}/imprint`}>{t.nav.imprint}</Link>
             </div>
             <p>{t.common.copyright}</p>
         </footer>
@@ -91,7 +92,7 @@ export default function TestOverviewPage() {
                         {tests.map((test) => (
                             <Link
                                 key={test.id}
-                                href={`/en/test/${test.id}`}
+                                href={`/${locale}/test/${test.id}`}
                                 className={styles.testCard}
                             >
                                 <div className={styles.testCardHeader}>
@@ -99,7 +100,9 @@ export default function TestOverviewPage() {
                                         {getPriorityLabel(test.priority, t)}
                                     </span>
                                     {test.priority === 0 && (
-                                        <span className={styles.recommendedBadge}>⭐ Empfohlen</span>
+                                        <span className={styles.recommendedBadge}>
+                                            {locale === "de" ? "⭐ Empfohlen" : "⭐ Recommended"}
+                                        </span>
                                     )}
                                 </div>
                                 <h2>{test.name}</h2>

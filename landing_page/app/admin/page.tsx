@@ -1,7 +1,7 @@
 "use client";
 
 import { getPriorityLabel, useLocale } from "@/lib/i18n";
-import { BetaRegistration, BetaTest, supabase } from "@/lib/supabase";
+import { BetaRegistration, BetaTest, Feedback, supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import styles from "./admin.module.css";
@@ -40,6 +40,7 @@ export default function AdminPage() {
     const [loading, setLoading] = useState(true);
     const [tests, setTests] = useState<BetaTest[]>([]);
     const [registrations, setRegistrations] = useState<Record<string, BetaRegistration[]>>({});
+    const [feedback, setFeedback] = useState<Feedback[]>([]);
     const [showForm, setShowForm] = useState(false);
     const [editingTest, setEditingTest] = useState<BetaTest | null>(null);
     const [formData, setFormData] = useState({
@@ -80,6 +81,7 @@ export default function AdminPage() {
         setUser(user);
         setLoading(false);
         loadTests();
+        loadFeedback();
     }
 
     async function handleLogout() {
@@ -109,6 +111,23 @@ export default function AdminPage() {
                 }
             }
             setRegistrations(regs);
+        }
+    }
+
+    async function loadFeedback() {
+        const { data } = await supabase
+            .from("feedback")
+            .select("*")
+            .order("created_at", { ascending: false });
+        if (data) {
+            setFeedback(data);
+        }
+    }
+
+    async function deleteFeedback(id: string) {
+        if (confirm("Feedback löschen?")) {
+            await supabase.from("feedback").delete().eq("id", id);
+            loadFeedback();
         }
     }
 
@@ -466,6 +485,48 @@ export default function AdminPage() {
                                 </div>
                             </div>
                         ))
+                    )}
+                </div>
+
+                {/* Feedback Section */}
+                <div className={styles.feedbackSection}>
+                    <h2>💬 Feedback ({feedback.length})</h2>
+                    {feedback.length === 0 ? (
+                        <p className={styles.noRegs}>Noch kein Feedback erhalten.</p>
+                    ) : (
+                        <div className={styles.feedbackList}>
+                            {feedback.map((item) => (
+                                <div key={item.id} className={styles.feedbackCard}>
+                                    <div className={styles.feedbackHeader}>
+                                        <span className={styles.feedbackType}>
+                                            {item.type === "suggestion" && "💡"}
+                                            {item.type === "bug" && "🐛"}
+                                            {item.type === "praise" && "⭐"}
+                                            {item.type === "question" && "❓"}
+                                            {item.type === "other" && "📝"}
+                                            {" "}{item.type}
+                                        </span>
+                                        <span className={styles.feedbackDate}>
+                                            {new Date(item.created_at).toLocaleDateString(locale === "de" ? "de-DE" : "en-US")}
+                                        </span>
+                                        <button
+                                            className={styles.deleteFeedbackBtn}
+                                            onClick={() => deleteFeedback(item.id)}
+                                        >
+                                            🗑️
+                                        </button>
+                                    </div>
+                                    <p className={styles.feedbackMessage}>{item.message}</p>
+                                    {(item.name || item.email) && (
+                                        <div className={styles.feedbackMeta}>
+                                            {item.name && <span>👤 {item.name}</span>}
+                                            {item.email && <span>✉️ {item.email}</span>}
+                                            <span>🌐 {item.locale.toUpperCase()}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
             </main>

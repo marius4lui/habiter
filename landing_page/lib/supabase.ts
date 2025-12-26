@@ -27,3 +27,13 @@ export interface BetaRegistration {
     status: "pending" | "approved" | "rejected";
     created_at: string;
 }
+
+export interface Feedback {
+    id: string;
+    name: string | null;
+    email: string | null;
+    type: string;
+    message: string;
+    locale: string;
+    created_at: string;
+}

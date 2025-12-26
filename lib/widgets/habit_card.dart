@@ -205,7 +205,7 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
           children: [
             // BACKGROUND LAYER (The "Reveal" area)
             Container(
-              height: 120, // Should match card height roughly or be adaptive
+              height: 70, // Matches compact card height
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 color: Colors.transparent, // Fix "brown" field artifact
@@ -312,134 +312,108 @@ class _GlassHabitCardContent extends StatelessWidget {
     final accentColor = _fromHex(habit.color);
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
         child: Container(
-          // Card dimensions and padding
-          constraints: const BoxConstraints(minHeight: 88), // Reduced from 120
-          padding: const EdgeInsets.all(14), // Reduced from 20
+          // Card dimensions and padding - more compact
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.90), // Much more solid (was 0.65)
-            borderRadius: BorderRadius.circular(24),
+            color: Colors.white.withOpacity(0.90),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(0.6), // Stronger border (was 0.4)
+              color: Colors.white.withOpacity(0.6),
               width: 1.0,
             ),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withOpacity(0.95), // Nearly opaque
+                Colors.white.withOpacity(0.95),
                 Colors.white.withOpacity(0.85),
               ],
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Row(
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ICON
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: accentColor.withOpacity(0.12),
-                      shape: BoxShape.circle,
+              // ICON
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  habit.icon,
+                  style: const TextStyle(fontSize: 22),
+                ),
+              ),
+              const SizedBox(width: 12),
+              
+              // TEXT + META
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      habit.name,
+                      style: AppTextStyles.h3.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.5,
+                        fontSize: 15,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      habit.icon,
-                      style: const TextStyle(fontSize: 26),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  
-                  // TEXT
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: 4),
+                    Row(
                       children: [
-                          Text(
-                            habit.name,
-                            style: AppTextStyles.h3.copyWith(
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.5,
-                              fontSize: 17, // Reduced from 19
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        Icon(Icons.repeat_rounded, size: 12, color: AppColors.textSecondary),
+                        const SizedBox(width: 4),
+                        Text(
+                          _getFrequencyLabel(habit),
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
                           ),
-                        if (habit.description != null && habit.description!.isNotEmpty)
-                           Padding(
-                             padding: const EdgeInsets.only(top: 4),
-                             child: Text(
-                              habit.description!,
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.textSecondary.withOpacity(0.8),
-                                fontSize: 13,
-                                letterSpacing: 0.0,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                             ),
-                           ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          habit.category.toUpperCase(),
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textTertiary,
+                            fontSize: 9,
+                            letterSpacing: 1,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              // META INFO
-              Row(
-                children: [
-                  _GlassChip(
-                    icon: Icons.repeat_rounded,
-                    label: _getFrequencyLabel(habit),
-                    color: AppColors.textSecondary,
-                  ),
-                  const Spacer(),
-                  // Category Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                     decoration: BoxDecoration(
-                      color: AppColors.background.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Text(
-                      habit.category.toUpperCase(),
-                      style: AppTextStyles.caption.copyWith(
-                         color: AppColors.textTertiary,
-                         fontSize: 10,
-                         letterSpacing: 1.2,
-                         fontWeight: FontWeight.w800,
+                    if (isCompleted)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          children: [
+                            Icon(Icons.check_circle, size: 12, color: AppColors.success),
+                            const SizedBox(width: 4),
+                            Text(
+                              'COMPLETED',
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.success,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 10,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  )
-                ],
+                  ],
+                ),
               ),
-              if (isCompleted)
-                 Padding(
-                   padding: const EdgeInsets.only(top: 8.0),
-                   child: Row(
-                     children: [
-                       Icon(Icons.check_circle, size: 14, color: AppColors.success),
-                       const SizedBox(width: 4),
-                       Text(
-                         'COMPLETED',
-                         style: AppTextStyles.caption.copyWith(
-                           color: AppColors.success,
-                           fontWeight: FontWeight.w800,
-                           letterSpacing: 1.0,
-                         ),
-                       ),
-                     ],
-                   ),
-                 ),
             ],
           ),
         ),

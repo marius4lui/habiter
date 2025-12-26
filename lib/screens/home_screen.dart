@@ -196,96 +196,87 @@ class _HeroHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         gradient: AppGradients.hero,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.6),
         boxShadow: AppShadows.glow,
       ),
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(gradient: AppGradients.halo),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          greeting,
-                          style: AppTextStyles.h1.copyWith(
-                            color: Colors.white,
-                            letterSpacing: -0.8,
-                          ),
-                        ),
-                        Text(
-                          formatDisplayDate(today),
-                          style: AppTextStyles.bodySecondary.copyWith(
-                            color: Colors.white.withOpacity(0.86),
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      greeting,
+                      style: AppTextStyles.h1.copyWith(
+                        color: Colors.white,
+                        letterSpacing: -0.8,
+                      ),
                     ),
-                  ),
-                  _GlassIconButton(
-                    icon: Icons.add,
-                    onTap: onAddHabit,
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  _HeroStat(
-                    title: 'Completion',
-                    value: '${(completionRate * 100).round()}%',
-                    icon: Icons.bolt,
-                    accent: Colors.white,
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  _HeroStat(
-                    title: 'Active',
-                    value: '$activeHabits',
-                    icon: Icons.blur_circular,
-                    accent: Colors.white,
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                child: LinearProgressIndicator(
-                  value: completionRate,
-                  minHeight: 14,
-                  backgroundColor: Colors.white.withOpacity(0.15),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    Text(
+                      formatDisplayDate(today),
+                      style: AppTextStyles.bodySecondary.copyWith(
+                        color: Colors.white.withOpacity(0.86),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.sm),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Today's momentum",
-                    style: AppTextStyles.bodySecondary.copyWith(
-                      color: Colors.white.withOpacity(0.82),
-                    ),
-                  ),
-                  Text(
-                    '$completedToday/$activeHabits',
-                    style: AppTextStyles.h3.copyWith(
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
+              _GlassIconButton(
+                icon: Icons.add,
+                onTap: onAddHabit,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              _HeroStat(
+                title: 'Completion',
+                value: '${(completionRate * 100).round()}%',
+                icon: Icons.bolt,
+                accent: Colors.white,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              _HeroStat(
+                title: 'Active',
+                value: '$activeHabits',
+                icon: Icons.blur_circular,
+                accent: Colors.white,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppBorderRadius.full),
+            child: LinearProgressIndicator(
+              value: completionRate,
+              minHeight: 14,
+              backgroundColor: Colors.white.withOpacity(0.15),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Today's momentum",
+                style: AppTextStyles.bodySecondary.copyWith(
+                  color: Colors.white.withOpacity(0.82),
+                ),
+              ),
+              Text(
+                '$completedToday/$activeHabits',
+                style: AppTextStyles.h3.copyWith(
+                  color: Colors.white,
+                ),
               ),
             ],
           ),
@@ -383,47 +374,35 @@ class _HeroStat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          border: Border.all(color: Colors.white.withOpacity(0.26)),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x22000000),
-              blurRadius: 14,
-              offset: Offset(0, 10),
-            ),
-          ],
+          color: Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.25),
+            width: 1,
+          ),
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(AppBorderRadius.full),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
               ),
-              child: Icon(icon, color: accent, size: 20),
             ),
-            const SizedBox(width: AppSpacing.sm),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: AppTextStyles.h3.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-                Text(
-                  title,
-                  style: AppTextStyles.caption.copyWith(
-                    color: Colors.white.withOpacity(0.8),
-                  ),
-                ),
-              ],
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.85),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),

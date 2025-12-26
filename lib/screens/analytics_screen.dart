@@ -96,83 +96,74 @@ class _AnalyticsHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         gradient: AppGradients.hero,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.4),
         boxShadow: AppShadows.glow,
       ),
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(gradient: AppGradients.halo),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Analytics', style: AppTextStyles.h1.copyWith(color: Colors.white)),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Trends live verfolgen, Peaks feiern, früh korrigieren.',
-                          style: AppTextStyles.bodySecondary.copyWith(
-                            color: Colors.white.withOpacity(0.82),
-                          ),
-                        ),
-                      ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Analytics', style: AppTextStyles.h1.copyWith(color: Colors.white)),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Trends live verfolgen, Peaks feiern, früh korrigieren.',
+                      style: AppTextStyles.bodySecondary.copyWith(
+                        color: Colors.white.withOpacity(0.82),
+                      ),
                     ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.sm,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                      border: Border.all(color: Colors.white.withOpacity(0.15)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.auto_graph, size: 18, color: Colors.white),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Live overview',
-                          style: AppTextStyles.caption.copyWith(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  _HeroNumber(
-                    label: 'Active habits',
-                    value: '$activeHabits',
-                    icon: Icons.blur_circular,
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  _HeroNumber(
-                    label: 'Total wins',
-                    value: '$totalCompletions',
-                    icon: Icons.check_circle,
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  _HeroNumber(
-                    label: 'Avg success',
-                    value: '${avgCompletionRate.toStringAsFixed(0)}%',
-                    icon: Icons.trending_up,
-                  ),
-                ],
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                  border: Border.all(color: Colors.white.withOpacity(0.15)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.auto_graph, size: 18, color: Colors.white),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Live overview',
+                      style: AppTextStyles.caption.copyWith(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              _HeroNumber(
+                label: 'Active habits',
+                value: '$activeHabits',
+                icon: Icons.blur_circular,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              _HeroNumber(
+                label: 'Total wins',
+                value: '$totalCompletions',
+                icon: Icons.check_circle,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              _HeroNumber(
+                label: 'Avg success',
+                value: '${avgCompletionRate.toStringAsFixed(0)}%',
+                icon: Icons.trending_up,
               ),
             ],
           ),
@@ -197,30 +188,36 @@ class _HeroNumber extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          border: Border.all(color: Colors.white.withOpacity(0.1)), // Thinner/Subtler border
+          color: Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.25),
+            width: 1,
+          ),
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-             // Hide icon on very small screens or layout to avoid cramped rows
-             // For now, removing icon to give space to text as requested
             Text(
               value,
-              style: AppTextStyles.h2.copyWith(color: Colors.white, fontSize: 22), // Larger text
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+              ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Text(
               label,
-              style: AppTextStyles.caption.copyWith(color: Colors.white.withOpacity(0.8), fontSize: 11),
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.85),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
               overflow: TextOverflow.ellipsis,
-              maxLines: 1,
             ),
           ],
         ),

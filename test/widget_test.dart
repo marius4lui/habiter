@@ -9,9 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
-import 'package:appv2/providers/habit_provider.dart';
-import 'package:appv2/providers/app_lock_provider.dart';
-import 'package:appv2/theme/app_theme.dart';
+import 'package:habiter/providers/habit_provider.dart';
+import 'package:habiter/providers/app_lock_provider.dart';
+import 'package:habiter/theme/app_theme.dart';
 
 void main() {
   testWidgets('Shell renders nav destinations', (WidgetTester tester) async {

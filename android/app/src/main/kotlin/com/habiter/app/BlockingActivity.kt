@@ -1,7 +1,10 @@
 package com.habiter.app
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.Gravity
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.LinearLayout
@@ -30,58 +33,120 @@ class BlockingActivity : AppCompatActivity() {
             WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
         )
         
-        // Build UI programmatically
+        // Main container with gradient background
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = android.view.Gravity.CENTER
-            setBackgroundColor(0xFF1A1A2E.toInt())
+            gravity = Gravity.CENTER
             setPadding(48, 48, 48, 48)
+            
+            // Premium gradient background (dark blue to dark purple)
+            background = GradientDrawable().apply {
+                orientation = GradientDrawable.Orientation.TL_BR
+                colors = intArrayOf(
+                    Color.parseColor("#0F0F1A"),  // Deep dark blue
+                    Color.parseColor("#1A1A2E"),  // Dark blue-purple
+                    Color.parseColor("#16213E")   // Navy blue
+                )
+            }
         }
         
+        // Card container with glassmorphism effect
+        val card = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(64, 56, 64, 56)
+            
+            // Glassmorphism card background
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 40f
+                setColor(Color.parseColor("#1F2937"))
+                setStroke(2, Color.parseColor("#374151"))
+            }
+            elevation = 24f
+        }
+        
+        // Lock icon with glow effect
         val lockIcon = TextView(this).apply {
             text = "🔒"
-            textSize = 72f
-            gravity = android.view.Gravity.CENTER
+            textSize = 64f
+            gravity = Gravity.CENTER
+            setShadowLayer(32f, 0f, 0f, Color.parseColor("#D4A373"))
         }
         
+        // Title with gradient-like styling
         val title = TextView(this).apply {
-            text = "App Locked"
-            textSize = 28f
-            setTextColor(0xFFFFFFFF.toInt())
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, 32, 0, 16)
+            text = "App Gesperrt"
+            textSize = 32f
+            setTextColor(Color.WHITE)
+            gravity = Gravity.CENTER
+            setPadding(0, 28, 0, 12)
+            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.BOLD)
+            letterSpacing = -0.03f
         }
         
+        // Subtitle message
         val message = TextView(this).apply {
-            text = "Complete your habits first to unlock this app!"
+            text = "Erledige zuerst deine Habits!"
             textSize = 16f
-            setTextColor(0xFFB0B0B0.toInt())
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, 0, 0, 48)
+            setTextColor(Color.parseColor("#9CA3AF"))
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 40)
         }
         
-        val openHabiterButton = Button(this).apply {
-            text = "Open Habiter"
+        // Primary button - Open Habiter
+        val openButton = Button(this).apply {
+            text = "Jetzt erledigen"
             textSize = 16f
+            setTextColor(Color.WHITE)
+            isAllCaps = false
+            
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 28f
+                // Warm accent gradient
+                orientation = GradientDrawable.Orientation.LEFT_RIGHT
+                colors = intArrayOf(
+                    Color.parseColor("#D4A373"),
+                    Color.parseColor("#E9C46A")
+                )
+            }
+            
+            setPadding(72, 32, 72, 32)
+            elevation = 8f
+            
             setOnClickListener { openHabiter() }
         }
         
-        val goHomeButton = Button(this).apply {
-            text = "Go Home"
+        // Secondary button - Go Home
+        val homeButton = Button(this).apply {
+            text = "Später"
             textSize = 14f
-            setBackgroundColor(android.graphics.Color.TRANSPARENT)
-            setTextColor(0xFF808080.toInt())
-            setPadding(0, 24, 0, 0)
+            setTextColor(Color.parseColor("#6B7280"))
+            isAllCaps = false
+            setBackgroundColor(Color.TRANSPARENT)
+            setPadding(0, 28, 0, 0)
+            
             setOnClickListener { goHome() }
         }
         
-        layout.addView(lockIcon)
-        layout.addView(title)
-        layout.addView(message)
-        layout.addView(openHabiterButton)
-        layout.addView(goHomeButton)
+        // Build layout hierarchy
+        card.addView(lockIcon)
+        card.addView(title)
+        card.addView(message)
+        card.addView(openButton)
+        card.addView(homeButton)
+        
+        layout.addView(card)
         
         setContentView(layout)
+        
+        // Fade in animation
+        layout.alpha = 0f
+        layout.animate()
+            .alpha(1f)
+            .setDuration(300)
+            .start()
     }
     
     private fun openHabiter() {
@@ -90,6 +155,7 @@ class BlockingActivity : AppCompatActivity() {
         }
         startActivity(intent)
         finish()
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
     
     private fun goHome() {
@@ -99,6 +165,7 @@ class BlockingActivity : AppCompatActivity() {
         }
         startActivity(intent)
         finish()
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
     
     @Deprecated("Deprecated in Java")

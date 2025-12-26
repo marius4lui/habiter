@@ -121,14 +121,13 @@ class MainActivity: FlutterActivity() {
 
     private fun drawableToBytes(drawable: Drawable): ByteArray? {
         return try {
-            val bitmap = when (drawable) {
+            // Get or create bitmap from drawable
+            val sourceBitmap = when (drawable) {
                 is BitmapDrawable -> drawable.bitmap
                 else -> {
-                    val bitmap = Bitmap.createBitmap(
-                        drawable.intrinsicWidth.coerceAtLeast(1),
-                        drawable.intrinsicHeight.coerceAtLeast(1),
-                        Bitmap.Config.ARGB_8888
-                    )
+                    val width = drawable.intrinsicWidth.coerceIn(1, 96)
+                    val height = drawable.intrinsicHeight.coerceIn(1, 96)
+                    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
                     val canvas = Canvas(bitmap)
                     drawable.setBounds(0, 0, canvas.width, canvas.height)
                     drawable.draw(canvas)
@@ -136,8 +135,12 @@ class MainActivity: FlutterActivity() {
                 }
             }
             
+            // Scale down to 48x48 for faster loading
+            val scaledBitmap = Bitmap.createScaledBitmap(sourceBitmap, 48, 48, true)
+            
             val stream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+            // Use JPEG at 70% quality for smaller size (much faster than PNG)
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream)
             stream.toByteArray()
         } catch (e: Exception) {
             null

@@ -146,4 +146,42 @@ class AppLockService {
       debugPrint('Error notifying habits incomplete: ${e.message}');
     }
   }
+
+  /// Check if the app is battery optimized (bad for service reliability)
+  static Future<bool> isBatteryOptimized() async {
+    if (!isSupported) return false;
+
+    try {
+      final result = await _channel.invokeMethod<bool>('isBatteryOptimized');
+      return result ?? false;
+    } on PlatformException catch (e) {
+      debugPrint('Error checking battery optimization: ${e.message}');
+      return false;
+    }
+  }
+
+  /// Request exemption from battery optimization
+  static Future<void> requestBatteryOptimizationExemption() async {
+    if (!isSupported) return;
+
+    try {
+      await _channel.invokeMethod<void>('requestBatteryOptimizationExemption');
+    } on PlatformException catch (e) {
+      debugPrint('Error requesting battery exemption: ${e.message}');
+    }
+  }
+
+  /// Update the list of incomplete habit names for overlay display
+  static Future<void> updateIncompleteHabits(List<String> habitNames) async {
+    if (!isSupported) return;
+
+    try {
+      await _channel.invokeMethod<void>(
+        'updateIncompleteHabits',
+        {'habitNames': habitNames},
+      );
+    } on PlatformException catch (e) {
+      debugPrint('Error updating incomplete habits: ${e.message}');
+    }
+  }
 }

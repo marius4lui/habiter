@@ -157,31 +157,49 @@ class AppLockProvider extends ChangeNotifier {
 
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     
+    // Get list of incomplete habits
+    List<String> incompleteHabitNames = [];
+    
     bool habitsComplete;
     if (_config.lockUntilAllHabitsComplete) {
-      // Check if all active habits are completed today
-      habitsComplete = habits.where((h) => h.isActive).every((habit) {
-        return entries.any((e) => 
+      // Check all active habits
+      final activeHabits = habits.where((h) => h.isActive).toList();
+      for (final habit in activeHabits) {
+        final isComplete = entries.any((e) => 
           e.habitId == habit.id && 
           e.date == today && 
           e.completed
         );
-      });
+        if (!isComplete) {
+          incompleteHabitNames.add(habit.name);
+        }
+      }
+      habitsComplete = incompleteHabitNames.isEmpty;
     } else {
-      // Check if specific required habits are completed
+      // Check specific required habits
       final requiredIds = _config.requiredHabitIds ?? [];
       if (requiredIds.isEmpty) {
         habitsComplete = true;
       } else {
-        habitsComplete = requiredIds.every((habitId) {
-          return entries.any((e) =>
+        for (final habitId in requiredIds) {
+          final habit = habits.where((h) => h.id == habitId).firstOrNull;
+          if (habit == null) continue;
+          
+          final isComplete = entries.any((e) =>
             e.habitId == habitId &&
             e.date == today &&
             e.completed
           );
-        });
+          if (!isComplete) {
+            incompleteHabitNames.add(habit.name);
+          }
+        }
+        habitsComplete = incompleteHabitNames.isEmpty;
       }
     }
+
+    // Update incomplete habits for overlay display
+    await AppLockService.updateIncompleteHabits(incompleteHabitNames);
 
     // Notify native service
     if (habitsComplete) {

@@ -13,12 +13,20 @@ class BootReceiver : BroadcastReceiver() {
             val isEnabled = prefs.getBoolean("is_enabled", false)
             
             if (isEnabled) {
+                // Start the monitoring service
                 val serviceIntent = Intent(context, AppMonitorService::class.java)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    context.startForegroundService(serviceIntent)
-                } else {
-                    context.startService(serviceIntent)
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        context.startForegroundService(serviceIntent)
+                    } else {
+                        context.startService(serviceIntent)
+                    }
+                } catch (e: Exception) {
+                    // System might not be ready yet, watchdog will retry
                 }
+                
+                // Schedule watchdog to ensure service stays alive
+                WatchdogReceiver.schedule(context)
             }
         }
     }

@@ -43,6 +43,13 @@ class MainActivity: FlutterActivity() {
                     requestOverlayPermission()
                     result.success(null)
                 }
+                "isBatteryOptimized" -> {
+                    result.success(isBatteryOptimized())
+                }
+                "requestBatteryOptimizationExemption" -> {
+                    requestBatteryOptimizationExemption()
+                    result.success(null)
+                }
                 "startMonitoring" -> {
                     val lockedPackages = call.argument<List<String>>("lockedPackages") ?: emptyList()
                     val success = startMonitoringService(lockedPackages)
@@ -63,6 +70,11 @@ class MainActivity: FlutterActivity() {
                 }
                 "habitsIncomplete" -> {
                     notifyHabitsComplete(false)
+                    result.success(null)
+                }
+                "updateIncompleteHabits" -> {
+                    val habitNames = call.argument<List<String>>("habitNames") ?: emptyList()
+                    updateIncompleteHabits(habitNames)
                     result.success(null)
                 }
                 else -> {
@@ -170,6 +182,26 @@ class MainActivity: FlutterActivity() {
         startActivity(intent)
     }
 
+    private fun isBatteryOptimized(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            return !pm.isIgnoringBatteryOptimizations(packageName)
+        }
+        return false
+    }
+
+    private fun requestBatteryOptimizationExemption() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                intent.data = Uri.parse("package:$packageName")
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+            }
+        }
+    }
+
     private fun startMonitoringService(lockedPackages: List<String>): Boolean {
         if (!hasUsageStatsPermission()) return false
         
@@ -187,6 +219,10 @@ class MainActivity: FlutterActivity() {
         } else {
             startService(intent)
         }
+        
+        // Schedule watchdog to keep service alive
+        WatchdogReceiver.schedule(this)
+        
         return true
     }
 
@@ -196,6 +232,9 @@ class MainActivity: FlutterActivity() {
         
         val intent = Intent(this, AppMonitorService::class.java)
         stopService(intent)
+        
+        // Cancel watchdog
+        WatchdogReceiver.cancel(this)
     }
 
     private fun updateLockedApps(lockedPackages: List<String>) {
@@ -209,6 +248,18 @@ class MainActivity: FlutterActivity() {
         val prefs = getSharedPreferences("app_lock", Context.MODE_PRIVATE)
         prefs.edit()
             .putBoolean("habits_complete", complete)
+            .apply()
+        
+        // Dismiss overlay when habits are complete
+        if (complete) {
+            BlockingOverlay.dismiss()
+        }
+    }
+
+    private fun updateIncompleteHabits(habitNames: List<String>) {
+        val prefs = getSharedPreferences("app_lock", Context.MODE_PRIVATE)
+        prefs.edit()
+            .putStringSet("incomplete_habits", habitNames.toSet())
             .apply()
     }
 }

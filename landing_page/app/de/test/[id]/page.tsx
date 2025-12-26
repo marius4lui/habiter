@@ -79,8 +79,8 @@ export default function TestDetailPage() {
                 {t.common.habiter}
             </Link>
             <nav className={styles.navLinks}>
-                <Link href="/" className={styles.navLink}>{t.common.home}</Link>
-                <Link href="/test" className={styles.navLink}>Tests</Link>
+                <Link href="/de" className={styles.navLink}>{t.common.home}</Link>
+                <Link href="/de/test" className={styles.navLink}>Tests</Link>
                 <button
                     onClick={() => setLocale(otherLocale)}
                     className={`${styles.navLink} ${styles.langSwitch}`}
@@ -94,9 +94,9 @@ export default function TestDetailPage() {
     const Footer = () => (
         <footer className={styles.footer}>
             <div className={styles.footerLinks}>
-                <Link href="/privacy">{t.nav.privacy}</Link>
-                <Link href="/terms">{t.nav.terms}</Link>
-                <Link href="/imprint">{t.nav.imprint}</Link>
+                <Link href="/de/privacy">{t.nav.privacy}</Link>
+                <Link href="/de/terms">{t.nav.terms}</Link>
+                <Link href="/de/imprint">{t.nav.imprint}</Link>
             </div>
             <p>{t.common.copyright}</p>
         </footer>
@@ -121,7 +121,7 @@ export default function TestDetailPage() {
                 <div className={styles.notFoundContainer}>
                     <h1>404</h1>
                     <p>Test nicht gefunden oder nicht mehr aktiv.</p>
-                    <Link href="/test" className={styles.backLink}>
+                    <Link href="/de/test" className={styles.backLink}>
                         ← Alle Tests anzeigen
                     </Link>
                 </div>
@@ -228,8 +228,7 @@ export default function TestDetailPage() {
                                     href={test.playstore_link}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className={styles.submitBtn}
-                                    style={{ marginTop: "1rem", display: "block", textAlign: "center" }}
+                                    className={styles.playstoreBtn}
                                 >
                                     📱 {t.test.googleGroups.downloadBtn}
                                 </a>

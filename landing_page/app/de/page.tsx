@@ -48,7 +48,7 @@ export default function DePage() {
                 <p style={{ marginBottom: "1.5rem", color: "var(--text-muted)" }}>
                     🚀 Die App befindet sich aktuell in der Beta-Phase. Werde Teil unserer Tester-Community!
                 </p>
-                <a href="/test" className="btn btn-primary">
+                <a href="/de/test" className="btn btn-primary">
                     Beta-Tester werden →
                 </a>
             </section>

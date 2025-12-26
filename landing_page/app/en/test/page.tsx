@@ -40,7 +40,7 @@ export default function TestOverviewPage() {
                 {t.common.habiter}
             </Link>
             <nav className={styles.navLinks}>
-                <Link href="/" className={styles.navLink}>{t.common.home}</Link>
+                <Link href="/en" className={styles.navLink}>{t.common.home}</Link>
                 <button
                     onClick={() => setLocale(otherLocale)}
                     className={`${styles.navLink} ${styles.langSwitch}`}
@@ -54,9 +54,9 @@ export default function TestOverviewPage() {
     const Footer = () => (
         <footer className={styles.footer}>
             <div className={styles.footerLinks}>
-                <Link href="/privacy">{t.nav.privacy}</Link>
-                <Link href="/terms">{t.nav.terms}</Link>
-                <Link href="/imprint">{t.nav.imprint}</Link>
+                <Link href="/en/privacy">{t.nav.privacy}</Link>
+                <Link href="/en/terms">{t.nav.terms}</Link>
+                <Link href="/en/imprint">{t.nav.imprint}</Link>
             </div>
             <p>{t.common.copyright}</p>
         </footer>
@@ -91,7 +91,7 @@ export default function TestOverviewPage() {
                         {tests.map((test) => (
                             <Link
                                 key={test.id}
-                                href={`/test/${test.id}`}
+                                href={`/en/test/${test.id}`}
                                 className={styles.testCard}
                             >
                                 <div className={styles.testCardHeader}>

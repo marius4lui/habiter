@@ -48,7 +48,7 @@ export default function EnPage() {
                 <p style={{ marginBottom: "1.5rem", color: "var(--text-muted)" }}>
                     🚀 The app is currently in beta. Join our tester community!
                 </p>
-                <a href="/test" className="btn btn-primary">
+                <a href="/en/test" className="btn btn-primary">
                     Become a Beta Tester →
                 </a>
             </section>

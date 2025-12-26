@@ -109,6 +109,15 @@ export const translations = {
                 alpha: "Alpha",
                 nightly: "Nightly",
             },
+            googleGroups: {
+                title: "So wirst du Beta-Tester",
+                description: "Um die Beta-Version zu testen, tritt einfach unserer Google Group bei. Das ist alles, was du tun musst!",
+                step1: "Klicke auf den Button unten, um der Google Group beizutreten",
+                step2: "Bestätige deine Mitgliedschaft mit deinem Google-Account",
+                step3: "Lade die App im Play Store herunter (Link unten)",
+                joinBtn: "Google Group beitreten",
+                downloadBtn: "App im Play Store herunterladen",
+            },
         },
         // Admin
         admin: {
@@ -241,6 +250,15 @@ export const translations = {
                 beta: "Beta",
                 alpha: "Alpha",
                 nightly: "Nightly",
+            },
+            googleGroups: {
+                title: "How to become a Beta Tester",
+                description: "To test the beta version, simply join our Google Group. That's all you need to do!",
+                step1: "Click the button below to join the Google Group",
+                step2: "Confirm your membership with your Google Account",
+                step3: "Download the app from Play Store (link below)",
+                joinBtn: "Join Google Group",
+                downloadBtn: "Download App from Play Store",
             },
         },
         admin: {

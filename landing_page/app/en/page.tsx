@@ -45,8 +45,12 @@ export default function EnPage() {
 
             <section id="download" className="hero" style={{ paddingTop: 0 }}>
                 <h2>Start your journey today.</h2>
-                <br />
-                <p>Available for Android.</p>
+                <p style={{ marginBottom: "1.5rem", color: "var(--text-muted)" }}>
+                    🚀 The app is currently in beta. Join our tester community!
+                </p>
+                <a href="/test" className="btn btn-primary">
+                    Become a Beta Tester →
+                </a>
             </section>
 
             <Footer locale="en" />

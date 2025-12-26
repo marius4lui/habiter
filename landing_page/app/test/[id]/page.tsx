@@ -197,62 +197,101 @@ export default function TestDetailPage() {
                     </div>
                 </div>
 
-                {/* Registration Form */}
+                {/* Registration Section */}
                 <div className={styles.formSection}>
                     <h2>{t.test.title}</h2>
 
-                    <div className={styles.infoBox}>
-                        <h3>{t.test.dataInfo.title}</h3>
-                        <ul>
-                            {t.test.dataInfo.items.map((item, i) => (
-                                <li key={i}>{item}</li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className={styles.form}>
-                        <div className={styles.formFields}>
-                            <div className={styles.field}>
-                                <label>{t.test.form.firstName}</label>
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder={t.test.form.firstNamePlaceholder}
-                                    value={formData.firstName}
-                                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                />
+                    {test?.tester_method === "google_groups" && test?.google_groups_link ? (
+                        // Google Groups - Direct Link (no form needed)
+                        <div className={styles.googleGroupsJoin}>
+                            <div className={styles.infoBox}>
+                                <h3>🔗 {t.test.googleGroups.title}</h3>
+                                <p>{t.test.googleGroups.description}</p>
+                                <ol>
+                                    <li>{t.test.googleGroups.step1}</li>
+                                    <li>{t.test.googleGroups.step2}</li>
+                                    <li>{t.test.googleGroups.step3}</li>
+                                </ol>
                             </div>
 
-                            <div className={styles.field}>
-                                <label>{t.test.form.lastName}</label>
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder={t.test.form.lastNamePlaceholder}
-                                    value={formData.lastName}
-                                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                                />
+                            <a
+                                href={test.google_groups_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.joinGroupBtn}
+                            >
+                                🔗 {t.test.googleGroups.joinBtn}
+                            </a>
+
+                            {test.playstore_link && (
+                                <a
+                                    href={test.playstore_link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={styles.submitBtn}
+                                    style={{ marginTop: "1rem", display: "block", textAlign: "center" }}
+                                >
+                                    📱 {t.test.googleGroups.downloadBtn}
+                                </a>
+                            )}
+                        </div>
+                    ) : (
+                        // CSV Method - Show Registration Form
+                        <>
+                            <div className={styles.infoBox}>
+                                <h3>{t.test.dataInfo.title}</h3>
+                                <ul>
+                                    {t.test.dataInfo.items.map((item, i) => (
+                                        <li key={i}>{item}</li>
+                                    ))}
+                                </ul>
                             </div>
-                        </div>
 
-                        <div className={styles.field}>
-                            <label>{t.test.form.email}</label>
-                            <input
-                                type="email"
-                                required
-                                placeholder={t.test.form.emailPlaceholder}
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            />
-                            <small>{t.test.form.emailHint}</small>
-                        </div>
+                            <form onSubmit={handleSubmit} className={styles.form}>
+                                <div className={styles.formFields}>
+                                    <div className={styles.field}>
+                                        <label>{t.test.form.firstName}</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            placeholder={t.test.form.firstNamePlaceholder}
+                                            value={formData.firstName}
+                                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                                        />
+                                    </div>
 
-                        {error && <p className={styles.error}>{error}</p>}
+                                    <div className={styles.field}>
+                                        <label>{t.test.form.lastName}</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            placeholder={t.test.form.lastNamePlaceholder}
+                                            value={formData.lastName}
+                                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
 
-                        <button type="submit" className={styles.submitBtn} disabled={submitting}>
-                            {submitting ? t.test.form.submitting : t.test.form.submit}
-                        </button>
-                    </form>
+                                <div className={styles.field}>
+                                    <label>{t.test.form.email}</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        placeholder={t.test.form.emailPlaceholder}
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    />
+                                    <small>{t.test.form.emailHint}</small>
+                                </div>
+
+                                {error && <p className={styles.error}>{error}</p>}
+
+                                <button type="submit" className={styles.submitBtn} disabled={submitting}>
+                                    {submitting ? t.test.form.submitting : t.test.form.submit}
+                                </button>
+                            </form>
+                        </>
+                    )}
                 </div>
             </div>
 

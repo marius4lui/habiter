@@ -35,22 +35,25 @@ class _AppLockScreenState extends State<AppLockScreen> {
           return _buildUnsupportedPlatform();
         }
 
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          body: SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                _buildHeroHeader(context, provider),
-                if (provider.isLoading)
-                  SliverToBoxAdapter(child: _buildLoadingState())
-                else ...[
-                  if (!provider.hasAllPermissions)
-                    _buildPermissionsCard(context, provider),
-                  _buildAppsList(context, provider),
+        return Container(
+          color: const Color(0xFF0F0F1A), // Solid dark background
+          child: Scaffold(
+            backgroundColor: const Color(0xFF0F0F1A),
+            body: SafeArea(
+              child: CustomScrollView(
+                slivers: [
+                  _buildHeroHeader(context, provider),
+                  if (provider.isLoading)
+                    SliverToBoxAdapter(child: _buildLoadingState())
+                  else ...[
+                    if (!provider.hasAllPermissions)
+                      _buildPermissionsCard(context, provider),
+                    _buildAppsList(context, provider),
+                  ],
+                  // Bottom padding for safe area
+                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
                 ],
-                // Bottom padding for safe area
-                const SliverToBoxAdapter(child: SizedBox(height: 100)),
-              ],
+              ),
             ),
           ),
         );

@@ -45,8 +45,12 @@ export default function DePage() {
 
             <section id="download" className="hero" style={{ paddingTop: 0 }}>
                 <h2>Starte deine Reise noch heute.</h2>
-                <br />
-                <p>Verfügbar für Android.</p>
+                <p style={{ marginBottom: "1.5rem", color: "var(--text-muted)" }}>
+                    🚀 Die App befindet sich aktuell in der Beta-Phase. Werde Teil unserer Tester-Community!
+                </p>
+                <a href="/test" className="btn btn-primary">
+                    Beta-Tester werden →
+                </a>
             </section>
 
             <Footer locale="de" />

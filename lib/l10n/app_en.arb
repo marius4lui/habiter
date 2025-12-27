@@ -1,0 +1,132 @@
+{
+  "@@locale": "en",
+  "appTitle": "Habiter",
+  
+  "navHabits": "Habits",
+  "navAnalytics": "Analytics",
+  
+  "goodMorning": "Good morning",
+  "goodAfternoon": "Good afternoon",
+  "goodEvening": "Good evening",
+  
+  "newHabit": "New Habit",
+  "editHabit": "Edit Habit",
+  "createHabit": "Create Habit",
+  "updateHabit": "Update Habit",
+  "deleteHabit": "Delete Habit?",
+  "deleteHabitConfirm": "This action cannot be undone.",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  
+  "startMomentum": "Start your momentum",
+  "startMomentumDescription": "Create your first habit and watch your routine grow.",
+  
+  "completion": "Completion",
+  "active": "Active",
+  "todaysMomentum": "Today's momentum",
+  "completed": "COMPLETED",
+  "slideToComplete": "Slide >>",
+  
+  "name": "Name",
+  "namePlaceholder": "e.g. Read 20 minutes",
+  "nameRequired": "Name is required",
+  "description": "Description",
+  "descriptionPlaceholder": "Optional description",
+  "category": "Category",
+  "icon": "Icon",
+  "tapToSelect": "Tap to select",
+  "color": "Color",
+  "frequency": "Frequency",
+  "selectDays": "Select Days",
+  "targetPerDay": "Target per day",
+  
+  "daily": "Daily",
+  "weekly": "Weekly",
+  "custom": "Custom",
+  "perDay": "{count}/day",
+  "@perDay": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "perWeek": "{count}/week",
+  "@perWeek": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "onDays": "{count} on {days} days",
+  "@onDays": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "days": {"type": "int"}
+    }
+  },
+  
+  "completedCount": "Completed ({count})",
+  "@completedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  
+  "settings": "Settings",
+  "notifications": "Notifications",
+  "dailyReminder": "Daily Reminder",
+  "dailyReminderDesc": "Reminds you about open habits",
+  "reminderTime": "Reminder Time",
+  "permissionRequired": "Permission Required",
+  "permissionRequiredDesc": "Allow notifications for reminders",
+  "allow": "Allow",
+  "notificationsEnabled": "Notifications enabled! 🔔",
+  "testNotification": "Test Notification",
+  "testNotificationDesc": "Sends a test notification",
+  "testNotificationSent": "Test notification sent!",
+  
+  "appearance": "Appearance",
+  "theme": "Theme",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System",
+  
+  "aiFeatures": "AI Features",
+  "aiInsights": "AI Insights",
+  "aiInsightsDesc": "Intelligent analysis of your habits",
+  
+  "language": "Language",
+  "appLanguage": "App Language",
+  "german": "Deutsch",
+  "english": "English",
+  
+  "advanced": "Advanced",
+  "version": "Habiter v{version}",
+  "@version": {
+    "placeholders": {
+      "version": {"type": "String"}
+    }
+  },
+  
+  "analytics": "Analytics",
+  "analyticsSubtitle": "Track trends live, celebrate peaks, correct early.",
+  "liveOverview": "Live overview",
+  "activeHabits": "Active habits",
+  "totalWins": "Total wins",
+  "avgSuccess": "Avg success",
+  "weeklyProgress": "Weekly progress",
+  "trackToSeeProgress": "Track a habit to see weekly performance.",
+  "streak": "Streak",
+  "success": "Success",
+  "total": "Total",
+  
+  "aiInsightsTitle": "AI Insights",
+  "insightsAppearHere": "Insights will appear here after you track a few days and generate AI suggestions.",
+  "confidence": "Confidence {percent}%",
+  "@confidence": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "habit": "Habit",
+  
+  "retry": "Retry"
+}

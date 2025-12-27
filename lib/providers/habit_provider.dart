@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../models/habit.dart';
 import '../services/ai_manager.dart';
+import '../services/notification_service.dart';
 import '../services/storage_service.dart';
 import '../utils/habit_utils.dart';
 
@@ -31,10 +32,30 @@ class HabitProvider extends ChangeNotifier {
       notifyListeners();
 
       await AIManager.initialize();
+      await NotificationService.instance.initialize();
+      
+      // Set up notification action callback
+      NotificationService.instance.setActionCallback(handleNotificationAction);
+      
       habits = await StorageService.getHabits();
       habitEntries = await StorageService.getHabitEntries();
       aiInsights = await StorageService.getAIInsights();
       preferences = await StorageService.getUserPreferences();
+
+      // Schedule global notification if enabled
+      if (preferences.notifications) {
+        await NotificationService.instance.scheduleGlobalDailyReminder(
+          time: preferences.reminderTime,
+          habits: habits,
+        );
+      }
+      
+      // Schedule individual habit notifications
+      for (final habit in habits) {
+        if (habit.notificationEnabled && habit.notificationTime != null) {
+          await NotificationService.instance.scheduleHabitNotification(habit);
+        }
+      }
 
       // Mock Data Initialization
       if (habits.isEmpty) {
@@ -104,6 +125,9 @@ class HabitProvider extends ChangeNotifier {
   }
 
   Future<void> deleteHabit(String id) async {
+    // Cancel notification before deleting
+    await NotificationService.instance.cancelHabitNotification(id);
+    
     habits = habits.where((h) => h.id != id).toList();
     habitEntries = habitEntries.where((e) => e.habitId != id).toList();
     await StorageService.deleteHabit(id);
@@ -171,8 +195,23 @@ class HabitProvider extends ChangeNotifier {
   }
 
   Future<void> updatePreferences(UserPreferences prefs) async {
+    final oldPrefs = preferences;
     preferences = prefs;
     await StorageService.saveUserPreferences(prefs);
+    
+    // Handle notification changes
+    if (prefs.notifications != oldPrefs.notifications || 
+        prefs.reminderTime != oldPrefs.reminderTime) {
+      if (prefs.notifications) {
+        await NotificationService.instance.scheduleGlobalDailyReminder(
+          time: prefs.reminderTime,
+          habits: habits,
+        );
+      } else {
+        await NotificationService.instance.cancelGlobalDailyReminder();
+      }
+    }
+    
     notifyListeners();
   }
 
@@ -191,5 +230,10 @@ class HabitProvider extends ChangeNotifier {
       entries: habitEntries,
       addInsight: addAIInsight,
     );
+  }
+
+  /// Handle notification action to mark habit complete
+  Future<void> handleNotificationAction(String habitId, String date) async {
+    await toggleHabitCompletion(habitId, date);
   }
 }

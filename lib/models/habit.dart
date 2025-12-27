@@ -19,6 +19,8 @@ class Habit {
     this.customDays,
     required this.createdAt,
     required this.isActive,
+    this.notificationEnabled = false,
+    this.notificationTime,
   });
 
   final String id;
@@ -32,6 +34,8 @@ class Habit {
   final List<int>? customDays;
   final DateTime createdAt;
   final bool isActive;
+  final bool notificationEnabled;
+  final String? notificationTime;
 
   Habit copyWith({
     String? id,
@@ -45,6 +49,8 @@ class Habit {
     List<int>? customDays,
     DateTime? createdAt,
     bool? isActive,
+    bool? notificationEnabled,
+    String? notificationTime,
   }) {
     return Habit(
       id: id ?? this.id,
@@ -58,6 +64,8 @@ class Habit {
       customDays: customDays ?? this.customDays,
       createdAt: createdAt ?? this.createdAt,
       isActive: isActive ?? this.isActive,
+      notificationEnabled: notificationEnabled ?? this.notificationEnabled,
+      notificationTime: notificationTime ?? this.notificationTime,
     );
   }
 
@@ -74,6 +82,8 @@ class Habit {
       'customDays': customDays,
       'createdAt': createdAt.toIso8601String(),
       'isActive': isActive,
+      'notificationEnabled': notificationEnabled,
+      'notificationTime': notificationTime,
     };
   }
 
@@ -93,6 +103,8 @@ class Habit {
       customDays: (map['customDays'] as List<dynamic>?)?.map((e) => e as int).toList(),
       createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ?? DateTime.now(),
       isActive: map['isActive'] as bool? ?? true,
+      notificationEnabled: map['notificationEnabled'] as bool? ?? false,
+      notificationTime: map['notificationTime'] as String?,
     );
   }
 

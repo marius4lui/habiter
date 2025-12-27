@@ -1,0 +1,132 @@
+{
+  "@@locale": "de",
+  "appTitle": "Habiter",
+  
+  "navHabits": "Habits",
+  "navAnalytics": "Analytics",
+  
+  "goodMorning": "Guten Morgen",
+  "goodAfternoon": "Guten Nachmittag",
+  "goodEvening": "Guten Abend",
+  
+  "newHabit": "Neues Habit",
+  "editHabit": "Habit bearbeiten",
+  "createHabit": "Habit erstellen",
+  "updateHabit": "Habit aktualisieren",
+  "deleteHabit": "Habit löschen",
+  "deleteHabitConfirm": "Diese Aktion kann nicht rückgängig gemacht werden.",
+  "cancel": "Abbrechen",
+  "delete": "Löschen",
+  
+  "startMomentum": "Starte dein Momentum",
+  "startMomentumDescription": "Lege dein erstes Habit an und schau zu, wie die Routine wachsen kann.",
+  
+  "completion": "Abschluss",
+  "active": "Aktiv",
+  "todaysMomentum": "Heutiges Momentum",
+  "completed": "ERLEDIGT",
+  "slideToComplete": "Wischen >>",
+  
+  "name": "Name",
+  "namePlaceholder": "z.B. 20 Minuten lesen",
+  "nameRequired": "Name ist erforderlich",
+  "description": "Beschreibung",
+  "descriptionPlaceholder": "Optionale Beschreibung",
+  "category": "Kategorie",
+  "icon": "Icon",
+  "tapToSelect": "Tippen zum Auswählen",
+  "color": "Farbe",
+  "frequency": "Frequenz",
+  "selectDays": "Tage auswählen",
+  "targetPerDay": "Ziel pro Tag",
+  
+  "daily": "Täglich",
+  "weekly": "Wöchentlich",
+  "custom": "Benutzerdefiniert",
+  "perDay": "{count}/Tag",
+  "@perDay": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "perWeek": "{count}/Woche",
+  "@perWeek": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "onDays": "{count} an {days} Tagen",
+  "@onDays": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "days": {"type": "int"}
+    }
+  },
+  
+  "completedCount": "Erledigt ({count})",
+  "@completedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  
+  "settings": "Einstellungen",
+  "notifications": "Benachrichtigungen",
+  "dailyReminder": "Tägliche Erinnerung",
+  "dailyReminderDesc": "Erinnert dich an offene Habits",
+  "reminderTime": "Erinnerungszeit",
+  "permissionRequired": "Berechtigung erforderlich",
+  "permissionRequiredDesc": "Erlaube Benachrichtigungen für Erinnerungen",
+  "allow": "Erlauben",
+  "notificationsEnabled": "Benachrichtigungen aktiviert! 🔔",
+  "testNotification": "Test-Benachrichtigung",
+  "testNotificationDesc": "Sendet eine Test-Notification",
+  "testNotificationSent": "Test-Benachrichtigung gesendet!",
+  
+  "appearance": "Erscheinungsbild",
+  "theme": "Theme",
+  "themeLight": "Hell",
+  "themeDark": "Dunkel",
+  "themeSystem": "System",
+  
+  "aiFeatures": "KI-Features",
+  "aiInsights": "AI Insights",
+  "aiInsightsDesc": "Intelligente Analyse deiner Habits",
+  
+  "language": "Sprache",
+  "appLanguage": "App-Sprache",
+  "german": "Deutsch",
+  "english": "English",
+  
+  "advanced": "Erweitert",
+  "version": "Habiter v{version}",
+  "@version": {
+    "placeholders": {
+      "version": {"type": "String"}
+    }
+  },
+  
+  "analytics": "Analytics",
+  "analyticsSubtitle": "Trends live verfolgen, Peaks feiern, früh korrigieren.",
+  "liveOverview": "Live-Übersicht",
+  "activeHabits": "Aktive Habits",
+  "totalWins": "Gesamt-Erfolge",
+  "avgSuccess": "Durchschn. Erfolg",
+  "weeklyProgress": "Wöchentlicher Fortschritt",
+  "trackToSeeProgress": "Tracke ein Habit, um den Wochenfortschritt zu sehen.",
+  "streak": "Serie",
+  "success": "Erfolg",
+  "total": "Gesamt",
+  
+  "aiInsightsTitle": "AI Insights",
+  "insightsAppearHere": "Insights erscheinen hier, nachdem du einige Tage getrackt und AI-Vorschläge generiert hast.",
+  "confidence": "Konfidenz {percent}%",
+  "@confidence": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "habit": "Habit",
+  
+  "retry": "Wiederholen"
+}

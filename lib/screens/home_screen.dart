@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
+import '../l10n/l10n.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/habit_utils.dart';
 import '../models/habit.dart';
 import '../widgets/add_habit_sheet.dart';
-
-import 'package:flutter_animate/flutter_animate.dart';
 import '../widgets/habit_card.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -37,11 +37,11 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(provider.error!, style: AppTextStyles.h3),
+            Text(provider.error!, style: Theme.of(context).textTheme.displaySmall),
             const SizedBox(height: AppSpacing.md),
             ElevatedButton(
               onPressed: provider.refresh,
-              child: const Text('Retry'),
+              child: Text(context.l10n.retry),
             ),
           ],
         ),
@@ -66,17 +66,17 @@ class HomeScreen extends StatelessWidget {
     final completedToday = completedHabits.length;
     final totalActive = allActiveHabits.length;
     final completionRate = totalActive == 0 ? 0.0 : completedToday / totalActive;
-    final greeting = _greeting();
+    final greeting = _greeting(context);
+    final l = context.l10n;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openAddHabitSheet(context),
-        backgroundColor: AppColors.primaryDark,
-        foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Neues Habit'),
+        label: Text(l.newHabit),
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -168,11 +168,12 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  String _greeting() {
+  String _greeting(BuildContext context) {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
+    final l = context.l10n;
+    if (hour < 12) return l.goodMorning;
+    if (hour < 18) return l.goodAfternoon;
+    return l.goodEvening;
   }
 }
 
@@ -293,14 +294,20 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final gradient = isDark ? AppGradientsDark.cardSheen : AppGradients.cardSheen;
+    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final primaryGradient = isDark ? AppGradientsDark.primary : AppGradients.primary;
+    
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          gradient: AppGradients.cardSheen,
+          gradient: gradient,
           borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.2),
-          border: Border.all(color: AppColors.borderLight),
+          border: Border.all(color: borderColor),
           boxShadow: AppShadows.soft,
         ),
         child: Column(
@@ -310,45 +317,28 @@ class _EmptyState extends StatelessWidget {
               width: 92,
               height: 92,
               decoration: BoxDecoration(
-                gradient: AppGradients.primary,
+                gradient: primaryGradient,
                 borderRadius: BorderRadius.circular(AppBorderRadius.full),
               ),
               alignment: Alignment.center,
               child: const Icon(Icons.flag_rounded, size: 38, color: Colors.white),
             ),
             const SizedBox(height: AppSpacing.md),
-            Text('Starte dein Momentum', style: AppTextStyles.h2),
+            Text(l.startMomentum, style: Theme.of(context).textTheme.displayMedium),
             const SizedBox(height: AppSpacing.sm),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Text(
-                'Lege dein erstes Habit an und schau zu, wie die Routine wachsen kann.',
+                l.startMomentumDescription,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.bodySecondary,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
             ElevatedButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.md,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                ),
-              ),
-              label: const Text(
-                'Habit erstellen',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
-              ),
+              label: Text(l.createHabit),
             ),
           ],
         ),
@@ -451,6 +441,10 @@ class _CompletedHabitsSectionState extends State<_CompletedHabitsSection> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final captionColor = isDark ? AppColorsDark.textTertiary : AppColors.textTertiary;
+
     return Column(
       children: [
         GestureDetector(
@@ -462,13 +456,13 @@ class _CompletedHabitsSectionState extends State<_CompletedHabitsSection> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Completed (${widget.habits.length})',
-                  style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+                  l.completedCount(widget.habits.length),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: captionColor),
                 ),
                 Icon(
                   _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                   size: 16,
-                  color: AppColors.textTertiary,
+                  color: captionColor,
                 ),
               ],
             ),

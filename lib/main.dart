@@ -1,13 +1,18 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
+import 'l10n/app_localizations.dart';
+import 'l10n/l10n.dart';
 import 'providers/app_lock_provider.dart';
 import 'providers/habit_provider.dart';
+import 'providers/settings_provider.dart';
 import 'screens/analytics_screen.dart';
 import 'screens/app_lock_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/settings_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -16,6 +21,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => HabitProvider()..load()),
         ChangeNotifierProvider(create: (_) => AppLockProvider()..load()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
       ],
       child: const HabiterApp(),
     ),
@@ -27,11 +33,25 @@ class HabiterApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Habiter',
-      debugShowCheckedModeBanner: false,
-      theme: buildAppTheme(),
-      home: const _RootShell(),
+    return Consumer<SettingsProvider>(
+      builder: (context, settings, _) {
+        return MaterialApp(
+          title: 'Habiter',
+          debugShowCheckedModeBanner: false,
+          theme: buildAppTheme(),
+          darkTheme: buildDarkTheme(),
+          themeMode: settings.themeMode,
+          locale: settings.locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: const _RootShell(),
+        );
+      },
     );
   }
 }
@@ -103,6 +123,12 @@ class _RootShellState extends State<_RootShell> {
     );
   }
 
+  void _openSettings() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
@@ -119,23 +145,40 @@ class _RootShellState extends State<_RootShell> {
               physics: const BouncingScrollPhysics(),
               children: _pages,
             ),
-            floatingActionButton: Consumer<AppLockProvider>(
-              builder: (context, appLock, _) {
-                if (!appLock.isSupported) return const SizedBox.shrink();
-                return FloatingActionButton.small(
-                  onPressed: _openAppLock,
-                  backgroundColor: appLock.isEnabled
-                      ? AppColors.primary
-                      : AppColors.surface,
-                  child: Icon(
-                    appLock.isEnabled ? Icons.lock : Icons.lock_open,
-                    color: appLock.isEnabled
-                        ? Colors.white
-                        : AppColors.textSecondary,
+            floatingActionButton: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FloatingActionButton.small(
+                  heroTag: 'settings',
+                  onPressed: _openSettings,
+                  backgroundColor: AppColors.surface,
+                  child: const Icon(
+                    Icons.settings_outlined,
+                    color: AppColors.textSecondary,
                     size: 20,
                   ),
-                );
-              },
+                ),
+                const SizedBox(width: 8),
+                Consumer<AppLockProvider>(
+                  builder: (context, appLock, _) {
+                    if (!appLock.isSupported) return const SizedBox.shrink();
+                    return FloatingActionButton.small(
+                      heroTag: 'applock',
+                      onPressed: _openAppLock,
+                      backgroundColor: appLock.isEnabled
+                          ? AppColors.primary
+                          : AppColors.surface,
+                      child: Icon(
+                        appLock.isEnabled ? Icons.lock : Icons.lock_open,
+                        color: appLock.isEnabled
+                            ? Colors.white
+                            : AppColors.textSecondary,
+                        size: 20,
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
             bottomNavigationBar: Padding(
@@ -165,30 +208,35 @@ class _GlassNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
+    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final l = context.l10n;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(22),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: AppColors.surface.withOpacity(0.9),
+            color: surfaceColor.withOpacity(0.9),
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: AppColors.borderLight),
+            border: Border.all(color: borderColor),
             boxShadow: AppShadows.soft,
           ),
           child: NavigationBar(
             selectedIndex: index,
             onDestinationSelected: onChange,
-            destinations: const [
+            destinations: [
               NavigationDestination(
-                icon: Icon(Icons.checklist_rtl),
-                selectedIcon: Icon(Icons.checklist_rtl),
-                label: 'Habits',
+                icon: const Icon(Icons.checklist_rtl),
+                selectedIcon: const Icon(Icons.checklist_rtl),
+                label: l.navHabits,
               ),
               NavigationDestination(
-                icon: Icon(Icons.query_stats),
-                selectedIcon: Icon(Icons.query_stats),
-                label: 'Analytics',
+                icon: const Icon(Icons.query_stats),
+                selectedIcon: const Icon(Icons.query_stats),
+                label: l.navAnalytics,
               ),
             ],
           ),

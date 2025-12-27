@@ -589,6 +589,102 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Wiederholen'**
   String get retry;
+
+  /// No description provided for @appLock.
+  ///
+  /// In de, this message translates to:
+  /// **'App Lock'**
+  String get appLock;
+
+  /// No description provided for @appLockSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sperre Apps bis deine Habits erledigt sind'**
+  String get appLockSubtitle;
+
+  /// No description provided for @locked.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesperrt'**
+  String get locked;
+
+  /// No description provided for @status.
+  ///
+  /// In de, this message translates to:
+  /// **'Status'**
+  String get status;
+
+  /// No description provided for @statusActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiv'**
+  String get statusActive;
+
+  /// No description provided for @statusInactive.
+  ///
+  /// In de, this message translates to:
+  /// **'Inaktiv'**
+  String get statusInactive;
+
+  /// No description provided for @permissionsRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigungen erforderlich'**
+  String get permissionsRequired;
+
+  /// No description provided for @usageAccess.
+  ///
+  /// In de, this message translates to:
+  /// **'Usage Access'**
+  String get usageAccess;
+
+  /// No description provided for @usageAccessDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Erkennen welche App geöffnet ist'**
+  String get usageAccessDesc;
+
+  /// No description provided for @overlayPermission.
+  ///
+  /// In de, this message translates to:
+  /// **'Über anderen Apps anzeigen'**
+  String get overlayPermission;
+
+  /// No description provided for @overlayPermissionDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Sperrbildschirm anzeigen'**
+  String get overlayPermissionDesc;
+
+  /// No description provided for @loadingApps.
+  ///
+  /// In de, this message translates to:
+  /// **'Apps werden geladen...'**
+  String get loadingApps;
+
+  /// No description provided for @noAppsFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Apps gefunden'**
+  String get noAppsFound;
+
+  /// No description provided for @selectAppsToLock.
+  ///
+  /// In de, this message translates to:
+  /// **'Apps zum Sperren auswählen ({count})'**
+  String selectAppsToLock(int count);
+
+  /// No description provided for @androidOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur für Android'**
+  String get androidOnly;
+
+  /// No description provided for @androidOnlyDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'App Lock ist nur auf Android Geräten verfügbar.'**
+  String get androidOnlyDesc;
 }
 
 class _AppLocalizationsDelegate

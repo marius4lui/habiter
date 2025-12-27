@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../l10n/l10n.dart';
 import '../models/locked_app.dart';
 import '../providers/app_lock_provider.dart';
 import '../theme/app_theme.dart';
 
-/// Screen for configuring app lock settings - Matches app design language
+/// Screen for configuring app lock settings - Matches settings screen design
 class AppLockScreen extends StatefulWidget {
   const AppLockScreen({super.key});
 
@@ -29,29 +30,44 @@ class _AppLockScreenState extends State<AppLockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final gradient = isDark ? AppGradientsDark.appShell : AppGradients.appShell;
+
     return Consumer<AppLockProvider>(
       builder: (context, provider, _) {
         if (!provider.isSupported) {
-          return _buildUnsupportedPlatform();
+          return _buildUnsupportedPlatform(isDark);
         }
 
-        return Container(
-          color: const Color(0xFF0F0F1A), // Solid dark background
-          child: Scaffold(
-            backgroundColor: const Color(0xFF0F0F1A),
-            body: SafeArea(
-              child: CustomScrollView(
-                slivers: [
-                  _buildHeroHeader(context, provider),
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            title: Text(context.l10n.appLock, style: Theme.of(context).textTheme.displayMedium),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          body: Container(
+            decoration: BoxDecoration(gradient: gradient),
+            child: SafeArea(
+              child: ListView(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                children: [
+                  _buildHeroCard(context, provider, isDark),
+                  const SizedBox(height: AppSpacing.md),
+                  if (!provider.hasAllPermissions)
+                    _buildPermissionsSection(context, provider, isDark),
+                  if (!provider.hasAllPermissions)
+                    const SizedBox(height: AppSpacing.md),
                   if (provider.isLoading)
-                    SliverToBoxAdapter(child: _buildLoadingState())
-                  else ...[
-                    if (!provider.hasAllPermissions)
-                      _buildPermissionsCard(context, provider),
-                    _buildAppsList(context, provider),
-                  ],
-                  // Bottom padding for safe area
-                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                    _buildLoadingSection(isDark)
+                  else
+                    _buildAppsSection(context, provider, isDark),
+                  const SizedBox(height: 100),
                 ],
               ),
             ),
@@ -61,43 +77,52 @@ class _AppLockScreenState extends State<AppLockScreen> {
     );
   }
 
-  Widget _buildUnsupportedPlatform() {
+  Widget _buildUnsupportedPlatform(bool isDark) {
+    final l = context.l10n;
+    final gradient = isDark ? AppGradientsDark.appShell : AppGradients.appShell;
+    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
+    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final captionColor = isDark ? AppColorsDark.textTertiary : AppColors.textTertiary;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            children: [
-              _buildBackButton(),
-              Expanded(
-                child: Center(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text(l.appLock, style: Theme.of(context).textTheme.displayMedium),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Container(
+        decoration: BoxDecoration(gradient: gradient),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
                     padding: const EdgeInsets.all(AppSpacing.xl),
                     decoration: BoxDecoration(
-                      gradient: AppGradients.cardSheen,
-                      borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.2),
-                      border: Border.all(color: AppColors.borderLight),
-                      boxShadow: AppShadows.soft,
+                      color: surfaceColor.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+                      border: Border.all(color: borderColor),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: AppColors.textMuted.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                          ),
-                          child: const Icon(Icons.phone_android, size: 40, color: AppColors.textMuted),
-                        ),
+                        Icon(Icons.phone_android, size: 64, color: captionColor),
                         const SizedBox(height: AppSpacing.md),
-                        Text('Android Only', style: AppTextStyles.h2),
+                        Text(l.androidOnly, style: Theme.of(context).textTheme.displayMedium),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
-                          'App Lock ist nur auf Android Geräten verfügbar.',
-                          style: AppTextStyles.bodySecondary,
+                          l.androidOnlyDesc,
+                          style: Theme.of(context).textTheme.bodyMedium,
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -105,208 +130,115 @@ class _AppLockScreenState extends State<AppLockScreen> {
                   ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildBackButton() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: IconButton(
-        icon: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppBorderRadius.md),
-            border: Border.all(color: AppColors.borderLight),
-          ),
-          child: const Icon(Icons.arrow_back, color: AppColors.text, size: 20),
-        ),
-        onPressed: () => Navigator.of(context).pop(),
-      ),
-    );
-  }
-
-  Widget _buildHeroHeader(BuildContext context, AppLockProvider provider) {
+  Widget _buildHeroCard(BuildContext context, AppLockProvider provider, bool isDark) {
+    final l = context.l10n;
     final lockedCount = provider.config.activelyLockedApps.length;
-    
-    return SliverToBoxAdapter(
-      child: Padding(
+    final heroGradient = isDark ? AppGradientsDark.hero : AppGradients.hero;
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.2),
+      child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          gradient: heroGradient,
+          borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.2),
+          boxShadow: AppShadows.glow,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Back button
-            IconButton(
-              icon: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                  border: Border.all(color: AppColors.borderLight),
-                ),
-                child: const Icon(Icons.arrow_back, color: AppColors.text, size: 20),
-              ),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            // Hero Card
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                gradient: AppGradients.hero,
-                borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.6),
-                boxShadow: AppShadows.glow,
-              ),
-              child: Stack(
-                children: [
-                  const Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(gradient: AppGradients.halo),
-                    ),
-                  ),
-                  Column(
+            Row(
+              children: [
+                const Icon(Icons.lock_rounded, color: Colors.white, size: 28),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '🔒 App Lock',
-                                  style: AppTextStyles.h1.copyWith(
-                                    color: Colors.white,
-                                    letterSpacing: -0.8,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Sperre Apps bis deine Habits erledigt sind',
-                                  style: AppTextStyles.bodySecondary.copyWith(
-                                    color: Colors.white.withOpacity(0.85),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Toggle Switch
-                          _GlassSwitch(
-                            value: provider.isEnabled,
-                            onChanged: provider.hasAllPermissions
-                                ? (value) => provider.setEnabled(value)
-                                : null,
-                          ),
-                        ],
+                      Text(
+                        l.appLock,
+                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                          color: Colors.white,
+                        ),
                       ),
-                      const SizedBox(height: AppSpacing.lg),
-                      // Stats row
-                      Row(
-                        children: [
-                          _HeroStat(
-                            title: 'Gesperrt',
-                            value: '$lockedCount',
-                            icon: Icons.lock,
-                          ),
-                          const SizedBox(width: AppSpacing.md),
-                          _HeroStat(
-                            title: 'Status',
-                            value: provider.isEnabled ? 'Aktiv' : 'Inaktiv',
-                            icon: provider.isEnabled ? Icons.shield : Icons.shield_outlined,
-                          ),
-                        ],
+                      Text(
+                        l.appLockSubtitle,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withOpacity(0.85),
+                        ),
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        decoration: BoxDecoration(
-          gradient: AppGradients.cardSheen,
-          borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-          border: Border.all(color: AppColors.borderLight),
-        ),
-        child: Column(
-          children: [
-            SizedBox(
-              width: 40,
-              height: 40,
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation(AppColors.primary),
-              ),
+                ),
+                Switch.adaptive(
+                  value: provider.isEnabled,
+                  onChanged: provider.hasAllPermissions
+                      ? (value) => provider.setEnabled(value)
+                      : null,
+                  activeColor: Colors.white,
+                  activeTrackColor: Colors.white.withOpacity(0.3),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.md),
-            Text(
-              'Apps werden geladen...',
-              style: AppTextStyles.bodySecondary,
+            Row(
+              children: [
+                _buildStatChip(
+                  l.locked,
+                  '$lockedCount',
+                  Icons.lock,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                _buildStatChip(
+                  l.status,
+                  provider.isEnabled ? l.statusActive : l.statusInactive,
+                  provider.isEnabled ? Icons.shield : Icons.shield_outlined,
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.lg),
-            // Skeleton items
-            ...List.generate(4, (i) => _buildSkeletonTile(i)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSkeletonTile(int index) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+  Widget _buildStatChip(String label, String value, IconData icon) {
+    return Expanded(
       child: Container(
-        height: 64,
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.surfaceMuted,
+          color: Colors.white.withOpacity(0.15),
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
         ),
         child: Row(
           children: [
-            const SizedBox(width: 16),
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.borderLight,
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            const SizedBox(width: 12),
+            Icon(icon, color: Colors.white, size: 20),
+            const SizedBox(width: AppSpacing.sm),
             Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 100 + (index * 20.0),
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: AppColors.borderLight,
-                    borderRadius: BorderRadius.circular(4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 6),
-                Container(
-                  width: 140,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: AppColors.borderLight.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 12,
                   ),
                 ),
               ],
@@ -314,69 +246,64 @@ class _AppLockScreenState extends State<AppLockScreen> {
           ],
         ),
       ),
-    ).animate(delay: (100 * index).ms).fadeIn(duration: 300.ms).shimmer(
-      duration: 1500.ms,
-      color: AppColors.surface,
     );
   }
 
-  Widget _buildPermissionsCard(BuildContext context, AppLockProvider provider) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+  Widget _buildPermissionsSection(BuildContext context, AppLockProvider provider, bool isDark) {
+    final l = context.l10n;
+    final warningColor = isDark ? AppColorsDark.warning : AppColors.warning;
+    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
+    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.warning.withOpacity(0.1),
+            color: warningColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-            border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+            border: Border.all(color: warningColor.withOpacity(0.3)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.warning.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                    ),
-                    child: const Icon(Icons.warning_amber, color: AppColors.warning, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Berechtigungen erforderlich',
-                    style: AppTextStyles.h3.copyWith(fontSize: 16),
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: warningColor, size: 20),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(l.permissionsRequired, style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 16)),
+                  ],
+                ),
               ),
-              const SizedBox(height: AppSpacing.md),
+              Divider(height: 1, color: warningColor.withOpacity(0.2)),
               if (!provider.hasUsageStatsPermission)
-                _buildPermissionButton(
-                  'Usage Access',
-                  'Erkennen welche App geöffnet ist',
+                _buildPermissionTile(
+                  l.usageAccess,
+                  l.usageAccessDesc,
                   Icons.analytics_outlined,
+                  isDark,
                   () async {
                     await provider.requestUsageStatsPermission();
                     await Future.delayed(const Duration(seconds: 1));
                     await provider.checkPermissions();
                   },
                 ),
-              if (!provider.hasOverlayPermission) ...[
-                if (!provider.hasUsageStatsPermission) const SizedBox(height: AppSpacing.sm),
-                _buildPermissionButton(
-                  'Über anderen Apps anzeigen',
-                  'Sperrbildschirm anzeigen',
+              if (!provider.hasOverlayPermission)
+                _buildPermissionTile(
+                  l.overlayPermission,
+                  l.overlayPermissionDesc,
                   Icons.layers_outlined,
+                  isDark,
                   () async {
                     await provider.requestOverlayPermission();
                     await Future.delayed(const Duration(seconds: 1));
                     await provider.checkPermissions();
                   },
                 ),
-              ],
             ],
           ),
         ),
@@ -384,43 +311,44 @@ class _AppLockScreenState extends State<AppLockScreen> {
     );
   }
 
-  Widget _buildPermissionButton(String title, String subtitle, IconData icon, VoidCallback onTap) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppBorderRadius.md),
+  Widget _buildPermissionTile(String title, String subtitle, IconData icon, bool isDark, VoidCallback onTap) {
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+      leading: Icon(icon, color: primaryColor),
+      title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
+      subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+      trailing: TextButton(
+        onPressed: onTap,
+        child: Text(context.l10n.allow),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildLoadingSection(bool isDark) {
+    final l = context.l10n;
+    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
+    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppBorderRadius.md),
-            border: Border.all(color: AppColors.borderLight),
+            color: surfaceColor.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+            border: Border.all(color: borderColor),
           ),
-          child: Row(
+          child: Column(
             children: [
-              Icon(icon, color: AppColors.textSecondary, size: 24),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
-                    Text(subtitle, style: AppTextStyles.caption),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  gradient: AppGradients.primary,
-                  borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                ),
-                child: Text(
-                  'Erlauben',
-                  style: AppTextStyles.caption.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
-                ),
-              ),
+              CircularProgressIndicator(color: primaryColor),
+              const SizedBox(height: AppSpacing.md),
+              Text(l.loadingApps, style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -428,25 +356,30 @@ class _AppLockScreenState extends State<AppLockScreen> {
     );
   }
 
-  Widget _buildAppsList(BuildContext context, AppLockProvider provider) {
+  Widget _buildAppsSection(BuildContext context, AppLockProvider provider, bool isDark) {
+    final l = context.l10n;
     final apps = provider.availableApps;
+    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
+    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
 
     if (apps.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             padding: const EdgeInsets.all(AppSpacing.xl),
             decoration: BoxDecoration(
-              gradient: AppGradients.cardSheen,
+              color: surfaceColor.withOpacity(0.9),
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-              border: Border.all(color: AppColors.borderLight),
+              border: Border.all(color: borderColor),
             ),
             child: Column(
               children: [
-                const Icon(Icons.apps, size: 48, color: AppColors.textMuted),
+                Icon(Icons.apps, size: 48, color: isDark ? AppColorsDark.textTertiary : AppColors.textTertiary),
                 const SizedBox(height: AppSpacing.sm),
-                Text('Keine Apps gefunden', style: AppTextStyles.bodySecondary),
+                Text(l.noAppsFound, style: Theme.of(context).textTheme.bodyMedium),
               ],
             ),
           ),
@@ -454,222 +387,115 @@ class _AppLockScreenState extends State<AppLockScreen> {
       );
     }
 
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            if (index == 0) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm, top: AppSpacing.sm),
-                child: Text(
-                  'Apps zum Sperren auswählen (${provider.config.activelyLockedApps.length})',
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textSecondary,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              );
-            }
-
-            final app = apps[index - 1];
-            return _buildAppTile(app, provider, index - 1);
-          },
-          childCount: apps.length + 1,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppTile(LockedApp app, AppLockProvider provider, int index) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => provider.toggleAppLock(app.packageName),
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: app.isLocked ? AppGradients.primary : AppGradients.cardSheen,
-              borderRadius: BorderRadius.circular(AppBorderRadius.md),
-              border: Border.all(
-                color: app.isLocked ? AppColors.primary.withOpacity(0.5) : AppColors.borderLight,
-                width: app.isLocked ? 2 : 1,
-              ),
-              boxShadow: app.isLocked ? AppShadows.soft : null,
-            ),
-            child: Row(
-              children: [
-                // App Icon
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: app.iconBytes != null
-                      ? Image.memory(
-                          app.iconBytes!,
-                          width: 44,
-                          height: 44,
-                          fit: BoxFit.cover,
-                        )
-                      : Container(
-                          width: 44,
-                          height: 44,
-                          color: AppColors.surfaceMuted,
-                          child: const Icon(Icons.android, color: AppColors.textMuted),
-                        ),
-                ),
-                const SizedBox(width: 14),
-                // App Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        app.appName,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: app.isLocked ? FontWeight.w700 : FontWeight.w500,
-                          color: app.isLocked ? Colors.white : AppColors.text,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        app.packageName,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: app.isLocked ? Colors.white.withOpacity(0.7) : AppColors.textMuted,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                // Lock Icon
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: app.isLocked ? Colors.white.withOpacity(0.2) : AppColors.surfaceMuted,
-                    borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                  ),
-                  child: Icon(
-                    app.isLocked ? Icons.lock : Icons.lock_open_outlined,
-                    color: app.isLocked ? Colors.white : AppColors.textMuted,
-                    size: 18,
-                  ),
-                ),
-              ],
-            ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: surfaceColor.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+            border: Border.all(color: borderColor),
           ),
-        ),
-      ),
-    ).animate(delay: (30 * index).ms).fadeIn(duration: 200.ms).slideX(begin: 0.05, end: 0);
-  }
-}
-
-// Custom glass-style switch for hero section
-class _GlassSwitch extends StatelessWidget {
-  const _GlassSwitch({required this.value, this.onChanged});
-
-  final bool value;
-  final ValueChanged<bool>? onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onChanged != null ? () => onChanged!(!value) : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 56,
-        height: 32,
-        decoration: BoxDecoration(
-          color: value ? Colors.white.withOpacity(0.3) : Colors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.3)),
-        ),
-        child: AnimatedAlign(
-          duration: const Duration(milliseconds: 200),
-          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-          child: Container(
-            width: 26,
-            height: 26,
-            margin: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(13),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Row(
+                  children: [
+                    Icon(Icons.apps, color: primaryColor, size: 20),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      l.selectAppsToLock(provider.config.activelyLockedApps.length),
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 16),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Icon(
-              value ? Icons.check : Icons.close,
-              size: 14,
-              color: value ? AppColors.primary : AppColors.textMuted,
-            ),
+              ),
+              Divider(height: 1, color: borderColor),
+              ...apps.asMap().entries.map((entry) =>
+                _buildAppTile(entry.value, provider, entry.key, isDark),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
-}
 
-class _HeroStat extends StatelessWidget {
-  const _HeroStat({
-    required this.title,
-    required this.value,
-    required this.icon,
-  });
+  Widget _buildAppTile(LockedApp app, AppLockProvider provider, int index, bool isDark) {
+    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+    final surfaceMuted = isDark ? AppColorsDark.surfaceMuted : AppColors.surfaceMuted;
+    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final textColor = isDark ? AppColorsDark.text : AppColors.text;
+    final captionColor = isDark ? AppColorsDark.textTertiary : AppColors.textTertiary;
 
-  final String title;
-  final String value;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          border: Border.all(color: Colors.white.withOpacity(0.26)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(AppBorderRadius.full),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => provider.toggleAppLock(app.packageName),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: app.isLocked ? primaryColor.withOpacity(0.1) : Colors.transparent,
+            border: Border(
+              bottom: BorderSide(color: borderColor, width: 0.5),
+            ),
+          ),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: app.iconBytes != null
+                    ? Image.memory(app.iconBytes!, width: 44, height: 44, fit: BoxFit.cover)
+                    : Container(
+                        width: 44,
+                        height: 44,
+                        color: surfaceMuted,
+                        child: Icon(Icons.android, color: captionColor),
+                      ),
               ),
-              child: Icon(icon, color: Colors.white, size: 18),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: AppTextStyles.h3.copyWith(color: Colors.white, fontSize: 18),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      app.appName,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: app.isLocked ? FontWeight.w700 : FontWeight.w500,
+                        color: app.isLocked ? primaryColor : textColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      app.packageName,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: captionColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-                Text(
-                  title,
-                  style: AppTextStyles.caption.copyWith(color: Colors.white.withOpacity(0.8)),
+              ),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: app.isLocked ? primaryColor.withOpacity(0.2) : surfaceMuted,
+                  borderRadius: BorderRadius.circular(AppBorderRadius.full),
                 ),
-              ],
-            ),
-          ],
+                child: Icon(
+                  app.isLocked ? Icons.lock : Icons.lock_open_outlined,
+                  color: app.isLocked ? primaryColor : captionColor,
+                  size: 18,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    );
+    ).animate(delay: (20 * index).ms).fadeIn(duration: 150.ms);
   }
 }

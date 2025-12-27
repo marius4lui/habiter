@@ -128,5 +128,27 @@
   },
   "habit": "Habit",
   
-  "retry": "Wiederholen"
+  "retry": "Wiederholen",
+  
+  "appLock": "App Lock",
+  "appLockSubtitle": "Sperre Apps bis deine Habits erledigt sind",
+  "locked": "Gesperrt",
+  "status": "Status",
+  "statusActive": "Aktiv",
+  "statusInactive": "Inaktiv",
+  "permissionsRequired": "Berechtigungen erforderlich",
+  "usageAccess": "Usage Access",
+  "usageAccessDesc": "Erkennen welche App geöffnet ist",
+  "overlayPermission": "Über anderen Apps anzeigen",
+  "overlayPermissionDesc": "Sperrbildschirm anzeigen",
+  "loadingApps": "Apps werden geladen...",
+  "noAppsFound": "Keine Apps gefunden",
+  "selectAppsToLock": "Apps zum Sperren auswählen ({count})",
+  "@selectAppsToLock": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "androidOnly": "Nur für Android",
+  "androidOnlyDesc": "App Lock ist nur auf Android Geräten verfügbar."
 }

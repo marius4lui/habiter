@@ -128,5 +128,27 @@
   },
   "habit": "Habit",
   
-  "retry": "Retry"
+  "retry": "Retry",
+  
+  "appLock": "App Lock",
+  "appLockSubtitle": "Lock apps until your habits are completed",
+  "locked": "Locked",
+  "status": "Status",
+  "statusActive": "Active",
+  "statusInactive": "Inactive",
+  "permissionsRequired": "Permissions required",
+  "usageAccess": "Usage Access",
+  "usageAccessDesc": "Detect which app is open",
+  "overlayPermission": "Display over other apps",
+  "overlayPermissionDesc": "Show lock screen",
+  "loadingApps": "Loading apps...",
+  "noAppsFound": "No apps found",
+  "selectAppsToLock": "Select apps to lock ({count})",
+  "@selectAppsToLock": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "androidOnly": "Android Only",
+  "androidOnlyDesc": "App Lock is only available on Android devices."
 }

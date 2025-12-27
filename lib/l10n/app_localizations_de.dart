@@ -271,4 +271,55 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get retry => 'Wiederholen';
+
+  @override
+  String get appLock => 'App Lock';
+
+  @override
+  String get appLockSubtitle => 'Sperre Apps bis deine Habits erledigt sind';
+
+  @override
+  String get locked => 'Gesperrt';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get statusActive => 'Aktiv';
+
+  @override
+  String get statusInactive => 'Inaktiv';
+
+  @override
+  String get permissionsRequired => 'Berechtigungen erforderlich';
+
+  @override
+  String get usageAccess => 'Usage Access';
+
+  @override
+  String get usageAccessDesc => 'Erkennen welche App geöffnet ist';
+
+  @override
+  String get overlayPermission => 'Über anderen Apps anzeigen';
+
+  @override
+  String get overlayPermissionDesc => 'Sperrbildschirm anzeigen';
+
+  @override
+  String get loadingApps => 'Apps werden geladen...';
+
+  @override
+  String get noAppsFound => 'Keine Apps gefunden';
+
+  @override
+  String selectAppsToLock(int count) {
+    return 'Apps zum Sperren auswählen ($count)';
+  }
+
+  @override
+  String get androidOnly => 'Nur für Android';
+
+  @override
+  String get androidOnlyDesc =>
+      'App Lock ist nur auf Android Geräten verfügbar.';
 }

@@ -268,4 +268,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get appLock => 'App Lock';
+
+  @override
+  String get appLockSubtitle => 'Lock apps until your habits are completed';
+
+  @override
+  String get locked => 'Locked';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get statusActive => 'Active';
+
+  @override
+  String get statusInactive => 'Inactive';
+
+  @override
+  String get permissionsRequired => 'Permissions required';
+
+  @override
+  String get usageAccess => 'Usage Access';
+
+  @override
+  String get usageAccessDesc => 'Detect which app is open';
+
+  @override
+  String get overlayPermission => 'Display over other apps';
+
+  @override
+  String get overlayPermissionDesc => 'Show lock screen';
+
+  @override
+  String get loadingApps => 'Loading apps...';
+
+  @override
+  String get noAppsFound => 'No apps found';
+
+  @override
+  String selectAppsToLock(int count) {
+    return 'Select apps to lock ($count)';
+  }
+
+  @override
+  String get androidOnly => 'Android Only';
+
+  @override
+  String get androidOnlyDesc =>
+      'App Lock is only available on Android devices.';
 }

@@ -50,6 +50,7 @@ export default function TestDetailPage() {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+
         setSubmitting(true);
         setError("");
 
@@ -221,6 +222,23 @@ export default function TestDetailPage() {
                                 🔗 {t.test.googleGroups.joinBtn}
                             </a>
 
+                            {test.requires_optin && test.optin_link && (
+                                <div className={styles.optinSection}>
+                                    <div className={styles.infoBox}>
+                                        <h3>⚠️ {t.test.optin.title}</h3>
+                                        <p>{t.test.optin.description}</p>
+                                    </div>
+                                    <a
+                                        href={test.optin_link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={styles.optinBtn}
+                                    >
+                                        ✅ {t.test.optin.button}
+                                    </a>
+                                </div>
+                            )}
+
                             {test.playstore_link && (
                                 <a
                                     href={test.playstore_link}
@@ -280,6 +298,23 @@ export default function TestDetailPage() {
                                     />
                                     <small>{t.test.form.emailHint}</small>
                                 </div>
+
+                                {test?.requires_optin && test?.optin_link && (
+                                    <div className={styles.optinSection}>
+                                        <div className={styles.infoBox}>
+                                            <h3>⚠️ {t.test.optin.title}</h3>
+                                            <p>{t.test.optin.description}</p>
+                                        </div>
+                                        <a
+                                            href={test.optin_link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={styles.optinBtn}
+                                        >
+                                            ✅ {t.test.optin.button}
+                                        </a>
+                                    </div>
+                                )}
 
                                 {error && <p className={styles.error}>{error}</p>}
 

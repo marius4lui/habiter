@@ -13,7 +13,9 @@ export interface BetaTest {
     tester_method: "google_groups" | "csv";
     google_groups_link: string | null;
     playstore_link: string;
+    optin_link: string | null;
     is_active: boolean;
+    requires_optin: boolean;
     priority: number; // 0=Stable, 1=Beta, 2=Alpha, 3=Nightly
     created_at: string;
 }

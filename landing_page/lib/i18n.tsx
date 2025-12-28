@@ -118,6 +118,11 @@ export const translations = {
                 joinBtn: "Google Group beitreten",
                 downloadBtn: "App im Play Store herunterladen",
             },
+            optin: {
+                title: "Opt-in erforderlich",
+                description: "Bevor du die App herunterladen kannst, musst du dich zuerst für den Beta-Test anmelden.",
+                button: "Zum Beta Opt-in",
+            },
         },
         // Admin
         admin: {
@@ -135,6 +140,9 @@ export const translations = {
             playStoreHint: "Link zum Play Store Test Opt-in",
             priority: "Priorität",
             isActive: "Test ist aktiv (akzeptiert Registrierungen)",
+            requiresOptin: "Opt-in Bestätigung erforderlich",
+            optinLink: "Opt-in Link",
+            optinLinkHint: "Externer Link den Nutzer bestätigen müssen (z.B. Play Store Beta Opt-in)",
             noTests: "Noch keine Tests erstellt.",
             createFirst: "Erstelle deinen ersten Beta-Test!",
             registrations: "Registrierungen",
@@ -260,6 +268,11 @@ export const translations = {
                 joinBtn: "Join Google Group",
                 downloadBtn: "Download App from Play Store",
             },
+            optin: {
+                title: "Opt-in Required",
+                description: "Before you can download the app, you need to sign up for the beta test first.",
+                button: "Go to Beta Opt-in",
+            },
         },
         admin: {
             title: "Admin Panel",
@@ -276,6 +289,9 @@ export const translations = {
             playStoreHint: "Link to Play Store test opt-in",
             priority: "Priority",
             isActive: "Test is active (accepting registrations)",
+            requiresOptin: "Opt-in confirmation required",
+            optinLink: "Opt-in Link",
+            optinLinkHint: "External link users must confirm (e.g. Play Store Beta Opt-in)",
             noTests: "No tests created yet.",
             createFirst: "Create your first beta test!",
             registrations: "Registrations",

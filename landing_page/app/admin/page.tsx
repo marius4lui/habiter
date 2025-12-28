@@ -49,8 +49,10 @@ export default function AdminPage() {
         tester_method: "google_groups" as "google_groups" | "csv",
         google_groups_link: "",
         playstore_link: "",
+        optin_link: "",
         priority: 1,
         is_active: true,
+        requires_optin: false,
     });
 
     useEffect(() => {
@@ -170,8 +172,10 @@ export default function AdminPage() {
             tester_method: test.tester_method || "google_groups",
             google_groups_link: test.google_groups_link || "",
             playstore_link: test.playstore_link,
+            optin_link: test.optin_link || "",
             priority: test.priority,
             is_active: test.is_active,
+            requires_optin: test.requires_optin || false,
         });
         setShowForm(true);
     }
@@ -183,8 +187,10 @@ export default function AdminPage() {
             tester_method: "google_groups",
             google_groups_link: "",
             playstore_link: "",
+            optin_link: "",
             priority: 1,
             is_active: true,
+            requires_optin: false,
         });
         setEditingTest(null);
         setShowForm(false);
@@ -373,6 +379,30 @@ export default function AdminPage() {
                             />
                             <label htmlFor="is_active">{t.admin.isActive}</label>
                         </div>
+
+                        <div className={styles.checkbox}>
+                            <input
+                                type="checkbox"
+                                id="requires_optin"
+                                checked={formData.requires_optin}
+                                onChange={(e) => setFormData({ ...formData, requires_optin: e.target.checked })}
+                            />
+                            <label htmlFor="requires_optin">{t.admin.requiresOptin}</label>
+                        </div>
+
+                        {formData.requires_optin && (
+                            <div className={styles.field}>
+                                <label>{t.admin.optinLink}</label>
+                                <input
+                                    type="url"
+                                    required
+                                    placeholder="https://play.google.com/apps/testing/..."
+                                    value={formData.optin_link}
+                                    onChange={(e) => setFormData({ ...formData, optin_link: e.target.value })}
+                                />
+                                <small>{t.admin.optinLinkHint}</small>
+                            </div>
+                        )}
 
                         <div className={styles.formActions}>
                             <button type="submit" className={styles.submitBtn}>

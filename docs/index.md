@@ -1,19 +1,56 @@
-# Welcome to Habiter
+# Habiter
 
-Habiter is a modern, feature-rich habit tracking application built with Flutter. It helps users build good habits and break bad ones through a beautiful and intuitive interface.
+<div align="center">
+  <img src="assets/icon.png" width="128" alt="Habiter Logo">
+  <h1>Habiter</h1>
+  <p><strong>Build Habits. Break Limits.</strong></p>
+  <p>
+    <a href="https://github.com/marius4lui/habiter/releases">Download</a> |
+    <a href="guide/getting-started/">Getting Started</a> |
+    <a href="developer/architecture/">Contribute</a>
+  </p>
+</div>
 
-## Key Features
+---
 
-- **Habit Tracking**: Easy to use interface for tracking daily habits.
-- **Dark Mode**: A warm and cozy dark theme for comfortable usage at night.
-- **Notifications**: Customizable reminders to keep you on track.
-- **Analytics**: Visual insights into your progress.
-- **Localization**: Support for English and other languages (in progress).
+**Habiter** is a beautifully designed, privacy-focused habit tracker built with Flutter. It combines a modern "Glow" aesthetic with powerful features like App Lock integration to help you actually stick to your goals.
 
-## Project Goals
+## Why Habiter?
 
-The goal of Habiter is to provide a simple yet powerful tool for personal improvement, focusing on user experience and visual appeal.
+<div class="grid cards" markdown>
 
-## Getting Started
+-   :material-creation: **Beautiful UI**
+    ---
+    Stunning glassmorphism design with animated backgrounds that feel alive.
 
-Check out the [Getting Started](getting-started.md) guide to set up the project locally.
+-   :material-lock: **App Lock**
+    ---
+    Lock distracting apps (like TikTok or Instagram) until you complete your daily habits.
+
+-   :material-chart-box: **Analytics**
+    ---
+    Visualize your progress with detailed charts and streak tracking.
+
+-   :material-shield-account: **Privacy First**
+    ---
+    Your data stays on your device. No cloud account required.
+
+</div>
+
+## Quick Links
+
+- **User Guide**: Learn how to use the app effectively. [Go to Guide](guide/getting-started.md)
+- **Developer Guide**: Understand the code and contribute. [Go to Dev Docs](developer/architecture.md)
+
+## Tech Stack
+
+We use cutting-edge Flutter technology.
+
+- **Framework**: Flutter 3.x
+- **State Management**: Provider
+- **Local Storage**: Shared Preferences / Hive
+- **Architecture**: Feature-first, Clean Architecture
+
+## License
+
+This project is licensed under the MIT License.

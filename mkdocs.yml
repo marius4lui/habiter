@@ -1,6 +1,6 @@
-site_name: Habiter Documentation
+site_name: Habiter
 site_url: https://marius4lui.github.io/habiter/
-site_description: Documentation for the Habiter Flutter application.
+site_description: The modern, habit-forming Flutter application.
 site_author: Sebastian
 
 repo_name: marius4lui/habiter
@@ -9,13 +9,17 @@ repo_url: https://github.com/marius4lui/habiter
 theme:
   name: material
   language: en
+  logo: assets/logo.png
+  favicon: assets/favicon.png
   palette: 
+    # Light Mode
     - scheme: default
       primary: teal
       accent: purple
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
+    # Dark Mode
     - scheme: slate
       primary: teal
       accent: purple
@@ -24,26 +28,54 @@ theme:
         name: Switch to light mode
   features:
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
+    - navigation.expand
     - navigation.top
+    - navigation.tracking
+    - navigation.path
+    - toc.follow
     - search.suggest
     - search.highlight
     - content.code.copy
+    - content.tabs.link
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
-  - Features: features.md
-  - Architecture: architecture.md
+  - User Guide:
+    - Getting Started: guide/getting-started.md
+    - Features: guide/features.md
+    - App Lock: guide/app-lock.md
+  - Developer Guide:
+    - Architecture: developer/architecture.md
+    - State Management: developer/state-management.md
+    - Services: developer/services.md
+    - Data Models: developer/models.md
 
 plugins:
   - search
+  - social
 
 markdown_extensions:
   - admonition
+  - abbr
+  - attr_list
+  - def_list
+  - footnotes
+  - meta
+  - md_in_html
   - pymdownx.details
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.highlight:
       anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg

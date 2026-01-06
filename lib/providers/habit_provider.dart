@@ -31,34 +31,57 @@ class HabitProvider extends ChangeNotifier {
       loading = true;
       notifyListeners();
 
+      debugPrint('HabitProvider: Starting load...');
+      
+      debugPrint('HabitProvider: Initializing AIManager...');
       await AIManager.initialize();
+      debugPrint('HabitProvider: AIManager initialized');
+      
+      debugPrint('HabitProvider: Initializing NotificationService...');
       await NotificationService.instance.initialize();
+      debugPrint('HabitProvider: NotificationService initialized');
       
       // Set up notification action callback
       NotificationService.instance.setActionCallback(handleNotificationAction);
       
+      debugPrint('HabitProvider: Loading habits from storage...');
       habits = await StorageService.getHabits();
+      debugPrint('HabitProvider: Loaded ${habits.length} habits');
+      
+      debugPrint('HabitProvider: Loading habit entries from storage...');
       habitEntries = await StorageService.getHabitEntries();
+      debugPrint('HabitProvider: Loaded ${habitEntries.length} entries');
+      
+      debugPrint('HabitProvider: Loading AI insights from storage...');
       aiInsights = await StorageService.getAIInsights();
+      debugPrint('HabitProvider: Loaded ${aiInsights.length} insights');
+      
+      debugPrint('HabitProvider: Loading user preferences...');
       preferences = await StorageService.getUserPreferences();
+      debugPrint('HabitProvider: Loaded preferences');
 
       // Schedule global notification if enabled
       if (preferences.notifications) {
+        debugPrint('HabitProvider: Scheduling global notification...');
         await NotificationService.instance.scheduleGlobalDailyReminder(
           time: preferences.reminderTime,
           habits: habits,
         );
+        debugPrint('HabitProvider: Global notification scheduled');
       }
       
       // Schedule individual habit notifications
+      debugPrint('HabitProvider: Scheduling individual habit notifications...');
       for (final habit in habits) {
         if (habit.notificationEnabled && habit.notificationTime != null) {
           await NotificationService.instance.scheduleHabitNotification(habit);
         }
       }
+      debugPrint('HabitProvider: Individual notifications scheduled');
 
       // Mock Data Initialization
       if (habits.isEmpty) {
+        debugPrint('HabitProvider: Creating mock habit...');
         final mockHabit = Habit(
           id: _uuid.v4(),
           name: 'Drink Water',
@@ -73,12 +96,16 @@ class HabitProvider extends ChangeNotifier {
         );
         habits = [mockHabit];
         await StorageService.addHabit(mockHabit);
+        debugPrint('HabitProvider: Mock habit created');
       }
 
+      debugPrint('HabitProvider: Load complete!');
       loading = false;
       error = null;
-    } catch (e) {
-      error = 'Failed to load data';
+    } catch (e, stackTrace) {
+      debugPrint('HabitProvider.load() error: $e');
+      debugPrint('Stack trace: $stackTrace');
+      error = 'Failed to load data: $e';
       loading = false;
     } finally {
       notifyListeners();

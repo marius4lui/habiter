@@ -11,18 +11,17 @@ theme:
   language: en
   logo: assets/logo.png
   favicon: assets/favicon.png
+  font:
+    text: Inter
+    code: JetBrains Mono
   palette: 
-    # Light Mode
+    # Light Mode (Vercel-like)
     - scheme: default
-      primary: teal
-      accent: purple
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
-    # Dark Mode
+    # Dark Mode (Vercel-like)
     - scheme: slate
-      primary: teal
-      accent: purple
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -30,15 +29,14 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
-    - navigation.expand
     - navigation.top
     - navigation.tracking
-    - navigation.path
-    - toc.follow
-    - search.suggest
-    - search.highlight
+    - navigation.instant
     - content.code.copy
     - content.tabs.link
+
+extra_css:
+  - stylesheets/extra.css
 
 nav:
   - Home: index.md

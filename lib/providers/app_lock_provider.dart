@@ -17,6 +17,10 @@ class AppLockProvider extends ChangeNotifier {
   bool _hasUsageStatsPermission = false;
   bool _hasOverlayPermission = false;
 
+  // Cache for habit data to allow sync on config changes
+  List<Habit> _lastHabits = [];
+  List<HabitEntry> _lastEntries = [];
+
   // Getters
   AppLockConfig get config => _config;
   List<LockedApp> get availableApps => _availableApps;
@@ -113,6 +117,7 @@ class AppLockProvider extends ChangeNotifier {
     // Update config
     _config = _config.copyWith(lockedApps: _availableApps);
     await _saveAndSync();
+    await _syncHabitCompletionState();
     notifyListeners();
   }
 
@@ -120,6 +125,7 @@ class AppLockProvider extends ChangeNotifier {
   Future<void> setEnabled(bool enabled) async {
     _config = _config.copyWith(isEnabled: enabled);
     await _saveAndSync();
+    await _syncHabitCompletionState();
     notifyListeners();
   }
 
@@ -127,6 +133,7 @@ class AppLockProvider extends ChangeNotifier {
   Future<void> setLockUntilAllHabitsComplete(bool value) async {
     _config = _config.copyWith(lockUntilAllHabitsComplete: value);
     await _saveAndSync();
+    await _syncHabitCompletionState();
     notifyListeners();
   }
 
@@ -134,6 +141,7 @@ class AppLockProvider extends ChangeNotifier {
   Future<void> setRequiredHabitIds(List<String>? habitIds) async {
     _config = _config.copyWith(requiredHabitIds: habitIds);
     await _saveAndSync();
+    await _syncHabitCompletionState();
     notifyListeners();
   }
 
@@ -153,23 +161,27 @@ class AppLockProvider extends ChangeNotifier {
     required List<Habit> habits,
     required List<HabitEntry> entries,
   }) async {
+    _lastHabits = habits;
+    _lastEntries = entries;
+    await _syncHabitCompletionState();
+  }
+
+  /// Sync habit completion state with native service using cached data
+  Future<void> _syncHabitCompletionState() async {
     if (!_config.isEnabled) return;
 
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    
+
     // Get list of incomplete habits
     List<String> incompleteHabitNames = [];
-    
+
     bool habitsComplete;
     if (_config.lockUntilAllHabitsComplete) {
       // Check all active habits
-      final activeHabits = habits.where((h) => h.isActive).toList();
+      final activeHabits = _lastHabits.where((h) => h.isActive).toList();
       for (final habit in activeHabits) {
-        final isComplete = entries.any((e) => 
-          e.habitId == habit.id && 
-          e.date == today && 
-          e.completed
-        );
+        final isComplete = _lastEntries.any(
+            (e) => e.habitId == habit.id && e.date == today && e.completed);
         if (!isComplete) {
           incompleteHabitNames.add(habit.name);
         }
@@ -182,14 +194,11 @@ class AppLockProvider extends ChangeNotifier {
         habitsComplete = true;
       } else {
         for (final habitId in requiredIds) {
-          final habit = habits.where((h) => h.id == habitId).firstOrNull;
+          final habit = _lastHabits.where((h) => h.id == habitId).firstOrNull;
           if (habit == null) continue;
-          
-          final isComplete = entries.any((e) =>
-            e.habitId == habitId &&
-            e.date == today &&
-            e.completed
-          );
+
+          final isComplete = _lastEntries.any((e) =>
+              e.habitId == habitId && e.date == today && e.completed);
           if (!isComplete) {
             incompleteHabitNames.add(habit.name);
           }

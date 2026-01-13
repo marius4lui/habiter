@@ -21,7 +21,9 @@ class StorageService {
     final stored = prefs.getString(_habitsKey);
     if (stored == null) return [];
     final decoded = jsonDecode(stored) as List<dynamic>;
-    return decoded.map((e) => Habit.fromMap(e as Map<String, dynamic>)).toList();
+    return decoded
+        .map((e) => Habit.fromMap(e as Map<String, dynamic>))
+        .toList();
   }
 
   static Future<void> saveHabits(List<Habit> habits) async {
@@ -36,7 +38,8 @@ class StorageService {
     await saveHabits(habits);
   }
 
-  static Future<void> updateHabit(String id, Map<String, dynamic> updates) async {
+  static Future<void> updateHabit(
+      String id, Map<String, dynamic> updates) async {
     final habits = await getHabits();
     final index = habits.indexWhere((h) => h.id == id);
     if (index != -1) {
@@ -57,7 +60,8 @@ class StorageService {
         color: updates['color'] as String? ?? existing.color,
         icon: updates['icon'] as String? ?? existing.icon,
         frequency: frequency,
-        targetCount: (updates['targetCount'] as num?)?.toInt() ?? existing.targetCount,
+        targetCount:
+            (updates['targetCount'] as num?)?.toInt() ?? existing.targetCount,
         category: updates['category'] as String? ?? existing.category,
         createdAt: updates['createdAt'] as DateTime? ?? existing.createdAt,
         isActive: updates['isActive'] as bool? ?? existing.isActive,
@@ -82,7 +86,9 @@ class StorageService {
     final stored = prefs.getString(_habitEntriesKey);
     if (stored == null) return [];
     final decoded = jsonDecode(stored) as List<dynamic>;
-    return decoded.map((e) => HabitEntry.fromMap(e as Map<String, dynamic>)).toList();
+    return decoded
+        .map((e) => HabitEntry.fromMap(e as Map<String, dynamic>))
+        .toList();
   }
 
   static Future<void> saveHabitEntries(List<HabitEntry> entries) async {
@@ -106,7 +112,9 @@ class StorageService {
     final stored = prefs.getString(_aiInsightsKey);
     if (stored == null) return [];
     final decoded = jsonDecode(stored) as List<dynamic>;
-    return decoded.map((e) => AIInsight.fromMap(e as Map<String, dynamic>)).toList();
+    return decoded
+        .map((e) => AIInsight.fromMap(e as Map<String, dynamic>))
+        .toList();
   }
 
   static Future<void> saveAIInsights(List<AIInsight> insights) async {

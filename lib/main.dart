@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n.dart';
 import 'providers/app_lock_provider.dart';
+import 'providers/classly_sync_provider.dart';
 import 'providers/habit_provider.dart';
 import 'providers/settings_provider.dart';
 import 'screens/analytics_screen.dart';
@@ -22,6 +23,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => HabitProvider()..load()),
         ChangeNotifierProvider(create: (_) => AppLockProvider()..load()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
+        ChangeNotifierProvider(create: (_) => ClasslySyncProvider()..load()),
       ],
       child: const HabiterApp(),
     ),
@@ -72,23 +74,23 @@ class _RootShellState extends State<_RootShell> {
   void initState() {
     super.initState();
     _pageController = PageController();
-    
+
     // Listen to habit changes to update app lock status
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setupHabitListener();
     });
   }
-  
+
   void _setupHabitListener() {
     final habitProvider = context.read<HabitProvider>();
     final appLockProvider = context.read<AppLockProvider>();
-    
+
     // Initial check
     appLockProvider.updateHabitCompletion(
       habits: habitProvider.habits,
       entries: habitProvider.habitEntries,
     );
-    
+
     // Listen for changes
     habitProvider.addListener(() {
       appLockProvider.updateHabitCompletion(
@@ -210,7 +212,8 @@ class _GlassNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
-    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final borderColor =
+        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
     final l = context.l10n;
 
     return ClipRRect(

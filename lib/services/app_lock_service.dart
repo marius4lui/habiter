@@ -9,14 +9,16 @@ class AppLockService {
   static const _channel = MethodChannel('com.habiter.app/applock');
 
   /// Check if the app is running on Android
-  static bool get isSupported => defaultTargetPlatform == TargetPlatform.android;
+  static bool get isSupported =>
+      defaultTargetPlatform == TargetPlatform.android;
 
   /// Get list of installed non-system apps
   static Future<List<LockedApp>> getInstalledApps() async {
     if (!isSupported) return [];
 
     try {
-      final result = await _channel.invokeMethod<List<dynamic>>('getInstalledApps');
+      final result =
+          await _channel.invokeMethod<List<dynamic>>('getInstalledApps');
       if (result == null) return [];
 
       return result.map((app) {
@@ -41,7 +43,8 @@ class AppLockService {
     if (!isSupported) return false;
 
     try {
-      final result = await _channel.invokeMethod<bool>('hasUsageStatsPermission');
+      final result =
+          await _channel.invokeMethod<bool>('hasUsageStatsPermission');
       return result ?? false;
     } on PlatformException catch (e) {
       debugPrint('Error checking usage stats permission: ${e.message}');

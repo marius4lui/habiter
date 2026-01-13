@@ -75,7 +75,9 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
           targetCount: _targetCount,
           color: _color,
           icon: _icon,
-          customDays: _frequency == HabitFrequency.custom ? _selectedWeekdays.toList() : null,
+          customDays: _frequency == HabitFrequency.custom
+              ? _selectedWeekdays.toList()
+              : null,
         ),
       );
     } else {
@@ -89,7 +91,9 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
         targetCount: _targetCount,
         color: _color,
         icon: _icon,
-        customDays: _frequency == HabitFrequency.custom ? _selectedWeekdays.toList() : null,
+        customDays: _frequency == HabitFrequency.custom
+            ? _selectedWeekdays.toList()
+            : null,
       );
     }
     if (!mounted) return;
@@ -103,7 +107,9 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
         title: const Text('Delete Habit?'),
         content: const Text('This action cannot be undone.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text('Delete', style: TextStyle(color: Colors.red))),
@@ -142,11 +148,13 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(widget.habit != null ? 'Edit Habit' : 'New Habit', style: AppTextStyles.h2),
+                  Text(widget.habit != null ? 'Edit Habit' : 'New Habit',
+                      style: AppTextStyles.h2),
                   if (widget.habit != null)
                     IconButton(
                         onPressed: _deleteHabit,
-                        icon: const Icon(Icons.delete_outline, color: Colors.red)),
+                        icon: const Icon(Icons.delete_outline,
+                            color: Colors.red)),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close),
@@ -228,10 +236,15 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                             child: Container(
                               width: 52,
                               decoration: BoxDecoration(
-                                color: selected ? AppColors.primary : AppColors.surface,
-                                borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                                color: selected
+                                    ? AppColors.primary
+                                    : AppColors.surface,
+                                borderRadius:
+                                    BorderRadius.circular(AppBorderRadius.full),
                                 border: Border.all(
-                                  color: selected ? AppColors.primary : AppColors.borderLight,
+                                  color: selected
+                                      ? AppColors.primary
+                                      : AppColors.borderLight,
                                   width: selected ? 2 : 1,
                                 ),
                               ),
@@ -243,7 +256,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                             ),
                           );
                         },
-                        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(width: AppSpacing.sm),
                         itemCount: _iconSuggestions[_category]?.length ?? 0,
                       ),
                     ),
@@ -262,7 +276,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                                 height: 40,
                                 decoration: BoxDecoration(
                                   color: _fromHex(color),
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                                  borderRadius: BorderRadius.circular(
+                                      AppBorderRadius.full),
                                   border: Border.all(
                                     color: _color == color
                                         ? AppColors.text
@@ -283,7 +298,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                       children: HabitFrequency.values
                           .map(
                             (f) => ChoiceChip(
-                              label: Text(f.name[0].toUpperCase() + f.name.substring(1)),
+                              label: Text(f.name[0].toUpperCase() +
+                                  f.name.substring(1)),
                               selected: _frequency == f,
                               onSelected: (_) => setState(() => _frequency = f),
                             ),
@@ -298,8 +314,10 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                         spacing: AppSpacing.xs,
                         children: List.generate(7, (index) {
                           final dayIndex = index + 1; // 1 = Monday
-                          final isSelected = _selectedWeekdays.contains(dayIndex);
-                          final dayName = ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index];
+                          final isSelected =
+                              _selectedWeekdays.contains(dayIndex);
+                          final dayName =
+                              ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index];
                           return InkWell(
                             onTap: () {
                               setState(() {
@@ -310,7 +328,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                                 }
                               });
                             },
-                            borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.full),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               width: 36,
@@ -377,7 +396,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                             vertical: AppSpacing.md,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                            borderRadius:
+                                BorderRadius.circular(AppBorderRadius.md),
                           ),
                         ),
                         onPressed: _saving ? null : _save,
@@ -385,10 +405,13 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : Text(
-                                widget.habit != null ? 'Update Habit' : 'Create Habit',
+                                widget.habit != null
+                                    ? 'Update Habit'
+                                    : 'Create Habit',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 16,

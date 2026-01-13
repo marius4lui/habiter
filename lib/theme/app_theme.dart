@@ -24,7 +24,8 @@ class AppColors {
 
 /// Dark theme colors - warm and cozy dark mode
 class AppColorsDark {
-  static const primary = Color(0xFFE5B896); // Lighter tan for visibility on dark
+  static const primary =
+      Color(0xFFE5B896); // Lighter tan for visibility on dark
   static const primaryDark = Color(0xFFD4A373); // Same as light primary
   static const primaryLight = Color(0xFF3D3530); // Dark cream
   static const secondary = Color(0xFF9CAF88); // Lighter sage for dark
@@ -304,7 +305,9 @@ ThemeData buildAppTheme() {
       surfaceTintColor: Colors.transparent,
       iconTheme: WidgetStateProperty.resolveWith(
         (states) => IconThemeData(
-          color: states.contains(WidgetState.selected) ? AppColors.primaryDark : AppColors.textSecondary,
+          color: states.contains(WidgetState.selected)
+              ? AppColors.primaryDark
+              : AppColors.textSecondary,
           size: 22,
         ),
       ),
@@ -333,27 +336,32 @@ ThemeData buildAppTheme() {
         borderSide: const BorderSide(color: AppColors.primary),
       ),
       labelStyle: AppTextStyles.bodySecondary,
-      hintStyle: AppTextStyles.bodySecondary.copyWith(color: AppColors.textTertiary),
+      hintStyle:
+          AppTextStyles.bodySecondary.copyWith(color: AppColors.textTertiary),
     ),
     chipTheme: ChipThemeData(
       backgroundColor: AppColors.surfaceMuted,
       selectedColor: AppColors.primary.withOpacity(0.18),
-      labelStyle: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+      labelStyle:
+          AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
       secondaryLabelStyle: AppTextStyles.caption.copyWith(color: Colors.white),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       side: const BorderSide(color: AppColors.borderLight),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: AppColors.primaryDark,
       contentTextStyle: AppTextStyles.body.copyWith(color: Colors.white),
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppBorderRadius.md)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppBorderRadius.md)),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primaryDark,
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg, vertical: AppSpacing.md),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
         ),
@@ -385,7 +393,7 @@ ThemeData buildDarkTheme() {
     ),
   );
   final textTheme = GoogleFonts.plusJakartaSansTextTheme(base.textTheme);
-  
+
   // Dark text styles
   final h1Dark = GoogleFonts.spaceGrotesk(
     fontSize: 32,
@@ -461,7 +469,9 @@ ThemeData buildDarkTheme() {
       surfaceTintColor: Colors.transparent,
       iconTheme: WidgetStateProperty.resolveWith(
         (states) => IconThemeData(
-          color: states.contains(WidgetState.selected) ? AppColorsDark.primary : AppColorsDark.textSecondary,
+          color: states.contains(WidgetState.selected)
+              ? AppColorsDark.primary
+              : AppColorsDark.textSecondary,
           size: 22,
         ),
       ),
@@ -496,21 +506,25 @@ ThemeData buildDarkTheme() {
       backgroundColor: AppColorsDark.surfaceMuted,
       selectedColor: AppColorsDark.primary.withOpacity(0.25),
       labelStyle: captionDark.copyWith(color: AppColorsDark.textSecondary),
-      secondaryLabelStyle: captionDark.copyWith(color: AppColorsDark.background),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      secondaryLabelStyle:
+          captionDark.copyWith(color: AppColorsDark.background),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       side: const BorderSide(color: AppColorsDark.borderLight),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: AppColorsDark.primary,
       contentTextStyle: bodyDark.copyWith(color: AppColorsDark.background),
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppBorderRadius.md)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppBorderRadius.md)),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColorsDark.primary,
         foregroundColor: AppColorsDark.background,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg, vertical: AppSpacing.md),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
         ),

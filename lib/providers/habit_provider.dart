@@ -32,30 +32,30 @@ class HabitProvider extends ChangeNotifier {
       notifyListeners();
 
       debugPrint('HabitProvider: Starting load...');
-      
+
       debugPrint('HabitProvider: Initializing AIManager...');
       await AIManager.initialize();
       debugPrint('HabitProvider: AIManager initialized');
-      
+
       debugPrint('HabitProvider: Initializing NotificationService...');
       await NotificationService.instance.initialize();
       debugPrint('HabitProvider: NotificationService initialized');
-      
+
       // Set up notification action callback
       NotificationService.instance.setActionCallback(handleNotificationAction);
-      
+
       debugPrint('HabitProvider: Loading habits from storage...');
       habits = await StorageService.getHabits();
       debugPrint('HabitProvider: Loaded ${habits.length} habits');
-      
+
       debugPrint('HabitProvider: Loading habit entries from storage...');
       habitEntries = await StorageService.getHabitEntries();
       debugPrint('HabitProvider: Loaded ${habitEntries.length} entries');
-      
+
       debugPrint('HabitProvider: Loading AI insights from storage...');
       aiInsights = await StorageService.getAIInsights();
       debugPrint('HabitProvider: Loaded ${aiInsights.length} insights');
-      
+
       debugPrint('HabitProvider: Loading user preferences...');
       preferences = await StorageService.getUserPreferences();
       debugPrint('HabitProvider: Loaded preferences');
@@ -69,7 +69,7 @@ class HabitProvider extends ChangeNotifier {
         );
         debugPrint('HabitProvider: Global notification scheduled');
       }
-      
+
       // Schedule individual habit notifications
       debugPrint('HabitProvider: Scheduling individual habit notifications...');
       for (final habit in habits) {
@@ -154,7 +154,7 @@ class HabitProvider extends ChangeNotifier {
   Future<void> deleteHabit(String id) async {
     // Cancel notification before deleting
     await NotificationService.instance.cancelHabitNotification(id);
-    
+
     habits = habits.where((h) => h.id != id).toList();
     habitEntries = habitEntries.where((e) => e.habitId != id).toList();
     await StorageService.deleteHabit(id);
@@ -225,9 +225,9 @@ class HabitProvider extends ChangeNotifier {
     final oldPrefs = preferences;
     preferences = prefs;
     await StorageService.saveUserPreferences(prefs);
-    
+
     // Handle notification changes
-    if (prefs.notifications != oldPrefs.notifications || 
+    if (prefs.notifications != oldPrefs.notifications ||
         prefs.reminderTime != oldPrefs.reminderTime) {
       if (prefs.notifications) {
         await NotificationService.instance.scheduleGlobalDailyReminder(
@@ -238,7 +238,7 @@ class HabitProvider extends ChangeNotifier {
         await NotificationService.instance.cancelGlobalDailyReminder();
       }
     }
-    
+
     notifyListeners();
   }
 
@@ -247,7 +247,8 @@ class HabitProvider extends ChangeNotifier {
     required String apiKey,
     String? model,
   }) async {
-    await AIManager.saveConfig(provider: provider, apiKey: apiKey, model: model);
+    await AIManager.saveConfig(
+        provider: provider, apiKey: apiKey, model: model);
     notifyListeners();
   }
 

@@ -100,8 +100,10 @@ class Habit {
       ),
       targetCount: (map['targetCount'] as num?)?.toInt() ?? 1,
       category: map['category'] as String? ?? 'General',
-      customDays: (map['customDays'] as List<dynamic>?)?.map((e) => e as int).toList(),
-      createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ?? DateTime.now(),
+      customDays:
+          (map['customDays'] as List<dynamic>?)?.map((e) => e as int).toList(),
+      createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ??
+          DateTime.now(),
       isActive: map['isActive'] as bool? ?? true,
       notificationEnabled: map['notificationEnabled'] as bool? ?? false,
       notificationTime: map['notificationTime'] as String?,
@@ -110,7 +112,8 @@ class Habit {
 
   String toJson() => jsonEncode(toMap());
 
-  factory Habit.fromJson(String source) => Habit.fromMap(jsonDecode(source) as Map<String, dynamic>);
+  factory Habit.fromJson(String source) =>
+      Habit.fromMap(jsonDecode(source) as Map<String, dynamic>);
 }
 
 class HabitEntry {
@@ -148,7 +151,8 @@ class HabitEntry {
       date: map['date'] as String,
       completed: map['completed'] as bool? ?? false,
       count: (map['count'] as num?)?.toInt() ?? 0,
-      timestamp: DateTime.tryParse(map['timestamp'] as String? ?? '') ?? DateTime.now(),
+      timestamp: DateTime.tryParse(map['timestamp'] as String? ?? '') ??
+          DateTime.now(),
     );
   }
 }
@@ -228,7 +232,8 @@ class AIInsight {
       title: map['title'] as String? ?? 'Insight',
       message: map['message'] as String? ?? '',
       confidence: (map['confidence'] as num?)?.toDouble() ?? 0.5,
-      createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ??
+          DateTime.now(),
       isRead: map['isRead'] as bool? ?? false,
     );
   }

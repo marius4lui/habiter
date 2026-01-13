@@ -22,8 +22,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<HabitProvider>();
@@ -37,7 +35,8 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(provider.error!, style: Theme.of(context).textTheme.displaySmall),
+            Text(provider.error!,
+                style: Theme.of(context).textTheme.displaySmall),
             const SizedBox(height: AppSpacing.md),
             ElevatedButton(
               onPressed: provider.refresh,
@@ -50,11 +49,11 @@ class HomeScreen extends StatelessWidget {
 
     final allActiveHabits = provider.habits.where((h) => h.isActive).toList();
     final today = getTodayString();
-    
+
     // Split into Pending and Completed
     final pendingHabits = <Habit>[];
     final completedHabits = <Habit>[];
-    
+
     for (final habit in allActiveHabits) {
       if (isHabitCompletedToday(habit.id, provider.habitEntries)) {
         completedHabits.add(habit);
@@ -65,7 +64,8 @@ class HomeScreen extends StatelessWidget {
 
     final completedToday = completedHabits.length;
     final totalActive = allActiveHabits.length;
-    final completionRate = totalActive == 0 ? 0.0 : completedToday / totalActive;
+    final completionRate =
+        totalActive == 0 ? 0.0 : completedToday / totalActive;
     final greeting = _greeting(context);
     final l = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -103,7 +103,6 @@ class HomeScreen extends StatelessWidget {
                         onAddHabit: () => _openAddHabitSheet(context),
                       ),
                       const SizedBox(height: AppSpacing.md),
-
                     ],
                   ),
                 ),
@@ -133,7 +132,8 @@ class HomeScreen extends StatelessWidget {
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
                             return HabitCard(habit: pendingHabits[index])
-                                .animate(delay: (index * 50).ms) // Faster stagger
+                                .animate(
+                                    delay: (index * 50).ms) // Faster stagger
                                 .slideY(
                                   begin: 0.2, // Subtle slide
                                   end: 0,
@@ -148,7 +148,8 @@ class HomeScreen extends StatelessWidget {
                           crossAxisCount: crossAxisCount,
                           crossAxisSpacing: AppSpacing.sm, // Tighter spacing
                           mainAxisSpacing: AppSpacing.sm,
-                          childAspectRatio: 2.5, // Much flatter/wider aspect ratio for compact cards
+                          childAspectRatio:
+                              2.5, // Much flatter/wider aspect ratio for compact cards
                         ),
                       );
                     },
@@ -157,7 +158,8 @@ class HomeScreen extends StatelessWidget {
               if (completedHabits.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg, vertical: AppSpacing.md),
                     child: _CompletedHabitsSection(habits: completedHabits),
                   ),
                 ),
@@ -296,10 +298,13 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final gradient = isDark ? AppGradientsDark.cardSheen : AppGradients.cardSheen;
-    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
-    final primaryGradient = isDark ? AppGradientsDark.primary : AppGradients.primary;
-    
+    final gradient =
+        isDark ? AppGradientsDark.cardSheen : AppGradients.cardSheen;
+    final borderColor =
+        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final primaryGradient =
+        isDark ? AppGradientsDark.primary : AppGradients.primary;
+
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Container(
@@ -321,10 +326,12 @@ class _EmptyState extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppBorderRadius.full),
               ),
               alignment: Alignment.center,
-              child: const Icon(Icons.flag_rounded, size: 38, color: Colors.white),
+              child:
+                  const Icon(Icons.flag_rounded, size: 38, color: Colors.white),
             ),
             const SizedBox(height: AppSpacing.md),
-            Text(l.startMomentum, style: Theme.of(context).textTheme.displayMedium),
+            Text(l.startMomentum,
+                style: Theme.of(context).textTheme.displayMedium),
             const SizedBox(height: AppSpacing.sm),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -426,14 +433,14 @@ class _GlassIconButton extends StatelessWidget {
   }
 }
 
-
 class _CompletedHabitsSection extends StatefulWidget {
   const _CompletedHabitsSection({required this.habits});
 
   final List<Habit> habits;
 
   @override
-  State<_CompletedHabitsSection> createState() => _CompletedHabitsSectionState();
+  State<_CompletedHabitsSection> createState() =>
+      _CompletedHabitsSectionState();
 }
 
 class _CompletedHabitsSectionState extends State<_CompletedHabitsSection> {
@@ -443,7 +450,8 @@ class _CompletedHabitsSectionState extends State<_CompletedHabitsSection> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final captionColor = isDark ? AppColorsDark.textTertiary : AppColors.textTertiary;
+    final captionColor =
+        isDark ? AppColorsDark.textTertiary : AppColors.textTertiary;
 
     return Column(
       children: [
@@ -457,10 +465,15 @@ class _CompletedHabitsSectionState extends State<_CompletedHabitsSection> {
               children: [
                 Text(
                   l.completedCount(widget.habits.length),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: captionColor),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: captionColor),
                 ),
                 Icon(
-                  _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                  _expanded
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
                   size: 16,
                   color: captionColor,
                 ),
@@ -471,12 +484,15 @@ class _CompletedHabitsSectionState extends State<_CompletedHabitsSection> {
         AnimatedCrossFade(
           firstChild: const SizedBox(width: double.infinity),
           secondChild: Column(
-             children: widget.habits.map((h) => Opacity(
-               opacity: 0.6,
-               child: HabitCard(habit: h),
-             )).toList(),
+            children: widget.habits
+                .map((h) => Opacity(
+                      opacity: 0.6,
+                      child: HabitCard(habit: h),
+                    ))
+                .toList(),
           ),
-          crossFadeState: _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          crossFadeState:
+              _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 300),
         ),
       ],

@@ -100,7 +100,8 @@ HabitStats calculateHabitStats(Habit habit, List<HabitEntry> entries) {
   if (uniqueDates.isNotEmpty) {
     final firstDate = DateTime.parse(uniqueDates.first);
     final lastDate = DateTime.parse(uniqueDates.last);
-    final totalWeeks = max(1, ((lastDate.difference(firstDate).inDays) / 7).ceil());
+    final totalWeeks =
+        max(1, ((lastDate.difference(firstDate).inDays) / 7).ceil());
     averagePerWeek = totalCompletions / totalWeeks;
   }
 
@@ -116,7 +117,8 @@ HabitStats calculateHabitStats(Habit habit, List<HabitEntry> entries) {
 }
 
 class WeeklyData {
-  WeeklyData({required this.week, required this.completions, required this.total});
+  WeeklyData(
+      {required this.week, required this.completions, required this.total});
 
   final String week;
   final int completions;
@@ -129,13 +131,15 @@ List<WeeklyData> getWeeklyData(String habitId, List<HabitEntry> entries,
   final today = DateTime.now();
 
   for (var i = weeksBack - 1; i >= 0; i--) {
-    final weekStart = DateTime(today.year, today.month, today.day - (today.weekday - 1) - (i * 7));
+    final weekStart = DateTime(
+        today.year, today.month, today.day - (today.weekday - 1) - (i * 7));
     final weekEnd = weekStart.add(const Duration(days: 6));
 
     final weekEntries = entries.where((entry) {
       if (entry.habitId != habitId) return false;
       final entryDate = DateTime.parse(entry.date);
-      return entryDate.isAfter(weekStart.subtract(const Duration(seconds: 1))) &&
+      return entryDate
+              .isAfter(weekStart.subtract(const Duration(seconds: 1))) &&
           entryDate.isBefore(weekEnd.add(const Duration(days: 1)));
     }).toList();
 

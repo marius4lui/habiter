@@ -25,7 +25,8 @@ class AppLockProvider extends ChangeNotifier {
   bool get isEnabled => _config.isEnabled;
   bool get hasUsageStatsPermission => _hasUsageStatsPermission;
   bool get hasOverlayPermission => _hasOverlayPermission;
-  bool get hasAllPermissions => _hasUsageStatsPermission && _hasOverlayPermission;
+  bool get hasAllPermissions =>
+      _hasUsageStatsPermission && _hasOverlayPermission;
   bool get isSupported => AppLockService.isSupported;
 
   /// Load saved config and check permissions
@@ -75,24 +76,24 @@ class AppLockProvider extends ChangeNotifier {
 
     try {
       final apps = await AppLockService.getInstalledApps();
-      
+
       // Merge with saved locked apps to preserve isLocked state
       final lockedPackages = _config.lockedApps
           .where((a) => a.isLocked)
           .map((a) => a.packageName)
           .toSet();
-      
+
       _availableApps = apps.map((app) {
         return app.copyWith(isLocked: lockedPackages.contains(app.packageName));
       }).toList();
-      
+
       // Sort: locked apps first, then alphabetically
       _availableApps.sort((a, b) {
         if (a.isLocked && !b.isLocked) return -1;
         if (!a.isLocked && b.isLocked) return 1;
         return a.appName.toLowerCase().compareTo(b.appName.toLowerCase());
       });
-      
+
       _error = null;
     } catch (e) {
       _error = 'Failed to load installed apps';
@@ -104,7 +105,8 @@ class AppLockProvider extends ChangeNotifier {
 
   /// Toggle lock status for an app
   Future<void> toggleAppLock(String packageName) async {
-    final index = _availableApps.indexWhere((a) => a.packageName == packageName);
+    final index =
+        _availableApps.indexWhere((a) => a.packageName == packageName);
     if (index == -1) return;
 
     final app = _availableApps[index];
@@ -156,20 +158,17 @@ class AppLockProvider extends ChangeNotifier {
     if (!_config.isEnabled) return;
 
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    
+
     // Get list of incomplete habits
     List<String> incompleteHabitNames = [];
-    
+
     bool habitsComplete;
     if (_config.lockUntilAllHabitsComplete) {
       // Check all active habits
       final activeHabits = habits.where((h) => h.isActive).toList();
       for (final habit in activeHabits) {
-        final isComplete = entries.any((e) => 
-          e.habitId == habit.id && 
-          e.date == today && 
-          e.completed
-        );
+        final isComplete = entries.any(
+            (e) => e.habitId == habit.id && e.date == today && e.completed);
         if (!isComplete) {
           incompleteHabitNames.add(habit.name);
         }
@@ -184,12 +183,9 @@ class AppLockProvider extends ChangeNotifier {
         for (final habitId in requiredIds) {
           final habit = habits.where((h) => h.id == habitId).firstOrNull;
           if (habit == null) continue;
-          
-          final isComplete = entries.any((e) =>
-            e.habitId == habitId &&
-            e.date == today &&
-            e.completed
-          );
+
+          final isComplete = entries.any(
+              (e) => e.habitId == habitId && e.date == today && e.completed);
           if (!isComplete) {
             incompleteHabitNames.add(habit.name);
           }

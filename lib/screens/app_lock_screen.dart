@@ -43,7 +43,8 @@ class _AppLockScreenState extends State<AppLockScreen> {
           backgroundColor: Colors.transparent,
           extendBodyBehindAppBar: true,
           appBar: AppBar(
-            title: Text(context.l10n.appLock, style: Theme.of(context).textTheme.displayMedium),
+            title: Text(context.l10n.appLock,
+                style: Theme.of(context).textTheme.displayMedium),
             backgroundColor: Colors.transparent,
             elevation: 0,
             leading: IconButton(
@@ -81,14 +82,17 @@ class _AppLockScreenState extends State<AppLockScreen> {
     final l = context.l10n;
     final gradient = isDark ? AppGradientsDark.appShell : AppGradients.appShell;
     final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
-    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
-    final captionColor = isDark ? AppColorsDark.textTertiary : AppColors.textTertiary;
+    final borderColor =
+        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final captionColor =
+        isDark ? AppColorsDark.textTertiary : AppColors.textTertiary;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(l.appLock, style: Theme.of(context).textTheme.displayMedium),
+        title:
+            Text(l.appLock, style: Theme.of(context).textTheme.displayMedium),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
@@ -116,9 +120,11 @@ class _AppLockScreenState extends State<AppLockScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.phone_android, size: 64, color: captionColor),
+                        Icon(Icons.phone_android,
+                            size: 64, color: captionColor),
                         const SizedBox(height: AppSpacing.md),
-                        Text(l.androidOnly, style: Theme.of(context).textTheme.displayMedium),
+                        Text(l.androidOnly,
+                            style: Theme.of(context).textTheme.displayMedium),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
                           l.androidOnlyDesc,
@@ -137,7 +143,8 @@ class _AppLockScreenState extends State<AppLockScreen> {
     );
   }
 
-  Widget _buildHeroCard(BuildContext context, AppLockProvider provider, bool isDark) {
+  Widget _buildHeroCard(
+      BuildContext context, AppLockProvider provider, bool isDark) {
     final l = context.l10n;
     final lockedCount = provider.config.activelyLockedApps.length;
     final heroGradient = isDark ? AppGradientsDark.hero : AppGradients.hero;
@@ -165,15 +172,16 @@ class _AppLockScreenState extends State<AppLockScreen> {
                     children: [
                       Text(
                         l.appLock,
-                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          color: Colors.white,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.displayMedium?.copyWith(
+                                  color: Colors.white,
+                                ),
                       ),
                       Text(
                         l.appLockSubtitle,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withOpacity(0.85),
-                        ),
+                              color: Colors.white.withOpacity(0.85),
+                            ),
                       ),
                     ],
                   ),
@@ -249,11 +257,13 @@ class _AppLockScreenState extends State<AppLockScreen> {
     );
   }
 
-  Widget _buildPermissionsSection(BuildContext context, AppLockProvider provider, bool isDark) {
+  Widget _buildPermissionsSection(
+      BuildContext context, AppLockProvider provider, bool isDark) {
     final l = context.l10n;
     final warningColor = isDark ? AppColorsDark.warning : AppColors.warning;
     final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
-    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final borderColor =
+        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
     final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
 
     return ClipRRect(
@@ -273,9 +283,14 @@ class _AppLockScreenState extends State<AppLockScreen> {
                 padding: const EdgeInsets.all(AppSpacing.md),
                 child: Row(
                   children: [
-                    Icon(Icons.warning_amber_rounded, color: warningColor, size: 20),
+                    Icon(Icons.warning_amber_rounded,
+                        color: warningColor, size: 20),
                     const SizedBox(width: AppSpacing.sm),
-                    Text(l.permissionsRequired, style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 16)),
+                    Text(l.permissionsRequired,
+                        style: Theme.of(context)
+                            .textTheme
+                            .displaySmall
+                            ?.copyWith(fontSize: 16)),
                   ],
                 ),
               ),
@@ -311,11 +326,13 @@ class _AppLockScreenState extends State<AppLockScreen> {
     );
   }
 
-  Widget _buildPermissionTile(String title, String subtitle, IconData icon, bool isDark, VoidCallback onTap) {
+  Widget _buildPermissionTile(String title, String subtitle, IconData icon,
+      bool isDark, VoidCallback onTap) {
     final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+      contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.xs),
       leading: Icon(icon, color: primaryColor),
       title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
       subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
@@ -330,7 +347,8 @@ class _AppLockScreenState extends State<AppLockScreen> {
   Widget _buildLoadingSection(bool isDark) {
     final l = context.l10n;
     final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
-    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final borderColor =
+        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
     final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
 
     return ClipRRect(
@@ -348,7 +366,8 @@ class _AppLockScreenState extends State<AppLockScreen> {
             children: [
               CircularProgressIndicator(color: primaryColor),
               const SizedBox(height: AppSpacing.md),
-              Text(l.loadingApps, style: Theme.of(context).textTheme.bodyMedium),
+              Text(l.loadingApps,
+                  style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),
@@ -356,11 +375,13 @@ class _AppLockScreenState extends State<AppLockScreen> {
     );
   }
 
-  Widget _buildAppsSection(BuildContext context, AppLockProvider provider, bool isDark) {
+  Widget _buildAppsSection(
+      BuildContext context, AppLockProvider provider, bool isDark) {
     final l = context.l10n;
     final apps = provider.availableApps;
     final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
-    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final borderColor =
+        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
     final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
 
     if (apps.isEmpty) {
@@ -377,9 +398,14 @@ class _AppLockScreenState extends State<AppLockScreen> {
             ),
             child: Column(
               children: [
-                Icon(Icons.apps, size: 48, color: isDark ? AppColorsDark.textTertiary : AppColors.textTertiary),
+                Icon(Icons.apps,
+                    size: 48,
+                    color: isDark
+                        ? AppColorsDark.textTertiary
+                        : AppColors.textTertiary),
                 const SizedBox(height: AppSpacing.sm),
-                Text(l.noAppsFound, style: Theme.of(context).textTheme.bodyMedium),
+                Text(l.noAppsFound,
+                    style: Theme.of(context).textTheme.bodyMedium),
               ],
             ),
           ),
@@ -407,16 +433,21 @@ class _AppLockScreenState extends State<AppLockScreen> {
                     Icon(Icons.apps, color: primaryColor, size: 20),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
-                      l.selectAppsToLock(provider.config.activelyLockedApps.length),
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 16),
+                      l.selectAppsToLock(
+                          provider.config.activelyLockedApps.length),
+                      style: Theme.of(context)
+                          .textTheme
+                          .displaySmall
+                          ?.copyWith(fontSize: 16),
                     ),
                   ],
                 ),
               ),
               Divider(height: 1, color: borderColor),
-              ...apps.asMap().entries.map((entry) =>
-                _buildAppTile(entry.value, provider, entry.key, isDark),
-              ),
+              ...apps.asMap().entries.map(
+                    (entry) =>
+                        _buildAppTile(entry.value, provider, entry.key, isDark),
+                  ),
             ],
           ),
         ),
@@ -424,21 +455,28 @@ class _AppLockScreenState extends State<AppLockScreen> {
     );
   }
 
-  Widget _buildAppTile(LockedApp app, AppLockProvider provider, int index, bool isDark) {
+  Widget _buildAppTile(
+      LockedApp app, AppLockProvider provider, int index, bool isDark) {
     final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
-    final surfaceMuted = isDark ? AppColorsDark.surfaceMuted : AppColors.surfaceMuted;
-    final borderColor = isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final surfaceMuted =
+        isDark ? AppColorsDark.surfaceMuted : AppColors.surfaceMuted;
+    final borderColor =
+        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
     final textColor = isDark ? AppColorsDark.text : AppColors.text;
-    final captionColor = isDark ? AppColorsDark.textTertiary : AppColors.textTertiary;
+    final captionColor =
+        isDark ? AppColorsDark.textTertiary : AppColors.textTertiary;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => provider.toggleAppLock(app.packageName),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           decoration: BoxDecoration(
-            color: app.isLocked ? primaryColor.withOpacity(0.1) : Colors.transparent,
+            color: app.isLocked
+                ? primaryColor.withOpacity(0.1)
+                : Colors.transparent,
             border: Border(
               bottom: BorderSide(color: borderColor, width: 0.5),
             ),
@@ -448,7 +486,8 @@ class _AppLockScreenState extends State<AppLockScreen> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: app.iconBytes != null
-                    ? Image.memory(app.iconBytes!, width: 44, height: 44, fit: BoxFit.cover)
+                    ? Image.memory(app.iconBytes!,
+                        width: 44, height: 44, fit: BoxFit.cover)
                     : Container(
                         width: 44,
                         height: 44,
@@ -464,15 +503,20 @@ class _AppLockScreenState extends State<AppLockScreen> {
                     Text(
                       app.appName,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: app.isLocked ? FontWeight.w700 : FontWeight.w500,
-                        color: app.isLocked ? primaryColor : textColor,
-                      ),
+                            fontWeight: app.isLocked
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: app.isLocked ? primaryColor : textColor,
+                          ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       app.packageName,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: captionColor),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: captionColor),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -483,7 +527,9 @@ class _AppLockScreenState extends State<AppLockScreen> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: app.isLocked ? primaryColor.withOpacity(0.2) : surfaceMuted,
+                  color: app.isLocked
+                      ? primaryColor.withOpacity(0.2)
+                      : surfaceMuted,
                   borderRadius: BorderRadius.circular(AppBorderRadius.full),
                 ),
                 child: Icon(

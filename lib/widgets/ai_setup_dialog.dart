@@ -46,7 +46,8 @@ class _AISetupDialogState extends State<AISetupDialog> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     final provider = context.read<HabitProvider>();
-    await provider.configureAI(provider: _provider, apiKey: _apiKeyController.text.trim());
+    await provider.configureAI(
+        provider: _provider, apiKey: _apiKeyController.text.trim());
     setState(() => _saving = false);
     if (!mounted) return;
     Navigator.of(context).pop(true);
@@ -71,9 +72,11 @@ class _AISetupDialogState extends State<AISetupDialog> {
               initialValue: _provider,
               decoration: const InputDecoration(labelText: 'Provider'),
               items: const [
-                DropdownMenuItem(value: 'openai', child: Text('OpenAI compatible')),
+                DropdownMenuItem(
+                    value: 'openai', child: Text('OpenAI compatible')),
                 DropdownMenuItem(value: 'glm', child: Text('GLM / ZhipuAI')),
-                DropdownMenuItem(value: 'openrouter', child: Text('OpenRouter')),
+                DropdownMenuItem(
+                    value: 'openrouter', child: Text('OpenRouter')),
               ],
               onChanged: (val) {
                 if (val != null) setState(() => _provider = val);
@@ -84,8 +87,9 @@ class _AISetupDialogState extends State<AISetupDialog> {
               controller: _apiKeyController,
               obscureText: true,
               decoration: const InputDecoration(labelText: 'API key'),
-              validator: (v) =>
-                  v == null || v.trim().isEmpty ? 'API key is required to enable AI' : null,
+              validator: (v) => v == null || v.trim().isEmpty
+                  ? 'API key is required to enable AI'
+                  : null,
             ),
           ],
         ),

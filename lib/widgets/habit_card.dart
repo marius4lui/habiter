@@ -34,7 +34,7 @@ class _HabitCardState extends State<HabitCard> {
   Future<void> _handleCompletion() async {
     // 1. Immediate Haptic & Visual Feedback
     await HapticFeedback.heavyImpact();
-    
+
     // Update local state to trigger "complete" animation & Particles
     setState(() {
       _isProcessingCompletion = true;
@@ -56,9 +56,9 @@ class _HabitCardState extends State<HabitCard> {
     await Future.delayed(300.ms);
 
     if (mounted) {
-       final provider = context.read<HabitProvider>();
-       final today = getTodayString();
-       await provider.toggleHabitCompletion(widget.habit.id, today);
+      final provider = context.read<HabitProvider>();
+      final today = getTodayString();
+      await provider.toggleHabitCompletion(widget.habit.id, today);
     }
   }
 
@@ -74,8 +74,8 @@ class _HabitCardState extends State<HabitCard> {
       _localIsCompleted = isCompletedInStore;
     }
 
-    // If we have visually dismissed it, hide it to prevent layout jumps 
-    // Note: If the store updates and says "not completed" (e.g. undo), we should reappear? 
+    // If we have visually dismissed it, hide it to prevent layout jumps
+    // Note: If the store updates and says "not completed" (e.g. undo), we should reappear?
     // For now, if dismissed locally, we stay hidden until parent rebuilds with new list order or we get recycled.
     // Ideally, the parent List would remove this item from the tree once the provider updates.
     if (_isDismissed) return const SizedBox.shrink();
@@ -83,7 +83,8 @@ class _HabitCardState extends State<HabitCard> {
     return Animate(
       key: ValueKey('habit_${widget.habit.id}'),
       effects: const [
-        FadeEffect(duration: Duration(milliseconds: 600), curve: Curves.easeOutQuad),
+        FadeEffect(
+            duration: Duration(milliseconds: 600), curve: Curves.easeOutQuad),
         SlideEffect(
             begin: Offset(0, 0.1),
             end: Offset.zero,
@@ -94,7 +95,7 @@ class _HabitCardState extends State<HabitCard> {
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
         child: GestureDetector(
           onTap: () {
-             showModalBottomSheet(
+            showModalBottomSheet(
               context: context,
               isScrollControlled: true,
               useSafeArea: true,
@@ -151,7 +152,7 @@ class _SwipeableGlassCard extends StatefulWidget {
 class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
   double _dragExtent = 0.0;
   final double _threshold = 100.0;
-  
+
   int _lastHapticStep = 0;
 
   void _onDragUpdate(DragUpdateDetails details) {
@@ -172,14 +173,14 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
   }
 
   void _onDragEnd(DragEndDetails details) {
-     if (widget.isCompleted) return;
-     
+    if (widget.isCompleted) return;
+
     if (_dragExtent >= _threshold) {
       // Swipe Successful
       widget.onComplete();
       // Visually keep it snapped to the right while we animate out
       setState(() {
-        _dragExtent = 200.0; 
+        _dragExtent = 200.0;
       });
     } else {
       // Swipe Cancelled - Snap Back
@@ -195,106 +196,104 @@ class _SwipeableGlassCardState extends State<_SwipeableGlassCard> {
   Widget build(BuildContext context) {
     final accentColor = _fromHex(widget.habit.color);
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Calculate progress 0.0 -> 1.0 based on drag
-        final double opacity = (_dragExtent / _threshold).clamp(0.0, 1.0);
-        
-        return Stack(
-          alignment: Alignment.centerLeft,
-          children: [
-            // BACKGROUND LAYER (The "Reveal" area)
-            Container(
-              height: 70, // Matches compact card height
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                color: Colors.transparent, // Fix "brown" field artifact
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: Stack(
-                  children: [
-                    // Gradient Fill that follows the swipe
-                    Positioned(
-                       left: 0,
-                       top: 0,
-                       bottom: 0,
-                       width: (constraints.maxWidth * opacity).clamp(0.0, constraints.maxWidth), 
-                       child: Container(
-                         decoration: BoxDecoration(
-                           gradient: LinearGradient(
-                             colors: [
-                               accentColor.withOpacity(0.4),
-                               accentColor.withOpacity(0.1),
-                             ],
-                           ),
-                         ),
-                       ),
-                    ),
-                    // Check Icon fixed on the left
-                    Positioned(
-                      left: 32,
-                      top: 0,
-                      bottom: 0,
-                      child: Center(
-                        child: Icon(
-                          Icons.check_rounded,
-                          color: accentColor.withOpacity(opacity.clamp(0.2, 1.0)),
-                          size: 32 + (8 * opacity),
+    return LayoutBuilder(builder: (context, constraints) {
+      // Calculate progress 0.0 -> 1.0 based on drag
+      final double opacity = (_dragExtent / _threshold).clamp(0.0, 1.0);
+
+      return Stack(
+        alignment: Alignment.centerLeft,
+        children: [
+          // BACKGROUND LAYER (The "Reveal" area)
+          Container(
+            height: 70, // Matches compact card height
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              color: Colors.transparent, // Fix "brown" field artifact
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Stack(
+                children: [
+                  // Gradient Fill that follows the swipe
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: (constraints.maxWidth * opacity)
+                        .clamp(0.0, constraints.maxWidth),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            accentColor.withOpacity(0.4),
+                            accentColor.withOpacity(0.1),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  // Check Icon fixed on the left
+                  Positioned(
+                    left: 32,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: Icon(
+                        Icons.check_rounded,
+                        color: accentColor.withOpacity(opacity.clamp(0.2, 1.0)),
+                        size: 32 + (8 * opacity),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+          ),
 
-            // FOREGROUND CARD (The Draggable)
-            Transform.translate(
-                 offset: Offset(_dragExtent, 0),
-                 child: GestureDetector(
-                   onHorizontalDragStart: (_) {
-                     if (!widget.isCompleted) HapticFeedback.lightImpact();
-                   },
-                   onHorizontalDragUpdate: _onDragUpdate,
-                   onHorizontalDragEnd: _onDragEnd,
-                   child: Stack(
-                     children: [
-                        // Hint Text behind the card (revealed by glass transparency or just visible on right)
-                        if (!widget.isCompleted && _dragExtent == 0)
-                           Positioned(
-                             right: 16,
-                             top: 0,
-                             bottom: 0,
-                             child: Center(
-                               child: Text(
-                                 'Slide >>',
-                                 style: TextStyle(
-                                   color: AppColors.textSecondary.withOpacity(0.4),
-                                   fontWeight: FontWeight.w600,
-                                   fontSize: 12,
-                                   letterSpacing: 1.5,
-                                 ),
-                               ),
-                             ),
-                           ),
-                        _GlassHabitCardContent(
-                         habit: widget.habit,
-                         isCompleted: widget.isCompleted,
-                       )
-                       .animate(target: widget.isCompleted ? 1 : 0)
-                       .scale(
-                         end: const Offset(0.98, 0.98), // Very subtle scale, or 1.0 if we want "normal"
-                         curve: Curves.easeInOut,
-                       ),
-              ],
+          // FOREGROUND CARD (The Draggable)
+          Transform.translate(
+            offset: Offset(_dragExtent, 0),
+            child: GestureDetector(
+              onHorizontalDragStart: (_) {
+                if (!widget.isCompleted) HapticFeedback.lightImpact();
+              },
+              onHorizontalDragUpdate: _onDragUpdate,
+              onHorizontalDragEnd: _onDragEnd,
+              child: Stack(
+                children: [
+                  // Hint Text behind the card (revealed by glass transparency or just visible on right)
+                  if (!widget.isCompleted && _dragExtent == 0)
+                    Positioned(
+                      right: 16,
+                      top: 0,
+                      bottom: 0,
+                      child: Center(
+                        child: Text(
+                          'Slide >>',
+                          style: TextStyle(
+                            color: AppColors.textSecondary.withOpacity(0.4),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  _GlassHabitCardContent(
+                    habit: widget.habit,
+                    isCompleted: widget.isCompleted,
+                  ).animate(target: widget.isCompleted ? 1 : 0).scale(
+                        end: const Offset(0.98,
+                            0.98), // Very subtle scale, or 1.0 if we want "normal"
+                        curve: Curves.easeInOut,
+                      ),
+                ],
+              ),
             ),
           ),
-        ),
         ],
-        );
-      }
-    );
+      );
+    });
   }
 }
 
@@ -351,7 +350,7 @@ class _GlassHabitCardContent extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              
+
               // TEXT + META
               Expanded(
                 child: Column(
@@ -371,7 +370,8 @@ class _GlassHabitCardContent extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.repeat_rounded, size: 12, color: AppColors.textSecondary),
+                        Icon(Icons.repeat_rounded,
+                            size: 12, color: AppColors.textSecondary),
                         const SizedBox(width: 4),
                         Text(
                           _getFrequencyLabel(habit),
@@ -397,7 +397,8 @@ class _GlassHabitCardContent extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 4),
                         child: Row(
                           children: [
-                            Icon(Icons.check_circle, size: 12, color: AppColors.success),
+                            Icon(Icons.check_circle,
+                                size: 12, color: AppColors.success),
                             const SizedBox(width: 4),
                             Text(
                               'COMPLETED',

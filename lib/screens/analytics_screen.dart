@@ -308,7 +308,7 @@ class _StatCard extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: color.withValues(alpha: 0.08),
+                color: color.withOpacity(0.08),
               ),
             ),
           ),
@@ -320,14 +320,14 @@ class _StatCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      color.withValues(alpha: 0.2),
-                      color.withValues(alpha: 0.05),
+                      color.withOpacity(0.2),
+                      color.withOpacity(0.05),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                  border: Border.all(color: color.withValues(alpha: 0.2)),
+                  border: Border.all(color: color.withOpacity(0.2)),
                 ),
                 child: Icon(icon, color: color),
               ),
@@ -476,8 +476,8 @@ class _WeeklyChartCard extends StatelessWidget {
                         show: true,
                         gradient: LinearGradient(
                           colors: [
-                            _fromHex(habit.color).withValues(alpha: 0.18),
-                            AppColors.primary.withValues(alpha: 0.05),
+                            _fromHex(habit.color).withOpacity(0.18),
+                            AppColors.primary.withOpacity(0.05),
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
@@ -582,9 +582,9 @@ class _HabitBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: _fromHex(colorHex).withValues(alpha: 0.12),
+        color: _fromHex(colorHex).withOpacity(0.12),
         borderRadius: BorderRadius.circular(AppBorderRadius.full),
-        border: Border.all(color: _fromHex(colorHex).withValues(alpha: 0.25)),
+        border: Border.all(color: _fromHex(colorHex).withOpacity(0.25)),
       ),
       child: Text(icon, style: const TextStyle(fontSize: 18)),
     );
@@ -674,7 +674,7 @@ class _AIInsightsSection extends StatelessWidget {
                     side: BorderSide(
                       color: insight.isRead
                           ? AppColors.border
-                          : color.withValues(alpha: 0.3),
+                          : color.withOpacity(0.3),
                     ),
                   ),
                   child: ListTile(
@@ -687,7 +687,7 @@ class _AIInsightsSection extends StatelessWidget {
                             vertical: AppSpacing.xs,
                           ),
                           decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.12),
+                            color: color.withOpacity(0.12),
                             borderRadius:
                                 BorderRadius.circular(AppBorderRadius.full),
                           ),
@@ -743,3 +743,4 @@ class _AIInsightsSection extends StatelessWidget {
 }
 
 Color _fromHex(String hex) => Color(int.parse(hex.replaceFirst('#', '0xff')));
+

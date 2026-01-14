@@ -1,26 +1,38 @@
 # Getting Started
 
-Welcome to **Habiter**! This guide will help you install the app and take your first steps towards better habits.
+Welcome to Habiter! This guide will help you get up and running.
 
 ## Installation
 
-Habiter is available for multiple platforms.
+### Android
+Download the APK from the [Releases page](https://github.com/marius4lui/habiter/releases).
 
-=== "Android"
-    1. Download the latest APK from the [Releases](https://github.com/marius4lui/habiter/releases) page.
-    2. Open the file on your Android device.
-    3. Allow installation from unknown sources if prompted.
+### Windows
+Download the Windows installer from the [Releases page](https://github.com/marius4lui/habiter/releases).
 
-=== "iOS"
-    *Currently in beta testing via TestFlight.*
+### Build from Source
 
-=== "Windows"
-    1. Download the `.exe` installer.
-    2. Run the installer and follow the prompts.
+```bash
+git clone https://github.com/marius4lui/habiter.git
+cd habiter
+flutter pub get
+flutter run
+```
 
-## First Launch
+## Your First Habit
 
-When you first launch Habiter, you'll be greeted by our signature **Glow UI**.
+1. Tap the **+** button on the home screen
+2. Enter a name for your habit (e.g., "Drink Water")
+3. Choose a category and icon
+4. Set your frequency (daily, weekly, or custom days)
+5. Tap **Create Habit**
 
-1.  **Grant Permissions**: The app will ask for notification permissions to send you reminders.
-2.  **Create your first habit**: Tap the `+` button to start tracking!
+## Completing Habits
+
+Simply tap on a habit card to mark it as complete for today. Tap again to undo.
+
+## Next Steps
+
+- Learn about [Features](/guide/features)
+- Set up [App Lock](/guide/app-lock)
+- Connect [Classly Sync](/guide/classly-sync)

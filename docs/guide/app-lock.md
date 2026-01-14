@@ -1,24 +1,20 @@
 # App Lock
 
-Stay focused by locking distracting apps until you complete your habits.
+Lock distracting apps until you complete your daily habits.
 
-## How it works
-App Lock integrates directly with your habit progress. It acts as a gatekeeper for your entertainment or social media apps.
+::: warning Android Only
+App Lock is currently only available on Android devices.
+:::
 
-!!! success "Motivation"
-    You literally *cannot* open TikTok until you've done your 10 pushups!
+## Setup
 
-## Setting up App Lock
-1. Go to **Settings** > **App Lock**.
-2. Grant the necessary **Usage Access** permissions (Android only).
-3. Select the apps you want to restrict (e.g., Instagram, YouTube).
-4. Set your **Unlock Condition** (e.g., "Complete all daily habits").
+1. Go to **Settings** → **App Lock**
+2. Grant the required permissions:
+   - **Usage Access** - To detect which app is open
+   - **Display over other apps** - To show the lock screen
+3. Select the apps you want to lock
+4. Enable App Lock
 
-## visual flow
-``` mermaid
-graph LR
-  A[User opens specific App] --> B{Habits Done?};
-  B -- Yes --> C[App Opens Normally];
-  B -- No --> D[Lock Screen Appears];
-  D --> E[Redirect to Habiter];
-```
+## How It Works
+
+When you try to open a locked app before completing your habits, Habiter will show a lock screen. Complete your habits to unlock the apps.

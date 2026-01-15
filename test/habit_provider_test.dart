@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/models/habit.dart';
 import 'package:habiter/providers/habit_provider.dart';
-import 'package:habiter/services/storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

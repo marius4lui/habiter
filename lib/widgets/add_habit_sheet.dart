@@ -129,22 +129,37 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
   Widget build(BuildContext context) {
     final colors = generateHabitColors();
     final categories = _iconSuggestions.keys.toList();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg,
-            AppSpacing.lg,
-            AppSpacing.lg,
-            AppSpacing.xl,
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColorsDark.surface : AppColors.surface,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppBorderRadius.xl),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.lg,
+              AppSpacing.lg,
+              AppSpacing.xl,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -215,11 +230,28 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Icon', style: AppTextStyles.h3),
-                        Text(
-                          'Tap to select',
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                        Row(
+                          children: [
+                            // Show currently selected icon
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                                border: Border.all(color: AppColors.primary),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(_icon, style: const TextStyle(fontSize: 20)),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Text(
+                              'Tap below to change',
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -229,7 +261,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemBuilder: (_, index) {
-                          final icon = _iconSuggestions[_category]![index];
+                          final icons = _iconSuggestions[_category] ?? _iconSuggestions.values.first;
+                          final icon = icons[index % icons.length];
                           final selected = icon == _icon;
                           return GestureDetector(
                             onTap: () => setState(() => _icon = icon),
@@ -258,7 +291,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                         },
                         separatorBuilder: (_, __) =>
                             const SizedBox(width: AppSpacing.sm),
-                        itemCount: _iconSuggestions[_category]?.length ?? 0,
+                        itemCount: (_iconSuggestions[_category] ?? _iconSuggestions.values.first).length,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -424,6 +457,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

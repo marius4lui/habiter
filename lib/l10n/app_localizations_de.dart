@@ -322,4 +322,84 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get androidOnlyDesc =>
       'App Lock ist nur auf Android Geräten verfügbar.';
+
+  @override
+  String get yourDailyFlow => 'Dein Tages-Flow';
+
+  @override
+  String get keepMomentum => 'Bleib am Ball!';
+
+  @override
+  String get onTrack => 'Auf Kurs';
+
+  @override
+  String habitsCompleted(int done, int total) {
+    return '$done von $total Habits erledigt';
+  }
+
+  @override
+  String get pending => 'Ausstehend';
+
+  @override
+  String get done => 'Erledigt';
+
+  @override
+  String get classlyInstance => 'Classly-Instanz';
+
+  @override
+  String get loginWithClassly => 'Mit Classly anmelden';
+
+  @override
+  String get autoSync => 'Auto-Sync';
+
+  @override
+  String get syncInterval => 'Sync-Intervall';
+
+  @override
+  String newTasksImported(int count) {
+    return '$count neue Aufgaben importiert';
+  }
+
+  @override
+  String get syncNow => 'Jetzt synchronisieren';
+
+  @override
+  String get syncComplete => 'Sync abgeschlossen';
+
+  @override
+  String todayCompleted(int count) {
+    return 'Heute erledigt ($count)';
+  }
+
+  @override
+  String get allHabitsCompleted => '🎉 Alle Habits für heute erledigt!';
+
+  @override
+  String get markAsComplete => 'Als erledigt markieren';
+
+  @override
+  String get undoComplete => 'Rückgängig machen';
+
+  @override
+  String get edit => 'Bearbeiten';
+
+  @override
+  String get archive => 'Archivieren';
+
+  @override
+  String get goal => 'Ziel';
+
+  @override
+  String get createdAt => 'Erstellt am';
+
+  @override
+  String get todayDone => 'Heute erledigt ✓';
+
+  @override
+  String get notCompleted => 'Noch nicht erledigt';
+
+  @override
+  String perDayTarget(int count) {
+    return '${count}x pro Tag';
+  }
 }

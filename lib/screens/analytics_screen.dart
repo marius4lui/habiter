@@ -43,21 +43,27 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg,
-            AppSpacing.lg,
-            AppSpacing.lg,
-            AppSpacing.xl,
-          ),
-          children: [
-            _AnalyticsHero(
-              activeHabits: activeHabits.length,
-              totalCompletions: totalCompletions,
-              avgCompletionRate: avgCompletionRate,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: Theme.of(context).brightness == Brightness.dark
+              ? AppGradientsDark.appShell
+              : AppGradients.appShell,
+        ),
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.lg,
+              AppSpacing.lg,
+              AppSpacing.xl,
             ),
-            const SizedBox(height: AppSpacing.lg),
+            children: [
+              _AnalyticsHero(
+                activeHabits: activeHabits.length,
+                totalCompletions: totalCompletions,
+                avgCompletionRate: avgCompletionRate,
+              ),
+              const SizedBox(height: AppSpacing.lg),
             if (activeHabits.isNotEmpty) ...[
               _WeeklyChartCard(
                 habits: activeHabits,
@@ -71,12 +77,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 entries: provider.habitEntries,
               ),
             ],
-            const SizedBox(height: AppSpacing.lg),
-            _AIInsightsSection(
-              insights: provider.aiInsights,
-              onMarkRead: provider.markInsightAsRead,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -97,11 +99,11 @@ class _AnalyticsHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        gradient: AppGradients.hero,
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.4),
-        boxShadow: AppShadows.glow,
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+        boxShadow: AppShadows.neumorph,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,14 +114,11 @@ class _AnalyticsHero extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Analytics',
-                        style: AppTextStyles.h1.copyWith(color: Colors.white)),
+                    Text('Analytics', style: AppTextStyles.h1),
                     const SizedBox(height: 4),
                     Text(
-                      'Trends live verfolgen, Peaks feiern, früh korrigieren.',
-                      style: AppTextStyles.bodySecondary.copyWith(
-                        color: Colors.white.withOpacity(0.82),
-                      ),
+                      'Track your progress, celebrate wins, adjust early.',
+                      style: AppTextStyles.bodySecondary,
                     ),
                   ],
                 ),
@@ -130,43 +129,48 @@ class _AnalyticsHero extends StatelessWidget {
                   vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.12),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                  border: Border.all(color: Colors.white.withOpacity(0.15)),
+                  border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.auto_graph, size: 18, color: Colors.white),
+                    const Icon(Icons.auto_graph,
+                        size: 18, color: AppColors.primary),
                     const SizedBox(width: 6),
                     Text(
                       'Live overview',
-                      style:
-                          AppTextStyles.caption.copyWith(color: Colors.white),
+                      style: AppTextStyles.caption
+                          .copyWith(color: AppColors.primary),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.xl),
           Row(
             children: [
               _HeroNumber(
                 label: 'Active habits',
                 value: '$activeHabits',
                 icon: Icons.blur_circular,
+                color: AppColors.primary,
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: AppSpacing.md),
               _HeroNumber(
                 label: 'Total wins',
                 value: '$totalCompletions',
                 icon: Icons.check_circle,
+                color: AppColors.secondary,
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: AppSpacing.md),
               _HeroNumber(
                 label: 'Avg success',
                 value: '${avgCompletionRate.toStringAsFixed(0)}%',
                 icon: Icons.trending_up,
+                color: AppColors.warning,
               ),
             ],
           ),
@@ -181,11 +185,13 @@ class _HeroNumber extends StatelessWidget {
     required this.label,
     required this.value,
     required this.icon,
+    required this.color,
   });
 
   final String label;
   final String value;
   final IconData icon;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -193,10 +199,10 @@ class _HeroNumber extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withOpacity(0.25),
+            color: color.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -205,8 +211,8 @@ class _HeroNumber extends StatelessWidget {
           children: [
             Text(
               value,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: color,
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.5,
@@ -215,8 +221,8 @@ class _HeroNumber extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.85),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -229,124 +235,9 @@ class _HeroNumber extends StatelessWidget {
   }
 }
 
-class _OverviewRow extends StatelessWidget {
-  const _OverviewRow({
-    required this.activeHabits,
-    required this.totalCompletions,
-    required this.avgCompletionRate,
-  });
 
-  final int activeHabits;
-  final int totalCompletions;
-  final double avgCompletionRate;
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _StatCard(
-            title: 'Active Habits',
-            value: '$activeHabits',
-            icon: Icons.incomplete_circle,
-            color: AppColors.primary,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _StatCard(
-            title: 'Total Completions',
-            value: '$totalCompletions',
-            icon: Icons.check_circle,
-            color: AppColors.success,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _StatCard(
-            title: 'Avg. Success',
-            value: '${avgCompletionRate.toStringAsFixed(0)}%',
-            icon: Icons.trending_up,
-            color: AppColors.warning,
-          ),
-        ),
-      ],
-    );
-  }
-}
 
-class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: AppGradients.cardSheen,
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        border: Border.all(color: AppColors.borderLight),
-        boxShadow: AppShadows.soft,
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: -10,
-            top: -20,
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color.withOpacity(0.08),
-              ),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      color.withOpacity(0.2),
-                      color.withOpacity(0.05),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                  border: Border.all(color: color.withOpacity(0.2)),
-                ),
-                child: Icon(icon, color: color),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(title,
-                  style: AppTextStyles.caption
-                      .copyWith(color: AppColors.textSecondary)),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: AppTextStyles.h2.copyWith(color: AppColors.text),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _WeeklyChartCard extends StatelessWidget {
   const _WeeklyChartCard({
@@ -382,28 +273,31 @@ class _WeeklyChartCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Weekly progress', style: AppTextStyles.h3),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceMuted,
-                  borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: habit?.id,
-                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                      items: habits
-                          .map((h) => DropdownMenuItem(
-                                value: h.id,
-                                child: Text(h.name),
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) onSelectHabit(value);
-                      },
+              Flexible(
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 150),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceMuted,
+                    borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: habit?.id,
+                        isExpanded: true,
+                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                        items: habits
+                            .map((h) => DropdownMenuItem(
+                                  value: h.id,
+                                  child: Text(h.name, overflow: TextOverflow.ellipsis),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) onSelectHabit(value);
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -439,8 +333,9 @@ class _WeeklyChartCard extends StatelessWidget {
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
                           final index = value.toInt();
-                          if (index < 0 || index >= data.length)
+                          if (index < 0 || index >= data.length) {
                             return const SizedBox();
+                          }
                           return Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
@@ -476,8 +371,8 @@ class _WeeklyChartCard extends StatelessWidget {
                         show: true,
                         gradient: LinearGradient(
                           colors: [
-                            _fromHex(habit.color).withOpacity(0.18),
-                            AppColors.primary.withOpacity(0.05),
+                            _fromHex(habit.color).withValues(alpha: 0.18),
+                            AppColors.primary.withValues(alpha: 0.05),
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
@@ -582,9 +477,9 @@ class _HabitBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: _fromHex(colorHex).withOpacity(0.12),
+        color: _fromHex(colorHex).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppBorderRadius.full),
-        border: Border.all(color: _fromHex(colorHex).withOpacity(0.25)),
+        border: Border.all(color: _fromHex(colorHex).withValues(alpha: 0.25)),
       ),
       child: Text(icon, style: const TextStyle(fontSize: 18)),
     );
@@ -611,136 +506,4 @@ class _StatPill extends StatelessWidget {
   }
 }
 
-class _AIInsightsSection extends StatelessWidget {
-  const _AIInsightsSection({required this.insights, required this.onMarkRead});
-
-  final List<AIInsight> insights;
-  final Future<void> Function(String id) onMarkRead;
-
-  Color _typeColor(AIInsightType type) {
-    switch (type) {
-      case AIInsightType.recommendation:
-        return AppColors.primary;
-      case AIInsightType.motivation:
-        return AppColors.success;
-      case AIInsightType.analysis:
-        return AppColors.warning;
-      case AIInsightType.prediction:
-        return AppColors.secondary;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        gradient: AppGradients.cardSheen,
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        border: Border.all(color: AppColors.borderLight),
-        boxShadow: AppShadows.soft,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.auto_awesome, color: AppColors.primary),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text('AI Insights', style: AppTextStyles.h3),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          if (insights.isEmpty)
-            Text(
-              'Insights will appear here after you track a few days and generate AI suggestions.',
-              style: AppTextStyles.bodySecondary,
-            )
-          else
-            Column(
-              children: insights.take(6).map((insight) {
-                final color = _typeColor(insight.type);
-                return Card(
-                  color: insight.isRead
-                      ? AppColors.surfaceMuted
-                      : AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                    side: BorderSide(
-                      color: insight.isRead
-                          ? AppColors.border
-                          : color.withOpacity(0.3),
-                    ),
-                  ),
-                  child: ListTile(
-                    onTap: () => onMarkRead(insight.id),
-                    title: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xs,
-                          ),
-                          decoration: BoxDecoration(
-                            color: color.withOpacity(0.12),
-                            borderRadius:
-                                BorderRadius.circular(AppBorderRadius.full),
-                          ),
-                          child: Text(
-                            insight.type.name.toUpperCase(),
-                            style: AppTextStyles.caption.copyWith(
-                              color: color,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        if (insight.habitId != null)
-                          Text(
-                            'Habit',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                      ],
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: AppSpacing.sm),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(insight.title, style: AppTextStyles.h3),
-                          const SizedBox(height: 4),
-                          Text(insight.message,
-                              style: AppTextStyles.bodySecondary),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Confidence ${(insight.confidence * 100).toStringAsFixed(0)}%',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textTertiary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    trailing: insight.isRead
-                        ? const Icon(Icons.check, color: AppColors.textTertiary)
-                        : const Icon(Icons.circle,
-                            size: 10, color: AppColors.primary),
-                  ),
-                );
-              }).toList(),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
 Color _fromHex(String hex) => Color(int.parse(hex.replaceFirst('#', '0xff')));
-

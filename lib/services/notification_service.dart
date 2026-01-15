@@ -166,7 +166,7 @@ class NotificationService {
     // Count incomplete habits for today
     final incompleteCount = habits.where((h) => h.isActive).length;
 
-    final androidDetails = AndroidNotificationDetails(
+    const androidDetails = AndroidNotificationDetails(
       _globalChannelId,
       _globalChannelName,
       channelDescription: _globalChannelDesc,
@@ -175,11 +175,11 @@ class NotificationService {
       icon: '@mipmap/ic_launcher',
     );
 
-    final iosDetails = DarwinNotificationDetails(
+    const iosDetails = DarwinNotificationDetails(
       categoryIdentifier: 'habiter_actions',
     );
 
-    final details =
+    const details =
         NotificationDetails(android: androidDetails, iOS: iosDetails);
 
     await _plugin.zonedSchedule(
@@ -231,7 +231,7 @@ class NotificationService {
     final notificationId =
         habit.id.hashCode.abs() % 100000 + 1; // Avoid 0 (global)
 
-    final androidDetails = AndroidNotificationDetails(
+    const androidDetails = AndroidNotificationDetails(
       _habitChannelId,
       _habitChannelName,
       channelDescription: _habitChannelDesc,
@@ -247,11 +247,11 @@ class NotificationService {
       ],
     );
 
-    final iosDetails = DarwinNotificationDetails(
+    const iosDetails = DarwinNotificationDetails(
       categoryIdentifier: 'habiter_actions',
     );
 
-    final details =
+    const details =
         NotificationDetails(android: androidDetails, iOS: iosDetails);
 
     // Payload format: habitId|date
@@ -294,7 +294,7 @@ class NotificationService {
   Future<void> showTestNotification() async {
     if (!Platform.isAndroid && !Platform.isIOS) return;
 
-    final androidDetails = AndroidNotificationDetails(
+    const androidDetails = AndroidNotificationDetails(
       _globalChannelId,
       _globalChannelName,
       channelDescription: _globalChannelDesc,
@@ -302,7 +302,7 @@ class NotificationService {
       priority: Priority.high,
     );
 
-    final details = NotificationDetails(android: androidDetails);
+    const details = NotificationDetails(android: androidDetails);
 
     await _plugin.show(
       999,

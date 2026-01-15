@@ -96,7 +96,7 @@ class ClasslyEvent {
   final List<ClasslyEventLink> links;
 
   factory ClasslyEvent.fromJson(Map<String, dynamic> json) {
-    DateTime? _parseDate(String? value) {
+    DateTime? parseDate(String? value) {
       if (value == null) return null;
       return DateTime.tryParse(value);
     }
@@ -112,9 +112,9 @@ class ClasslyEvent {
       subjectId: json['subject_id'] as String?,
       subjectName: json['subject_name'] as String?,
       title: json['title'] as String?,
-      date: _parseDate(json['date'] as String?),
-      createdAt: _parseDate(json['created_at'] as String?),
-      updatedAt: _parseDate(json['updated_at'] as String?),
+      date: parseDate(json['date'] as String?),
+      createdAt: parseDate(json['created_at'] as String?),
+      updatedAt: parseDate(json['updated_at'] as String?),
       authorId: json['author_id'] as String?,
       topics: topicsJson
           .map((t) => ClasslyEventTopic.fromJson(t as Map<String, dynamic>))
@@ -243,5 +243,134 @@ class ClasslyClient {
     return subjectsJson
         .map((s) => ClasslySubject.fromJson(s as Map<String, dynamic>))
         .toList();
+  }
+
+  // --- OAuth 2.0 Integration ---
+
+  /// Exchanges an authorization code for an access token.
+  Future<Map<String, dynamic>> exchangeCodeForToken({
+    required String code,
+    required String redirectUri,
+    required String clientId,
+    String? clientSecret,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/oauth/token');
+    final body = {
+      'grant_type': 'authorization_code',
+      'code': code,
+      'client_id': clientId,
+      'redirect_uri': redirectUri,
+      if (clientSecret != null) 'client_secret': clientSecret,
+    };
+
+    final resp = await _http.post(
+      uri,
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: body,
+    );
+
+    if (resp.statusCode != 200) {
+      throw ClasslyApiException(
+        'Token exchange failed: ${resp.body}',
+        statusCode: resp.statusCode,
+      );
+    }
+
+    final data = jsonDecode(resp.body) as Map<String, dynamic>;
+    final accessToken = data['access_token'] as String?;
+    if (accessToken == null) {
+      throw ClasslyApiException('Access token missing in response');
+    }
+    
+    // Update local token
+    _token = accessToken;
+    return data;
+  }
+
+  /// Fetches information about the authenticated user.
+  Future<ClasslyUserInfo> getUserInfo() async {
+    final uri = Uri.parse('$baseUrl/api/oauth/userinfo');
+    final resp = await _http.get(uri, headers: _defaultHeaders());
+
+    if (resp.statusCode != 200) {
+      throw ClasslyApiException(
+        'Fetching user info failed: ${resp.body}',
+        statusCode: resp.statusCode,
+      );
+    }
+
+    return ClasslyUserInfo.fromJson(jsonDecode(resp.body) as Map<String, dynamic>);
+  }
+
+  // --- Push Notifications ---
+
+  /// Registers a device token for push notifications.
+  Future<void> registerPushToken({
+    required String deviceToken,
+    required String platform, // 'fcm' or 'apns'
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/push/register');
+    final body = jsonEncode({
+      'device_token': deviceToken,
+      'platform': platform,
+    });
+
+    final resp = await _http.post(uri, headers: _defaultHeaders(), body: body);
+
+    if (resp.statusCode != 200) {
+      // Don't throw if it's just already registered or minor issue? 
+      // Docs say 200 OK. Let's strict for now.
+      throw ClasslyApiException(
+        'Registering push token failed: ${resp.body}',
+        statusCode: resp.statusCode,
+      );
+    }
+  }
+
+  /// Unregisters a device token (e.g. on logout).
+  Future<void> unregisterPushToken(String deviceToken) async {
+    final uri = Uri.parse('$baseUrl/api/push/unregister');
+    final body = jsonEncode({'device_token': deviceToken});
+
+    final resp = await _http.delete(uri, headers: _defaultHeaders(), body: body);
+
+    if (resp.statusCode != 200) {
+      throw ClasslyApiException(
+        'Unregistering push token failed: ${resp.body}',
+        statusCode: resp.statusCode,
+      );
+    }
+  }
+}
+
+class ClasslyUserInfo {
+  ClasslyUserInfo({
+    required this.sub,
+    required this.name,
+    required this.role,
+    required this.classId,
+    this.className,
+    this.email,
+    this.isRegistered = false,
+  });
+
+  final String sub;
+  final String name;
+  final String role;
+  final String classId;
+  final String? className;
+  final String? email;
+  final bool isRegistered;
+
+  factory ClasslyUserInfo.fromJson(Map<String, dynamic> json) {
+    return ClasslyUserInfo(
+      sub: json['sub'] as String,
+      name: json['name'] as String,
+      role: json['role'] as String,
+      classId: json['class_id'] as String,
+      className: json['class_name'] as String?,
+      email: json['email'] as String?,
+      isRegistered: json['is_registered'] as bool? ?? false,
+    );
   }
 }

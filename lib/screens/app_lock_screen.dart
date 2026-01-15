@@ -113,7 +113,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(AppSpacing.xl),
                     decoration: BoxDecoration(
-                      color: surfaceColor.withOpacity(0.9),
+                      color: surfaceColor.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                       border: Border.all(color: borderColor),
                     ),
@@ -148,7 +148,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
     final l = context.l10n;
     final lockedCount = provider.config.activelyLockedApps.length;
     final heroGradient = isDark ? AppGradientsDark.hero : AppGradients.hero;
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppBorderRadius.lg * 1.2),
@@ -180,7 +180,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
                       Text(
                         l.appLockSubtitle,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.white.withOpacity(0.85),
+                              color: Colors.white.withValues(alpha: 0.85),
                             ),
                       ),
                     ],
@@ -191,8 +191,8 @@ class _AppLockScreenState extends State<AppLockScreen> {
                   onChanged: provider.hasAllPermissions
                       ? (value) => provider.setEnabled(value)
                       : null,
-                  activeColor: Colors.white,
-                  activeTrackColor: Colors.white.withOpacity(0.3),
+                  thumbColor: WidgetStateProperty.all(Colors.white),
+                  activeTrackColor: Colors.white.withValues(alpha: 0.3),
                 ),
               ],
             ),
@@ -223,9 +223,9 @@ class _AppLockScreenState extends State<AppLockScreen> {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
@@ -245,7 +245,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
                 Text(
                   label,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 12,
                   ),
                 ),
@@ -261,10 +261,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
       BuildContext context, AppLockProvider provider, bool isDark) {
     final l = context.l10n;
     final warningColor = isDark ? AppColorsDark.warning : AppColors.warning;
-    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
-    final borderColor =
-        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
-    final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
+
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppBorderRadius.lg),
@@ -272,9 +269,9 @@ class _AppLockScreenState extends State<AppLockScreen> {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           decoration: BoxDecoration(
-            color: warningColor.withOpacity(0.1),
+            color: warningColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-            border: Border.all(color: warningColor.withOpacity(0.3)),
+            border: Border.all(color: warningColor.withValues(alpha: 0.3)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,7 +291,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
                   ],
                 ),
               ),
-              Divider(height: 1, color: warningColor.withOpacity(0.2)),
+              Divider(height: 1, color: warningColor.withValues(alpha: 0.2)),
               if (!provider.hasUsageStatsPermission)
                 _buildPermissionTile(
                   l.usageAccess,
@@ -358,7 +355,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: surfaceColor.withOpacity(0.9),
+            color: surfaceColor.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(AppBorderRadius.lg),
             border: Border.all(color: borderColor),
           ),
@@ -392,7 +389,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
           child: Container(
             padding: const EdgeInsets.all(AppSpacing.xl),
             decoration: BoxDecoration(
-              color: surfaceColor.withOpacity(0.9),
+              color: surfaceColor.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               border: Border.all(color: borderColor),
             ),
@@ -419,7 +416,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           decoration: BoxDecoration(
-            color: surfaceColor.withOpacity(0.9),
+            color: surfaceColor.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(AppBorderRadius.lg),
             border: Border.all(color: borderColor),
           ),
@@ -475,7 +472,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
               horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           decoration: BoxDecoration(
             color: app.isLocked
-                ? primaryColor.withOpacity(0.1)
+                ? primaryColor.withValues(alpha: 0.1)
                 : Colors.transparent,
             border: Border(
               bottom: BorderSide(color: borderColor, width: 0.5),
@@ -528,7 +525,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
                 height: 36,
                 decoration: BoxDecoration(
                   color: app.isLocked
-                      ? primaryColor.withOpacity(0.2)
+                      ? primaryColor.withValues(alpha: 0.2)
                       : surfaceMuted,
                   borderRadius: BorderRadius.circular(AppBorderRadius.full),
                 ),

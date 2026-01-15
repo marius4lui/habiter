@@ -2,24 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  static const primary = Color(0xFFD4A373); // Warm Beige/Tan
-  static const primaryDark = Color(0xFFA97142); // Darker Tan
-  static const primaryLight = Color(0xFFE9DCC9); // Light Cream
-  static const secondary = Color(0xFFCCD5AE); // Sage Green (Soft)
-  static const accent = Color(0xFFE76F51); // Terracotta
-  static const background = Color(0xFFFAFAF5); // Very Light Cream/Off-white
-  static const backgroundDark = Color(0xFFF0EBE0); // Slightly darker background
-  static const surface = Color(0xFFFFFFFF);
-  static const surfaceMuted = Color(0xFFF7F4EB); // Warm Muted Surface
-  static const text = Color(0xFF4A4036); // Dark Brown/Charcoal
-  static const textSecondary = Color(0xFF8C7E72); // Muted Brown
-  static const textTertiary = Color(0xFFBDB3AA); // Light Brown/Gray
-  static const textMuted = textTertiary; // Alias for consistency
-  static const border = Color(0xFFE6E0D4); // Warm Border
-  static const borderLight = Color(0xFFF2EFE9); // Light Warm Border
-  static const success = Color(0xFF8CB369); // Muted Green
+  // Primary
+  static const primary = Color(0xFF90B280); // Muted Green
+  static const primaryDark = Color(0xFF7A996B); // Darker Green for interactions
+  static const primaryLight = Color(0xFFB4D1A6); // Lighter Green
+
+  // Background
+  static const background = Color(0xFFF6F5F3); // Light Background
+  static const backgroundDark = Color(0xFF22262A); // Dark Background
+
+  // Cards
+  static const cardLight = Color(0xFFFCFAF7);
+  static const cardDark = Color(0xFF2C3136);
+
+  // Text
+  static const textMain = Color(0xFF383F45);
+  static const textDark = Colors.white; // Text color in dark mode
+  static const textSecondary = Color(0xFF6B7280); // Gray 500 equivalent
+  static const textTertiary = Color(0xFF9CA3AF); // Gray 400 equivalent
+
+  // Accents & Functional
+  static const matteBlue = Color(0xFFC9D8E6);
+  static const warmBeige = Color(0xFFE8E1D5);
+  static const secondary = Color(0xFF9CAF88); // Muted Sage (New Secondary)
+  static const accent = Color(0xFFE76F51); // Keeping Terracotta as Accent
   static const warning = Color(0xFFF4A261); // Muted Orange
-  static const error = Color(0xFFE76F51); // Soft Red/Terracotta
+  static const error = Color(0xFFEF4444);
+  static const success = Color(0xFF90B280);
+
+  // Surface aliases
+  static const surface = cardLight;
+  static const surfaceDark = cardDark;
+  static const surfaceMuted = Color(0xFFF6F5F3); // Use background color as muted surface alias
+
+  // Backward compatibility
+  static const text = textMain;
+  static const border = Color(0xFFE2E8F0);
+  static const borderLight = Color(0xFFF1F5F9);
 }
 
 /// Dark theme colors - warm and cozy dark mode
@@ -51,46 +70,97 @@ class AppSpacing {
   static const md = 16.0;
   static const lg = 24.0;
   static const xl = 32.0;
-  static const xxl = 48.0;
 }
 
 class AppBorderRadius {
   static const sm = 8.0;
   static const md = 12.0;
   static const lg = 16.0;
+  static const xl = 24.0;
+  static const xxl = 32.0;
   static const full = 999.0;
 }
 
 class AppShadows {
-  static const soft = [
+  static const neumorph = [
     BoxShadow(
-      color: Color(0x084A4036), // Very subtle
-      blurRadius: 24,
-      offset: Offset(0, 8),
+      color: Color(0xFFD1D0CE),
+      offset: Offset(8, 8),
+      blurRadius: 16,
+    ),
+    BoxShadow(
+      color: Colors.white,
+      offset: Offset(-8, -8),
+      blurRadius: 16,
     ),
   ];
 
-  static const elevated = [
+  static const neumorphDark = [
     BoxShadow(
-      color: Color(0x144A4036),
-      blurRadius: 22,
-      spreadRadius: -2,
-      offset: Offset(0, 16),
+      color: Color(0xFF1B1E22),
+      offset: Offset(8, 8),
+      blurRadius: 16,
     ),
     BoxShadow(
-      color: Color(0x0A4A4036),
-      blurRadius: 36,
-      spreadRadius: -10,
-      offset: Offset(0, 26),
+      color: Color(0xFF292E32),
+      offset: Offset(-8, -8),
+      blurRadius: 16,
     ),
+  ];
+
+  static const neumorphSm = [
+    BoxShadow(
+      color: Color(0xFFD1D0CE),
+      offset: Offset(4, 4),
+      blurRadius: 8,
+    ),
+    BoxShadow(
+      color: Colors.white,
+      offset: Offset(-4, -4),
+      blurRadius: 8,
+    ),
+  ];
+
+  static const neumorphSmDark = [
+    BoxShadow(
+      color: Color(0xFF1B1E22),
+      offset: Offset(4, 4),
+      blurRadius: 8,
+    ),
+    BoxShadow(
+      color: Color(0xFF292E32),
+      offset: Offset(-4, -4),
+      blurRadius: 8,
+    ),
+  ];
+
+  static const neumorphInset = [
+    BoxShadow(
+      color: Color(0xFFD1D0CE),
+      offset: Offset(4, 4),
+      blurRadius: 8,
+    ),
+    BoxShadow(
+      color: Colors.white,
+      offset: Offset(-4, -4),
+      blurRadius: 8,
+    ),
+  ];
+
+  // Helper to stick to standard Material shadows where inset isn't supported easily
+  // or use a specific customized container for inset
+  static const soft = [
+    BoxShadow(
+        color: Color.fromRGBO(0, 0, 0, 0.05),
+        blurRadius: 10,
+        offset: Offset(0, 4))
   ];
 
   static const glow = [
     BoxShadow(
-      color: Color(0x1AD4A373), // Reduced opacity from 0x22
-      blurRadius: 40, // Increased blur
-      spreadRadius: -12, // Reduced spread
-      offset: Offset(0, 20),
+      color: Color.fromRGBO(0, 0, 0, 0.1),
+      blurRadius: 12,
+      spreadRadius: 2,
     ),
   ];
 }
@@ -193,64 +263,62 @@ class AppGradientsDark {
 }
 
 class AppTextStyles {
-  static final h1 = GoogleFonts.spaceGrotesk(
-    fontSize: 32,
-    fontWeight: FontWeight.w800,
-    color: AppColors.text,
-    letterSpacing: -0.8,
-  );
+  // We strictly use Plus Jakarta Sans as per design
+  static final _base = GoogleFonts.plusJakartaSans();
 
-  static final h2 = GoogleFonts.spaceGrotesk(
+  static final h1 = _base.copyWith(
     fontSize: 24,
-    fontWeight: FontWeight.w700,
-    color: AppColors.text,
-    letterSpacing: -0.4,
+    fontWeight: FontWeight.bold,
+    letterSpacing: -0.5,
   );
 
-  static final h3 = GoogleFonts.spaceGrotesk(
+  static final h2 = _base.copyWith(
     fontSize: 20,
-    fontWeight: FontWeight.w700,
-    color: AppColors.text,
-    letterSpacing: -0.2,
+    fontWeight: FontWeight.bold,
   );
 
-  static final body = GoogleFonts.plusJakartaSans(
+  static final h3 = _base.copyWith(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+  );
+
+  static final body = _base.copyWith(
     fontSize: 16,
-    fontWeight: FontWeight.w500,
-    color: AppColors.text,
-    height: 1.5,
+    fontWeight: FontWeight.normal,
   );
 
-  static final bodySecondary = GoogleFonts.plusJakartaSans(
+  static final bodySmall = _base.copyWith(
     fontSize: 14,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textSecondary,
-    height: 1.45,
+    fontWeight: FontWeight.w500,
   );
 
-  static final caption = GoogleFonts.plusJakartaSans(
+  static final caption = _base.copyWith(
     fontSize: 12,
-    fontWeight: FontWeight.w700,
-    color: AppColors.textTertiary,
-    letterSpacing: 0.35,
+    fontWeight: FontWeight.w500,
+  );
+
+  static final bodySecondary = _base.copyWith(
+    fontSize: 14,
+    fontWeight: FontWeight.normal,
+    color: AppColors.textSecondary,
   );
 }
 
 class AppStyles {
   static final glassLow = BoxDecoration(
-    color: Colors.white.withOpacity(0.05),
-    border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.0),
+    color: Colors.white.withValues(alpha: 0.05),
+    border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.0),
     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
   );
 
   static final glassHigh = BoxDecoration(
-    color: Colors.white.withOpacity(0.15),
-    border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.0),
+    color: Colors.white.withValues(alpha: 0.15),
+    border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.0),
     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
   );
 
   static final glassBorder = Border.all(
-    color: Colors.white.withOpacity(0.1),
+    color: Colors.white.withValues(alpha: 0.1),
     width: 1.0,
   );
 }
@@ -259,121 +327,41 @@ ThemeData buildAppTheme() {
   final base = ThemeData(
     useMaterial3: true,
     fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
-    visualDensity: VisualDensity.adaptivePlatformDensity,
-    pageTransitionsTheme: const PageTransitionsTheme(
-      builders: {
-        TargetPlatform.android: ZoomPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-      },
-    ),
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: AppColors.background,
   );
-  final textTheme = GoogleFonts.plusJakartaSansTextTheme(base.textTheme);
+
   return base.copyWith(
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary,
-      surface: AppColors.surface,
+      surface: AppColors.cardLight,
+      onSurface: AppColors.textMain,
       brightness: Brightness.light,
+
     ),
     scaffoldBackgroundColor: AppColors.background,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      foregroundColor: AppColors.text,
-      surfaceTintColor: Colors.transparent,
-    ),
     cardTheme: CardThemeData(
-      color: AppColors.surface,
-      elevation: 0,
+      color: AppColors.cardLight,
+      elevation: 0, // Using manual shadows for neumorph
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        side: const BorderSide(color: AppColors.borderLight),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
       ),
-      shadowColor: const Color(0x160B1220),
     ),
-    textTheme: textTheme.copyWith(
-      displayLarge: AppTextStyles.h1,
-      displayMedium: AppTextStyles.h2,
-      displaySmall: AppTextStyles.h3,
-      bodyLarge: AppTextStyles.body,
-      bodyMedium: AppTextStyles.bodySecondary,
-      bodySmall: AppTextStyles.caption,
+    textTheme: GoogleFonts.plusJakartaSansTextTheme(base.textTheme).copyWith(
+      displayLarge: AppTextStyles.h1.copyWith(color: AppColors.textMain),
+      displayMedium: AppTextStyles.h2.copyWith(color: AppColors.textMain),
+      bodyLarge: AppTextStyles.body.copyWith(color: AppColors.textMain),
+      bodyMedium: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
     ),
-    navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: Colors.transparent,
-      indicatorColor: AppColors.primary.withOpacity(0.16),
-      height: 74,
-      surfaceTintColor: Colors.transparent,
-      iconTheme: WidgetStateProperty.resolveWith(
-        (states) => IconThemeData(
-          color: states.contains(WidgetState.selected)
-              ? AppColors.primaryDark
-              : AppColors.textSecondary,
-          size: 22,
-        ),
-      ),
-      labelTextStyle: WidgetStatePropertyAll(
-        AppTextStyles.caption.copyWith(
-          color: AppColors.textSecondary,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.2,
-        ),
-      ),
+    iconTheme: const IconThemeData(
+      color: AppColors.textMain,
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.primaryDark,
+      backgroundColor: AppColors.primary,
       foregroundColor: Colors.white,
-      shape: StadiumBorder(),
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: AppColors.surface,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        borderSide: const BorderSide(color: AppColors.borderLight),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        borderSide: const BorderSide(color: AppColors.primary),
-      ),
-      labelStyle: AppTextStyles.bodySecondary,
-      hintStyle:
-          AppTextStyles.bodySecondary.copyWith(color: AppColors.textTertiary),
-    ),
-    chipTheme: ChipThemeData(
-      backgroundColor: AppColors.surfaceMuted,
-      selectedColor: AppColors.primary.withOpacity(0.18),
-      labelStyle:
-          AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
-      secondaryLabelStyle: AppTextStyles.caption.copyWith(color: Colors.white),
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-      side: const BorderSide(color: AppColors.borderLight),
-    ),
-    snackBarTheme: SnackBarThemeData(
-      backgroundColor: AppColors.primaryDark,
-      contentTextStyle: AppTextStyles.body.copyWith(color: Colors.white),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppBorderRadius.md)),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primaryDark,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        ),
-        elevation: 0,
-        shadowColor: const Color(0x1F0EA5E9),
-      ),
-    ),
-    dividerColor: AppColors.borderLight,
-    listTileTheme: const ListTileThemeData(
-      tileColor: Colors.transparent,
-      dense: true,
-      contentPadding: EdgeInsets.zero,
+      shape: CircleBorder(),
+      iconSize: 28,
+      elevation: 8,
     ),
   );
 }
@@ -383,166 +371,38 @@ ThemeData buildDarkTheme() {
   final base = ThemeData(
     useMaterial3: true,
     fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
-    visualDensity: VisualDensity.adaptivePlatformDensity,
     brightness: Brightness.dark,
-    pageTransitionsTheme: const PageTransitionsTheme(
-      builders: {
-        TargetPlatform.android: ZoomPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-      },
-    ),
-  );
-  final textTheme = GoogleFonts.plusJakartaSansTextTheme(base.textTheme);
-
-  // Dark text styles
-  final h1Dark = GoogleFonts.spaceGrotesk(
-    fontSize: 32,
-    fontWeight: FontWeight.w800,
-    color: AppColorsDark.text,
-    letterSpacing: -0.8,
-  );
-  final h2Dark = GoogleFonts.spaceGrotesk(
-    fontSize: 24,
-    fontWeight: FontWeight.w700,
-    color: AppColorsDark.text,
-    letterSpacing: -0.4,
-  );
-  final h3Dark = GoogleFonts.spaceGrotesk(
-    fontSize: 20,
-    fontWeight: FontWeight.w700,
-    color: AppColorsDark.text,
-    letterSpacing: -0.2,
-  );
-  final bodyDark = GoogleFonts.plusJakartaSans(
-    fontSize: 16,
-    fontWeight: FontWeight.w500,
-    color: AppColorsDark.text,
-    height: 1.5,
-  );
-  final bodySecondaryDark = GoogleFonts.plusJakartaSans(
-    fontSize: 14,
-    fontWeight: FontWeight.w600,
-    color: AppColorsDark.textSecondary,
-    height: 1.45,
-  );
-  final captionDark = GoogleFonts.plusJakartaSans(
-    fontSize: 12,
-    fontWeight: FontWeight.w700,
-    color: AppColorsDark.textTertiary,
-    letterSpacing: 0.35,
+    scaffoldBackgroundColor: AppColors.backgroundDark,
   );
 
   return base.copyWith(
     colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColorsDark.primary,
-      surface: AppColorsDark.surface,
+      seedColor: AppColors.primary,
+      surface: AppColors.cardDark,
+      onSurface: Colors.white,
       brightness: Brightness.dark,
+
     ),
-    scaffoldBackgroundColor: AppColorsDark.background,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      foregroundColor: AppColorsDark.text,
-      surfaceTintColor: Colors.transparent,
-    ),
+    scaffoldBackgroundColor: AppColors.backgroundDark,
     cardTheme: CardThemeData(
-      color: AppColorsDark.surface,
+      color: AppColors.cardDark,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        side: const BorderSide(color: AppColorsDark.borderLight),
+        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
       ),
-      shadowColor: const Color(0x40000000),
     ),
-    textTheme: textTheme.copyWith(
-      displayLarge: h1Dark,
-      displayMedium: h2Dark,
-      displaySmall: h3Dark,
-      bodyLarge: bodyDark,
-      bodyMedium: bodySecondaryDark,
-      bodySmall: captionDark,
+    textTheme: GoogleFonts.plusJakartaSansTextTheme(base.textTheme).apply(
+      bodyColor: Colors.white,
+      displayColor: Colors.white,
     ),
-    navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: Colors.transparent,
-      indicatorColor: AppColorsDark.primary.withOpacity(0.20),
-      height: 74,
-      surfaceTintColor: Colors.transparent,
-      iconTheme: WidgetStateProperty.resolveWith(
-        (states) => IconThemeData(
-          color: states.contains(WidgetState.selected)
-              ? AppColorsDark.primary
-              : AppColorsDark.textSecondary,
-          size: 22,
-        ),
-      ),
-      labelTextStyle: WidgetStatePropertyAll(
-        captionDark.copyWith(
-          color: AppColorsDark.textSecondary,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.2,
-        ),
-      ),
+    iconTheme: const IconThemeData(
+      color: Colors.white,
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColorsDark.primary,
-      foregroundColor: AppColorsDark.background,
-      shape: StadiumBorder(),
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: AppColorsDark.surface,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        borderSide: const BorderSide(color: AppColorsDark.borderLight),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        borderSide: const BorderSide(color: AppColorsDark.primary),
-      ),
-      labelStyle: bodySecondaryDark,
-      hintStyle: bodySecondaryDark.copyWith(color: AppColorsDark.textTertiary),
-    ),
-    chipTheme: ChipThemeData(
-      backgroundColor: AppColorsDark.surfaceMuted,
-      selectedColor: AppColorsDark.primary.withOpacity(0.25),
-      labelStyle: captionDark.copyWith(color: AppColorsDark.textSecondary),
-      secondaryLabelStyle:
-          captionDark.copyWith(color: AppColorsDark.background),
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-      side: const BorderSide(color: AppColorsDark.borderLight),
-    ),
-    snackBarTheme: SnackBarThemeData(
-      backgroundColor: AppColorsDark.primary,
-      contentTextStyle: bodyDark.copyWith(color: AppColorsDark.background),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppBorderRadius.md)),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColorsDark.primary,
-        foregroundColor: AppColorsDark.background,
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        ),
-        elevation: 0,
-        shadowColor: const Color(0x40000000),
-      ),
-    ),
-    dividerColor: AppColorsDark.borderLight,
-    listTileTheme: const ListTileThemeData(
-      tileColor: Colors.transparent,
-      dense: true,
-      contentPadding: EdgeInsets.zero,
-    ),
-    dropdownMenuTheme: DropdownMenuThemeData(
-      textStyle: bodySecondaryDark,
-      menuStyle: MenuStyle(
-        backgroundColor: WidgetStatePropertyAll(AppColorsDark.surface),
-      ),
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.white,
+      shape: CircleBorder(),
+      elevation: 8,
     ),
   );
 }

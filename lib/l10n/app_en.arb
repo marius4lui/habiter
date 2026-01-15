@@ -150,5 +150,53 @@
     }
   },
   "androidOnly": "Android Only",
-  "androidOnlyDesc": "App Lock is only available on Android devices."
+  "androidOnlyDesc": "App Lock is only available on Android devices.",
+  
+  "yourDailyFlow": "Your Daily Flow",
+  "keepMomentum": "Keep the momentum going!",
+  "onTrack": "On Track",
+  "habitsCompleted": "{done} of {total} habits completed",
+  "@habitsCompleted": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "pending": "Pending",
+  "done": "Done",
+  
+  "classlyInstance": "Classly Instance",
+  "loginWithClassly": "Login with Classly",
+  "autoSync": "Auto-Sync",
+  "syncInterval": "Sync Interval",
+  "newTasksImported": "{count} new tasks imported",
+  "@newTasksImported": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "syncNow": "Sync Now",
+  "syncComplete": "Sync complete",
+  
+  "todayCompleted": "Completed today ({count})",
+  "@todayCompleted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "allHabitsCompleted": "🎉 All habits completed for today!",
+  "markAsComplete": "Mark as complete",
+  "undoComplete": "Undo",
+  "edit": "Edit",
+  "archive": "Archive",
+  "goal": "Goal",
+  "createdAt": "Created",
+  "todayDone": "Done today ✓",
+  "notCompleted": "Not completed yet",
+  "perDayTarget": "{count}x per day",
+  "@perDayTarget": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

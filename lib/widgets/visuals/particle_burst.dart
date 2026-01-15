@@ -41,11 +41,11 @@ class _ParticleBurstState extends State<ParticleBurst> {
           width: p.size,
           height: p.size,
           decoration: BoxDecoration(
-            color: widget.color.withOpacity(0.6 + _random.nextDouble() * 0.4),
+            color: widget.color.withValues(alpha: 0.6 + _random.nextDouble() * 0.4),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: widget.color.withOpacity(0.5),
+                color: widget.color.withValues(alpha: 0.5),
                 blurRadius: 8,
                 spreadRadius: 2,
               )

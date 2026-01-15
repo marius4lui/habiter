@@ -150,5 +150,53 @@
     }
   },
   "androidOnly": "Nur für Android",
-  "androidOnlyDesc": "App Lock ist nur auf Android Geräten verfügbar."
+  "androidOnlyDesc": "App Lock ist nur auf Android Geräten verfügbar.",
+  
+  "yourDailyFlow": "Dein Tages-Flow",
+  "keepMomentum": "Bleib am Ball!",
+  "onTrack": "Auf Kurs",
+  "habitsCompleted": "{done} von {total} Habits erledigt",
+  "@habitsCompleted": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "pending": "Ausstehend",
+  "done": "Erledigt",
+  
+  "classlyInstance": "Classly-Instanz",
+  "loginWithClassly": "Mit Classly anmelden",
+  "autoSync": "Auto-Sync",
+  "syncInterval": "Sync-Intervall",
+  "newTasksImported": "{count} neue Aufgaben importiert",
+  "@newTasksImported": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "syncNow": "Jetzt synchronisieren",
+  "syncComplete": "Sync abgeschlossen",
+  
+  "todayCompleted": "Heute erledigt ({count})",
+  "@todayCompleted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "allHabitsCompleted": "🎉 Alle Habits für heute erledigt!",
+  "markAsComplete": "Als erledigt markieren",
+  "undoComplete": "Rückgängig machen",
+  "edit": "Bearbeiten",
+  "archive": "Archivieren",
+  "goal": "Ziel",
+  "createdAt": "Erstellt am",
+  "todayDone": "Heute erledigt ✓",
+  "notCompleted": "Noch nicht erledigt",
+  "perDayTarget": "{count}x pro Tag",
+  "@perDayTarget": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

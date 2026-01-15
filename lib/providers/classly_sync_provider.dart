@@ -1,14 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/classly_client.dart';
+import '../services/classly_oauth_service.dart';
 
 /// Manages Classly connection (base URL + token) and sync state.
 class ClasslySyncProvider extends ChangeNotifier {
   static const _baseUrlKey = 'classly_base_url';
   static const _lastSyncKey = 'classly_last_sync';
   static const _tokenKey = 'classly_token';
+  static const _autoSyncIntervalKey = 'classly_auto_sync_interval';
+  static const defaultBaseUrl = 'https://classly.site';
 
   final _secureStorage = const FlutterSecureStorage();
 
@@ -19,6 +24,8 @@ class ClasslySyncProvider extends ChangeNotifier {
   bool _isConnecting = false;
   String? _lastError;
   List<ClasslyEvent> _events = [];
+  int _autoSyncMinutes = 0; // 0 = disabled
+  Timer? _autoSyncTimer;
 
   String? get baseUrl => _baseUrl;
   String? get token => _token;
@@ -27,6 +34,8 @@ class ClasslySyncProvider extends ChangeNotifier {
   bool get isConnecting => _isConnecting;
   String? get lastError => _lastError;
   List<ClasslyEvent> get events => List.unmodifiable(_events);
+  int get autoSyncMinutes => _autoSyncMinutes;
+  bool get isConnected => _baseUrl != null && _token != null;
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -35,7 +44,14 @@ class ClasslySyncProvider extends ChangeNotifier {
     if (lastSyncString != null) {
       _lastSync = DateTime.tryParse(lastSyncString);
     }
+    _autoSyncMinutes = prefs.getInt(_autoSyncIntervalKey) ?? 0;
     _token = await _secureStorage.read(key: _tokenKey);
+    
+    // Start auto-sync if enabled and connected
+    if (_autoSyncMinutes > 0 && isConnected) {
+      _startAutoSync();
+    }
+    
     notifyListeners();
   }
 
@@ -48,6 +64,12 @@ class ClasslySyncProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_baseUrlKey, cleanedBaseUrl);
     await _secureStorage.write(key: _tokenKey, value: _token);
+    
+    // Restart auto-sync with new connection
+    if (_autoSyncMinutes > 0) {
+      _startAutoSync();
+    }
+    
     notifyListeners();
   }
 
@@ -79,7 +101,40 @@ class ClasslySyncProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> connectWithOAuth({required String baseUrl}) async {
+    if (_isConnecting) return;
+    _isConnecting = true;
+    _lastError = null;
+    notifyListeners();
+
+    try {
+      final cleanedBaseUrl = baseUrl.trim().replaceAll(RegExp(r'/+$'), '');
+      final oauthService = ClasslyOAuthService();
+      final client = ClasslyClient(baseUrl: cleanedBaseUrl);
+      
+      final tokenData = await oauthService.authenticate(
+        baseUrl: cleanedBaseUrl,
+        client: client,
+      );
+      
+      final token = tokenData['access_token'] as String;
+      // You can also extract 'class_id' or others from tokenData if needed
+      
+      await connect(baseUrl: cleanedBaseUrl, token: token);
+      
+      // Automatically sync after successful OAuth login
+      await sync();
+    } catch (e) {
+      _lastError = e.toString();
+    } finally {
+      _isConnecting = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> disconnect() async {
+    _stopAutoSync();
+    
     _baseUrl = null;
     _token = null;
     _events = [];
@@ -91,6 +146,35 @@ class ClasslySyncProvider extends ChangeNotifier {
     await prefs.remove(_lastSyncKey);
     await _secureStorage.delete(key: _tokenKey);
     notifyListeners();
+  }
+
+  Future<void> setAutoSyncInterval(int minutes) async {
+    _autoSyncMinutes = minutes;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_autoSyncIntervalKey, minutes);
+    
+    _stopAutoSync();
+    if (minutes > 0 && isConnected) {
+      _startAutoSync();
+    }
+    
+    notifyListeners();
+  }
+
+  void _startAutoSync() {
+    _stopAutoSync();
+    if (_autoSyncMinutes <= 0) return;
+    
+    _autoSyncTimer = Timer.periodic(
+      Duration(minutes: _autoSyncMinutes),
+      (_) => sync(),
+    );
+    debugPrint('ClasslySyncProvider: Auto-sync started every $_autoSyncMinutes min');
+  }
+
+  void _stopAutoSync() {
+    _autoSyncTimer?.cancel();
+    _autoSyncTimer = null;
   }
 
   Future<void> sync() async {
@@ -106,18 +190,65 @@ class ClasslySyncProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      debugPrint('ClasslySync: Starting sync...');
+      debugPrint('ClasslySync: Base URL: $_baseUrl');
+      debugPrint('ClasslySync: Token present: ${_token != null}');
+      debugPrint('ClasslySync: Last sync: $_lastSync');
+      debugPrint('ClasslySync: Current events count: ${_events.length}');
+      
       final client = ClasslyClient(baseUrl: _baseUrl!, token: _token);
-      final events = await client.fetchEvents(updatedSince: _lastSync);
-      _events = events;
+      
+      // If we have no events yet, do a full sync (no time filter)
+      // Otherwise, only fetch updates since last sync
+      final DateTime? syncSince = _events.isEmpty ? null : _lastSync;
+      
+      debugPrint('ClasslySync: Fetching events with updatedSince: $syncSince');
+      
+      final events = await client.fetchEvents(
+        updatedSince: syncSince,
+        limit: 500,
+      );
+      
+      debugPrint('ClasslySync: Fetched ${events.length} events');
+      
+      // Sort events by date (newest first)
+      events.sort((a, b) {
+        final dateA = a.date ?? a.createdAt ?? DateTime(1970);
+        final dateB = b.date ?? b.createdAt ?? DateTime(1970);
+        return dateB.compareTo(dateA); // Descending order
+      });
+      
+      // If this is an incremental sync, merge with existing events
+      if (syncSince != null && events.isNotEmpty) {
+        // Add new/updated events, avoiding duplicates
+        final existingIds = _events.map((e) => e.id).toSet();
+        final newEvents = events.where((e) => !existingIds.contains(e.id)).toList();
+        _events = [...events.where((e) => existingIds.contains(e.id)), ...newEvents, 
+                   ..._events.where((e) => !events.any((ne) => ne.id == e.id))];
+        debugPrint('ClasslySync: Merged events, total: ${_events.length}');
+      } else {
+        _events = events;
+      }
+      
       _lastSync = DateTime.now();
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_lastSyncKey, _lastSync!.toIso8601String());
-    } catch (e) {
+      
+      debugPrint('ClasslySync: Sync complete. Total events: ${_events.length}');
+    } catch (e, stackTrace) {
+      debugPrint('ClasslySync: Error during sync: $e');
+      debugPrint('ClasslySync: Stack trace: $stackTrace');
       _lastError = e.toString();
     } finally {
       _isSyncing = false;
       notifyListeners();
     }
+  }
+  
+  @override
+  void dispose() {
+    _stopAutoSync();
+    super.dispose();
   }
 }

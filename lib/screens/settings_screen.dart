@@ -104,13 +104,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: isDark
-                ? ColorScheme.dark(
+                ? const ColorScheme.dark(
                     primary: AppColorsDark.primary,
                     onPrimary: AppColorsDark.background,
                     surface: AppColorsDark.surface,
                     onSurface: AppColorsDark.text,
                   )
-                : ColorScheme.light(
+                : const ColorScheme.light(
                     primary: AppColors.primary,
                     onPrimary: Colors.white,
                     surface: AppColors.surface,
@@ -144,10 +144,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final settingsProvider = context.watch<SettingsProvider>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final gradient = isDark ? AppGradientsDark.appShell : AppGradients.appShell;
-    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
-    final borderColor =
-        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
-    final textColor = isDark ? AppColorsDark.text : AppColors.text;
+
     final captionColor =
         isDark ? AppColorsDark.textTertiary : AppColors.textTertiary;
 
@@ -291,11 +288,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     isDark: isDark,
                     onTap: () async {
                       await NotificationService.instance.showTestNotification();
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(l.testNotificationSent)),
-                        );
-                      }
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l.testNotificationSent)),
+                      );
                     },
                   ),
                 ],
@@ -344,7 +340,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           decoration: BoxDecoration(
-            color: surfaceColor.withOpacity(0.9),
+            color: surfaceColor.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(AppBorderRadius.lg),
             border: Border.all(color: borderColor),
           ),
@@ -395,11 +391,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.sm),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: provider.isConnecting
+                  ? null
+                  : () async {
+                      final url = _classlyUrlController.text.trim().isEmpty 
+                        ? ClasslySyncProvider.defaultBaseUrl 
+                        : _classlyUrlController.text.trim();
+                      
+                      _classlyUrlController.text = url; // Update UI if empty
+
+                      await provider.connectWithOAuth(baseUrl: url);
+                      
+                      if (!mounted) return;
+                      if (provider.lastError == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Erfolgreich eingeloggt!')),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Login fehlgeschlagen: ${provider.lastError}')),
+                        );
+                      }
+                    },
+              icon: const Icon(Icons.login),
+              label: Text(provider.isConnecting ? 'Verbinden...' : 'Mit Classly anmelden (OAuth)'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDark ? const Color(0xFF5865F2) : const Color(0xFF5865F2), // Classly/Discord Blue-ish
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              const Expanded(child: Divider()),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text('ODER manuell', style: Theme.of(context).textTheme.bodySmall),
+              ),
+              const Expanded(child: Divider()),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
           TextField(
             controller: _classlyUrlController,
             decoration: InputDecoration(
               labelText: 'Classly Basis-URL',
-              hintText: 'https://classly.example.com',
+              hintText: 'https://classly.site',
               filled: true,
               fillColor: surfaceMuted,
               border: OutlineInputBorder(
@@ -438,7 +481,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             obscureText: true,
           ),
           const SizedBox(height: AppSpacing.sm),
-          Row(
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
             children: [
               ElevatedButton.icon(
                 onPressed: provider.isConnecting
@@ -481,23 +526,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     : const Icon(Icons.lock_open),
                 label: Text(provider.isConnecting
                     ? 'Verbinden...'
-                    : 'Einloggen & verbinden'),
+                    : 'Einloggen'),
               ),
-              const SizedBox(width: AppSpacing.sm),
               OutlinedButton.icon(
                 onPressed: provider.isSyncing
                     ? null
                     : () async {
                         await provider.sync();
-                        if (mounted && provider.lastError == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Sync abgeschlossen')),
-                          );
-                        } else if (mounted && provider.lastError != null) {
+                        if (!mounted) return;
+                        if (provider.lastError != null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text(provider.lastError!)),
                           );
+                          return;
                         }
+                        // Import events as habits
+                        final habitProvider = context.read<HabitProvider>();
+                        final imported = await habitProvider.importFromClasslyEvents(provider.events);
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Sync: $imported Habits importiert')),
+                        );
                       },
                 icon: provider.isSyncing
                     ? const SizedBox(
@@ -506,15 +555,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.sync),
-                label: Text(provider.isSyncing
-                    ? 'Sync läuft...'
-                    : 'Jetzt synchronisieren'),
+                label: Text(provider.isSyncing ? 'Sync...' : 'Sync'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: primaryColor,
                   side: BorderSide(color: primaryColor),
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
               TextButton.icon(
                 onPressed: provider.baseUrl == null && provider.token == null
                     ? null
@@ -646,9 +692,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       margin: const EdgeInsets.all(AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: warningColor.withOpacity(0.1),
+        color: warningColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        border: Border.all(color: warningColor.withOpacity(0.3)),
+        border: Border.all(color: warningColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -700,7 +746,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       trailing: Switch.adaptive(
         value: value,
         onChanged: onChanged,
-        activeColor: primaryColor,
+        activeTrackColor: primaryColor,
       ),
     );
   }

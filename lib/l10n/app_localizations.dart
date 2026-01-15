@@ -685,6 +685,150 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'App Lock ist nur auf Android Geräten verfügbar.'**
   String get androidOnlyDesc;
+
+  /// No description provided for @yourDailyFlow.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Tages-Flow'**
+  String get yourDailyFlow;
+
+  /// No description provided for @keepMomentum.
+  ///
+  /// In de, this message translates to:
+  /// **'Bleib am Ball!'**
+  String get keepMomentum;
+
+  /// No description provided for @onTrack.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf Kurs'**
+  String get onTrack;
+
+  /// No description provided for @habitsCompleted.
+  ///
+  /// In de, this message translates to:
+  /// **'{done} von {total} Habits erledigt'**
+  String habitsCompleted(int done, int total);
+
+  /// No description provided for @pending.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausstehend'**
+  String get pending;
+
+  /// No description provided for @done.
+  ///
+  /// In de, this message translates to:
+  /// **'Erledigt'**
+  String get done;
+
+  /// No description provided for @classlyInstance.
+  ///
+  /// In de, this message translates to:
+  /// **'Classly-Instanz'**
+  String get classlyInstance;
+
+  /// No description provided for @loginWithClassly.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Classly anmelden'**
+  String get loginWithClassly;
+
+  /// No description provided for @autoSync.
+  ///
+  /// In de, this message translates to:
+  /// **'Auto-Sync'**
+  String get autoSync;
+
+  /// No description provided for @syncInterval.
+  ///
+  /// In de, this message translates to:
+  /// **'Sync-Intervall'**
+  String get syncInterval;
+
+  /// No description provided for @newTasksImported.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} neue Aufgaben importiert'**
+  String newTasksImported(int count);
+
+  /// No description provided for @syncNow.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt synchronisieren'**
+  String get syncNow;
+
+  /// No description provided for @syncComplete.
+  ///
+  /// In de, this message translates to:
+  /// **'Sync abgeschlossen'**
+  String get syncComplete;
+
+  /// No description provided for @todayCompleted.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute erledigt ({count})'**
+  String todayCompleted(int count);
+
+  /// No description provided for @allHabitsCompleted.
+  ///
+  /// In de, this message translates to:
+  /// **'🎉 Alle Habits für heute erledigt!'**
+  String get allHabitsCompleted;
+
+  /// No description provided for @markAsComplete.
+  ///
+  /// In de, this message translates to:
+  /// **'Als erledigt markieren'**
+  String get markAsComplete;
+
+  /// No description provided for @undoComplete.
+  ///
+  /// In de, this message translates to:
+  /// **'Rückgängig machen'**
+  String get undoComplete;
+
+  /// No description provided for @edit.
+  ///
+  /// In de, this message translates to:
+  /// **'Bearbeiten'**
+  String get edit;
+
+  /// No description provided for @archive.
+  ///
+  /// In de, this message translates to:
+  /// **'Archivieren'**
+  String get archive;
+
+  /// No description provided for @goal.
+  ///
+  /// In de, this message translates to:
+  /// **'Ziel'**
+  String get goal;
+
+  /// No description provided for @createdAt.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstellt am'**
+  String get createdAt;
+
+  /// No description provided for @todayDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute erledigt ✓'**
+  String get todayDone;
+
+  /// No description provided for @notCompleted.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nicht erledigt'**
+  String get notCompleted;
+
+  /// No description provided for @perDayTarget.
+  ///
+  /// In de, this message translates to:
+  /// **'{count}x pro Tag'**
+  String perDayTarget(int count);
 }
 
 class _AppLocalizationsDelegate

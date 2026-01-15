@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../models/habit.dart';
 import '../services/ai_manager.dart';
+import '../services/classly_client.dart';
 import '../services/notification_service.dart';
 import '../services/storage_service.dart';
 import '../utils/habit_utils.dart';
@@ -161,23 +162,47 @@ class HabitProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Archive a habit (set isActive = false)
+  Future<void> archiveHabit(String id) async {
+    final index = habits.indexWhere((h) => h.id == id);
+    if (index == -1) return;
+    
+    final archivedHabit = habits[index].copyWith(isActive: false);
+    habits[index] = archivedHabit;
+    await StorageService.updateHabit(id, archivedHabit.toMap());
+    
+    // Cancel notification for archived habit
+    await NotificationService.instance.cancelHabitNotification(id);
+    
+    debugPrint('HabitProvider: Archived habit: ${archivedHabit.name}');
+    notifyListeners();
+  }
+
   Future<void> toggleHabitCompletion(String habitId, String date) async {
+    final habitIndex = habits.indexWhere((h) => h.id == habitId);
+    if (habitIndex == -1) return;
+    
+    final habit = habits[habitIndex];
     final existingIndex = habitEntries.indexWhere(
       (entry) => entry.habitId == habitId && entry.date == date,
     );
     HabitEntry? entry;
+    bool isNowCompleted = false;
+    
     if (existingIndex != -1) {
       final current = habitEntries[existingIndex];
+      isNowCompleted = !current.completed;
       entry = HabitEntry(
         id: current.id,
         habitId: habitId,
         date: date,
-        completed: !current.completed,
-        count: current.completed ? 0 : 1,
+        completed: isNowCompleted,
+        count: isNowCompleted ? 1 : 0,
         timestamp: DateTime.now(),
       );
       habitEntries[existingIndex] = entry;
     } else {
+      isNowCompleted = true;
       entry = HabitEntry(
         id: _uuid.v4(),
         habitId: habitId,
@@ -190,6 +215,15 @@ class HabitProvider extends ChangeNotifier {
     }
 
     await StorageService.addHabitEntry(entry);
+    
+    // If this is a Classly habit and it's now completed, archive it
+    if (isNowCompleted && habit.description == 'Imported from Classly') {
+      debugPrint('HabitProvider: Archiving completed Classly habit: ${habit.name}');
+      final archivedHabit = habit.copyWith(isActive: false);
+      habits[habitIndex] = archivedHabit;
+      await StorageService.updateHabit(habitId, archivedHabit.toMap());
+    }
+    
     notifyListeners();
   }
 
@@ -263,5 +297,67 @@ class HabitProvider extends ChangeNotifier {
   /// Handle notification action to mark habit complete
   Future<void> handleNotificationAction(String habitId, String date) async {
     await toggleHabitCompletion(habitId, date);
+  }
+
+  /// Import Classly events as daily habits
+  Future<int> importFromClasslyEvents(List<ClasslyEvent> events) async {
+    int imported = 0;
+    // Check ALL habits (including archived) to avoid re-importing completed tasks
+    final existingNames = habits.map((h) => h.name.toLowerCase()).toSet();
+    
+    for (final event in events) {
+      // Skip events without date (not relevant for habit tracking)
+      if (event.date == null) continue;
+      
+      // Skip INFO type events - they are just informational, not actionable tasks
+      if (event.type.toLowerCase() == 'info') continue;
+      
+      // Create habit name from event
+      final name = event.title ?? event.subjectName ?? 'Classly Task';
+      
+      // Skip if habit with same name already exists
+      if (existingNames.contains(name.toLowerCase())) continue;
+      
+      // Determine icon based on event type
+      String icon;
+      switch (event.type.toLowerCase()) {
+        case 'homework':
+        case 'hausaufgabe':
+          icon = '📚';
+        case 'exam':
+        case 'klausur':
+        case 'test':
+          icon = '📝';
+        case 'presentation':
+        case 'präsentation':
+          icon = '🎤';
+        default:
+          icon = '📋';
+      }
+      
+      final habit = Habit(
+        id: _uuid.v4(),
+        name: name,
+        description: 'Imported from Classly',
+        color: '#4ECDC4', // Teal
+        icon: icon,
+        frequency: HabitFrequency.custom, // One-time event
+        customDays: [], // Empty = doesn't repeat on any day
+        targetCount: 1,
+        category: event.subjectName ?? 'Classly',
+        createdAt: DateTime.now(),
+        isActive: true,
+      );
+      
+      habits = [habit, ...habits];
+      await StorageService.addHabit(habit);
+      existingNames.add(name.toLowerCase());
+      imported++;
+    }
+    
+    if (imported > 0) {
+      notifyListeners();
+    }
+    return imported;
   }
 }

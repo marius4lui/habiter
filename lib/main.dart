@@ -222,7 +222,7 @@ class _GlassNavBar extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: surfaceColor.withOpacity(0.9),
+            color: surfaceColor.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(color: borderColor),
             boxShadow: AppShadows.soft,
@@ -254,9 +254,9 @@ class _ShellBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
+    return const IgnorePointer(
       child: Stack(
-        children: const [
+        children: [
           _GlowOrb(
             size: 320,
             top: -120,

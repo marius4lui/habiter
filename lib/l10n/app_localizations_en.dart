@@ -319,4 +319,84 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get androidOnlyDesc =>
       'App Lock is only available on Android devices.';
+
+  @override
+  String get yourDailyFlow => 'Your Daily Flow';
+
+  @override
+  String get keepMomentum => 'Keep the momentum going!';
+
+  @override
+  String get onTrack => 'On Track';
+
+  @override
+  String habitsCompleted(int done, int total) {
+    return '$done of $total habits completed';
+  }
+
+  @override
+  String get pending => 'Pending';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String get classlyInstance => 'Classly Instance';
+
+  @override
+  String get loginWithClassly => 'Login with Classly';
+
+  @override
+  String get autoSync => 'Auto-Sync';
+
+  @override
+  String get syncInterval => 'Sync Interval';
+
+  @override
+  String newTasksImported(int count) {
+    return '$count new tasks imported';
+  }
+
+  @override
+  String get syncNow => 'Sync Now';
+
+  @override
+  String get syncComplete => 'Sync complete';
+
+  @override
+  String todayCompleted(int count) {
+    return 'Completed today ($count)';
+  }
+
+  @override
+  String get allHabitsCompleted => '🎉 All habits completed for today!';
+
+  @override
+  String get markAsComplete => 'Mark as complete';
+
+  @override
+  String get undoComplete => 'Undo';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get archive => 'Archive';
+
+  @override
+  String get goal => 'Goal';
+
+  @override
+  String get createdAt => 'Created';
+
+  @override
+  String get todayDone => 'Done today ✓';
+
+  @override
+  String get notCompleted => 'Not completed yet';
+
+  @override
+  String perDayTarget(int count) {
+    return '${count}x per day';
+  }
 }

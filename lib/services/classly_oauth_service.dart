@@ -82,7 +82,7 @@ class ClasslyOAuthService {
       options: options,
     );
 
-    debugPrint('OAuth: Received callback: $result');
+    debugPrint('OAuth: Received callback');
 
     // Extract code from result URL
     final code = Uri.parse(result).queryParameters['code'];

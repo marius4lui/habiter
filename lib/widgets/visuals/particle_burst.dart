@@ -28,7 +28,8 @@ class _ParticleBurstState extends State<ParticleBurst> {
       final angle = _random.nextDouble() * 2 * pi;
       final distance = 40.0 + _random.nextDouble() * 100.0;
       final size = 4.0 + _random.nextDouble() * 6.0;
-      return _ParticleConfig(angle, distance, size);
+      final opacity = 0.6 + _random.nextDouble() * 0.4;
+      return _ParticleConfig(angle, distance, size, opacity);
     });
   }
 
@@ -41,7 +42,7 @@ class _ParticleBurstState extends State<ParticleBurst> {
           width: p.size,
           height: p.size,
           decoration: BoxDecoration(
-            color: widget.color.withValues(alpha: 0.6 + _random.nextDouble() * 0.4),
+            color: widget.color.withValues(alpha: p.opacity),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
@@ -77,6 +78,7 @@ class _ParticleConfig {
   final double angle;
   final double distance;
   final double size;
+  final double opacity;
 
-  _ParticleConfig(this.angle, this.distance, this.size);
+  _ParticleConfig(this.angle, this.distance, this.size, this.opacity);
 }

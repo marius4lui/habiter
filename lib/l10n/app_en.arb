@@ -192,6 +192,7 @@
   "goal": "Goal",
   "createdAt": "Created",
   "todayDone": "Done today ✓",
+  "noHabitsYet": "No habits yet. Start by adding one!",
   "notCompleted": "Not completed yet",
   "perDayTarget": "{count}x per day",
   "@perDayTarget": {

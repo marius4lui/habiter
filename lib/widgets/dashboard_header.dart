@@ -30,7 +30,7 @@ class DashboardHeader extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Good Morning, Alex',
+                '${_getGreeting()}, Alex',
                 style: AppTextStyles.h1.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
@@ -48,15 +48,22 @@ class DashboardHeader extends StatelessWidget {
                   : AppShadows.neumorphSm,
             ),
             child: IconButton(
-              onPressed: () {},
+              onPressed: null, // TODO: Implement notification flow
               icon: Icon(
                 Icons.notifications_outlined, // Using material icon as closest to 'notifications' symbol
-                color: Theme.of(context).colorScheme.onSurface,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
   }
 }

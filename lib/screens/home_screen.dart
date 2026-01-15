@@ -102,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         hasScrollBody: false,
                         child: Center(
                           child: Text(
-                            'No habits yet. Start by adding one!',
+                            context.l10n.noHabitsYet,
                              style: AppTextStyles.body.copyWith(color: AppColors.textTertiary),
                           ),
                         ),
@@ -115,11 +115,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         ).toList();
                         
                         if (incompleteHabits.isEmpty) {
-                          return const SliverToBoxAdapter(
+                          return SliverToBoxAdapter(
                             child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                               child: Text(
-                                '🎉 Alle Habits für heute erledigt!',
+                                context.l10n.allHabitsCompleted,
                                 textAlign: TextAlign.center,
                               ),
                             ),
@@ -193,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       color: AppColors.success, size: 20),
                                     const SizedBox(width: AppSpacing.sm),
                                     Text(
-                                      'Heute erledigt (${completedHabits.length})',
+                                      context.l10n.todayCompleted(completedHabits.length),
                                       style: AppTextStyles.h3.copyWith(
                                         color: AppColors.success,
                                       ),

@@ -391,7 +391,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: AppSpacing.sm),
-          const SizedBox(height: AppSpacing.sm),
+
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(

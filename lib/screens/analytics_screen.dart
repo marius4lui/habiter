@@ -103,7 +103,9 @@ class _AnalyticsHero extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        boxShadow: AppShadows.neumorph,
+        boxShadow: Theme.of(context).brightness == Brightness.dark
+            ? AppShadows.neumorphDark
+            : AppShadows.neumorph,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

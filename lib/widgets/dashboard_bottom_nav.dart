@@ -13,7 +13,7 @@ class DashboardBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // We implementing a custom look over the standard NavigationBar to match the design EXACTLY.
+    // We're implementing a custom look over the standard NavigationBar to match the design EXACTLY.
     // Design: White/Glass background, icons with active state indicator dots or filled icons.
     
     final isDark = Theme.of(context).brightness == Brightness.dark;

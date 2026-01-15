@@ -262,6 +262,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                         scrollDirection: Axis.horizontal,
                         itemBuilder: (_, index) {
                           final icons = _iconSuggestions[_category] ?? _iconSuggestions.values.first;
+                          if (icons.isEmpty) return const SizedBox();
                           final icon = icons[index % icons.length];
                           final selected = icon == _icon;
                           return GestureDetector(

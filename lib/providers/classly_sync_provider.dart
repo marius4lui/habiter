@@ -220,11 +220,21 @@ class ClasslySyncProvider extends ChangeNotifier {
       
       // If this is an incremental sync, merge with existing events
       if (syncSince != null && events.isNotEmpty) {
-        // Add new/updated events, avoiding duplicates
-        final existingIds = _events.map((e) => e.id).toSet();
-        final newEvents = events.where((e) => !existingIds.contains(e.id)).toList();
-        _events = [...events.where((e) => existingIds.contains(e.id)), ...newEvents, 
-                   ..._events.where((e) => !events.any((ne) => ne.id == e.id))];
+        // Add new/updated events, avoiding duplicates using a Map
+        final eventMap = {for (var e in _events) e.id: e};
+        for (var e in events) {
+          eventMap[e.id] = e; // Overwrite existing with new
+        }
+        
+        _events = eventMap.values.toList();
+        
+        // Re-sort to ensure correct order after merge
+        _events.sort((a, b) {
+          final dateA = a.date ?? a.createdAt ?? DateTime(1970);
+          final dateB = b.date ?? b.createdAt ?? DateTime(1970);
+          return dateB.compareTo(dateA); // Descending order
+        });
+        
         debugPrint('ClasslySync: Merged events, total: ${_events.length}');
       } else {
         _events = events;

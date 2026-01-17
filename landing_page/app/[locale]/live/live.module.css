@@ -216,25 +216,6 @@
     }
 }
 
-/* Swipe Reveal Background */
-.swipeReveal {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    padding-left: 1.5rem;
-}
-
-.revealCheck {
-    font-size: 1.5rem;
-    color: #4CAF50;
-    font-weight: bold;
-}
-
 /* Habit Card */
 .habitCard {
     background: rgba(255, 255, 255, 0.95);
@@ -246,14 +227,20 @@
     gap: 0.5rem 0.75rem;
     border: 1px solid rgba(255, 255, 255, 0.6);
     box-shadow: 0 4px 20px rgba(74, 64, 54, 0.08);
-    cursor: grab;
+    cursor: pointer;
     user-select: none;
-    transition: transform 0.1s ease-out, box-shadow 0.3s;
+    transition: transform 0.15s ease-out, box-shadow 0.3s, border-color 0.2s;
     position: relative;
 }
 
-.habitCard:active {
-    cursor: grabbing;
+.habitCard:hover {
+    box-shadow: 0 6px 24px rgba(74, 64, 54, 0.14);
+    border-color: rgba(212, 163, 115, 0.6);
+}
+
+.habitCard:focus-visible {
+    outline: 2px solid rgba(212, 163, 115, 0.8);
+    outline-offset: 2px;
 }
 
 .habitCard.completing {
@@ -333,7 +320,7 @@
     border-radius: 50px;
 }
 
-.slideHint {
+.tapHint {
     position: absolute;
     right: 1rem;
     top: 50%;

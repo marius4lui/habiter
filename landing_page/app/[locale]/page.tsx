@@ -25,7 +25,7 @@ export default function LocaleHomePage() {
             howItWorks: "So funktioniert's",
             steps: [
                 { icon: "📝", title: "Habits erstellen", desc: "Definiere deine täglichen Gewohnheiten mit Zielen und Kategorien" },
-                { icon: "👆", title: "Wischen & Abhaken", desc: "Swipe nach rechts um Habits als erledigt zu markieren" },
+                { icon: "✅", title: "Tippen & Abhaken", desc: "Markiere Habits mit einem Tap als erledigt" },
                 { icon: "📊", title: "Fortschritt verfolgen", desc: "Behalte deine Streaks und Statistiken im Blick" },
             ],
             tryDemo: "Probier es aus!",
@@ -46,12 +46,34 @@ export default function LocaleHomePage() {
                 { icon: "🌙", title: "Dark Mode", desc: "Schont deine Augen bei Nacht" },
                 { icon: "🔔", title: "Erinnerungen", desc: "Nie wieder einen Habit vergessen" },
             ],
+            seo: {
+                title: "Habiter App: Funktionen, Preis und Support",
+                intro: "Die Habiter App ist ein moderner Habit Tracker, der dich bei Gewohnheiten, Routinen und Streaks unterstuetzt.",
+                items: [
+                    {
+                        title: "Funktionen fuer nachhaltige Gewohnheiten",
+                        desc: "Erstelle Habits, tracke Fortschritt, setze Erinnerungen und behalte deine Statistiken im Blick.",
+                    },
+                    {
+                        title: "Preis & Verfuegbarkeit",
+                        desc: "Die Habiter App ist in der Beta kostenlos und fuer Android verfuegbar.",
+                    },
+                    {
+                        title: "Support & Datenschutz",
+                        desc: "Schneller Support ueber Feedback, transparente Datenschutz- und AGB-Seiten.",
+                    },
+                    {
+                        title: "Fuer wen ist die Habiter App?",
+                        desc: "Fuer alle, die Gewohnheiten aufbauen, ihren Alltag strukturieren und Fokus gewinnen wollen.",
+                    },
+                ],
+            },
         },
         en: {
             howItWorks: "How it works",
             steps: [
                 { icon: "📝", title: "Create Habits", desc: "Define your daily habits with goals and categories" },
-                { icon: "👆", title: "Swipe & Check", desc: "Swipe right to mark habits as completed" },
+                { icon: "✅", title: "Tap & Check", desc: "Mark habits as completed with a tap" },
                 { icon: "📊", title: "Track Progress", desc: "Keep an eye on your streaks and statistics" },
             ],
             tryDemo: "Try it out!",
@@ -72,6 +94,28 @@ export default function LocaleHomePage() {
                 { icon: "🌙", title: "Dark Mode", desc: "Easy on your eyes at night" },
                 { icon: "🔔", title: "Reminders", desc: "Never forget a habit again" },
             ],
+            seo: {
+                title: "Habiter App: Features, Pricing, and Support",
+                intro: "The Habiter App is a modern habit tracker that helps you build routines and maintain streaks.",
+                items: [
+                    {
+                        title: "Features for lasting habits",
+                        desc: "Create habits, track progress, set reminders, and monitor your statistics.",
+                    },
+                    {
+                        title: "Pricing & availability",
+                        desc: "The Habiter App is free during beta and available for Android.",
+                    },
+                    {
+                        title: "Support & privacy",
+                        desc: "Fast support via feedback, plus clear privacy and terms pages.",
+                    },
+                    {
+                        title: "Who is the Habiter App for?",
+                        desc: "For anyone who wants to build habits, structure their day, and stay focused.",
+                    },
+                ],
+            },
         },
     };
 
@@ -205,6 +249,35 @@ export default function LocaleHomePage() {
                         </div>
                     ))}
                 </div>
+            </section>
+
+            {/* SEO Content */}
+            <section id="habiter-app" className="seo-section">
+                <h2>{c.seo.title}</h2>
+                <p className="seo-intro">{c.seo.intro}</p>
+                <div className="seo-grid">
+                    {c.seo.items.map((item, i) => (
+                        <div key={i} className="card seo-card">
+                            <h3>{item.title}</h3>
+                            <p>{item.desc}</p>
+                        </div>
+                    ))}
+                </div>
+                <p className="seo-support">
+                    {locale === "de" ? (
+                        <>
+                            Fragen? Nutze das{" "}
+                            <Link href={`/${locale}/feedback`}>Feedback-Formular</Link>{" "}
+                            oder die Seiten fuer Datenschutz und AGB.
+                        </>
+                    ) : (
+                        <>
+                            Questions? Use the{" "}
+                            <Link href={`/${locale}/feedback`}>feedback form</Link>{" "}
+                            or visit the privacy and terms pages.
+                        </>
+                    )}
+                </p>
             </section>
 
             {/* Download CTA */}

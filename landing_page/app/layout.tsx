@@ -9,10 +9,34 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Habiter",
-  description: "Build better habits with Habiter",
+  metadataBase: new URL('https://habiter.qhrd.online'),
+  title: {
+    template: '%s | Habiter',
+    default: 'Habiter - Build better habits',
+  },
+  description: "Track your habits and build a better routine with the Habiter App. Beautiful design meets haptic feedback.",
+  keywords: [
+    "Habiter",
+    "Habiter App",
+    "habit tracker",
+    "habits",
+    "routine",
+    "productivity",
+    "android app",
+    "organic design",
+    "streaks",
+  ],
+  authors: [{ name: "Habiter Team" }],
+  creator: "Habiter Team",
+  publisher: "Habiter",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   icons: {
     icon: "/icon.png",
+    apple: "/icon.png",
   },
 };
 

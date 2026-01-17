@@ -45,7 +45,7 @@ export function Header({ locale, showFeatures = true, showDownload = true }: Hea
             <Link href={basePath} className="brand">
                 <Image
                     src="/icon.png"
-                    alt="Habiter Logo"
+                    alt="Habiter App Logo"
                     width={32}
                     height={32}
                     className="brand-logo"

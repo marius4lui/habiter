@@ -20,8 +20,6 @@ export default function LiveDemoPage() {
     const locale = (params.locale as Locale) || "de";
 
     const [completedHabits, setCompletedHabits] = useState<string[]>([]);
-    const [swipingHabit, setSwipingHabit] = useState<string | null>(null);
-    const [swipeProgress, setSwipeProgress] = useState<Record<string, number>>({});
     const [showParticles, setShowParticles] = useState<string | null>(null);
     const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -39,9 +37,9 @@ export default function LiveDemoPage() {
             completion: "Abschluss",
             active: "Aktiv",
             momentum: "Heutiges Momentum",
-            slideHint: "Slide →",
+            tapHint: "Tippen",
             completed: "ERLEDIGT",
-            tryIt: "Wische eine Habit nach rechts um sie abzuschließen!",
+            tryIt: "Tippe eine Habit an, um sie abzuschließen!",
             reset: "Demo zurücksetzen",
             downloadCta: "Gefällt dir was du siehst?",
             downloadBtn: "App herunterladen",
@@ -54,9 +52,9 @@ export default function LiveDemoPage() {
             completion: "Completion",
             active: "Active",
             momentum: "Today's Momentum",
-            slideHint: "Slide →",
+            tapHint: "Tap",
             completed: "COMPLETED",
-            tryIt: "Swipe a habit to the right to complete it!",
+            tryIt: "Tap a habit to complete it!",
             reset: "Reset Demo",
             downloadCta: "Like what you see?",
             downloadBtn: "Download the App",
@@ -70,31 +68,16 @@ export default function LiveDemoPage() {
     const totalCount = DEMO_HABITS.length;
     const completionRate = totalCount === 0 ? 0 : completedCount / totalCount;
 
-    function handleSwipeStart(id: string) {
-        setSwipingHabit(id);
-    }
-
-    function handleSwipeMove(id: string, progress: number) {
-        setSwipeProgress(prev => ({ ...prev, [id]: progress }));
-    }
-
-    function handleSwipeEnd(id: string) {
-        const progress = swipeProgress[id] || 0;
-        if (progress > 0.5) {
-            // Complete the habit
-            setShowParticles(id);
-            setTimeout(() => {
-                setCompletedHabits(prev => [...prev, id]);
-                setShowParticles(null);
-            }, 400);
-        }
-        setSwipingHabit(null);
-        setSwipeProgress(prev => ({ ...prev, [id]: 0 }));
+    function handleComplete(id: string) {
+        setShowParticles(id);
+        setTimeout(() => {
+            setCompletedHabits(prev => [...prev, id]);
+            setShowParticles(null);
+        }, 400);
     }
 
     function resetDemo() {
         setCompletedHabits([]);
-        setSwipeProgress({});
     }
 
     return (
@@ -165,12 +148,9 @@ export default function LiveDemoPage() {
                                             key={habit.id}
                                             habit={habit}
                                             isCompleted={false}
-                                            swipeProgress={swipeProgress[habit.id] || 0}
                                             showParticles={showParticles === habit.id}
-                                            slideHint={c.slideHint}
-                                            onSwipeStart={() => handleSwipeStart(habit.id)}
-                                            onSwipeMove={(p) => handleSwipeMove(habit.id, p)}
-                                            onSwipeEnd={() => handleSwipeEnd(habit.id)}
+                                            tapHint={c.tapHint}
+                                            onComplete={() => handleComplete(habit.id)}
                                             style={{ animationDelay: `${index * 0.1}s` }}
                                         />
                                     ))
@@ -225,95 +205,33 @@ function getGreeting(locale: string) {
     return "Good evening";
 }
 
-// Habit Card Component with Swipe
+// Habit Card Component with Tap
 interface HabitCardProps {
     habit: typeof DEMO_HABITS[0];
     isCompleted: boolean;
-    swipeProgress: number;
     showParticles: boolean;
-    slideHint: string;
-    onSwipeStart: () => void;
-    onSwipeMove: (progress: number) => void;
-    onSwipeEnd: () => void;
+    tapHint: string;
+    onComplete: () => void;
     style?: React.CSSProperties;
 }
 
-function HabitCard({ habit, swipeProgress, showParticles, slideHint, onSwipeStart, onSwipeMove, onSwipeEnd, style }: HabitCardProps) {
-    const [startX, setStartX] = useState(0);
-    const [isDragging, setIsDragging] = useState(false);
-
-    const handleTouchStart = (e: React.TouchEvent) => {
-        setStartX(e.touches[0].clientX);
-        setIsDragging(true);
-        onSwipeStart();
-    };
-
-    const handleTouchMove = (e: React.TouchEvent) => {
-        if (!isDragging) return;
-        const diff = e.touches[0].clientX - startX;
-        const progress = Math.max(0, Math.min(1, diff / 150));
-        onSwipeMove(progress);
-    };
-
-    const handleTouchEnd = () => {
-        setIsDragging(false);
-        onSwipeEnd();
-    };
-
-    const handleMouseDown = (e: React.MouseEvent) => {
-        setStartX(e.clientX);
-        setIsDragging(true);
-        onSwipeStart();
-    };
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isDragging) return;
-        const diff = e.clientX - startX;
-        const progress = Math.max(0, Math.min(1, diff / 150));
-        onSwipeMove(progress);
-    };
-
-    const handleMouseUp = () => {
-        if (isDragging) {
-            setIsDragging(false);
-            onSwipeEnd();
-        }
-    };
-
-    const handleMouseLeave = () => {
-        if (isDragging) {
-            setIsDragging(false);
-            onSwipeEnd();
-        }
-    };
-
+function HabitCard({ habit, showParticles, tapHint, onComplete, style }: HabitCardProps) {
     return (
         <div
             className={styles.habitCardWrapper}
             style={style}
         >
-            {/* Background reveal */}
-            <div
-                className={styles.swipeReveal}
-                style={{
-                    opacity: swipeProgress,
-                    background: `linear-gradient(90deg, ${habit.color}40, ${habit.color}10)`
-                }}
-            >
-                <span className={styles.revealCheck} style={{ opacity: swipeProgress }}>✓</span>
-            </div>
-
             {/* Card */}
             <div
                 className={`${styles.habitCard} ${showParticles ? styles.completing : ""}`}
-                style={{ transform: `translateX(${swipeProgress * 80}px)` }}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseLeave}
+                onClick={onComplete}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                        onComplete();
+                    }
+                }}
             >
                 <div
                     className={styles.habitIconCircle}
@@ -329,9 +247,7 @@ function HabitCard({ habit, swipeProgress, showParticles, slideHint, onSwipeStar
                     <span className={styles.frequency}>{habit.frequency}</span>
                     <span className={styles.category}>{habit.category}</span>
                 </div>
-                {swipeProgress === 0 && (
-                    <span className={styles.slideHint}>{slideHint}</span>
-                )}
+                <span className={styles.tapHint}>{tapHint}</span>
             </div>
 
             {/* Particles */}

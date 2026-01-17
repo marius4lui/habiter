@@ -32,8 +32,8 @@ export const translations = {
         },
         // Home page
         home: {
-            title: "Gewohnheiten, die bleiben.",
-            subtitle: "Erlebe eine moderne, organische Art, deine täglichen Routinen zu verfolgen. Wunderschön gestaltet mit haptischem Feedback und flüssigen Animationen.",
+            title: "Habiter App - Gewohnheiten, die bleiben.",
+            subtitle: "Die Habiter App ist dein Habit Tracker fuer taegliche Routinen, Streaks und Fokus. Modern, organisch und mit haptischem Feedback.",
             downloadBtn: "App herunterladen",
             startJourney: "Starte deine Reise noch heute.",
             availableFor: "Verfügbar für Android.",
@@ -184,8 +184,8 @@ export const translations = {
             langSwitch: "DE",
         },
         home: {
-            title: "Build habits that stick.",
-            subtitle: "Experience a modern, organic way to track your daily routines. Beautifully designed with haptic feedback and fluid animations.",
+            title: "Habiter App - Build habits that stick.",
+            subtitle: "The Habiter App is a habit tracker for daily routines, streaks, and focus. Modern, organic, and built with haptic feedback.",
             downloadBtn: "Download App",
             startJourney: "Start your journey today.",
             availableFor: "Available for Android.",

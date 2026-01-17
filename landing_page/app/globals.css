@@ -520,6 +520,46 @@ footer {
     font-size: 0.85rem;
 }
 
+/* SEO Content */
+.seo-section {
+    padding: 4rem 0;
+}
+
+.seo-section h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.seo-intro {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto 2.5rem;
+}
+
+.seo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.seo-card h3 {
+    margin-bottom: 0.5rem;
+}
+
+.seo-support {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.seo-support a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.seo-support a:hover {
+    text-decoration: underline;
+}
+
 /* CTA Section */
 .cta-section {
     background: var(--glass-bg);

@@ -65,7 +65,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             // Main Scrollable Content
             Positioned.fill(
-              bottom: 100, // Leave space for bottom nav
+              // On desktop (no bottom nav), use no bottom padding; on mobile leave space for bottom nav
+              bottom: MediaQuery.of(context).size.width >= 1024 ? 0 : 100,
               child: RefreshIndicator(
                 onRefresh: provider.refresh,
                 child: CustomScrollView(
@@ -129,8 +130,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         return SliverPadding(
                           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                           sliver: SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
+                            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 220,
                               mainAxisSpacing: AppSpacing.md,
                               crossAxisSpacing: AppSpacing.md,
                               childAspectRatio: 0.85,
@@ -276,7 +277,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
             // Floating Action Button
             Positioned(
-              bottom: 110,
+              // Position lower on mobile (above bottom nav) but at bottom on desktop
+              bottom: MediaQuery.of(context).size.width >= 1024 ? AppSpacing.lg : 110,
               right: AppSpacing.lg,
               child: FloatingActionButton(
                 onPressed: () => showModalBottomSheet(

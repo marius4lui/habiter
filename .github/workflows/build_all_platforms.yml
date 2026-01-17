@@ -6,6 +6,10 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - main
+    paths:
+      - 'pubspec.yaml'
   workflow_dispatch:
 
 # Cancel in-progress runs for the same branch

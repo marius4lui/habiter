@@ -396,6 +396,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notCompleted => 'Not completed yet';
 
   @override
+  String get noHabitsYet => 'No habits yet. Start by adding one!';
+
+  @override
   String perDayTarget(int count) {
     return '${count}x per day';
   }

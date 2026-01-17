@@ -399,6 +399,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get notCompleted => 'Noch nicht erledigt';
 
   @override
+  String get noHabitsYet => 'Noch keine Habits. Füge ein neues hinzu!';
+
+  @override
   String perDayTarget(int count) {
     return '${count}x pro Tag';
   }

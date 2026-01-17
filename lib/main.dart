@@ -133,30 +133,71 @@ class _RootShellState extends State<_RootShell> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDesktop = MediaQuery.of(context).size.width >= 1024;
+
+    // Main content (shared between layouts)
+    Widget mainContent = PageView(
+      controller: _pageController,
+      onPageChanged: _onPageChanged,
+      physics: const BouncingScrollPhysics(),
+      children: _pages,
+    );
+
+    // Desktop layout with NavigationRail
+    if (isDesktop) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: isDark ? AppGradientsDark.appShell : AppGradients.appShell,
+        ),
+        child: Stack(
+          children: [
+            const _ShellBackground(),
+            Row(
+              children: [
+                // Desktop Sidebar Navigation
+                _DesktopSidebar(
+                  index: _index,
+                  onChange: _onNavChange,
+                  onOpenSettings: _openSettings,
+                  onOpenAppLock: _openAppLock,
+                ),
+                // Main content area
+                Expanded(
+                  child: Scaffold(
+                    backgroundColor: Colors.transparent,
+                    body: mainContent,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Mobile/Tablet layout with bottom nav
     return DecoratedBox(
-      decoration: const BoxDecoration(gradient: AppGradients.appShell),
+      decoration: BoxDecoration(
+        gradient: isDark ? AppGradientsDark.appShell : AppGradients.appShell,
+      ),
       child: Stack(
         children: [
           const _ShellBackground(),
           Scaffold(
             extendBody: true,
             backgroundColor: Colors.transparent,
-            body: PageView(
-              controller: _pageController,
-              onPageChanged: _onPageChanged,
-              physics: const BouncingScrollPhysics(),
-              children: _pages,
-            ),
+            body: mainContent,
             floatingActionButton: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 FloatingActionButton.small(
                   heroTag: 'settings',
                   onPressed: _openSettings,
-                  backgroundColor: AppColors.surface,
-                  child: const Icon(
+                  backgroundColor: isDark ? AppColorsDark.surface : AppColors.surface,
+                  child: Icon(
                     Icons.settings_outlined,
-                    color: AppColors.textSecondary,
+                    color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
                     size: 20,
                   ),
                 ),
@@ -168,13 +209,13 @@ class _RootShellState extends State<_RootShell> {
                       heroTag: 'applock',
                       onPressed: _openAppLock,
                       backgroundColor: appLock.isEnabled
-                          ? AppColors.primary
-                          : AppColors.surface,
+                          ? (isDark ? AppColorsDark.primary : AppColors.primary)
+                          : (isDark ? AppColorsDark.surface : AppColors.surface),
                       child: Icon(
                         appLock.isEnabled ? Icons.lock : Icons.lock_open,
                         color: appLock.isEnabled
                             ? Colors.white
-                            : AppColors.textSecondary,
+                            : (isDark ? AppColorsDark.textSecondary : AppColors.textSecondary),
                         size: 20,
                       ),
                     );
@@ -244,6 +285,113 @@ class _GlassNavBar extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Desktop sidebar navigation with NavigationRail
+class _DesktopSidebar extends StatelessWidget {
+  const _DesktopSidebar({
+    required this.index,
+    required this.onChange,
+    required this.onOpenSettings,
+    required this.onOpenAppLock,
+  });
+
+  final int index;
+  final ValueChanged<int> onChange;
+  final VoidCallback onOpenSettings;
+  final VoidCallback onOpenAppLock;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l = context.l10n;
+    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
+    final borderColor = isDark ? AppColorsDark.border : AppColors.border;
+
+    return Container(
+      width: 80,
+      decoration: BoxDecoration(
+        color: surfaceColor.withValues(alpha: 0.95),
+        border: Border(
+          right: BorderSide(color: borderColor, width: 1),
+        ),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 24),
+          // App Icon/Logo
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.asset(
+              'assets/images/app_icon.png',
+              width: 48,
+              height: 48,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: 32),
+          // Navigation Rail
+          Expanded(
+            child: NavigationRail(
+              selectedIndex: index,
+              onDestinationSelected: onChange,
+              backgroundColor: Colors.transparent,
+              indicatorColor: AppColors.primary.withValues(alpha: 0.15),
+              labelType: NavigationRailLabelType.all,
+              destinations: [
+                NavigationRailDestination(
+                  icon: const Icon(Icons.checklist_rtl_outlined),
+                  selectedIcon: Icon(
+                    Icons.checklist_rtl,
+                    color: isDark ? AppColorsDark.primary : AppColors.primary,
+                  ),
+                  label: Text(l.navHabits),
+                ),
+                NavigationRailDestination(
+                  icon: const Icon(Icons.query_stats_outlined),
+                  selectedIcon: Icon(
+                    Icons.query_stats,
+                    color: isDark ? AppColorsDark.primary : AppColors.primary,
+                  ),
+                  label: Text(l.navAnalytics),
+                ),
+              ],
+            ),
+          ),
+          // Bottom action buttons
+          const Divider(height: 1),
+          const SizedBox(height: 16),
+          // App Lock button
+          Consumer<AppLockProvider>(
+            builder: (context, appLock, _) {
+              if (!appLock.isSupported) return const SizedBox.shrink();
+              return IconButton(
+                onPressed: onOpenAppLock,
+                icon: Icon(
+                  appLock.isEnabled ? Icons.lock : Icons.lock_open,
+                  color: appLock.isEnabled
+                      ? (isDark ? AppColorsDark.primary : AppColors.primary)
+                      : (isDark ? AppColorsDark.textSecondary : AppColors.textSecondary),
+                ),
+                tooltip: 'App Lock',
+              );
+            },
+          ),
+          const SizedBox(height: 8),
+          // Settings button
+          IconButton(
+            onPressed: onOpenSettings,
+            icon: Icon(
+              Icons.settings_outlined,
+              color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+            ),
+            tooltip: 'Settings',
+          ),
+          const SizedBox(height: 24),
+        ],
       ),
     );
   }

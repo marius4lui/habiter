@@ -824,6 +824,12 @@ abstract class AppLocalizations {
   /// **'Noch nicht erledigt'**
   String get notCompleted;
 
+  /// No description provided for @noHabitsYet.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Habits. Füge ein neues hinzu!'**
+  String get noHabitsYet;
+
   /// No description provided for @perDayTarget.
   ///
   /// In de, this message translates to:

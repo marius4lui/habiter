@@ -116,11 +116,22 @@ class _AnalyticsHero extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Analytics', style: AppTextStyles.h1),
+                    Text(
+                      'Analytics',
+                      style: AppTextStyles.h1.copyWith(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColorsDark.text
+                            : AppColors.textMain,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       'Track your progress, celebrate wins, adjust early.',
-                      style: AppTextStyles.bodySecondary,
+                      style: AppTextStyles.bodySecondary.copyWith(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColorsDark.textSecondary
+                            : AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -221,14 +232,19 @@ class _HeroNumber extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-              overflow: TextOverflow.ellipsis,
+            Builder(
+              builder: (context) {
+                final isDark = Theme.of(context).brightness == Brightness.dark;
+                return Text(
+                  label,
+                  style: TextStyle(
+                    color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                );
+              },
             ),
           ],
         ),
@@ -260,13 +276,16 @@ class _WeeklyChartCard extends StatelessWidget {
     final data =
         habit == null ? <WeeklyData>[] : getWeeklyData(habit.id, entries);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        gradient: AppGradients.cardSheen,
+        gradient: isDark ? AppGradientsDark.cardSheen : AppGradients.cardSheen,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        border: Border.all(color: AppColors.borderLight),
-        boxShadow: AppShadows.soft,
+        border: Border.all(
+          color: isDark ? AppColorsDark.border : AppColors.borderLight,
+        ),
+        boxShadow: isDark ? AppShadows.neumorphSmDark : AppShadows.soft,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,14 +293,21 @@ class _WeeklyChartCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Weekly progress', style: AppTextStyles.h3),
+              Text(
+                'Weekly progress',
+                style: AppTextStyles.h3.copyWith(
+                  color: isDark ? AppColorsDark.text : AppColors.textMain,
+                ),
+              ),
               Flexible(
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 150),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceMuted,
+                    color: isDark ? AppColorsDark.surfaceMuted : AppColors.surfaceMuted,
                     borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(
+                      color: isDark ? AppColorsDark.border : AppColors.border,
+                    ),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
@@ -310,7 +336,9 @@ class _WeeklyChartCard extends StatelessWidget {
           if (data.isEmpty)
             Text(
               'Track a habit to see weekly performance.',
-              style: AppTextStyles.bodySecondary,
+              style: AppTextStyles.bodySecondary.copyWith(
+                color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+              ),
             )
           else
             SizedBox(
@@ -326,7 +354,9 @@ class _WeeklyChartCard extends StatelessWidget {
                         interval: 1,
                         getTitlesWidget: (value, _) => Text(
                           value.toInt().toString(),
-                          style: AppTextStyles.caption,
+                          style: AppTextStyles.caption.copyWith(
+                            color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                          ),
                         ),
                       ),
                     ),
@@ -342,7 +372,9 @@ class _WeeklyChartCard extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
                               data[index].week,
-                              style: AppTextStyles.caption,
+                              style: AppTextStyles.caption.copyWith(
+                                color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                              ),
                             ),
                           );
                         },
@@ -355,7 +387,9 @@ class _WeeklyChartCard extends StatelessWidget {
                   ),
                   borderData: FlBorderData(
                     show: true,
-                    border: Border.all(color: AppColors.borderLight),
+                    border: Border.all(
+                      color: isDark ? AppColorsDark.border : AppColors.borderLight,
+                    ),
                   ),
                   minY: 0,
                   lineBarsData: [
@@ -420,14 +454,19 @@ class _HabitStatsGrid extends StatelessWidget {
                           AppSpacing.md) /
                       2
                   : double.infinity,
-          child: Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              gradient: AppGradients.cardSheen,
-              borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-              border: Border.all(color: AppColors.borderLight),
-              boxShadow: AppShadows.soft,
-            ),
+          child: Builder(
+            builder: (ctx) {
+              final isDark = Theme.of(ctx).brightness == Brightness.dark;
+              return Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  gradient: isDark ? AppGradientsDark.cardSheen : AppGradients.cardSheen,
+                  borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+                  border: Border.all(
+                    color: isDark ? AppColorsDark.border : AppColors.borderLight,
+                  ),
+                  boxShadow: isDark ? AppShadows.neumorphSmDark : AppShadows.soft,
+                ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -438,7 +477,9 @@ class _HabitStatsGrid extends StatelessWidget {
                     Expanded(
                       child: Text(
                         habit.name,
-                        style: AppTextStyles.h3,
+                        style: AppTextStyles.h3.copyWith(
+                          color: isDark ? AppColorsDark.text : AppColors.textMain,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -461,6 +502,8 @@ class _HabitStatsGrid extends StatelessWidget {
                 ),
               ],
             ),
+          );
+            },
           ),
         );
       }).toList(),
@@ -496,12 +539,20 @@ class _StatPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
-        Text(value, style: AppTextStyles.h3.copyWith(color: AppColors.primary)),
+        Text(
+          value,
+          style: AppTextStyles.h3.copyWith(
+            color: isDark ? AppColorsDark.primary : AppColors.primary,
+          ),
+        ),
         Text(
           label,
-          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.caption.copyWith(
+            color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+          ),
         ),
       ],
     );

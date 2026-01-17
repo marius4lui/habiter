@@ -193,6 +193,7 @@
   "createdAt": "Erstellt am",
   "todayDone": "Heute erledigt ✓",
   "notCompleted": "Noch nicht erledigt",
+  "noHabitsYet": "Noch keine Habits. Füge ein neues hinzu!",
   "perDayTarget": "{count}x pro Tag",
   "@perDayTarget": {
     "placeholders": {

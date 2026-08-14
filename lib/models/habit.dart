@@ -327,6 +327,7 @@ class UserPreferences {
     required this.reminderTime,
     required this.aiInsights,
     required this.language,
+    this.showRecoverySupport = true,
   });
 
   final ThemePreference theme;
@@ -334,6 +335,7 @@ class UserPreferences {
   final String reminderTime;
   final bool aiInsights;
   final String language;
+  final bool showRecoverySupport;
 
   Map<String, dynamic> toMap() {
     return {
@@ -342,6 +344,7 @@ class UserPreferences {
       'reminderTime': reminderTime,
       'aiInsights': aiInsights,
       'language': language,
+      'showRecoverySupport': showRecoverySupport,
     };
   }
 
@@ -355,6 +358,23 @@ class UserPreferences {
       reminderTime: map['reminderTime'] as String? ?? '20:00',
       aiInsights: map['aiInsights'] as bool? ?? true,
       language: map['language'] as String? ?? 'en',
+      showRecoverySupport: map['showRecoverySupport'] as bool? ?? true,
     );
   }
+
+  UserPreferences copyWith({
+    ThemePreference? theme,
+    bool? notifications,
+    String? reminderTime,
+    bool? aiInsights,
+    String? language,
+    bool? showRecoverySupport,
+  }) => UserPreferences(
+    theme: theme ?? this.theme,
+    notifications: notifications ?? this.notifications,
+    reminderTime: reminderTime ?? this.reminderTime,
+    aiInsights: aiInsights ?? this.aiInsights,
+    language: language ?? this.language,
+    showRecoverySupport: showRecoverySupport ?? this.showRecoverySupport,
+  );
 }

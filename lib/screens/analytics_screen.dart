@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../models/habit.dart';
 import '../features/analytics/domain/habit_metrics.dart';
+import '../features/coaching/presentation/recovery_card.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
 
@@ -75,6 +76,18 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   onSelectHabit: (id) => setState(() => selectedHabitId = id),
                 ),
                 const SizedBox(height: AppSpacing.lg),
+                if (provider.preferences.showRecoverySupport &&
+                    selectedHabit != null) ...[
+                  RecoveryCard(
+                    metrics: provider.getHabitMetrics(selectedHabit.id),
+                    onHide: () => provider.updatePreferences(
+                      provider.preferences.copyWith(
+                        showRecoverySupport: false,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                ],
                 _HabitStatsGrid(
                   habits: activeHabits,
                   metricsFor: provider.getHabitMetrics,

@@ -412,6 +412,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get habitArchived => 'Archived — available to restore';
 
   @override
+  String get recoveryTitle => 'Your pace, without pressure';
+
+  @override
+  String get recoveryNewStart =>
+      'Start with the next small opportunity when it suits you.';
+
+  @override
+  String get recoveryGentleReturn =>
+      'A missed day does not erase earlier effort. The next planned day is enough.';
+
+  @override
+  String get recoveryRebuilding =>
+      'You are finding your rhythm again, one planned day at a time.';
+
+  @override
+  String get recoverySteady =>
+      'Your recent rhythm is steady. Pauses remain neutral.';
+
+  @override
+  String get recoveryHide => 'Hide supportive score';
+
+  @override
+  String recoveryFormula(int completed, int scheduled, int score) =>
+      '$completed of $scheduled eligible plans completed = $score%';
+
+  @override
   String get goal => 'Goal';
 
   @override

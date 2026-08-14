@@ -202,6 +202,20 @@
   },
   "habitPaused": "Pausiert – geplante Tage zählen nicht gegen dich",
   "habitArchived": "Archiviert – kann wiederhergestellt werden",
+  "recoveryTitle": "Dein Tempo, ohne Druck",
+  "recoveryNewStart": "Beginne bei der nächsten kleinen Gelegenheit, wenn es für dich passt.",
+  "recoveryGentleReturn": "Ein ausgelassener Tag löscht frühere Schritte nicht. Der nächste geplante Tag genügt.",
+  "recoveryRebuilding": "Du findest deinen Rhythmus wieder – einen geplanten Tag nach dem anderen.",
+  "recoverySteady": "Dein aktueller Rhythmus ist stabil. Pausen bleiben neutral.",
+  "recoveryHide": "Unterstützenden Wert ausblenden",
+  "recoveryFormula": "{completed} von {scheduled} berücksichtigten Plänen erledigt = {score}%",
+  "@recoveryFormula": {
+    "placeholders": {
+      "completed": {"type": "int"},
+      "scheduled": {"type": "int"},
+      "score": {"type": "int"}
+    }
+  },
   "goal": "Ziel",
   "createdAt": "Erstellt am",
   "todayDone": "Heute erledigt ✓",

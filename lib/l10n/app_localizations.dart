@@ -833,6 +833,20 @@ abstract class AppLocalizations {
   /// No description provided for @habitArchived.
   String get habitArchived;
 
+  String get recoveryTitle;
+
+  String get recoveryNewStart;
+
+  String get recoveryGentleReturn;
+
+  String get recoveryRebuilding;
+
+  String get recoverySteady;
+
+  String get recoveryHide;
+
+  String recoveryFormula(int completed, int scheduled, int score);
+
   /// No description provided for @goal.
   ///
   /// In de, this message translates to:

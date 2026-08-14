@@ -91,6 +91,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           '${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}',
       aiInsights: _aiInsights,
       language: settingsProvider.locale.languageCode,
+      showRecoverySupport: provider.preferences.showRecoverySupport,
     );
 
     await provider.updatePreferences(newPrefs);

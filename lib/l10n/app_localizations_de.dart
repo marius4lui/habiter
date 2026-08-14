@@ -417,6 +417,32 @@ class AppLocalizationsDe extends AppLocalizations {
       'Archiviert – kann wiederhergestellt werden';
 
   @override
+  String get recoveryTitle => 'Dein Tempo, ohne Druck';
+
+  @override
+  String get recoveryNewStart =>
+      'Beginne bei der nächsten kleinen Gelegenheit, wenn es für dich passt.';
+
+  @override
+  String get recoveryGentleReturn =>
+      'Ein ausgelassener Tag löscht frühere Schritte nicht. Der nächste geplante Tag genügt.';
+
+  @override
+  String get recoveryRebuilding =>
+      'Du findest deinen Rhythmus wieder – einen geplanten Tag nach dem anderen.';
+
+  @override
+  String get recoverySteady =>
+      'Dein aktueller Rhythmus ist stabil. Pausen bleiben neutral.';
+
+  @override
+  String get recoveryHide => 'Unterstützenden Wert ausblenden';
+
+  @override
+  String recoveryFormula(int completed, int scheduled, int score) =>
+      '$completed von $scheduled berücksichtigten Plänen erledigt = $score%';
+
+  @override
   String get goal => 'Ziel';
 
   @override

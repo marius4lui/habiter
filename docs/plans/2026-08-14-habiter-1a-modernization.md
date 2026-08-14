@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 09 – Composition Root und explizite Startup-Phasen definieren; zuerst beweisen, dass Migration vor Repository-Load läuft und optionale Integrationen nicht initialisiert werden.
+**Resume Pointer:** Batch 10 – monolithischen HabitProvider über charakterisierte Use Cases und featurebezogene Controller zerlegen; zuerst Zustandsübergänge und Listener-Semantik festschreiben.
 
 ---
 
@@ -279,7 +279,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `feat(data): migrate legacy local records safely`
 
 ### Batch 09: App-Bootstrap und Dependency Graph
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Explizite Composition Root statt statischer Singletons.
 **Files:** Create `lib/app/bootstrap.dart`, `lib/app/dependencies.dart`; Modify `lib/main.dart`; tests.
 **Behavior preserved:** App startet auf allen Zielplattformen.
@@ -287,7 +287,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Implementation steps:** Adapter verdrahten; startup phases; redigierte diagnostics.
 **Commands:** widget/bootstrap tests; analyze; web/debug build.
 **Expected result:** Optionale Dienste nicht im Cold Start.
-**Acceptance criteria:** [ ] keine Classly-Initialisierung [ ] injizierbare Plugins [ ] nachvollziehbare Startup-Fehler.
+**Acceptance criteria:** [x] keine Classly-Initialisierung [x] injizierbare Startup-Tasks/Adapter [x] nachvollziehbare, redigierte und retrybare Startup-Fehler.
 **Migration/Rollback risk:** Startregression; Shell-Test schützt.
 **Commit:** `refactor(app): introduce explicit dependency graph`
 
@@ -705,8 +705,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 05 | Fakes | VERIFIED | Red: fehlende Ports/Fakes; Green: 5 targeted + 25 coverage, format/analyze/builds PASS | `349d29e` | Landing baseline-rot | abgeschlossen |
 | 06 | Domain/Schedules | VERIFIED | Red: fehlende Domain; Green: 10 targeted + 35 full, format/analyze PASS | `85b2737` | Habit-Payload-Extras folgen Batch 08 | abgeschlossen |
 | 07 | Repository | VERIFIED | Red: fehlende Repository/Adapter; Green: 7 targeted + 42 full, analyze PASS | `6ef5c15` | v0 Extras/Envelope folgen Batch 08 | abgeschlossen |
-| 08 | Migration | VERIFIED | Red: fehlende Migration; Green: 9 targeted + 46 full, analyze PASS | pending | Legacy-Keys bleiben als Rollback-Quelle | SHA im Batch-09-Preflight nachtragen |
-| 09 | Bootstrap/DI | NOT_STARTED | pending | pending | startup | composition root |
+| 08 | Migration | VERIFIED | Red: fehlende Migration; Green: 9 targeted + 46 full, analyze PASS | `10fa73a` | Legacy-Keys bleiben als Rollback-Quelle | abgeschlossen |
+| 09 | Bootstrap/DI | VERIFIED | Red: fehlende Bootstrap-Verträge; Green: 3 targeted + 49 full, analyze/web-debug PASS | pending | Secure-Storage-Wasm-Warnung bleibt | SHA im Batch-10-Preflight nachtragen |
 | 10 | Feature State | NOT_STARTED | pending | pending | listeners | split controller |
 | 11 | Navigation | NOT_STARTED | pending | pending | state restore | adaptive shell |
 | 12 | Design | NOT_STARTED | pending | pending | visual drift | tokens |
@@ -758,6 +758,8 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 07 Green: 7/7 Target Tests für Legacy-Key-Load, atomare Habit/Entry-Commits, Cascade Delete, Rollback nach zweitem Write-Fehler, serialisierte Concurrent Mutations und typsichere SharedPreferences-Werte; Analyze no issues, Full Flutter 42/42 PASS.
 - 2026-08-14, Batch 08 Red: Migration-/Envelope-Tests kompilierten wegen fehlender Implementierung nicht; der absichtlich nicht vererbbare InMemory-Fake wurde korrekt über Composition adaptiert.
 - 2026-08-14, Batch 08 Green: 9/9 Target Tests inklusive Raw-Backup, validiertem v1-Envelope, recordweiser Quarantäne, Backup-Failure-Fail-Closed, idempotenter Wiederholung, repositoryseitigem Envelope-Read/Single-Write und Unknown-Field-Merge; Full Flutter 46/46 PASS; Analyze no issues.
+- 2026-08-14, Batch 09 Red: Bootstrap-Tests kompilierten ohne Composition Root, Dependency Graph, Startup-Phasen und Ergebnis-/Fehlertypen nicht.
+- 2026-08-14, Batch 09 Green: 3/3 Target Tests beweisen Migration vor Repository-Verifikation, keinen optionalen Service im Cold Start sowie redigierten retrybaren Fehlerzustand; Classly-Autoload entfernt; Full Flutter 49/49 PASS; Analyze no issues; Web Debug PASS mit bekannter Secure-Storage-Wasm-Warnung.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 

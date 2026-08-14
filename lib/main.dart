@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
+import 'app/bootstrap.dart';
+import 'app/dependencies.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n.dart';
 import 'providers/app_lock_provider.dart';
@@ -17,17 +19,79 @@ import 'screens/settings_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
-  runApp(
-    MultiProvider(
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(_HabiterLauncher(AppBootstrap(AppDependencies.production())));
+}
+
+class _HabiterLauncher extends StatefulWidget {
+  const _HabiterLauncher(this.bootstrap);
+
+  final AppBootstrap bootstrap;
+
+  @override
+  State<_HabiterLauncher> createState() => _HabiterLauncherState();
+}
+
+class _HabiterLauncherState extends State<_HabiterLauncher> {
+  late Future<BootstrapResult> _result;
+
+  @override
+  void initState() {
+    super.initState();
+    _result = widget.bootstrap.run();
+  }
+
+  void _retry() {
+    setState(() => _result = widget.bootstrap.run());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<BootstrapResult>(
+      future: _result,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: Scaffold(body: Center(child: CircularProgressIndicator())),
+          );
+        }
+        final result = snapshot.requireData;
+        if (!result.isReady) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.sync_problem_outlined, size: 40),
+                    const SizedBox(height: 16),
+                    Text(result.failure!.diagnostic),
+                    const SizedBox(height: 16),
+                    FilledButton(onPressed: _retry, child: const Text('Retry')),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+        return _buildApplication();
+      },
+    );
+  }
+
+  Widget _buildApplication() {
+    return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => HabitProvider()..load()),
         ChangeNotifierProvider(create: (_) => AppLockProvider()..load()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
-        ChangeNotifierProvider(create: (_) => ClasslySyncProvider()..load()),
+        ChangeNotifierProvider(create: (_) => ClasslySyncProvider()),
       ],
       child: const HabiterApp(),
-    ),
-  );
+    );
+  }
 }
 
 class HabiterApp extends StatelessWidget {

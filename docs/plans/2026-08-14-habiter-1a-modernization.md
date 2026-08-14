@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 10 – monolithischen HabitProvider über charakterisierte Use Cases und featurebezogene Controller zerlegen; zuerst Zustandsübergänge und Listener-Semantik festschreiben.
+**Resume Pointer:** Batch 11 – adaptive Navigation und Shell für 320px bis Desktop extrahieren; zuerst Breakpoints, Route-Codec, Back- und Keyboard-Semantik per Widgettest festschreiben.
 
 ---
 
@@ -292,7 +292,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `refactor(app): introduce explicit dependency graph`
 
 ### Batch 10: Featurebezogener State
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Monolithischen HabitProvider in kleine Feature-Controller teilen.
 **Files:** Create `lib/features/{today,habits,history,analytics}/application/*_controller.dart`; Modify Provider/UI.
 **Behavior preserved:** alle Mutationen und Updates.
@@ -300,7 +300,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Implementation steps:** Use Cases extrahieren; immutable view states; Provider nur Adapter.
 **Commands:** controller tests; full Flutter tests/analyze.
 **Expected result:** keine God-State-Klasse.
-**Acceptance criteria:** [ ] maximal kohäsive Controller [ ] keine leeren catches [ ] Loading/Error/Empty typisiert.
+**Acceptance criteria:** [x] maximal kohäsive Controller [x] keine leeren catches [x] Loading/Error/Empty typisiert.
 **Migration/Rollback risk:** Listener-Reihenfolge; Widgettests.
 **Commit:** `refactor(state): split monolithic app state`
 
@@ -706,8 +706,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 06 | Domain/Schedules | VERIFIED | Red: fehlende Domain; Green: 10 targeted + 35 full, format/analyze PASS | `85b2737` | Habit-Payload-Extras folgen Batch 08 | abgeschlossen |
 | 07 | Repository | VERIFIED | Red: fehlende Repository/Adapter; Green: 7 targeted + 42 full, analyze PASS | `6ef5c15` | v0 Extras/Envelope folgen Batch 08 | abgeschlossen |
 | 08 | Migration | VERIFIED | Red: fehlende Migration; Green: 9 targeted + 46 full, analyze PASS | `10fa73a` | Legacy-Keys bleiben als Rollback-Quelle | abgeschlossen |
-| 09 | Bootstrap/DI | VERIFIED | Red: fehlende Bootstrap-Verträge; Green: 3 targeted + 49 full, analyze/web-debug PASS | pending | Secure-Storage-Wasm-Warnung bleibt | SHA im Batch-10-Preflight nachtragen |
-| 10 | Feature State | NOT_STARTED | pending | pending | listeners | split controller |
+| 09 | Bootstrap/DI | VERIFIED | Red: fehlende Bootstrap-Verträge; Green: 3 targeted + 49 full, analyze/web-debug PASS | `b64b11e` | Secure-Storage-Wasm-Warnung bleibt | abgeschlossen |
+| 10 | Feature State | VERIFIED | Red: 4 Controller fehlten; Green: 3 targeted + 52 full, analyze PASS | pending | Provider bleibt temporäre UI-Fassade | SHA im Batch-11-Preflight nachtragen |
 | 11 | Navigation | NOT_STARTED | pending | pending | state restore | adaptive shell |
 | 12 | Design | NOT_STARTED | pending | pending | visual drift | tokens |
 | 13 | Motion/Haptics | NOT_STARTED | pending | pending | performance | reduced motion |
@@ -760,6 +760,8 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 08 Green: 9/9 Target Tests inklusive Raw-Backup, validiertem v1-Envelope, recordweiser Quarantäne, Backup-Failure-Fail-Closed, idempotenter Wiederholung, repositoryseitigem Envelope-Read/Single-Write und Unknown-Field-Merge; Full Flutter 46/46 PASS; Analyze no issues.
 - 2026-08-14, Batch 09 Red: Bootstrap-Tests kompilierten ohne Composition Root, Dependency Graph, Startup-Phasen und Ergebnis-/Fehlertypen nicht.
 - 2026-08-14, Batch 09 Green: 3/3 Target Tests beweisen Migration vor Repository-Verifikation, keinen optionalen Service im Cold Start sowie redigierten retrybaren Fehlerzustand; Classly-Autoload entfernt; Full Flutter 49/49 PASS; Analyze no issues; Web Debug PASS mit bekannter Secure-Storage-Wasm-Warnung.
+- 2026-08-14, Batch 10 Red: Tests kompilierten ohne Today-, Habits-, History- und Analytics-Controller sowie typisierte Feature-States nicht.
+- 2026-08-14, Batch 10 Green: 3/3 Target Tests für immutable/ordered Habit-State, deterministisches Toggle samt Refresh und read-only History/Analytics; HabitProvider delegiert als temporäre UI-Fassade an injizierte Controller; Full Flutter 52/52 PASS; Analyze no issues.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 

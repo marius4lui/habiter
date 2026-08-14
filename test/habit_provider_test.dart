@@ -21,9 +21,6 @@ void main() {
       // However, we can test the `addHabit` logic if we assume `load` hasn't run or we just inspect the list.
       // Let's just test addHabit on an instance.
 
-      // Manually init list
-      provider.habits = [];
-
       await provider.addHabit(
         name: 'First',
         category: 'Test',

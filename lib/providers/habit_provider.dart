@@ -1,20 +1,52 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 
+import '../core/ids/id_generator.dart';
+import '../core/persistence/shared_preferences_key_value_store.dart';
+import '../core/time/clock.dart';
+import '../features/analytics/application/analytics_controller.dart';
+import '../features/habits/application/habit_repository.dart';
+import '../features/habits/application/habits_controller.dart';
+import '../features/habits/data/key_value_habit_repository.dart';
+import '../features/history/application/history_controller.dart';
+import '../features/today/application/today_controller.dart';
 import '../models/habit.dart';
 import '../services/ai_manager.dart';
 import '../services/classly_client.dart';
 import '../services/notification_service.dart';
 import '../services/storage_service.dart';
-import '../utils/habit_utils.dart';
 
 class HabitProvider extends ChangeNotifier {
-  HabitProvider();
+  HabitProvider({
+    HabitRepository? repository,
+    Clock clock = const SystemClock(),
+    IdGenerator ids = const UuidIdGenerator(),
+  }) {
+    final resolvedRepository =
+        repository ?? KeyValueHabitRepository(SharedPreferencesKeyValueStore());
+    _habitsController = HabitsController(
+      repository: resolvedRepository,
+      ids: ids,
+      clock: clock,
+    );
+    _historyController = HistoryController(resolvedRepository);
+    _todayController = TodayController(
+      repository: resolvedRepository,
+      ids: ids,
+      clock: clock,
+      onChanged: _reloadHabitState,
+    );
+    _analyticsController = AnalyticsController();
+    _habitsController.addListener(notifyListeners);
+    _historyController.addListener(notifyListeners);
+  }
 
-  final _uuid = const Uuid();
+  late final HabitsController _habitsController;
+  late final HistoryController _historyController;
+  late final TodayController _todayController;
+  late final AnalyticsController _analyticsController;
 
-  List<Habit> habits = [];
-  List<HabitEntry> habitEntries = [];
+  List<Habit> get habits => _habitsController.state.habits;
+  List<HabitEntry> get habitEntries => _historyController.state.entries;
   List<AIInsight> aiInsights = [];
   UserPreferences preferences = UserPreferences(
     theme: ThemePreference.system,
@@ -45,12 +77,9 @@ class HabitProvider extends ChangeNotifier {
       // Set up notification action callback
       NotificationService.instance.setActionCallback(handleNotificationAction);
 
-      debugPrint('HabitProvider: Loading habits from storage...');
-      habits = await StorageService.getHabits();
+      debugPrint('HabitProvider: Loading habits from repository...');
+      await _reloadHabitState();
       debugPrint('HabitProvider: Loaded ${habits.length} habits');
-
-      debugPrint('HabitProvider: Loading habit entries from storage...');
-      habitEntries = await StorageService.getHabitEntries();
       debugPrint('HabitProvider: Loaded ${habitEntries.length} entries');
 
       debugPrint('HabitProvider: Loading AI insights from storage...');
@@ -83,8 +112,7 @@ class HabitProvider extends ChangeNotifier {
       // Mock Data Initialization
       if (habits.isEmpty) {
         debugPrint('HabitProvider: Creating mock habit...');
-        final mockHabit = Habit(
-          id: _uuid.v4(),
+        await _habitsController.add(
           name: 'Drink Water',
           description: 'Stay hydrated! 💧',
           color: '0xFF4ECDC4', // Teal/Cyan accent for visibility
@@ -92,11 +120,7 @@ class HabitProvider extends ChangeNotifier {
           frequency: HabitFrequency.daily,
           targetCount: 8,
           category: 'Health',
-          createdAt: DateTime.now(),
-          isActive: true,
         );
-        habits = [mockHabit];
-        await StorageService.addHabit(mockHabit);
         debugPrint('HabitProvider: Mock habit created');
       }
 
@@ -115,6 +139,10 @@ class HabitProvider extends ChangeNotifier {
 
   Future<void> refresh() => load();
 
+  Future<void> _reloadHabitState() async {
+    await Future.wait([_habitsController.load(), _historyController.load()]);
+  }
+
   Future<void> addHabit({
     required String name,
     String? description,
@@ -125,8 +153,7 @@ class HabitProvider extends ChangeNotifier {
     required String icon,
     List<int>? customDays,
   }) async {
-    final habit = Habit(
-      id: _uuid.v4(),
+    await _habitsController.add(
       name: name,
       description: description,
       color: color,
@@ -135,103 +162,41 @@ class HabitProvider extends ChangeNotifier {
       targetCount: targetCount,
       category: category,
       customDays: customDays,
-      createdAt: DateTime.now(),
-      isActive: true,
     );
-
-    habits = [habit, ...habits];
-    await StorageService.addHabit(habit);
-    notifyListeners();
   }
 
   Future<void> updateHabit(String id, Habit updated) async {
-    final index = habits.indexWhere((h) => h.id == id);
-    if (index == -1) return;
-    habits[index] = updated;
-    await StorageService.updateHabit(id, updated.toMap());
-    notifyListeners();
+    if (!habits.any((habit) => habit.id == id)) return;
+    await _habitsController.update(updated);
   }
 
   Future<void> deleteHabit(String id) async {
     // Cancel notification before deleting
     await NotificationService.instance.cancelHabitNotification(id);
 
-    habits = habits.where((h) => h.id != id).toList();
-    habitEntries = habitEntries.where((e) => e.habitId != id).toList();
-    await StorageService.deleteHabit(id);
-    notifyListeners();
+    await _habitsController.delete(id);
+    await _historyController.load();
   }
 
   /// Archive a habit (set isActive = false)
   Future<void> archiveHabit(String id) async {
-    final index = habits.indexWhere((h) => h.id == id);
-    if (index == -1) return;
-
-    final archivedHabit = habits[index].copyWith(isActive: false);
-    habits[index] = archivedHabit;
-    await StorageService.updateHabit(id, archivedHabit.toMap());
+    final habit = habits.where((item) => item.id == id).firstOrNull;
+    if (habit == null) return;
+    await _habitsController.archive(id);
 
     // Cancel notification for archived habit
     await NotificationService.instance.cancelHabitNotification(id);
 
-    debugPrint('HabitProvider: Archived habit: ${archivedHabit.name}');
-    notifyListeners();
+    debugPrint('HabitProvider: Archived habit: ${habit.name}');
   }
 
   Future<void> toggleHabitCompletion(String habitId, String date) async {
-    final habitIndex = habits.indexWhere((h) => h.id == habitId);
-    if (habitIndex == -1) return;
-
-    final habit = habits[habitIndex];
-    final existingIndex = habitEntries.indexWhere(
-      (entry) => entry.habitId == habitId && entry.date == date,
-    );
-    HabitEntry? entry;
-    bool isNowCompleted = false;
-
-    if (existingIndex != -1) {
-      final current = habitEntries[existingIndex];
-      isNowCompleted = !current.completed;
-      entry = HabitEntry(
-        id: current.id,
-        habitId: habitId,
-        date: date,
-        completed: isNowCompleted,
-        count: isNowCompleted ? 1 : 0,
-        timestamp: DateTime.now(),
-      );
-      habitEntries[existingIndex] = entry;
-    } else {
-      isNowCompleted = true;
-      entry = HabitEntry(
-        id: _uuid.v4(),
-        habitId: habitId,
-        date: date,
-        completed: true,
-        count: 1,
-        timestamp: DateTime.now(),
-      );
-      habitEntries.add(entry);
-    }
-
-    await StorageService.addHabitEntry(entry);
-
-    // If this is a Classly habit and it's now completed, archive it
-    if (isNowCompleted && habit.description == 'Imported from Classly') {
-      debugPrint(
-        'HabitProvider: Archiving completed Classly habit: ${habit.name}',
-      );
-      final archivedHabit = habit.copyWith(isActive: false);
-      habits[habitIndex] = archivedHabit;
-      await StorageService.updateHabit(habitId, archivedHabit.toMap());
-    }
-
-    notifyListeners();
+    await _todayController.toggle(habitId, date);
   }
 
   HabitStats getHabitStats(String habitId) {
     final habit = habits.firstWhere((h) => h.id == habitId);
-    return calculateHabitStats(habit, habitEntries);
+    return _analyticsController.statsFor(habit, habitEntries);
   }
 
   Future<void> addAIInsight(AIInsight insight) async {
@@ -340,8 +305,7 @@ class HabitProvider extends ChangeNotifier {
           icon = '📋';
       }
 
-      final habit = Habit(
-        id: _uuid.v4(),
+      await _habitsController.add(
         name: name,
         description: 'Imported from Classly',
         color: '#4ECDC4', // Teal
@@ -350,19 +314,20 @@ class HabitProvider extends ChangeNotifier {
         customDays: [], // Empty = doesn't repeat on any day
         targetCount: 1,
         category: event.subjectName ?? 'Classly',
-        createdAt: DateTime.now(),
-        isActive: true,
       );
-
-      habits = [habit, ...habits];
-      await StorageService.addHabit(habit);
       existingNames.add(name.toLowerCase());
       imported++;
     }
 
-    if (imported > 0) {
-      notifyListeners();
-    }
     return imported;
+  }
+
+  @override
+  void dispose() {
+    _habitsController.removeListener(notifyListeners);
+    _historyController.removeListener(notifyListeners);
+    _habitsController.dispose();
+    _historyController.dispose();
+    super.dispose();
   }
 }

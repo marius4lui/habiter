@@ -82,15 +82,28 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
   }
 
   Widget _buildApplication() {
+    final dependencies = _resultDependencies;
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => HabitProvider()..load()),
+        ChangeNotifierProvider(
+          create: (_) => HabitProvider(
+            repository: dependencies.habitRepository,
+            clock: dependencies.clock,
+            ids: dependencies.ids,
+          )..load(),
+        ),
         ChangeNotifierProvider(create: (_) => AppLockProvider()..load()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
         ChangeNotifierProvider(create: (_) => ClasslySyncProvider()),
       ],
       child: const HabiterApp(),
     );
+  }
+
+  AppDependencies get _resultDependencies {
+    // This getter is only reached after the same future produced a ready result.
+    // AppDependencies are stable for the lifetime of the launcher.
+    return (widget.bootstrap.dependencies);
   }
 }
 

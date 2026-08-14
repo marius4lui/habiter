@@ -29,6 +29,8 @@ final class AppBootstrap {
 
   final AppDependencies _dependencies;
 
+  AppDependencies get dependencies => _dependencies;
+
   Future<BootstrapResult> run() async {
     try {
       await _dependencies.migrateStorage();

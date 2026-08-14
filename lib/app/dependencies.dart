@@ -2,6 +2,7 @@ import '../core/persistence/key_value_store.dart';
 import '../core/persistence/legacy_storage_migrator.dart';
 import '../core/persistence/shared_preferences_key_value_store.dart';
 import '../core/time/clock.dart';
+import '../core/ids/id_generator.dart';
 import '../features/habits/application/habit_repository.dart';
 import '../features/habits/data/key_value_habit_repository.dart';
 
@@ -11,6 +12,7 @@ final class AppDependencies {
   AppDependencies({
     required this.store,
     required this.clock,
+    this.ids = const UuidIdGenerator(),
     required this.migrateStorage,
     required this.verifyRepository,
     required this.initializeOptionalServices,
@@ -39,6 +41,7 @@ final class AppDependencies {
 
   final KeyValueStore store;
   final Clock clock;
+  final IdGenerator ids;
   final HabitRepository habitRepository;
   final StartupTask migrateStorage;
   final StartupTask verifyRepository;

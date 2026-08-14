@@ -715,29 +715,29 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 15 | Today | VERIFIED | Red: Query fehlte + 2 Overflows; Green: 4 targeted + 71 full, analyze PASS | `79c18df` | ungültige Legacy-Custom-Schedules bleiben außerhalb Today | abgeschlossen |
 | 16 | Editor | VERIFIED | Red: Draft/Reminder/320px fehlten; Green: 4 targeted + 75 full, analyze PASS | `c355031` | keine | abgeschlossen |
 | 17 | Completion | VERIFIED | Red: Use Case fehlte; Green: 4 targeted + 79 full, analyze PASS | `0882a62` | stale Undo wird sicher ignoriert | abgeschlossen |
-| 18 | History/Lifecycle | IMPLEMENTED | lifecycle/widget/side-effect tests authored; Flutter gate deferred to CI | `f485652` | pause semantics | CI + device gate |
-| 19 | Analytics | IMPLEMENTED | schedule-aware calculator tests authored | `b8f346e` | metric changes | CI |
-| 20 | Recovery | IMPLEMENTED | deterministic recovery tests authored | `1676cdb` | copy | CI |
-| 21 | Reminder Registry | IMPLEMENTED | registry/reconcile tests authored | `25f3d76` | pending cleanup | CI |
-| 22 | TZ/DST | IMPLEMENTED | DST/timezone tests authored | `364c165` | platform TZ | CI + device |
-| 23 | Permissions | IMPLEMENTED | permission-state tests authored | `8220509` | OS variance | CI + device |
-| 24 | Scheduler | IMPLEMENTED | occurrence/capacity tests authored | `330cf9b` | iOS cap | CI |
-| 25 | Actions | IMPLEMENTED | durable inbox/action tests authored | `4fc10b4` | isolates | CI + device |
-| 26 | Reminder QA | IMPLEMENTED | diagnostics tests/docs authored | `696731b` | sensitive data | CI + device |
-| 27 | App Lock Contract | IMPLEMENTED | typed adapter tests authored | `5c396fd` | channel | CI |
-| 28 | Native App Lock | IMPLEMENTED | policy/static tests authored | `272b773` | OEM/policy | CI + device |
-| 29 | App Lock UX | IMPLEMENTED | recovery/widget tests authored | `2541ed5` | lockout | CI + device |
-| 30 | Classly Lazy | IMPLEMENTED | lazy/default-off tests authored | `27d3a45` | existing users | CI |
-| 31 | Classly Security | IMPLEMENTED | endpoint/redaction/source tests authored | `6437818` | OAuth compatibility | CI + test server |
-| 32 | AI Isolation | IMPLEMENTED | deterministic local coaching test authored | `1231eeb` | key migration | CI |
-| 33 | Settings | IMPLEMENTED | progressive-source contract test authored | `29f5b25` | mapping | CI/widget follow-up |
-| 34 | Portability | IMPLEMENTED | roundtrip/corrupt/future/collision tests authored | `fae4804` | import safety | CI + file picker device gate |
-| 35 | Web Foundation | IMPLEMENTED | server contract tests; CI gates configured | `8c6860c` | dependency install | CI |
-| 36 | Web Experience | IMPLEMENTED | responsive/reduced-motion CSS and honest content | `ff9f048` | real screenshots unavailable | browser CI/manual |
-| 37 | Demo/SEO/Perf | IMPLEMENTED | 3/3 Node contracts PASS | `76b1336` | lab variance | CI build/Lighthouse |
-| 38 | Remove Beta/Admin | VERIFIED_LOCAL | source/routes/dependency scan PASS; 3/3 Node contracts PASS | `06a284c` | old links 404 | CI build |
-| 39 | Cleanup/Docs | IMPLEMENTED | reference and claim scan; docs build pending | pending | accidental delete | commit + CI |
-| 40 | RC/PR | NOT_STARTED | pending | pending | external gates | verify/push/PR |
+| 18 | History/Lifecycle | IMPLEMENTED | lifecycle/widget/side-effect tests authored; Flutter gate deferred to CI | `2646882` | pause semantics | CI + device gate |
+| 19 | Analytics | IMPLEMENTED | schedule-aware calculator tests authored | `3e66305` | metric changes | CI |
+| 20 | Recovery | IMPLEMENTED | deterministic recovery tests authored | `0e9bd3b` | copy | CI |
+| 21 | Reminder Registry | IMPLEMENTED | registry/reconcile tests authored | `8c23625` | pending cleanup | CI |
+| 22 | TZ/DST | IMPLEMENTED | DST/timezone tests authored | `a91dcad` | platform TZ | CI + device |
+| 23 | Permissions | IMPLEMENTED | permission-state tests authored | `6ecf100` | OS variance | CI + device |
+| 24 | Scheduler | IMPLEMENTED | occurrence/capacity tests authored | `d8c02c6` | iOS cap | CI |
+| 25 | Actions | IMPLEMENTED | durable inbox/action tests authored | `98f6556` | isolates | CI + device |
+| 26 | Reminder QA | IMPLEMENTED | diagnostics tests/docs authored | `7e1b18d` | sensitive data | CI + device |
+| 27 | App Lock Contract | IMPLEMENTED | typed adapter tests authored | `daa0563` | channel | CI |
+| 28 | Native App Lock | IMPLEMENTED | policy/static tests authored | `04b7b2d` | OEM/policy | CI + device |
+| 29 | App Lock UX | IMPLEMENTED | recovery/widget tests authored | `b707b0b` | lockout | CI + device |
+| 30 | Classly Lazy | IMPLEMENTED | lazy/default-off tests authored | `6f8ab5d` | existing users | CI |
+| 31 | Classly Security | IMPLEMENTED | endpoint/redaction/source tests authored | `2888bb3` | OAuth compatibility | CI + test server |
+| 32 | AI Isolation | IMPLEMENTED | deterministic local coaching test authored | `86d5eed` | key migration | CI |
+| 33 | Settings | IMPLEMENTED | progressive-source contract test authored | `b3d379d` | mapping | CI/widget follow-up |
+| 34 | Portability | IMPLEMENTED | roundtrip/corrupt/future/collision tests authored | `acb55b3` | import safety | CI + file picker device gate |
+| 35 | Web Foundation | IMPLEMENTED | server contract tests; CI gates configured | `fc29965` | dependency install | CI |
+| 36 | Web Experience | IMPLEMENTED | responsive/reduced-motion CSS and honest content | `bdd55f4` | real screenshots unavailable | browser CI/manual |
+| 37 | Demo/SEO/Perf | IMPLEMENTED | 3/3 Node contracts PASS | `602834b` | lab variance | CI build/Lighthouse |
+| 38 | Remove Beta/Admin | VERIFIED_LOCAL | source/routes/dependency scan PASS; 3/3 Node contracts PASS | `5877fd2` | old links 404 | CI build |
+| 39 | Cleanup/Docs | VERIFIED_LOCAL | reference/claim scan and `git diff --check` PASS | `c2b4c08` | docs build needs CI dependencies | CI |
+| 40 | RC/PR | IN_PROGRESS | 40+ substantive commits; remote tree equals local tree; local Node contracts 3/3 PASS | pending | external CI/device gates | push RC, open draft PR, fix CI |
 
 ## 20. Test- und Verifikationslog
 
@@ -746,6 +746,8 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 01: `Select-String '^### Batch \d{2}:'` → 40; `Select-String '^## \d+\.'` → 25; Fortschrittstabelle → genau ein `IN_PROGRESS`; `git diff --check` → Exit 0; Worktree nach Isolierung der durch Baseline-Tools erzeugten No-op-Änderungen enthält ausschließlich das neue Plan-Dokument.
 - 2026-08-14, Batch 02 Red: `flutter test test/domain/habit_legacy_test.dart test/core/persistence/legacy_payload_test.dart` → Exit 1; erwarteter Fehler: `customDays` blieb `[1,3,5]` statt `[2,4,6]`. Ein zusätzlicher Testvergleich wurde von Objektidentität auf serialisierte Maps korrigiert.
 - 2026-08-14, Batch 02 Green: derselbe Target-Befehl → 7/7 PASS; formatierte Touched-Files → 0 Änderungen; `flutter analyze` → no issues; `flutter test` → 11/11 PASS.
+- 2026-08-14, Batches 18–39 local runner: `git diff --check` PASS; ARB JSON parse PASS; landing `node --test tests/*.test.mjs` → 3/3 PASS; legacy route/dependency/template scan PASS. Flutter/Dart SDK and landing/docs dependency trees are unavailable in this runner, so analyze, Flutter tests, frozen installs, builds, and VitePress remain CI gates rather than claimed passes.
+- 2026-08-14, remote checkpoint: 22 ordered commits created after `b0d698a`; branch advanced without force; final remote tree `c55f56d02b61e4bc4b6a0297b7ed69779897bf52` equals local Batch-39 tree byte-for-byte.
 - 2026-08-14, Batch 03 Red: `flutter test test/toolchain_integrity_test.dart` → `.fvmrc` fehlte, Workflows nutzten 3.24.5/3.27.0, pnpm Policy fehlte; `flutter test test/config_integrity_test.dart` → Release-Signing war zwingend.
 - 2026-08-14, Batch 03 Green: pnpm 11.21.0 frozen install inklusive erlaubter nativer Builds PASS; 6/6 Toolchain/Config Tests PASS; `flutter build apk --release` PASS (56.7 MB, ohne Keystore bewusst unsigned; `apksigner` meldet `DOES NOT VERIFY`); `dart format .` normalisierte 31 Dateien, danach Formatcheck 39/39 ohne Änderung; `flutter analyze` no issues; `flutter test` 15/15 PASS.
 - 2026-08-14, Batch 04 Red: `flutter test test/ci_workflow_test.dart` → 4/4 FAIL für fünf Legacy-Workflows, fehlende Zielnamen, Permissions/Concurrency und Release-Aktionen.
@@ -804,14 +806,14 @@ Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutt
 
 ## 23. PR- und Release-Readiness-Checkliste
 
-- [ ] >=30 substanzielle Batch-Commits; Ziel 40
-- [ ] Plan-Ledger enthält jeden SHA
+- [x] >=30 substanzielle Batch-Commits; Ziel 40
+- [x] Plan-Ledger enthält jeden abgeschlossenen Batch-SHA
 - [ ] Core-Matrix vollständig getestet
 - [ ] Migration + Rollback verifiziert
-- [ ] Classly default-off/lazy; AI experimentell/default-off
+- [x] Classly default-off/lazy; AI experimentell/default-off
 - [ ] Reminder correctness matrix automatisch grün; Hardware-Restgates ehrlich
 - [ ] App Lock fail-open und Recovery geprüft
-- [ ] Landingpage DE/EN/Live/Legal; Beta/Admin entfernt
+- [x] Landingpage DE/EN/Live/Legal; Beta/Admin entfernt
 - [ ] A11y/Performancewerte dokumentiert
 - [ ] Flutter/Landing/Docs/Repo Gates grün
 - [ ] Screenshots aus realem Build

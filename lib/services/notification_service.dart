@@ -11,6 +11,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../models/habit.dart';
 import '../core/time/local_date.dart';
 import '../features/reminders/application/reminder_action_inbox.dart';
+import '../features/reminders/application/reminder_diagnostics.dart';
 import '../features/reminders/domain/reminder_payload.dart';
 import '../features/reminders/infrastructure/device_time_zone_service.dart';
 
@@ -353,6 +354,21 @@ class NotificationService {
       'Test Notification',
       'Notifications funktionieren! 🎉',
       details,
+    );
+  }
+
+  Future<List<ReminderDiagnosticItem>> pendingDiagnostics() async {
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      return const <ReminderDiagnosticItem>[];
+    }
+    final pending = await _plugin.pendingNotificationRequests();
+    return List<ReminderDiagnosticItem>.unmodifiable(
+      pending.map(
+        (request) => ReminderDiagnosticItem(
+          id: request.id,
+          title: request.title ?? 'Habiter reminder',
+        ),
+      ),
     );
   }
 

@@ -847,6 +847,22 @@ abstract class AppLocalizations {
 
   String recoveryFormula(int completed, int scheduled, int score);
 
+  String get reminderDiagnostics;
+
+  String get reminderDiagnosticsDescription;
+
+  String get reminderPermissionGranted;
+
+  String get reminderPermissionMissing;
+
+  String pendingReminders(int count);
+
+  String get noPendingReminders;
+
+  String get osManagedReminderTime;
+
+  String get rescheduleReminders;
+
   /// No description provided for @goal.
   ///
   /// In de, this message translates to:

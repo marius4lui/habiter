@@ -438,6 +438,34 @@ class AppLocalizationsEn extends AppLocalizations {
       '$completed of $scheduled eligible plans completed = $score%';
 
   @override
+  String get reminderDiagnostics => 'Reminder diagnostics';
+
+  @override
+  String get reminderDiagnosticsDescription =>
+      'Review permissions and pending reminders safely';
+
+  @override
+  String get reminderPermissionGranted =>
+      'Notification permission is granted';
+
+  @override
+  String get reminderPermissionMissing =>
+      'Notification permission is not available';
+
+  @override
+  String pendingReminders(int count) => 'Pending reminders: $count';
+
+  @override
+  String get noPendingReminders => 'No pending reminders';
+
+  @override
+  String get osManagedReminderTime =>
+      'Delivery time managed by the operating system';
+
+  @override
+  String get rescheduleReminders => 'Reschedule';
+
+  @override
   String get goal => 'Goal';
 
   @override

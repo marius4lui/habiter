@@ -13,6 +13,8 @@ import '../providers/settings_provider.dart';
 import '../services/notification_service.dart';
 import '../features/reminders/application/reminder_permission_controller.dart';
 import '../features/reminders/infrastructure/local_reminder_permission_gateway.dart';
+import '../features/reminders/application/reminder_diagnostics.dart';
+import '../features/reminders/presentation/reminder_diagnostics_panel.dart';
 import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -78,6 +80,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
         SnackBar(content: Text(context.l10n.notificationsEnabled)),
       );
     }
+  }
+
+  Future<void> _showReminderDiagnostics() async {
+    final permission = await _reminderPermissions.refresh();
+    final pending = await NotificationService.instance.pendingDiagnostics();
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.reminderDiagnostics),
+        content: SizedBox(
+          width: 520,
+          child: ReminderDiagnosticsPanel(
+            snapshot: ReminderDiagnosticSnapshot(
+              permission: permission,
+              pending: pending,
+              manualGates: const <String>[
+                'OEM and battery policies can delay delivery.',
+                'Background and terminated actions need real-device checks.',
+              ],
+            ),
+            onSendTest: NotificationService.instance.showTestNotification,
+            onReschedule: context.read<HabitProvider>().refresh,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(context.l10n.cancel),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _savePreferences() async {
@@ -306,6 +341,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         SnackBar(content: Text(l.testNotificationSent)),
                       );
                     },
+                  ),
+                  _buildActionTile(
+                    title: l.reminderDiagnostics,
+                    subtitle: l.reminderDiagnosticsDescription,
+                    icon: Icons.troubleshoot,
+                    isDark: isDark,
+                    onTap: _showReminderDiagnostics,
                   ),
                 ],
               ),

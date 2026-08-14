@@ -216,6 +216,15 @@
       "score": {"type": "int"}
     }
   },
+  "reminderDiagnostics": "Reminder diagnostics",
+  "reminderDiagnosticsDescription": "Review permissions and pending reminders safely",
+  "reminderPermissionGranted": "Notification permission is granted",
+  "reminderPermissionMissing": "Notification permission is not available",
+  "pendingReminders": "Pending reminders: {count}",
+  "@pendingReminders": {"placeholders": {"count": {"type": "int"}}},
+  "noPendingReminders": "No pending reminders",
+  "osManagedReminderTime": "Delivery time managed by the operating system",
+  "rescheduleReminders": "Reschedule",
   "goal": "Goal",
   "createdAt": "Created",
   "todayDone": "Done today ✓",

@@ -216,6 +216,15 @@
       "score": {"type": "int"}
     }
   },
+  "reminderDiagnostics": "Reminder-Diagnose",
+  "reminderDiagnosticsDescription": "Berechtigung und ausstehende Reminder sicher prüfen",
+  "reminderPermissionGranted": "Benachrichtigungen sind erlaubt",
+  "reminderPermissionMissing": "Benachrichtigungen sind nicht verfügbar",
+  "pendingReminders": "Ausstehende Reminder: {count}",
+  "@pendingReminders": {"placeholders": {"count": {"type": "int"}}},
+  "noPendingReminders": "Keine ausstehenden Reminder",
+  "osManagedReminderTime": "Zustellzeit wird vom Betriebssystem verwaltet",
+  "rescheduleReminders": "Neu planen",
   "goal": "Ziel",
   "createdAt": "Erstellt am",
   "todayDone": "Heute erledigt ✓",

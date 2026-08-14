@@ -115,6 +115,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Future<void> _openClasslySettings() async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => ChangeNotifierProvider(
+        create: (_) => ClasslySyncProvider()..load(),
+        child: Consumer<ClasslySyncProvider>(
+          builder: (context, provider, _) {
+            if (provider.baseUrl != null &&
+                _classlyUrlController.text.isEmpty) {
+              _classlyUrlController.text = provider.baseUrl!;
+            }
+            return AlertDialog(
+              title: const Text('Classly-compatible integration'),
+              content: SizedBox(
+                width: 560,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (provider.legacyConnectionMigrated)
+                        const ListTile(
+                          leading: Icon(Icons.info_outline),
+                          title: Text('Existing connection restored'),
+                          subtitle: Text(
+                            'Review the endpoint and disconnect to remove credentials.',
+                          ),
+                        ),
+                      _buildClasslyConnectionForm(
+                        Theme.of(context).brightness == Brightness.dark,
+                        provider,
+                      ),
+                      _buildClasslyStatus(
+                        Theme.of(context).brightness == Brightness.dark,
+                        provider,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   Future<void> _savePreferences() async {
     final provider = context.read<HabitProvider>();
     final settingsProvider = context.read<SettingsProvider>();
@@ -170,16 +222,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    final classlySync = context.watch<ClasslySyncProvider>();
-    // Pre-fill controllers once data is loaded
-    if (classlySync.baseUrl != null && _classlyUrlController.text.isEmpty) {
-      _classlyUrlController.text = classlySync.baseUrl!;
-    }
-    if (classlySync.token != null &&
-        _classlyTokenController.text.isEmpty &&
-        _showTokenField) {
-      _classlyTokenController.text = classlySync.token!;
-    }
     final settingsProvider = context.watch<SettingsProvider>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final gradient = isDark ? AppGradientsDark.appShell : AppGradients.appShell;
@@ -292,12 +334,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: AppSpacing.md),
               _buildSection(
-                title: 'Classly Sync',
+                title: 'Advanced integrations',
                 icon: Icons.sync,
                 isDark: isDark,
                 children: [
-                  _buildClasslyConnectionForm(isDark, classlySync),
-                  _buildClasslyStatus(isDark, classlySync),
+                  _buildActionTile(
+                    title: 'Classly-compatible',
+                    subtitle: 'Disabled until you open and configure it',
+                    icon: Icons.school_outlined,
+                    isDark: isDark,
+                    onTap: _openClasslySettings,
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.md),
@@ -457,11 +504,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onPressed: provider.isConnecting
                   ? null
                   : () async {
-                      final url = _classlyUrlController.text.trim().isEmpty
-                          ? ClasslySyncProvider.defaultBaseUrl
-                          : _classlyUrlController.text.trim();
-
-                      _classlyUrlController.text = url; // Update UI if empty
+                      final url = _classlyUrlController.text.trim();
+                      if (url.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Enter an HTTPS endpoint first.'),
+                          ),
+                        );
+                        return;
+                      }
 
                       await provider.connectWithOAuth(baseUrl: url);
 
@@ -516,7 +567,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             controller: _classlyUrlController,
             decoration: InputDecoration(
               labelText: 'Classly Basis-URL',
-              hintText: 'https://classly.site',
+              hintText: 'https://school.example',
               filled: true,
               fillColor: surfaceMuted,
               border: OutlineInputBorder(

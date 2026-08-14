@@ -12,7 +12,6 @@ import 'core/design_system/haptics.dart';
 import 'core/design_system/motion.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/app_lock_provider.dart';
-import 'providers/classly_sync_provider.dart';
 import 'providers/habit_provider.dart';
 import 'providers/settings_provider.dart';
 import 'screens/analytics_screen.dart';
@@ -98,7 +97,6 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
         ),
         ChangeNotifierProvider(create: (_) => AppLockProvider()..load()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
-        ChangeNotifierProvider(create: (_) => ClasslySyncProvider()),
       ],
       child: const HabiterApp(),
     );

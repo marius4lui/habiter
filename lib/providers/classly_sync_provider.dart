@@ -7,15 +7,40 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/classly_client.dart';
 import '../services/classly_oauth_service.dart';
 
+abstract interface class ClasslyCredentialVault {
+  Future<String?> readToken();
+  Future<void> writeToken(String token);
+  Future<void> deleteToken();
+}
+
+final class SecureClasslyCredentialVault implements ClasslyCredentialVault {
+  const SecureClasslyCredentialVault();
+  static const _storage = FlutterSecureStorage();
+  static const _tokenKey = 'classly_token';
+
+  @override
+  Future<String?> readToken() => _storage.read(key: _tokenKey);
+
+  @override
+  Future<void> writeToken(String token) =>
+      _storage.write(key: _tokenKey, value: token);
+
+  @override
+  Future<void> deleteToken() => _storage.delete(key: _tokenKey);
+}
+
 /// Manages Classly connection (base URL + token) and sync state.
 class ClasslySyncProvider extends ChangeNotifier {
+  ClasslySyncProvider({ClasslyCredentialVault? credentialVault})
+    : _credentialVault =
+          credentialVault ?? const SecureClasslyCredentialVault();
+
   static const _baseUrlKey = 'classly_base_url';
   static const _lastSyncKey = 'classly_last_sync';
-  static const _tokenKey = 'classly_token';
   static const _autoSyncIntervalKey = 'classly_auto_sync_interval';
-  static const defaultBaseUrl = 'https://classly.site';
+  static const _enabledKey = 'classly_enabled';
 
-  final _secureStorage = const FlutterSecureStorage();
+  final ClasslyCredentialVault _credentialVault;
 
   String? _baseUrl;
   String? _token;
@@ -26,6 +51,8 @@ class ClasslySyncProvider extends ChangeNotifier {
   List<ClasslyEvent> _events = [];
   int _autoSyncMinutes = 0; // 0 = disabled
   Timer? _autoSyncTimer;
+  bool _enabled = false;
+  bool _legacyConnectionMigrated = false;
 
   String? get baseUrl => _baseUrl;
   String? get token => _token;
@@ -36,19 +63,28 @@ class ClasslySyncProvider extends ChangeNotifier {
   List<ClasslyEvent> get events => List.unmodifiable(_events);
   int get autoSyncMinutes => _autoSyncMinutes;
   bool get isConnected => _baseUrl != null && _token != null;
+  bool get enabled => _enabled;
+  bool get legacyConnectionMigrated => _legacyConnectionMigrated;
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
+    _enabled = prefs.getBool(_enabledKey) ?? false;
     _baseUrl = prefs.getString(_baseUrlKey);
     final lastSyncString = prefs.getString(_lastSyncKey);
     if (lastSyncString != null) {
       _lastSync = DateTime.tryParse(lastSyncString);
     }
     _autoSyncMinutes = prefs.getInt(_autoSyncIntervalKey) ?? 0;
-    _token = await _secureStorage.read(key: _tokenKey);
+    _token = await _credentialVault.readToken();
+
+    if (!_enabled && _baseUrl != null && _token != null) {
+      _enabled = true;
+      _legacyConnectionMigrated = true;
+      await prefs.setBool(_enabledKey, true);
+    }
 
     // Start auto-sync if enabled and connected
-    if (_autoSyncMinutes > 0 && isConnected) {
+    if (_enabled && _autoSyncMinutes > 0 && isConnected) {
       _startAutoSync();
     }
 
@@ -59,11 +95,13 @@ class ClasslySyncProvider extends ChangeNotifier {
     final cleanedBaseUrl = baseUrl.trim().replaceAll(RegExp(r'/+$'), '');
     _baseUrl = cleanedBaseUrl;
     _token = token.trim();
+    _enabled = true;
     _lastError = null;
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_baseUrlKey, cleanedBaseUrl);
-    await _secureStorage.write(key: _tokenKey, value: _token);
+    await prefs.setBool(_enabledKey, true);
+    await _credentialVault.writeToken(_token!);
 
     // Restart auto-sync with new connection
     if (_autoSyncMinutes > 0) {
@@ -144,7 +182,11 @@ class ClasslySyncProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_baseUrlKey);
     await prefs.remove(_lastSyncKey);
-    await _secureStorage.delete(key: _tokenKey);
+    await prefs.setBool(_enabledKey, false);
+    await prefs.remove(_autoSyncIntervalKey);
+    await _credentialVault.deleteToken();
+    _enabled = false;
+    _autoSyncMinutes = 0;
     notifyListeners();
   }
 
@@ -163,7 +205,7 @@ class ClasslySyncProvider extends ChangeNotifier {
 
   void _startAutoSync() {
     _stopAutoSync();
-    if (_autoSyncMinutes <= 0) return;
+    if (!_enabled || _autoSyncMinutes <= 0) return;
 
     _autoSyncTimer = Timer.periodic(
       Duration(minutes: _autoSyncMinutes),
@@ -181,7 +223,7 @@ class ClasslySyncProvider extends ChangeNotifier {
 
   Future<void> sync() async {
     if (_isSyncing) return;
-    if (_baseUrl == null || _token == null) {
+    if (!_enabled || _baseUrl == null || _token == null) {
       _lastError = 'Fehlende Verbindungseinstellungen';
       notifyListeners();
       return;

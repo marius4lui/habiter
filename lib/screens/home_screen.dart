@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../core/design_system/haptics.dart';
 import '../l10n/l10n.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
@@ -381,7 +382,10 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (ctx) => HabitDetailDialog(
         habit: habit,
         isCompleted: isCompleted,
-        onComplete: () => provider.toggleHabitCompletion(habit.id, dateStr),
+        onComplete: () async {
+          await context.read<HapticGateway>().success();
+          await provider.toggleHabitCompletion(habit.id, dateStr);
+        },
         onArchive: () => provider.archiveHabit(habit.id),
         onEdit: () => showModalBottomSheet(
           context: context,

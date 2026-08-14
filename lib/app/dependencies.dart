@@ -1,8 +1,9 @@
+import '../core/design_system/haptics.dart';
+import '../core/ids/id_generator.dart';
 import '../core/persistence/key_value_store.dart';
 import '../core/persistence/legacy_storage_migrator.dart';
 import '../core/persistence/shared_preferences_key_value_store.dart';
 import '../core/time/clock.dart';
-import '../core/ids/id_generator.dart';
 import '../features/habits/application/habit_repository.dart';
 import '../features/habits/data/key_value_habit_repository.dart';
 
@@ -13,6 +14,7 @@ final class AppDependencies {
     required this.store,
     required this.clock,
     this.ids = const UuidIdGenerator(),
+    this.haptics = const SystemHapticGateway(),
     required this.migrateStorage,
     required this.verifyRepository,
     required this.initializeOptionalServices,
@@ -42,6 +44,7 @@ final class AppDependencies {
   final KeyValueStore store;
   final Clock clock;
   final IdGenerator ids;
+  final HapticGateway haptics;
   final HabitRepository habitRepository;
   final StartupTask migrateStorage;
   final StartupTask verifyRepository;

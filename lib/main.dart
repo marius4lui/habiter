@@ -8,6 +8,8 @@ import 'app/dependencies.dart';
 import 'app/navigation/app_route.dart';
 import 'app/navigation/app_router.dart';
 import 'app/shell/adaptive_app_shell.dart';
+import 'core/design_system/haptics.dart';
+import 'core/design_system/motion.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/app_lock_provider.dart';
 import 'providers/classly_sync_provider.dart';
@@ -86,6 +88,7 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
     final dependencies = _resultDependencies;
     return MultiProvider(
       providers: [
+        Provider<HapticGateway>.value(value: dependencies.haptics),
         ChangeNotifierProvider(
           create: (_) => HabitProvider(
             repository: dependencies.habitRepository,
@@ -201,8 +204,8 @@ class _RootShellState extends State<_RootShell> {
     _restoreRoute(index);
     _pageController.animateToPage(
       index,
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOutCubic,
+      duration: HabiterMotion.standard.duration(reduced: context.reduceMotion),
+      curve: HabiterMotion.standard.curve,
     );
   }
 

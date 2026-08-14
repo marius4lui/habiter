@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 13 – Motion- und Haptik-Tokens mit Reduced-Motion- und Plattform-Fallbacks einführen; zuerst Dauer-Nullung, Partikelbudget und unsupported Haptics testen.
+**Resume Pointer:** Batch 14 – Empty/Loading/Error/Success-Zustände in der Today-Erfahrung ehrlich und zugänglich gestalten; zuerst leeren Erststart ohne Demo-Habit und Retry-Semantik testen.
 
 ---
 
@@ -331,7 +331,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `feat(design): introduce accessible habiter tokens`
 
 ### Batch 13: Motion und Haptics
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Ruhige Feedback-Tokens mit Reduced Motion und injizierbaren Haptics.
 **Files:** Create `lib/core/design_system/motion.dart`, `haptics.dart`; Modify completion widgets/particles; tests.
 **Behavior preserved:** Abschlussfeedback bleibt.
@@ -339,7 +339,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Implementation steps:** zentrale Kurven/Dauern; Partikelbudget; adapter.
 **Commands:** widget tests; profile sanity.
 **Expected result:** proportionale, performante Motion.
-**Acceptance criteria:** [ ] Reduced Motion [ ] keine unbounded controller [ ] haptics optional.
+**Acceptance criteria:** [x] Reduced Motion [x] Partikelbudget maximal 12 ohne unbounded controller [x] Haptik optional, injiziert und nur auf unterstützten Plattformen.
 **Migration/Rollback risk:** visuell; Goldens.
 **Commit:** `feat(motion): add reduced-motion aware feedback`
 
@@ -709,8 +709,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 09 | Bootstrap/DI | VERIFIED | Red: fehlende Bootstrap-Verträge; Green: 3 targeted + 49 full, analyze/web-debug PASS | `b64b11e` | Secure-Storage-Wasm-Warnung bleibt | abgeschlossen |
 | 10 | Feature State | VERIFIED | Red: 4 Controller fehlten; Green: 3 targeted + 52 full, analyze PASS | `6d9b35f` | Provider bleibt temporäre UI-Fassade | abgeschlossen |
 | 11 | Navigation | VERIFIED | Red: Codec/Shell fehlten; Green: 4 targeted + 56 full, analyze/web/windows PASS | `d25183a` | System-Routen bleiben Navigator-basiert | abgeschlossen |
-| 12 | Design | VERIFIED | Red: Tokens/Themes fehlten; Green: 4 targeted + 60 full, analyze PASS | pending | alte Style-Aliasse bleiben Übergang | SHA im Batch-13-Preflight nachtragen |
-| 13 | Motion/Haptics | NOT_STARTED | pending | pending | performance | reduced motion |
+| 12 | Design | VERIFIED | Red: Tokens/Themes fehlten; Green: 4 targeted + 60 full, analyze PASS | `9997942` | alte Style-Aliasse bleiben Übergang | abgeschlossen |
+| 13 | Motion/Haptics | VERIFIED | Red: Motion/Haptik fehlten; Green: 3 targeted + 63 full, analyze PASS | pending | bestehende Altanimationen folgen schrittweise | SHA im Batch-14-Preflight nachtragen |
 | 14 | Onboarding | NOT_STARTED | pending | pending | first-run | empty state |
 | 15 | Today | NOT_STARTED | pending | pending | filtering | dashboard |
 | 16 | Editor | NOT_STARTED | pending | pending | field mapping | create/edit |
@@ -767,6 +767,8 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 11 Green: 4/4 Target Tests für Deep-Link-Codec/Restoration, 320px/1200px Layout, Ctrl+1/2 und sekundäre Route mit System-Back; alte doppelte Shell entfernt und Listener lifecycle-sicher; Full Flutter 56/56 PASS; Analyze, Web Release und Windows Release PASS mit bekannter Secure-Storage-Wasm-Warnung.
 - 2026-08-14, Batch 12 Red: Token-, Vier-Paletten-Kontrast-, Theme-Contract- und 200%-Textskalierungs-Tests kompilierten ohne Design-System-Module nicht; erster Green-Versuch entdeckte zusätzlich einen verbotenen Google-Fonts-Netzwerkload im Test.
 - 2026-08-14, Batch 12 Green: 4/4 Target Tests für vollständige Token-Skalen, WCAG-Textkontrast in Light/Dark/High-Contrast, identische Material-3-Komponentenverträge und 200% Textskalierung; kanonisches Theme nutzt offline native Plattformtypografie; Full Flutter 60/60 PASS; Analyze no issues.
+- 2026-08-14, Batch 13 Red: Motion-/Haptik-Verträge und Reduced-Motion-Partikeltest kompilierten ohne Module nicht; erster Widgetlauf deckte offene flutter_animate-Timer auf und wurde um bewusstes Settle ergänzt.
+- 2026-08-14, Batch 13 Green: 3/3 Target Tests für Null-Dauern/-Budget bei Reduced Motion, explizite Android/iOS-Web-safe Haptikunterstützung und Partikelbudget 12; Completion-Haptik injiziert, Navigation zentral tokenisiert; Full Flutter 63/63 PASS; Analyze no issues.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 

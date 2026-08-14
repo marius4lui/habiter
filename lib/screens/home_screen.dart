@@ -406,6 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         },
         onArchive: () => provider.archiveHabit(habit.id),
+        onPause: () => provider.pauseHabit(habit.id),
         onEdit: () => showModalBottomSheet(
           context: context,
           isScrollControlled: true,

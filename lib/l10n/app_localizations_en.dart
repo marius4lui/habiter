@@ -384,6 +384,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get archive => 'Archive';
 
   @override
+  String get pauseHabit => 'Pause habit';
+
+  @override
+  String get resumeHabit => 'Resume habit';
+
+  @override
+  String get restoreHabit => 'Restore habit';
+
+  @override
   String get goal => 'Goal';
 
   @override

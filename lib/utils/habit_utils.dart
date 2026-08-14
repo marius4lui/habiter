@@ -88,7 +88,9 @@ HabitStreak calculateStreak(String habitId, List<HabitEntry> entries) {
 }
 
 HabitStats calculateHabitStats(Habit habit, List<HabitEntry> entries) {
-  final habitEntries = entries.where((e) => e.habitId == habit.id).toList();
+  final habitEntries = entries
+      .where((e) => e.habitId == habit.id && !habit.isPausedOn(e.date))
+      .toList();
   final completed = habitEntries.where((e) => e.completed).toList();
   final totalCompletions = completed.length;
   final completionRate = habitEntries.isEmpty

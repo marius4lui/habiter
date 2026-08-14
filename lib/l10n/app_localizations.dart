@@ -800,6 +800,24 @@ abstract class AppLocalizations {
   /// **'Archivieren'**
   String get archive;
 
+  /// No description provided for @pauseHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit pausieren'**
+  String get pauseHabit;
+
+  /// No description provided for @resumeHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit fortsetzen'**
+  String get resumeHabit;
+
+  /// No description provided for @restoreHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit wiederherstellen'**
+  String get restoreHabit;
+
   /// No description provided for @goal.
   ///
   /// In de, this message translates to:

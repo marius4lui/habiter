@@ -6,6 +6,7 @@ import '../../../core/application/feature_status.dart';
 import '../../../core/ids/id_generator.dart';
 import '../../../core/time/clock.dart';
 import '../../../models/habit.dart';
+import '../../history/application/habit_lifecycle_use_case.dart';
 import 'habit_repository.dart';
 
 final class HabitsState {
@@ -32,11 +33,13 @@ final class HabitsController extends ChangeNotifier {
     required Clock clock,
   }) : _repository = repository,
        _ids = ids,
-       _clock = clock;
+       _clock = clock,
+       _lifecycle = HabitLifecycleUseCase(repository: repository, clock: clock);
 
   final HabitRepository _repository;
   final IdGenerator _ids;
   final Clock _clock;
+  final HabitLifecycleUseCase _lifecycle;
   HabitsState _state = const HabitsState.initial();
 
   HabitsState get state => _state;
@@ -106,9 +109,23 @@ final class HabitsController extends ChangeNotifier {
   }
 
   Future<void> archive(String id) async {
-    final habit = _state.habits.where((item) => item.id == id).firstOrNull;
-    if (habit == null) return;
-    await update(habit.copyWith(isActive: false));
+    final result = await _lifecycle.archive(id);
+    if (result.changed) await load();
+  }
+
+  Future<void> pause(String id) async {
+    final result = await _lifecycle.pause(id);
+    if (result.changed) await load();
+  }
+
+  Future<void> resume(String id) async {
+    final result = await _lifecycle.resume(id);
+    if (result.changed) await load();
+  }
+
+  Future<void> restore(String id) async {
+    final result = await _lifecycle.restore(id);
+    if (result.changed) await load();
   }
 
   void _emit(HabitsState value) {

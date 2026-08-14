@@ -1,10 +1,45 @@
 import 'dart:convert';
 
+const _unsetHabitField = Object();
+
 enum HabitFrequency { daily, weekly, custom }
 
 enum AIInsightType { recommendation, motivation, analysis, prediction }
 
 enum ThemePreference { light, dark, system }
+
+enum HabitLifecycleStatus { active, paused, archived }
+
+final class HabitPause {
+  const HabitPause({required this.startedAt, this.endedAt});
+
+  final DateTime startedAt;
+  final DateTime? endedAt;
+
+  HabitPause end(DateTime value) =>
+      HabitPause(startedAt: startedAt, endedAt: value);
+
+  bool includesDate(String value) {
+    final date = DateTime.parse('${value}T00:00:00Z');
+    final start = DateTime.utc(startedAt.year, startedAt.month, startedAt.day);
+    final end = endedAt == null
+        ? null
+        : DateTime.utc(endedAt!.year, endedAt!.month, endedAt!.day);
+    return !date.isBefore(start) && (end == null || date.isBefore(end));
+  }
+
+  Map<String, Object?> toMap() => <String, Object?>{
+    'startedAt': startedAt.toIso8601String(),
+    'endedAt': endedAt?.toIso8601String(),
+  };
+
+  factory HabitPause.fromMap(Map<String, dynamic> map) => HabitPause(
+    startedAt: DateTime.parse(map['startedAt'] as String),
+    endedAt: map['endedAt'] == null
+        ? null
+        : DateTime.parse(map['endedAt'] as String),
+  );
+}
 
 class Habit {
   Habit({
@@ -21,7 +56,10 @@ class Habit {
     required this.isActive,
     this.notificationEnabled = false,
     this.notificationTime,
-  });
+    Iterable<HabitPause> pauses = const <HabitPause>[],
+    this.archivedAt,
+    this.restoredAt,
+  }) : pauses = List<HabitPause>.unmodifiable(pauses);
 
   final String id;
   final String name;
@@ -36,36 +74,66 @@ class Habit {
   final bool isActive;
   final bool notificationEnabled;
   final String? notificationTime;
+  final List<HabitPause> pauses;
+  final DateTime? archivedAt;
+  final DateTime? restoredAt;
+
+  HabitLifecycleStatus get lifecycleStatus {
+    if (isActive) return HabitLifecycleStatus.active;
+    if (pauses.isNotEmpty && pauses.last.endedAt == null) {
+      return HabitLifecycleStatus.paused;
+    }
+    return HabitLifecycleStatus.archived;
+  }
+
+  bool isPausedOn(String date) =>
+      pauses.any((pause) => pause.includesDate(date));
 
   Habit copyWith({
     String? id,
     String? name,
-    String? description,
+    Object? description = _unsetHabitField,
     String? color,
     String? icon,
     HabitFrequency? frequency,
     int? targetCount,
     String? category,
-    List<int>? customDays,
+    Object? customDays = _unsetHabitField,
     DateTime? createdAt,
     bool? isActive,
     bool? notificationEnabled,
-    String? notificationTime,
+    Object? notificationTime = _unsetHabitField,
+    Iterable<HabitPause>? pauses,
+    Object? archivedAt = _unsetHabitField,
+    Object? restoredAt = _unsetHabitField,
   }) {
     return Habit(
       id: id ?? this.id,
       name: name ?? this.name,
-      description: description ?? this.description,
+      description: identical(description, _unsetHabitField)
+          ? this.description
+          : description as String?,
       color: color ?? this.color,
       icon: icon ?? this.icon,
       frequency: frequency ?? this.frequency,
       targetCount: targetCount ?? this.targetCount,
       category: category ?? this.category,
-      customDays: customDays ?? this.customDays,
+      customDays: identical(customDays, _unsetHabitField)
+          ? this.customDays
+          : customDays as List<int>?,
       createdAt: createdAt ?? this.createdAt,
       isActive: isActive ?? this.isActive,
       notificationEnabled: notificationEnabled ?? this.notificationEnabled,
-      notificationTime: notificationTime ?? this.notificationTime,
+      notificationTime: identical(notificationTime, _unsetHabitField)
+          ? this.notificationTime
+          : notificationTime as String?,
+      pauses: pauses ?? this.pauses,
+      archivedAt: identical(archivedAt, _unsetHabitField)
+          ? this.archivedAt
+          : archivedAt as DateTime?,
+      restoredAt: identical(restoredAt, _unsetHabitField)
+          ? this.restoredAt
+          : restoredAt as DateTime?,
     );
   }
 
@@ -84,6 +152,10 @@ class Habit {
       'isActive': isActive,
       'notificationEnabled': notificationEnabled,
       'notificationTime': notificationTime,
+      if (pauses.isNotEmpty)
+        'pauses': pauses.map((pause) => pause.toMap()).toList(growable: false),
+      if (archivedAt != null) 'archivedAt': archivedAt!.toIso8601String(),
+      if (restoredAt != null) 'restoredAt': restoredAt!.toIso8601String(),
     };
   }
 
@@ -109,6 +181,11 @@ class Habit {
       isActive: map['isActive'] as bool? ?? true,
       notificationEnabled: map['notificationEnabled'] as bool? ?? false,
       notificationTime: map['notificationTime'] as String?,
+      pauses: ((map['pauses'] as List<dynamic>?) ?? const <dynamic>[]).map(
+        (value) => HabitPause.fromMap(Map<String, dynamic>.from(value as Map)),
+      ),
+      archivedAt: DateTime.tryParse(map['archivedAt'] as String? ?? ''),
+      restoredAt: DateTime.tryParse(map['restoredAt'] as String? ?? ''),
     );
   }
 

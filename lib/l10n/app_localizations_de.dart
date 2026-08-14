@@ -387,6 +387,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get archive => 'Archivieren';
 
   @override
+  String get pauseHabit => 'Habit pausieren';
+
+  @override
+  String get resumeHabit => 'Habit fortsetzen';
+
+  @override
+  String get restoreHabit => 'Habit wiederherstellen';
+
+  @override
   String get goal => 'Ziel';
 
   @override

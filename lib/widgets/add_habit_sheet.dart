@@ -96,6 +96,9 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
           id: widget.habit!.id,
           createdAt: widget.habit!.createdAt,
           isActive: widget.habit!.isActive,
+          pauses: widget.habit!.pauses,
+          archivedAt: widget.habit!.archivedAt,
+          restoredAt: widget.habit!.restoredAt,
         ),
       );
     } else {

@@ -103,6 +103,9 @@ final class HabitEditorDraft {
     required String id,
     required DateTime createdAt,
     bool isActive = true,
+    Iterable<HabitPause> pauses = const <HabitPause>[],
+    DateTime? archivedAt,
+    DateTime? restoredAt,
   }) => Habit(
     id: id,
     name: name.trim(),
@@ -119,5 +122,8 @@ final class HabitEditorDraft {
     isActive: isActive,
     notificationEnabled: notificationEnabled,
     notificationTime: notificationEnabled ? notificationTime : null,
+    pauses: pauses,
+    archivedAt: archivedAt,
+    restoredAt: restoredAt,
   );
 }

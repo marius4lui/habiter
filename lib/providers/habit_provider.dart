@@ -182,6 +182,27 @@ class HabitProvider extends ChangeNotifier {
     debugPrint('HabitProvider: Archived habit: ${habit.name}');
   }
 
+  Future<void> pauseHabit(String id) async {
+    await _habitsController.pause(id);
+    await NotificationService.instance.cancelHabitNotification(id);
+  }
+
+  Future<void> resumeHabit(String id) async {
+    await _habitsController.resume(id);
+    final habit = habits.where((item) => item.id == id).firstOrNull;
+    if (habit != null) {
+      await NotificationService.instance.scheduleHabitNotification(habit);
+    }
+  }
+
+  Future<void> restoreHabit(String id) async {
+    await _habitsController.restore(id);
+    final habit = habits.where((item) => item.id == id).firstOrNull;
+    if (habit != null) {
+      await NotificationService.instance.scheduleHabitNotification(habit);
+    }
+  }
+
   Future<void> toggleHabitCompletion(String habitId, String date) async {
     await _todayController.toggle(habitId, date);
   }

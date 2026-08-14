@@ -1,7 +1,8 @@
 import Link from "next/link";
+import type { Locale } from "@/lib/dictionaries";
 
 type FooterProps = {
-    locale: "de" | "en";
+    locale: Locale;
 };
 
 const translations = {
@@ -9,13 +10,13 @@ const translations = {
         privacy: "Datenschutz",
         terms: "AGB",
         imprint: "Impressum",
-        copyright: "© 2025 Habiter. Alle Rechte vorbehalten.",
+        copyright: "© 2026 Habiter. Alle Rechte vorbehalten.",
     },
     en: {
         privacy: "Privacy Policy",
         terms: "Terms of Service",
         imprint: "Imprint",
-        copyright: "© 2025 Habiter. All rights reserved.",
+        copyright: "© 2026 Habiter. All rights reserved.",
     },
 };
 

@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 05 – Clock-, ID-, Key-Value-, Notification- und Platform-Channel-Verträge als kleine Interfaces definieren und Recording Fakes zuerst per Red Tests spezifizieren.
+**Resume Pointer:** Batch 06 – Legacy-Frequenzen gegen explizite Schedule-Value-Objects mappen; zuerst Daily/Weekday/Times-per-Week-Occurrence-Tests rot schreiben.
 
 ---
 
@@ -227,7 +227,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `ci: replace duplicated and misleading workflows`
 
 ### Batch 05: Deterministische Fakes und Fixtures
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Clock, UUID, Storage, Notifications und Platform Channel testbar injizieren.
 **Files:** Create `lib/core/time/clock.dart`, `lib/core/ids/id_generator.dart`, `test/support/fakes/*.dart`; Modify Testsetup.
 **Behavior preserved:** Produktionsadapter liefern weiter reale Zeit/UUID.
@@ -235,7 +235,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Implementation steps:** kleine Interfaces; Recording Fakes; keine Flutter-Abhängigkeit in Domain.
 **Commands:** `flutter test test/support test/core`; `flutter analyze`.
 **Expected result:** Deterministische Testbasis.
-**Acceptance criteria:** [ ] keine fachlichen `DateTime.now()` in neuen Tests [ ] Plugin-Calls prüfbar.
+**Acceptance criteria:** [x] keine fachlichen `DateTime.now()` in neuen Tests [x] Plugin-Calls prüfbar.
 **Migration/Rollback risk:** Keines.
 **Commit:** `test(core): add deterministic platform and storage fakes`
 
@@ -701,8 +701,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 01 | Baseline/Plan | VERIFIED | `Batches=40`; `Sections=25`; `InProgressRows=1`; `git diff --check` PASS | `8b8eedb` | keine | abgeschlossen |
 | 02 | Characterization | VERIFIED | Red: Reminder/Custom Days blieben alt; Green: 7 targeted + 11 full tests, analyze PASS | `3630ce8` | unknown fields folgen Migration | abgeschlossen |
 | 03 | Toolchain | VERIFIED | Red: 3 Pin-Gates + Signing; Green: 6 targeted, 15 full, analyze/format/install/release PASS | `7152983` | APK bewusst unsigned ohne Keystore | abgeschlossen |
-| 04 | CI | VERIFIED | Red: 4 Workflow-Verträge; Green: 5 targeted + 20 full, YAML/Docs build PASS | pending | Landing bleibt baseline-rot; Required Checks extern | SHA im Batch-05-Preflight nachtragen |
-| 05 | Fakes | NOT_STARTED | pending | pending | none | Interfaces erstellen |
+| 04 | CI | VERIFIED | Red: 4 Workflow-Verträge; Green: 5 targeted + 20 full, YAML/Docs build PASS | `24de94a` | Landing bleibt baseline-rot; Required Checks extern | abgeschlossen |
+| 05 | Fakes | VERIFIED | Red: fehlende Ports/Fakes; Green: 5 targeted + 25 coverage, format/analyze/builds PASS | pending | Landing baseline-rot | SHA im Batch-06-Preflight nachtragen |
 | 06 | Domain/Schedules | NOT_STARTED | pending | pending | Semantikmapping | Value Objects |
 | 07 | Repository | NOT_STARTED | pending | pending | concurrency | Adapter |
 | 08 | Migration | NOT_STARTED | pending | pending | Datenverlust | v0→v1 |
@@ -750,6 +750,8 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 03 Green: pnpm 11.21.0 frozen install inklusive erlaubter nativer Builds PASS; 6/6 Toolchain/Config Tests PASS; `flutter build apk --release` PASS (56.7 MB, ohne Keystore bewusst unsigned; `apksigner` meldet `DOES NOT VERIFY`); `dart format .` normalisierte 31 Dateien, danach Formatcheck 39/39 ohne Änderung; `flutter analyze` no issues; `flutter test` 15/15 PASS.
 - 2026-08-14, Batch 04 Red: `flutter test test/ci_workflow_test.dart` → 4/4 FAIL für fünf Legacy-Workflows, fehlende Zielnamen, Permissions/Concurrency und Release-Aktionen.
 - 2026-08-14, Batch 04 Green: 4 neue YAML-Workflows syntaktisch geprüft; Target 5/5 PASS; Format 40/40, Analyze no issues, Full Flutter 20/20 PASS; `npm ci` + `npm run docs:build` PASS mit VitePress 1.6.4. `npm audit` bleibt mit 3 transitiven Vite/esbuild Findings offen; Upstream latest stable 1.6.4 hat laut Audit keinen Fix, VitePress 2 ist am 2026-08-14 nur Alpha und wird nicht blind übernommen.
+- 2026-08-14, Batch 05 Red: `flutter test test/support/deterministic_fakes_test.dart` → fehlende Clock/ID/Storage/Notification/Platform-Ports und Recording Fakes; nach Implementation ein typisierter Generic-Return-Compilefehler, anschließend minimal korrigiert.
+- 2026-08-14, Batch 05 Green/Checkpoint: Target 5/5 PASS; Format 51/51; Analyze no issues; `flutter test --coverage` 25/25 PASS; APK Debug PASS; APK Release PASS (unsigned); Flutter Web PASS mit bekanntem Wasm-Hinweis aus `flutter_secure_storage_web`; Windows Release PASS. Landing: frozen install PASS, TypeScript PASS, Lint weiterhin 6 Errors/4 Warnings ausschließlich in später zu entfernenden Beta/Admin-Flächen plus alter i18n, Build weiterhin FAIL auf fehlender Supabase-URL in `/de/feedback`; kein `test`-Script vorhanden. Diese bekannten Landing-Gates werden in Batches 35–38 beseitigt.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 

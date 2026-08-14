@@ -4,6 +4,7 @@
 .pub-cache/
 .pub/
 build/
+coverage/
 
 # Platform builds
 ios/Pods/

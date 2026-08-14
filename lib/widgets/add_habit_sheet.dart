@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/habit.dart';
+import '../features/habits/presentation/editor/habit_editor_draft.dart';
+import '../l10n/l10n.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/habit_utils.dart';
@@ -26,6 +28,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
   late String _color;
   late String _icon;
   final Set<int> _selectedWeekdays = {};
+  bool _notificationEnabled = false;
+  String? _notificationTime;
   bool _saving = false;
 
   Map<String, List<String>> get _iconSuggestions => getHabitIconSuggestions();
@@ -43,6 +47,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
       _color = h.color;
       _icon = h.icon;
       if (h.customDays != null) _selectedWeekdays.addAll(h.customDays!);
+      _notificationEnabled = h.notificationEnabled;
+      _notificationTime = h.notificationTime;
     } else {
       _category = _iconSuggestions.keys.first;
       _frequency = HabitFrequency.daily;
@@ -60,24 +66,36 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final draft = HabitEditorDraft(
+      name: _nameController.text,
+      description: _descriptionController.text,
+      category: _category,
+      frequency: _frequency,
+      targetCount: _targetCount,
+      color: _color,
+      icon: _icon,
+      customDays: _selectedWeekdays,
+      notificationEnabled: _notificationEnabled,
+      notificationTime: _notificationTime,
+    );
+    final errors = draft.validate();
+    if (errors.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please complete the schedule and reminder fields.'),
+        ),
+      );
+      return;
+    }
     setState(() => _saving = true);
     final provider = context.read<HabitProvider>();
     if (widget.habit != null) {
       await provider.updateHabit(
         widget.habit!.id,
-        widget.habit!.copyWith(
-          name: _nameController.text.trim(),
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          category: _category,
-          frequency: _frequency,
-          targetCount: _targetCount,
-          color: _color,
-          icon: _icon,
-          customDays: _frequency == HabitFrequency.custom
-              ? _selectedWeekdays.toList()
-              : null,
+        draft.toHabit(
+          id: widget.habit!.id,
+          createdAt: widget.habit!.createdAt,
+          isActive: widget.habit!.isActive,
         ),
       );
     } else {
@@ -94,6 +112,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
         customDays: _frequency == HabitFrequency.custom
             ? _selectedWeekdays.toList()
             : null,
+        notificationEnabled: _notificationEnabled,
+        notificationTime: _notificationTime,
       );
     }
     if (!mounted) return;
@@ -101,19 +121,20 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
   }
 
   Future<void> _deleteHabit() async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Habit?'),
-        content: const Text('This action cannot be undone.'),
+        title: Text(l10n.deleteHabit),
+        content: Text(l10n.deleteHabitConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -132,6 +153,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
     final colors = generateHabitColors();
     final categories = _iconSuggestions.keys.toList();
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = context.l10n;
 
     return Container(
       decoration: BoxDecoration(
@@ -166,7 +188,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      widget.habit != null ? 'Edit Habit' : 'New Habit',
+                      widget.habit != null ? l10n.editHabit : l10n.newHabit,
                       style: AppTextStyles.h2,
                     ),
                     if (widget.habit != null)
@@ -191,13 +213,13 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                     children: [
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Name',
-                          hintText: 'e.g. Read 20 minutes',
+                        decoration: InputDecoration(
+                          labelText: l10n.name,
+                          hintText: l10n.namePlaceholder,
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Name is required';
+                            return l10n.nameRequired;
                           }
                           return null;
                         },
@@ -206,13 +228,13 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                       TextFormField(
                         controller: _descriptionController,
                         maxLines: 3,
-                        decoration: const InputDecoration(
-                          labelText: 'Description',
-                          hintText: 'Optional description',
+                        decoration: InputDecoration(
+                          labelText: l10n.description,
+                          hintText: l10n.descriptionPlaceholder,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.md),
-                      Text('Category', style: AppTextStyles.h3),
+                      Text(l10n.category, style: AppTextStyles.h3),
                       const SizedBox(height: AppSpacing.sm),
                       Wrap(
                         spacing: AppSpacing.sm,
@@ -233,10 +255,11 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                             .toList(),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Icon', style: AppTextStyles.h3),
+                          Text(l10n.icon, style: AppTextStyles.h3),
+                          const SizedBox(height: AppSpacing.sm),
                           Row(
                             children: [
                               // Show currently selected icon
@@ -259,10 +282,12 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                                 ),
                               ),
                               const SizedBox(width: AppSpacing.sm),
-                              Text(
-                                'Tap below to change',
-                                style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.textSecondary,
+                              Expanded(
+                                child: Text(
+                                  l10n.tapToSelect,
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
                               ),
                             ],
@@ -316,7 +341,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                         ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      Text('Color', style: AppTextStyles.h3),
+                      Text(l10n.color, style: AppTextStyles.h3),
                       const SizedBox(height: AppSpacing.sm),
                       Wrap(
                         spacing: AppSpacing.sm,
@@ -346,16 +371,18 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                             .toList(),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      Text('Frequency', style: AppTextStyles.h3),
+                      Text(l10n.frequency, style: AppTextStyles.h3),
                       const SizedBox(height: AppSpacing.sm),
                       Wrap(
                         spacing: AppSpacing.sm,
                         children: HabitFrequency.values
                             .map(
                               (f) => ChoiceChip(
-                                label: Text(
-                                  f.name[0].toUpperCase() + f.name.substring(1),
-                                ),
+                                label: Text(switch (f) {
+                                  HabitFrequency.daily => l10n.daily,
+                                  HabitFrequency.weekly => l10n.weekly,
+                                  HabitFrequency.custom => l10n.custom,
+                                }),
                                 selected: _frequency == f,
                                 onSelected: (_) =>
                                     setState(() => _frequency = f),
@@ -365,7 +392,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                       ),
                       if (_frequency == HabitFrequency.custom) ...[
                         const SizedBox(height: AppSpacing.md),
-                        Text('Select Days', style: AppTextStyles.h3),
+                        Text(l10n.selectDays, style: AppTextStyles.h3),
                         const SizedBox(height: AppSpacing.sm),
                         Wrap(
                           spacing: AppSpacing.xs,
@@ -426,12 +453,20 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                           }),
                         ),
                       ],
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        '${l10n.frequency}: ${_schedulePreview(context)}',
+                        key: const ValueKey('schedule-preview'),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
                       const SizedBox(height: AppSpacing.lg),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Target per day', style: AppTextStyles.h3),
+                          Text(l10n.targetPerDay, style: AppTextStyles.h3),
+                          const SizedBox(height: AppSpacing.xs),
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
                                 onPressed: _targetCount > 1
@@ -448,6 +483,32 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                           ),
                         ],
                       ),
+                      Material(
+                        color: Colors.transparent,
+                        child: SwitchListTile.adaptive(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.dailyReminder),
+                          subtitle: Text(
+                            _notificationEnabled
+                                ? (_notificationTime ?? l10n.reminderTime)
+                                : l10n.dailyReminderDesc,
+                          ),
+                          value: _notificationEnabled,
+                          onChanged: (value) => setState(() {
+                            _notificationEnabled = value;
+                            if (value) _notificationTime ??= '20:00';
+                          }),
+                        ),
+                      ),
+                      if (_notificationEnabled)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: OutlinedButton.icon(
+                            onPressed: _pickReminderTime,
+                            icon: const Icon(Icons.schedule_outlined),
+                            label: Text(_notificationTime ?? l10n.reminderTime),
+                          ),
+                        ),
                       const SizedBox(height: AppSpacing.xl),
                       SizedBox(
                         width: double.infinity,
@@ -475,8 +536,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                                 )
                               : Text(
                                   widget.habit != null
-                                      ? 'Update Habit'
-                                      : 'Create Habit',
+                                      ? l10n.updateHabit
+                                      : l10n.createHabit,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 16,
@@ -497,5 +558,34 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
 
   Color _fromHex(String hex) {
     return Color(int.parse(hex.replaceFirst('#', '0xff')));
+  }
+
+  Future<void> _pickReminderTime() async {
+    final parts = (_notificationTime ?? '20:00').split(':');
+    final selected = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(
+        hour: int.parse(parts.first),
+        minute: int.parse(parts.last),
+      ),
+    );
+    if (selected == null || !mounted) return;
+    setState(() {
+      _notificationTime =
+          '${selected.hour.toString().padLeft(2, '0')}:'
+          '${selected.minute.toString().padLeft(2, '0')}';
+    });
+  }
+
+  String _schedulePreview(BuildContext context) {
+    final l10n = context.l10n;
+    return switch (_frequency) {
+      HabitFrequency.daily => l10n.daily,
+      HabitFrequency.weekly => l10n.perWeek(_targetCount),
+      HabitFrequency.custom => l10n.onDays(
+        _targetCount,
+        _selectedWeekdays.length,
+      ),
+    };
   }
 }

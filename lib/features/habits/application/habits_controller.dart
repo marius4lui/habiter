@@ -73,6 +73,8 @@ final class HabitsController extends ChangeNotifier {
     required String color,
     required String icon,
     List<int>? customDays,
+    bool notificationEnabled = false,
+    String? notificationTime,
   }) async {
     final habit = Habit(
       id: _ids.next(),
@@ -84,6 +86,8 @@ final class HabitsController extends ChangeNotifier {
       targetCount: targetCount,
       category: category,
       customDays: customDays,
+      notificationEnabled: notificationEnabled,
+      notificationTime: notificationTime,
       createdAt: _clock.now(),
       isActive: true,
     );

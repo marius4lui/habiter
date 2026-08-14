@@ -139,6 +139,8 @@ class HabitProvider extends ChangeNotifier {
     required String color,
     required String icon,
     List<int>? customDays,
+    bool notificationEnabled = false,
+    String? notificationTime,
   }) async {
     await _habitsController.add(
       name: name,
@@ -149,6 +151,8 @@ class HabitProvider extends ChangeNotifier {
       targetCount: targetCount,
       category: category,
       customDays: customDays,
+      notificationEnabled: notificationEnabled,
+      notificationTime: notificationTime,
     );
   }
 

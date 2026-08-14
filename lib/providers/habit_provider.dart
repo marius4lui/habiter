@@ -9,6 +9,7 @@ import '../features/habits/application/habits_controller.dart';
 import '../features/habits/data/key_value_habit_repository.dart';
 import '../features/history/application/history_controller.dart';
 import '../features/today/application/today_controller.dart';
+import '../features/today/application/completion_use_case.dart';
 import '../models/habit.dart';
 import '../services/ai_manager.dart';
 import '../services/classly_client.dart';
@@ -185,6 +186,12 @@ class HabitProvider extends ChangeNotifier {
     await _todayController.toggle(habitId, date);
   }
 
+  Future<CompletionResult> completeHabit(String habitId, String date) =>
+      _todayController.complete(habitId, date);
+
+  Future<CompletionResult> undoCompletion(CompletionUndoToken token) =>
+      _todayController.undo(token);
+
   HabitStats getHabitStats(String habitId) {
     final habit = habits.firstWhere((h) => h.id == habitId);
     return _analyticsController.statsFor(habit, habitEntries);
@@ -258,7 +265,7 @@ class HabitProvider extends ChangeNotifier {
 
   /// Handle notification action to mark habit complete
   Future<void> handleNotificationAction(String habitId, String date) async {
-    await toggleHabitCompletion(habitId, date);
+    await completeHabit(habitId, date);
   }
 
   /// Import Classly events as daily habits

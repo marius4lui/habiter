@@ -2,6 +2,7 @@ import '../../../core/ids/id_generator.dart';
 import '../../../core/time/clock.dart';
 import '../../../models/habit.dart';
 import '../../habits/application/habit_repository.dart';
+import 'completion_use_case.dart';
 
 final class TodayController {
   TodayController({
@@ -10,39 +11,51 @@ final class TodayController {
     required Clock clock,
     required Future<void> Function() onChanged,
   }) : _repository = repository,
-       _ids = ids,
-       _clock = clock,
+       _completion = CompletionUseCase(
+         repository: repository,
+         ids: ids,
+         clock: clock,
+       ),
        _onChanged = onChanged;
 
   final HabitRepository _repository;
-  final IdGenerator _ids;
-  final Clock _clock;
+  final CompletionUseCase _completion;
   final Future<void> Function() _onChanged;
 
   Future<void> toggle(String habitId, String date) async {
-    await _repository.transact((draft) {
-      final habit = draft.habits
-          .where((item) => item.id == habitId)
-          .firstOrNull;
-      if (habit == null) return;
-      final existing = draft.entries
-          .where((entry) => entry.habitId == habitId && entry.date == date)
-          .firstOrNull;
-      final completed = !(existing?.completed ?? false);
-      draft.upsertEntry(
-        HabitEntry(
-          id: existing?.id ?? _ids.next(),
-          habitId: habitId,
-          date: date,
-          completed: completed,
-          count: completed ? 1 : 0,
-          timestamp: _clock.now(),
-        ),
-      );
-      if (completed && habit.description == 'Imported from Classly') {
-        draft.upsertHabit(habit.copyWith(isActive: false));
-      }
-    });
-    await _onChanged();
+    final snapshot = await _repository.load();
+    final existing = snapshot.entries
+        .where((entry) => entry.habitId == habitId && entry.date == date)
+        .firstOrNull;
+    if (existing?.completed ?? false) {
+      await _repository.transact((draft) {
+        draft.upsertEntry(
+          HabitEntry(
+            id: existing!.id,
+            habitId: habitId,
+            date: date,
+            completed: false,
+            count: 0,
+            timestamp: existing.timestamp,
+          ),
+        );
+      });
+      await _onChanged();
+      return;
+    }
+    final result = await complete(habitId, date);
+    if (!result.changed) return;
+  }
+
+  Future<CompletionResult> complete(String habitId, String date) async {
+    final result = await _completion.complete(habitId, date);
+    if (result.changed) await _onChanged();
+    return result;
+  }
+
+  Future<CompletionResult> undo(CompletionUndoToken token) async {
+    final result = await _completion.undo(token);
+    if (result.changed) await _onChanged();
+    return result;
   }
 }

@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 17 – Completion-Transaktionen und Undo idempotent und race-sicher machen; zuerst Doppel-Taps, persistente Fehler und Undo-Grenzen testen.
+**Resume Pointer:** Batch 18 – Habit-Lifecycle mit Pause, Wiederaufnahme, Archiv-Restore und sicherem Löschen modellieren; zuerst Metrik- und Reminder-Grenzen testen.
 
 ---
 
@@ -383,7 +383,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `feat(habits): rebuild habit editor`
 
 ### Batch 17: Durable Completion und Undo
-**Status:** IN_PROGRESS
+**Status:** VERIFIED
 **Goal:** Idempotente atomare Completion mit sofortigem Undo.
 **Files:** Create completion use cases; Modify Today/details; tests.
 **Behavior preserved:** ein Entry pro Habit/Occurrence.
@@ -391,12 +391,12 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Implementation steps:** occurrence key; optimistic UI mit rollback; reminder/app-lock events.
 **Commands:** use-case/widget tests.
 **Expected result:** keine Doppelentries oder verlorenes Undo.
-**Acceptance criteria:** [ ] idempotent [ ] failure recovery [ ] haptic once.
+**Acceptance criteria:** [x] idempotent [x] failure recovery [x] haptic once.
 **Migration/Rollback risk:** Entry-Key-Mapping.
 **Commit:** `feat(habits): make completion durable and reversible`
 
 ### Batch 18: History, Pause und Archive
-**Status:** NOT_STARTED
+**Status:** IN_PROGRESS
 **Goal:** Verzeihender Lifecycle mit Pause/Wiederaufnahme/Archiv und Historie.
 **Files:** Create `lib/features/history/*`; extend domain/migration; tests.
 **Behavior preserved:** Archive/Delete/History.
@@ -713,9 +713,9 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 13 | Motion/Haptics | VERIFIED | Red: Motion/Haptik fehlten; Green: 3 targeted + 63 full, analyze PASS | `919cbb8` | bestehende Altanimationen folgen schrittweise | abgeschlossen |
 | 14 | Onboarding | VERIFIED | Red: Onboarding/Empty fehlten; Green: 4 targeted + 67 full, analyze PASS | `1146aeb` | alte Nutzerpräferenzen bleiben legacy-kompatibel | abgeschlossen |
 | 15 | Today | VERIFIED | Red: Query fehlte + 2 Overflows; Green: 4 targeted + 71 full, analyze PASS | `79c18df` | ungültige Legacy-Custom-Schedules bleiben außerhalb Today | abgeschlossen |
-| 16 | Editor | VERIFIED | Red: Draft/Reminder/320px fehlten; Green: 4 targeted + 75 full, analyze PASS | pending | keine | abgeschlossen |
-| 17 | Completion | IN_PROGRESS | pending | pending | races | idempotency |
-| 18 | History/Lifecycle | NOT_STARTED | pending | pending | pause semantics | lifecycle |
+| 16 | Editor | VERIFIED | Red: Draft/Reminder/320px fehlten; Green: 4 targeted + 75 full, analyze PASS | `c355031` | keine | abgeschlossen |
+| 17 | Completion | VERIFIED | Red: Use Case fehlte; Green: 4 targeted + 79 full, analyze PASS | pending | stale Undo wird sicher ignoriert | abgeschlossen |
+| 18 | History/Lifecycle | IN_PROGRESS | pending | pending | pause semantics | lifecycle |
 | 19 | Analytics | NOT_STARTED | pending | pending | metric changes | calculators |
 | 20 | Recovery | NOT_STARTED | pending | pending | copy | score |
 | 21 | Reminder Registry | NOT_STARTED | pending | pending | pending cleanup | IDs |
@@ -775,6 +775,7 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 15 Green: 4/4 Target Tests für Daily/Weekly/Custom-Schedule-Filter, Completed/Pending/Progress, scrollbare 320px-/200%-Darstellung und One-Tap-Completion; Progress-Card adaptiv/semantisch neu gebaut, Fake-Name entfernt und Header lokalisiert; Full Flutter 71/71 PASS; Analyze no issues.
 - 2026-08-14, Checkpoint 15: Format 89 Dateien, Analyze und Coverage 71/71 PASS; APK Debug, unsigned APK Release, Web Release und Windows Release PASS. Landing unverändert: Frozen Install/TypeScript PASS, Lint 6 Fehler/4 Warnungen, kein Test-Script, Build ohne Supabase-URL rot. Docs Build und Produktions-Audit PASS; VitePress-Dev-Transitiven 3 Findings. Branch bis `79c18df` gepusht.
 - 2026-08-14, Batch 16 Red/Green: Editor-Draft und Reminder-Mapping fehlten; der deutsche 320px-Widgettest deckte Material-Hintergrund-Assertions sowie 94px/61px Overflows in Icon- und Target-Zeilen auf. Nach adaptivem Umbau 4/4 Target Tests für vollständigen Edit-Roundtrip, Validierung, opt-in Reminder und scroll-/tastatur-/abbruchssicheren Dialog PASS; Analyze no issues; Full Flutter 75/75 PASS; `git diff --check` PASS.
+- 2026-08-14, Batch 17 Red/Green: Completion-Use-Case fehlte vollständig. Danach 4/4 Target Tests für parallele Doppel-Taps, exakte Target-Counts, Undo-Restore/Remove, Schutz vor stale Undo und fehlgeschlagene Writes PASS; bestehende Controller-/Today-Tests 7/7 PASS; Analyze no issues; Full Flutter 79/79 PASS. UI-Haptik läuft nur bei `changed` nach erfolgreichem Commit, Snackbar-Undo nutzt das commit-gebundene Token; Notification Action ist idempotent.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 

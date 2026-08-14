@@ -182,10 +182,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                         habit: habit,
                                         completed: false,
                                         onComplete: () async {
-                                          await context
-                                              .read<HapticGateway>()
-                                              .success();
-                                          await provider.toggleHabitCompletion(
+                                          await _completeHabit(
+                                            context,
+                                            provider,
                                             habit.id,
                                             dateStr,
                                           );
@@ -400,8 +399,11 @@ class _HomeScreenState extends State<HomeScreen> {
         habit: habit,
         isCompleted: isCompleted,
         onComplete: () async {
-          await context.read<HapticGateway>().success();
-          await provider.toggleHabitCompletion(habit.id, dateStr);
+          if (isCompleted) {
+            await provider.toggleHabitCompletion(habit.id, dateStr);
+          } else {
+            await _completeHabit(context, provider, habit.id, dateStr);
+          }
         },
         onArchive: () => provider.archiveHabit(habit.id),
         onEdit: () => showModalBottomSheet(
@@ -410,6 +412,30 @@ class _HomeScreenState extends State<HomeScreen> {
           useSafeArea: true,
           builder: (_) => AddHabitSheet(habit: habit),
         ),
+      ),
+    );
+  }
+
+  Future<void> _completeHabit(
+    BuildContext context,
+    HabitProvider provider,
+    String habitId,
+    String date,
+  ) async {
+    final result = await provider.completeHabit(habitId, date);
+    if (!context.mounted || !result.changed) return;
+    await context.read<HapticGateway>().success();
+    if (!context.mounted) return;
+    final token = result.undoToken;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(context.l10n.todayDone),
+        action: token == null
+            ? null
+            : SnackBarAction(
+                label: context.l10n.undoComplete,
+                onPressed: () => provider.undoCompletion(token),
+              ),
       ),
     );
   }

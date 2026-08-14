@@ -49,6 +49,12 @@ final class HabitRepositoryDraft {
     );
     entries.add(entry);
   }
+
+  void removeEntry(String habitId, String date) {
+    entries.removeWhere(
+      (entry) => entry.habitId == habitId && entry.date == date,
+    );
+  }
 }
 
 final class HabitRepositoryException implements Exception {

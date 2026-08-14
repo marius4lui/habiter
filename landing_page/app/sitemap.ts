@@ -3,7 +3,7 @@ import { MetadataRoute } from 'next';
 export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = 'https://habiter.qhrd.online';
     const locales = ['de', 'en'];
-    const paths = ['', '/live', '/test', '/imprint', '/privacy', '/terms'];
+    const paths = ['', '/live', '/imprint', '/privacy', '/terms'];
 
     const routes = locales.flatMap((locale) =>
         paths.map((path) => ({

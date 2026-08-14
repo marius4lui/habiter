@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../core/ids/id_generator.dart';
+import '../core/persistence/key_value_store.dart';
 import '../core/persistence/shared_preferences_key_value_store.dart';
 import '../core/time/clock.dart';
+import '../core/time/local_date.dart';
 import '../features/analytics/application/analytics_controller.dart';
 import '../features/analytics/domain/habit_metrics.dart';
 import '../features/habits/application/habit_repository.dart';
@@ -10,6 +12,7 @@ import '../features/habits/application/habits_controller.dart';
 import '../features/habits/data/key_value_habit_repository.dart';
 import '../features/history/application/history_controller.dart';
 import '../features/history/application/habit_lifecycle_reminder_gateway.dart';
+import '../features/reminders/application/reminder_action_inbox.dart';
 import '../features/today/application/today_controller.dart';
 import '../features/today/application/completion_use_case.dart';
 import '../models/habit.dart';
@@ -24,7 +27,9 @@ class HabitProvider extends ChangeNotifier {
     Clock clock = const SystemClock(),
     IdGenerator ids = const UuidIdGenerator(),
     HabitLifecycleReminderGateway? lifecycleReminders,
+    KeyValueStore? actionStore,
   }) {
+    _clock = clock;
     final resolvedRepository =
         repository ?? KeyValueHabitRepository(SharedPreferencesKeyValueStore());
     _habitsController = HabitsController(
@@ -42,6 +47,16 @@ class HabitProvider extends ChangeNotifier {
     _analyticsController = AnalyticsController(clock);
     _lifecycleReminders =
         lifecycleReminders ?? const _LegacyLifecycleReminderGateway();
+    _actionInbox = ReminderActionInbox(
+      actionStore ?? SharedPreferencesKeyValueStore(),
+    );
+    _actionProcessor = ReminderActionProcessor(
+      inbox: _actionInbox,
+      clock: clock,
+      complete: (habitId, date) async {
+        await _todayController.complete(habitId, date);
+      },
+    );
     _habitsController.addListener(notifyListeners);
     _historyController.addListener(notifyListeners);
   }
@@ -51,6 +66,9 @@ class HabitProvider extends ChangeNotifier {
   late final TodayController _todayController;
   late final AnalyticsController _analyticsController;
   late final HabitLifecycleReminderGateway _lifecycleReminders;
+  late final ReminderActionInbox _actionInbox;
+  late final ReminderActionProcessor _actionProcessor;
+  late final Clock _clock;
 
   List<Habit> get habits => _habitsController.state.habits;
   List<HabitEntry> get habitEntries => _historyController.state.entries;
@@ -77,6 +95,7 @@ class HabitProvider extends ChangeNotifier {
       await _reloadHabitState();
       debugPrint('HabitProvider: Loaded ${habits.length} habits');
       debugPrint('HabitProvider: Loaded ${habitEntries.length} entries');
+      await _actionProcessor.drain();
 
       debugPrint('HabitProvider: Loading AI insights from storage...');
       aiInsights = await StorageService.getAIInsights();
@@ -300,7 +319,15 @@ class HabitProvider extends ChangeNotifier {
 
   /// Handle notification action to mark habit complete
   Future<void> handleNotificationAction(String habitId, String date) async {
-    await completeHabit(habitId, date);
+    await _actionInbox.enqueue(
+      ReminderActionRecord(
+        id: '$habitId@$date:complete',
+        habitId: habitId,
+        occurrence: LocalDate.parse(date),
+        receivedAt: _clock.now().toUtc(),
+      ),
+    );
+    await _actionProcessor.drain();
   }
 
   /// Import Classly events as daily habits

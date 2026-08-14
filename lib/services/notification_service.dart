@@ -1,11 +1,17 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../models/habit.dart';
+import '../core/time/local_date.dart';
+import '../features/reminders/application/reminder_action_inbox.dart';
+import '../features/reminders/domain/reminder_payload.dart';
 import '../features/reminders/infrastructure/device_time_zone_service.dart';
 
 /// Callback for handling notification actions (marking habits complete)
@@ -352,33 +358,68 @@ class NotificationService {
 
   // Handle notification tap/action
   void _onNotificationResponse(NotificationResponse response) {
-    debugPrint(
-      'NotificationService: Response received: ${response.actionId}, payload: ${response.payload}',
-    );
-
     if (response.actionId == 'mark_complete' && response.payload != null) {
       _handleMarkComplete(response.payload!);
     }
   }
 
   void _handleMarkComplete(String payload) {
-    // Payload format: habitId|date
-    final parts = payload.split('|');
-    if (parts.length != 2) return;
-
-    final habitId = parts[0];
-    final date = parts[1];
+    final decoded = _decodeActionPayload(payload);
+    if (decoded == null) return;
 
     if (_onMarkComplete != null) {
-      _onMarkComplete!(habitId, date);
+      _onMarkComplete!(decoded.$1, decoded.$2);
     }
   }
 }
 
 // Background handler must be top-level
 @pragma('vm:entry-point')
-void _onBackgroundNotificationResponse(NotificationResponse response) {
-  debugPrint('NotificationService: Background response: ${response.actionId}');
-  // Background handling would require isolate communication
-  // For now, we rely on foreground handling
+void _onBackgroundNotificationResponse(NotificationResponse response) async {
+  if (response.actionId != 'mark_complete' || response.payload == null) return;
+  DartPluginRegistrant.ensureInitialized();
+  final decoded = _decodeActionPayload(response.payload!);
+  if (decoded == null) return;
+  final preferences = await SharedPreferences.getInstance();
+  final raw = preferences.getString(ReminderActionInbox.storageKey);
+  final records = raw == null
+      ? <dynamic>[]
+      : (jsonDecode(raw) as List<dynamic>);
+  final id = '${response.id ?? 0}:${decoded.$1}@${decoded.$2}:complete';
+  if (records.any((value) => (value as Map<dynamic, dynamic>)['id'] == id)) {
+    return;
+  }
+  records.add(
+    ReminderActionRecord(
+      id: id,
+      habitId: decoded.$1,
+      occurrence: LocalDate.parse(decoded.$2),
+      receivedAt: DateTime.now().toUtc(),
+    ).toMap(),
+  );
+  await preferences.setString(
+    ReminderActionInbox.storageKey,
+    jsonEncode(records),
+  );
+}
+
+(String, String)? _decodeActionPayload(String payload) {
+  if (payload.startsWith('{')) {
+    try {
+      final typed = ReminderPayload.fromMap(
+        Map<String, Object?>.from(jsonDecode(payload) as Map<dynamic, dynamic>),
+      );
+      return (typed.habitId, typed.occurrence.toString());
+    } on FormatException {
+      return null;
+    }
+  }
+  final parts = payload.split('|');
+  if (parts.length != 2) return null;
+  try {
+    LocalDate.parse(parts[1]);
+  } on FormatException {
+    return null;
+  }
+  return (parts[0], parts[1]);
 }

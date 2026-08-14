@@ -77,6 +77,7 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core-ktx:1.12.0")
+    testImplementation("junit:junit:4.13.2")
 }
 
 flutter {

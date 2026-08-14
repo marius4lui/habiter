@@ -14,8 +14,10 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.IBinder
-import android.os.Looper
+import android.provider.Settings
+import android.util.Log
 import androidx.core.app.NotificationCompat
 
 class AppMonitorService : Service() {
@@ -23,11 +25,12 @@ class AppMonitorService : Service() {
     companion object {
         private const val NOTIFICATION_ID = 1001
         private const val CHANNEL_ID = "app_lock_channel"
-        private const val POLL_INTERVAL_MS = 150L  // Reduced from 500ms for faster detection
         private const val BLOCK_COOLDOWN_MS = 1000L  // Prevent spam blocking
+        private const val TAG = "HabiterAppLock"
     }
     
-    private val handler = Handler(Looper.getMainLooper())
+    private lateinit var monitorThread: HandlerThread
+    private lateinit var handler: Handler
     private lateinit var usageStatsManager: UsageStatsManager
     private lateinit var prefs: SharedPreferences
     
@@ -37,13 +40,16 @@ class AppMonitorService : Service() {
     
     // Screen state tracking for battery optimization
     private var isScreenOn = true
+    private var monitoring = false
     
     private val monitorRunnable = object : Runnable {
         override fun run() {
-            if (isScreenOn) {
+            if (isScreenOn && monitoring) {
                 checkForegroundApp()
             }
-            handler.postDelayed(this, POLL_INTERVAL_MS)
+            if (isScreenOn && monitoring) {
+                handler.postDelayed(this, AppLockPolicy.ACTIVE_POLL_INTERVAL_MS)
+            }
         }
     }
     
@@ -53,11 +59,11 @@ class AppMonitorService : Service() {
             when (intent.action) {
                 Intent.ACTION_SCREEN_OFF -> {
                     isScreenOn = false
+                    handler.removeCallbacks(monitorRunnable)
                 }
                 Intent.ACTION_SCREEN_ON -> {
                     isScreenOn = true
-                    // Immediately check when screen turns on
-                    handler.post { checkForegroundApp() }
+                    if (monitoring) handler.post(monitorRunnable)
                 }
             }
         }
@@ -67,6 +73,8 @@ class AppMonitorService : Service() {
         super.onCreate()
         usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         prefs = getSharedPreferences("app_lock", Context.MODE_PRIVATE)
+        monitorThread = HandlerThread("habiter-app-lock-monitor").apply { start() }
+        handler = Handler(monitorThread.looper)
         createNotificationChannel()
         
         // Register screen receiver
@@ -81,20 +89,21 @@ class AppMonitorService : Service() {
         val notification = createNotification()
         startForeground(NOTIFICATION_ID, notification)
         
-        // Start monitoring
-        handler.post(monitorRunnable)
+        if (!monitoring) {
+            monitoring = true
+            handler.post(monitorRunnable)
+        }
         
         return START_STICKY
     }
     
     override fun onDestroy() {
         super.onDestroy()
-        handler.removeCallbacks(monitorRunnable)
-        try {
-            unregisterReceiver(screenReceiver)
-        } catch (e: Exception) {
-            // Receiver might not be registered
-        }
+        monitoring = false
+        handler.removeCallbacksAndMessages(null)
+        monitorThread.quitSafely()
+        runCatching { unregisterReceiver(screenReceiver) }
+            .onFailure { Log.w(TAG, "Screen receiver cleanup failed", it) }
     }
     
     override fun onBind(intent: Intent?): IBinder? = null
@@ -103,10 +112,21 @@ class AppMonitorService : Service() {
         val isEnabled = prefs.getBoolean("is_enabled", false)
         val habitsComplete = prefs.getBoolean("habits_complete", false)
         
-        if (!isEnabled || habitsComplete) return
-        
         val lockedPackages = prefs.getStringSet("locked_packages", emptySet()) ?: emptySet()
-        if (lockedPackages.isEmpty()) return
+        val usageAccess = hasUsageStatsPermission()
+        val overlayAccess = Settings.canDrawOverlays(this)
+        if (!AppLockPolicy.shouldMonitor(
+                enabled = isEnabled && !habitsComplete,
+                hasUsageAccess = usageAccess,
+                hasOverlayAccess = overlayAccess,
+                lockedPackageCount = lockedPackages.size,
+            )) {
+            if (isEnabled && (!usageAccess || !overlayAccess)) {
+                prefs.edit().putBoolean("is_enabled", false).apply()
+                stopSelf()
+            }
+            return
+        }
         
         val foregroundPackage = getForegroundPackage()
         
@@ -132,6 +152,25 @@ class AppMonitorService : Service() {
         
         return lastForegroundPackage
     }
+
+    private fun hasUsageStatsPermission(): Boolean {
+        val appOps = getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            appOps.unsafeCheckOpNoThrow(
+                android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                packageName,
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            appOps.checkOpNoThrow(
+                android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                packageName,
+            )
+        }
+        return mode == android.app.AppOpsManager.MODE_ALLOWED
+    }
     
     private fun showBlockingScreen(blockedPackage: String) {
         val now = System.currentTimeMillis()
@@ -151,6 +190,7 @@ class AppMonitorService : Service() {
             val appInfo = pm.getApplicationInfo(blockedPackage, 0)
             pm.getApplicationLabel(appInfo).toString()
         } catch (e: Exception) {
+            Log.w(TAG, "Unable to resolve blocked app label", e)
             blockedPackage
         }
         

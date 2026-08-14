@@ -15,6 +15,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.OvershootInterpolator
+import android.util.Log
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -24,6 +25,7 @@ import android.widget.TextView
  * Uses SYSTEM_ALERT_WINDOW to float above all apps.
  */
 object BlockingOverlay {
+    private const val TAG = "HabiterAppLock"
     
     private var overlayView: View? = null
     private var windowManager: WindowManager? = null
@@ -44,7 +46,7 @@ object BlockingOverlay {
                 // Animate in
                 animateIn()
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.w(TAG, "Unable to show blocking overlay", e)
             }
         }
     }
@@ -62,6 +64,7 @@ object BlockingOverlay {
                 }
             } catch (e: Exception) {
                 overlayView = null
+                Log.w(TAG, "Unable to dismiss blocking overlay", e)
             }
         }
     }
@@ -303,7 +306,7 @@ object BlockingOverlay {
             }
             context.startActivity(intent)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.w(TAG, "Unable to return to Habiter", e)
         }
     }
     
@@ -315,7 +318,7 @@ object BlockingOverlay {
             }
             context.startActivity(intent)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.w(TAG, "Unable to return to the launcher", e)
         }
     }
 }

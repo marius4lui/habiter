@@ -4,8 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 
 class BootReceiver : BroadcastReceiver() {
+    private val tag = "HabiterAppLock"
     
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
@@ -22,7 +24,8 @@ class BootReceiver : BroadcastReceiver() {
                         context.startService(serviceIntent)
                     }
                 } catch (e: Exception) {
-                    // System might not be ready yet, watchdog will retry
+                    prefs.edit().putBoolean("is_enabled", false).apply()
+                    Log.w(tag, "App Lock disabled because boot restart failed", e)
                 }
                 
                 // Schedule watchdog to ensure service stays alive

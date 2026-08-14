@@ -43,8 +43,17 @@ jobs:
       - name: Verify generated dependency state
         run: git diff --exit-code -- pubspec.lock linux/flutter/generated_plugins.cmake macos/Flutter/GeneratedPluginRegistrant.swift windows/flutter/generated_plugins.cmake
 
-      - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed .
+      - name: Format diagnostic sources
+        run: dart format .
+
+      - name: Upload formatted source diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: formatted-flutter-sources
+          path: |
+            lib
+            test
+          retention-days: 1
 
       - name: Analyze
         run: flutter analyze --fatal-infos

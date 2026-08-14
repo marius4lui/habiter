@@ -127,7 +127,7 @@ final class MethodChannelAppLockGateway implements AppLockGateway {
     required T Function(Object? value) decode,
   }) async {
     if (!isSupported) {
-      return const AppLockFailure<T>(
+      return AppLockFailure<T>(
         AppLockFailureKind.unsupported,
         'App Lock is not supported on this platform.',
       );
@@ -137,17 +137,17 @@ final class MethodChannelAppLockGateway implements AppLockGateway {
         decode(await _channel.invokeMethod<Object?>(method, arguments)),
       );
     } on TypeError {
-      return const AppLockFailure<T>(
+      return AppLockFailure<T>(
         AppLockFailureKind.malformedResponse,
         'App Lock returned an invalid response.',
       );
     } on PlatformException {
-      return const AppLockFailure<T>(
+      return AppLockFailure<T>(
         AppLockFailureKind.platform,
         'App Lock could not complete the platform request.',
       );
     } on MissingPluginException {
-      return const AppLockFailure<T>(
+      return AppLockFailure<T>(
         AppLockFailureKind.unsupported,
         'App Lock is unavailable on this platform.',
       );

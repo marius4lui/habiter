@@ -21,6 +21,7 @@ import java.util.TimeZone
 class MainActivity: FlutterActivity() {
     private val CHANNEL = "com.habiter.app/applock"
     private val TIME_ZONE_CHANNEL = "com.habiter.app/timezone"
+    private val SETTINGS_CHANNEL = "com.habiter.app/settings"
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -87,6 +88,18 @@ class MainActivity: FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, TIME_ZONE_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "getTimeZoneId" -> result.success(TimeZone.getDefault().id)
+                else -> result.notImplemented()
+            }
+        }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SETTINGS_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "openNotificationSettings" -> {
+                    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                        putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                    }
+                    startActivity(intent)
+                    result.success(null)
+                }
                 else -> result.notImplemented()
             }
         }

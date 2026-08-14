@@ -11,6 +11,8 @@ import '../providers/classly_sync_provider.dart';
 import '../providers/habit_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/notification_service.dart';
+import '../features/reminders/application/reminder_permission_controller.dart';
+import '../features/reminders/infrastructure/local_reminder_permission_gateway.dart';
 import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -30,10 +32,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _classlyPasswordController = TextEditingController();
   final _classlyTokenController = TextEditingController();
   bool _showTokenField = false;
+  late final ReminderPermissionController _reminderPermissions;
 
   @override
   void initState() {
     super.initState();
+    _reminderPermissions = ReminderPermissionController(
+      const LocalReminderPermissionGateway(),
+    );
     _loadPreferences();
     _checkPermissions();
   }
@@ -58,18 +64,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _checkPermissions() async {
-    if (Platform.isAndroid || Platform.isIOS) {
-      final granted = await NotificationService.instance
-          .areNotificationsEnabled();
-      setState(() => _permissionGranted = granted);
-    } else {
-      setState(() => _permissionGranted = false);
-    }
+    final state = await _reminderPermissions.refresh();
+    if (mounted) setState(() => _permissionGranted = state.canSchedule);
   }
 
   Future<void> _requestPermissions() async {
-    final granted = await NotificationService.instance.requestPermissions();
-    setState(() => _permissionGranted = granted);
+    final state = await _reminderPermissions.requestAfterUserIntent();
+    final granted = state.canSchedule;
+    if (mounted) setState(() => _permissionGranted = granted);
 
     if (granted && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

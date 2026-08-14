@@ -20,6 +20,19 @@ import UIKit
           result(FlutterMethodNotImplemented)
         }
       }
+      let settingsChannel = FlutterMethodChannel(
+        name: "com.habiter.app/settings",
+        binaryMessenger: controller.binaryMessenger
+      )
+      settingsChannel.setMethodCallHandler { call, result in
+        if call.method == "openNotificationSettings",
+           let url = URL(string: UIApplication.openSettingsURLString) {
+          UIApplication.shared.open(url)
+          result(nil)
+        } else {
+          result(FlutterMethodNotImplemented)
+        }
+      }
     }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

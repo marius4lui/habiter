@@ -10,14 +10,21 @@ class CalendarStrip extends StatelessWidget {
     // Generate dates around today.
     // In a real app this would probably be stateful or controlled by a provider.
     final now = DateTime.now();
-    final dates = List.generate(7, (index) => now.add(Duration(days: index - 3)));
+    final dates = List.generate(
+      7,
+      (index) => now.add(Duration(days: index - 3)),
+    );
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
       child: Row(
         children: dates.map((date) {
-          final isToday = date.day == now.day &&
+          final isToday =
+              date.day == now.day &&
               date.month == now.month &&
               date.year == now.year;
           return Padding(
@@ -31,10 +38,7 @@ class CalendarStrip extends StatelessWidget {
 }
 
 class _DateCard extends StatelessWidget {
-  const _DateCard({
-    required this.date,
-    required this.isActive,
-  });
+  const _DateCard({required this.date, required this.isActive});
 
   final DateTime date;
   final bool isActive;
@@ -84,7 +88,7 @@ class _DateCard extends StatelessWidget {
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       width: 56,
       height: 80,

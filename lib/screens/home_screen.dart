@@ -36,8 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(provider.error!,
-                  style: Theme.of(context).textTheme.displaySmall),
+              Text(
+                provider.error!,
+                style: Theme.of(context).textTheme.displaySmall,
+              ),
               const SizedBox(height: AppSpacing.md),
               ElevatedButton(
                 onPressed: provider.refresh,
@@ -50,17 +52,20 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final allActiveHabits = provider.habits.where((h) => h.isActive).toList();
-    
+
     // Calculate stats for daily progress
     final totalActive = allActiveHabits.length;
-    final completedCount = allActiveHabits.where((h) => isHabitCompletedToday(h.id, provider.habitEntries)).length;
+    final completedCount = allActiveHabits
+        .where((h) => isHabitCompletedToday(h.id, provider.habitEntries))
+        .length;
     final progress = totalActive == 0 ? 0.0 : completedCount / totalActive;
 
     return Scaffold(
       extendBody: true, // Important for glass effect if needed
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        bottom: false, // Let content go behind bottom nav if needed, but we used column mostly
+        bottom:
+            false, // Let content go behind bottom nav if needed, but we used column mostly
         child: Stack(
           children: [
             // Main Scrollable Content
@@ -72,19 +77,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: CustomScrollView(
                   slivers: [
                     // Header
-                   const SliverToBoxAdapter(
-                      child: DashboardHeader(),
-                    ),
-                    
+                    const SliverToBoxAdapter(child: DashboardHeader()),
+
                     // Calendar Strip
-                    const SliverToBoxAdapter(
-                      child: CalendarStrip(),
-                    ),
+                    const SliverToBoxAdapter(child: CalendarStrip()),
 
                     // Daily Progress Hero
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                        ),
                         child: DailyProgressCard(
                           progress: progress,
                           completedCount: completedCount,
@@ -104,169 +107,232 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Center(
                           child: Text(
                             context.l10n.noHabitsYet,
-                             style: AppTextStyles.body.copyWith(color: AppColors.textTertiary),
+                            style: AppTextStyles.body.copyWith(
+                              color: AppColors.textTertiary,
+                            ),
                           ),
                         ),
                       )
                     else ...[
                       // Filter for incomplete habits today
-                      Builder(builder: (context) {
-                        final incompleteHabits = allActiveHabits.where(
-                          (h) => !isHabitCompletedToday(h.id, provider.habitEntries)
-                        ).toList();
-                        
-                        if (incompleteHabits.isEmpty) {
-                          return SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                              child: Text(
-                                context.l10n.allHabitsCompleted,
-                                textAlign: TextAlign.center,
+                      Builder(
+                        builder: (context) {
+                          final incompleteHabits = allActiveHabits
+                              .where(
+                                (h) => !isHabitCompletedToday(
+                                  h.id,
+                                  provider.habitEntries,
+                                ),
+                              )
+                              .toList();
+
+                          if (incompleteHabits.isEmpty) {
+                            return SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.lg,
+                                ),
+                                child: Text(
+                                  context.l10n.allHabitsCompleted,
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
+                            );
+                          }
+
+                          return SliverPadding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.lg,
                             ),
-                          );
-                        }
-                        
-                        return SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                          sliver: SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 220,
-                              mainAxisSpacing: AppSpacing.md,
-                              crossAxisSpacing: AppSpacing.md,
-                              childAspectRatio: 0.85,
-                            ),
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
+                            sliver: SliverGrid(
+                              gridDelegate:
+                                  const SliverGridDelegateWithMaxCrossAxisExtent(
+                                    maxCrossAxisExtent: 220,
+                                    mainAxisSpacing: AppSpacing.md,
+                                    crossAxisSpacing: AppSpacing.md,
+                                    childAspectRatio: 0.85,
+                                  ),
+                              delegate: SliverChildBuilderDelegate((
+                                context,
+                                index,
+                              ) {
                                 final habit = incompleteHabits[index];
                                 final today = DateTime.now();
-                                final dateStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-                                
+                                final dateStr =
+                                    '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
                                 return GestureDetector(
-                                  onTap: () => _showHabitDetail(
-                                    context,
-                                    habit,
-                                    false,
-                                    dateStr,
-                                    provider,
-                                  ),
-                                  child: BentoHabitCard(
-                                    habit: habit,
-                                    completed: false,
-                                    onEdit: () => showModalBottomSheet(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      useSafeArea: true,
-                                      builder: (_) => AddHabitSheet(habit: habit),
-                                    ),
-                                  ),
-                                )
-                                .animate(delay: (index * 50).ms)
-                                .fadeIn()
-                                .slideY(begin: 0.1, end: 0);
-                              },
-                              childCount: incompleteHabits.length,
-                            ),
-                          ),
-                        );
-                      }),
-                      
-                      // Completed Habits Section
-                      Builder(builder: (context) {
-                        final completedHabits = allActiveHabits.where(
-                          (h) => isHabitCompletedToday(h.id, provider.habitEntries)
-                        ).toList();
-                        
-                        if (completedHabits.isEmpty) {
-                          return const SliverToBoxAdapter(child: SizedBox.shrink());
-                        }
-                        
-                        return SliverToBoxAdapter(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: AppSpacing.xl),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.check_circle, 
-                                      color: AppColors.success, size: 20),
-                                    const SizedBox(width: AppSpacing.sm),
-                                    Text(
-                                      context.l10n.todayCompleted(completedHabits.length),
-                                      style: AppTextStyles.h3.copyWith(
-                                        color: AppColors.success,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.md),
-                              SizedBox(
-                                height: 90,
-                                child: ListView.separated(
-                                  scrollDirection: Axis.horizontal,
-                                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                                  itemCount: completedHabits.length,
-                                  separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
-                                  itemBuilder: (context, index) {
-                                    final habit = completedHabits[index];
-                                    final today = DateTime.now();
-                                    final dateStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-                                    
-                                    return GestureDetector(
                                       onTap: () => _showHabitDetail(
-                                        context, habit, true, dateStr, provider,
+                                        context,
+                                        habit,
+                                        false,
+                                        dateStr,
+                                        provider,
                                       ),
-                                      child: Container(
-                                        width: 90,
-                                        padding: const EdgeInsets.all(AppSpacing.sm),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.success.withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                          border: Border.all(
-                                            color: AppColors.success.withValues(alpha: 0.3),
+                                      child: BentoHabitCard(
+                                        habit: habit,
+                                        completed: false,
+                                        onEdit: () => showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          useSafeArea: true,
+                                          builder: (_) =>
+                                              AddHabitSheet(habit: habit),
+                                        ),
+                                      ),
+                                    )
+                                    .animate(delay: (index * 50).ms)
+                                    .fadeIn()
+                                    .slideY(begin: 0.1, end: 0);
+                              }, childCount: incompleteHabits.length),
+                            ),
+                          );
+                        },
+                      ),
+
+                      // Completed Habits Section
+                      Builder(
+                        builder: (context) {
+                          final completedHabits = allActiveHabits
+                              .where(
+                                (h) => isHabitCompletedToday(
+                                  h.id,
+                                  provider.habitEntries,
+                                ),
+                              )
+                              .toList();
+
+                          if (completedHabits.isEmpty) {
+                            return const SliverToBoxAdapter(
+                              child: SizedBox.shrink(),
+                            );
+                          }
+
+                          return SliverToBoxAdapter(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: AppSpacing.xl),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.lg,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.check_circle,
+                                        color: AppColors.success,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: AppSpacing.sm),
+                                      Text(
+                                        context.l10n.todayCompleted(
+                                          completedHabits.length,
+                                        ),
+                                        style: AppTextStyles.h3.copyWith(
+                                          color: AppColors.success,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.md),
+                                SizedBox(
+                                  height: 90,
+                                  child: ListView.separated(
+                                    scrollDirection: Axis.horizontal,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.lg,
+                                    ),
+                                    itemCount: completedHabits.length,
+                                    separatorBuilder: (_, __) =>
+                                        const SizedBox(width: AppSpacing.sm),
+                                    itemBuilder: (context, index) {
+                                      final habit = completedHabits[index];
+                                      final today = DateTime.now();
+                                      final dateStr =
+                                          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+                                      return GestureDetector(
+                                        onTap: () => _showHabitDetail(
+                                          context,
+                                          habit,
+                                          true,
+                                          dateStr,
+                                          provider,
+                                        ),
+                                        child: Container(
+                                          width: 90,
+                                          padding: const EdgeInsets.all(
+                                            AppSpacing.sm,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.success.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              AppBorderRadius.md,
+                                            ),
+                                            border: Border.all(
+                                              color: AppColors.success
+                                                  .withValues(alpha: 0.3),
+                                            ),
+                                          ),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Stack(
+                                                alignment:
+                                                    Alignment.bottomRight,
+                                                children: [
+                                                  Text(
+                                                    habit.icon,
+                                                    style: const TextStyle(
+                                                      fontSize: 26,
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(2),
+                                                    decoration:
+                                                        const BoxDecoration(
+                                                          color:
+                                                              AppColors.success,
+                                                          shape:
+                                                              BoxShape.circle,
+                                                        ),
+                                                    child: const Icon(
+                                                      Icons.check,
+                                                      color: Colors.white,
+                                                      size: 10,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                habit.name,
+                                                style: AppTextStyles.caption
+                                                    .copyWith(fontSize: 11),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Stack(
-                                              alignment: Alignment.bottomRight,
-                                              children: [
-                                                Text(habit.icon, style: const TextStyle(fontSize: 26)),
-                                                Container(
-                                                  padding: const EdgeInsets.all(2),
-                                                  decoration: const BoxDecoration(
-                                                    color: AppColors.success,
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  child: const Icon(Icons.check, color: Colors.white, size: 10),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              habit.name,
-                                              style: AppTextStyles.caption.copyWith(fontSize: 11),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
+                                      );
+                                    },
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ],
-                      
+
                     const SliverToBoxAdapter(
                       child: SizedBox(height: 120), // Bottom padding
                     ),
@@ -278,7 +344,9 @@ class _HomeScreenState extends State<HomeScreen> {
             // Floating Action Button
             Positioned(
               // Position lower on mobile (above bottom nav) but at bottom on desktop
-              bottom: MediaQuery.of(context).size.width >= 1024 ? AppSpacing.lg : 110,
+              bottom: MediaQuery.of(context).size.width >= 1024
+                  ? AppSpacing.lg
+                  : 110,
               right: AppSpacing.lg,
               child: FloatingActionButton(
                 onPressed: () => showModalBottomSheet(

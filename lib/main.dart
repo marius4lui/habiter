@@ -120,15 +120,15 @@ class _RootShellState extends State<_RootShell> {
   }
 
   void _openAppLock() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AppLockScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AppLockScreen()));
   }
 
   void _openSettings() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const SettingsScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
   }
 
   @override
@@ -194,10 +194,14 @@ class _RootShellState extends State<_RootShell> {
                 FloatingActionButton.small(
                   heroTag: 'settings',
                   onPressed: _openSettings,
-                  backgroundColor: isDark ? AppColorsDark.surface : AppColors.surface,
+                  backgroundColor: isDark
+                      ? AppColorsDark.surface
+                      : AppColors.surface,
                   child: Icon(
                     Icons.settings_outlined,
-                    color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                    color: isDark
+                        ? AppColorsDark.textSecondary
+                        : AppColors.textSecondary,
                     size: 20,
                   ),
                 ),
@@ -210,12 +214,16 @@ class _RootShellState extends State<_RootShell> {
                       onPressed: _openAppLock,
                       backgroundColor: appLock.isEnabled
                           ? (isDark ? AppColorsDark.primary : AppColors.primary)
-                          : (isDark ? AppColorsDark.surface : AppColors.surface),
+                          : (isDark
+                                ? AppColorsDark.surface
+                                : AppColors.surface),
                       child: Icon(
                         appLock.isEnabled ? Icons.lock : Icons.lock_open,
                         color: appLock.isEnabled
                             ? Colors.white
-                            : (isDark ? AppColorsDark.textSecondary : AppColors.textSecondary),
+                            : (isDark
+                                  ? AppColorsDark.textSecondary
+                                  : AppColors.textSecondary),
                         size: 20,
                       ),
                     );
@@ -231,10 +239,7 @@ class _RootShellState extends State<_RootShell> {
                 AppSpacing.md,
                 AppSpacing.md,
               ),
-              child: _GlassNavBar(
-                index: _index,
-                onChange: _onNavChange,
-              ),
+              child: _GlassNavBar(index: _index, onChange: _onNavChange),
             ),
           ),
         ],
@@ -253,8 +258,9 @@ class _GlassNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
-    final borderColor =
-        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final borderColor = isDark
+        ? AppColorsDark.borderLight
+        : AppColors.borderLight;
     final l = context.l10n;
 
     return ClipRRect(
@@ -315,9 +321,7 @@ class _DesktopSidebar extends StatelessWidget {
       width: 80,
       decoration: BoxDecoration(
         color: surfaceColor.withValues(alpha: 0.95),
-        border: Border(
-          right: BorderSide(color: borderColor, width: 1),
-        ),
+        border: Border(right: BorderSide(color: borderColor, width: 1)),
       ),
       child: Column(
         children: [
@@ -374,7 +378,9 @@ class _DesktopSidebar extends StatelessWidget {
                   appLock.isEnabled ? Icons.lock : Icons.lock_open,
                   color: appLock.isEnabled
                       ? (isDark ? AppColorsDark.primary : AppColors.primary)
-                      : (isDark ? AppColorsDark.textSecondary : AppColors.textSecondary),
+                      : (isDark
+                            ? AppColorsDark.textSecondary
+                            : AppColors.textSecondary),
                 ),
                 tooltip: 'App Lock',
               );
@@ -386,7 +392,9 @@ class _DesktopSidebar extends StatelessWidget {
             onPressed: onOpenSettings,
             icon: Icon(
               Icons.settings_outlined,
-              color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+              color: isDark
+                  ? AppColorsDark.textSecondary
+                  : AppColors.textSecondary,
             ),
             tooltip: 'Settings',
           ),

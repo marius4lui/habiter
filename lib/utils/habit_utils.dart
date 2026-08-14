@@ -22,10 +22,9 @@ int _dayDiff(DateTime a, DateTime b) {
 }
 
 HabitStreak calculateStreak(String habitId, List<HabitEntry> entries) {
-  final habitEntries = entries
-      .where((e) => e.habitId == habitId && e.completed)
-      .toList()
-    ..sort((a, b) => b.date.compareTo(a.date));
+  final habitEntries =
+      entries.where((e) => e.habitId == habitId && e.completed).toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
 
   if (habitEntries.isEmpty) {
     return HabitStreak(
@@ -92,16 +91,19 @@ HabitStats calculateHabitStats(Habit habit, List<HabitEntry> entries) {
   final habitEntries = entries.where((e) => e.habitId == habit.id).toList();
   final completed = habitEntries.where((e) => e.completed).toList();
   final totalCompletions = completed.length;
-  final completionRate =
-      habitEntries.isEmpty ? 0 : (totalCompletions / habitEntries.length) * 100;
+  final completionRate = habitEntries.isEmpty
+      ? 0
+      : (totalCompletions / habitEntries.length) * 100;
 
   final uniqueDates = habitEntries.map((e) => e.date).toSet().toList()..sort();
   var averagePerWeek = 0.0;
   if (uniqueDates.isNotEmpty) {
     final firstDate = DateTime.parse(uniqueDates.first);
     final lastDate = DateTime.parse(uniqueDates.last);
-    final totalWeeks =
-        max(1, ((lastDate.difference(firstDate).inDays) / 7).ceil());
+    final totalWeeks = max(
+      1,
+      ((lastDate.difference(firstDate).inDays) / 7).ceil(),
+    );
     averagePerWeek = totalCompletions / totalWeeks;
   }
 
@@ -117,45 +119,60 @@ HabitStats calculateHabitStats(Habit habit, List<HabitEntry> entries) {
 }
 
 class WeeklyData {
-  WeeklyData(
-      {required this.week, required this.completions, required this.total});
+  WeeklyData({
+    required this.week,
+    required this.completions,
+    required this.total,
+  });
 
   final String week;
   final int completions;
   final int total;
 }
 
-List<WeeklyData> getWeeklyData(String habitId, List<HabitEntry> entries,
-    {int weeksBack = 4}) {
+List<WeeklyData> getWeeklyData(
+  String habitId,
+  List<HabitEntry> entries, {
+  int weeksBack = 4,
+}) {
   final data = <WeeklyData>[];
   final today = DateTime.now();
 
   for (var i = weeksBack - 1; i >= 0; i--) {
     final weekStart = DateTime(
-        today.year, today.month, today.day - (today.weekday - 1) - (i * 7));
+      today.year,
+      today.month,
+      today.day - (today.weekday - 1) - (i * 7),
+    );
     final weekEnd = weekStart.add(const Duration(days: 6));
 
     final weekEntries = entries.where((entry) {
       if (entry.habitId != habitId) return false;
       final entryDate = DateTime.parse(entry.date);
-      return entryDate
-              .isAfter(weekStart.subtract(const Duration(seconds: 1))) &&
+      return entryDate.isAfter(
+            weekStart.subtract(const Duration(seconds: 1)),
+          ) &&
           entryDate.isBefore(weekEnd.add(const Duration(days: 1)));
     }).toList();
 
     final completions = weekEntries.where((e) => e.completed).length;
-    data.add(WeeklyData(
-      week: DateFormat('MMM d').format(weekStart),
-      completions: completions,
-      total: 7,
-    ));
+    data.add(
+      WeeklyData(
+        week: DateFormat('MMM d').format(weekStart),
+        completions: completions,
+        total: 7,
+      ),
+    );
   }
 
   return data;
 }
 
 HabitEntry? getHabitCompletionForDate(
-    String habitId, String date, List<HabitEntry> entries) {
+  String habitId,
+  String date,
+  List<HabitEntry> entries,
+) {
   try {
     return entries.firstWhere(
       (entry) => entry.habitId == habitId && entry.date == date,
@@ -172,7 +189,10 @@ bool isHabitCompletedToday(String habitId, List<HabitEntry> entries) {
 }
 
 double getCompletionRateForPeriod(
-    String habitId, List<HabitEntry> entries, int days) {
+  String habitId,
+  List<HabitEntry> entries,
+  int days,
+) {
   final endDate = DateTime.now();
   final startDate = endDate.subtract(Duration(days: days));
 

@@ -4,7 +4,7 @@
 
 **Build better habits, one day at a time.**
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.24.5-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.44.8-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Platforms](https://img.shields.io/badge/Platforms-Android%20%7C%20iOS%20%7C%20Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Web-4285F4?style=for-the-badge)](https://github.com/marius4lui/habiter/releases)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/marius4lui/habiter?style=for-the-badge&color=blue)](https://github.com/marius4lui/habiter/releases/latest)
@@ -82,7 +82,7 @@ All data stored **locally** on your device. No accounts required.
 
 ### Prerequisites
 
-- [Flutter SDK](https://docs.flutter.dev/get-started/install) (3.24.5 or higher)
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) 3.44.8
 - [Git](https://git-scm.com/)
 
 ### Installation

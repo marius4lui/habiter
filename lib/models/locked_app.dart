@@ -128,7 +128,8 @@ class AppLockConfig {
   factory AppLockConfig.fromMap(Map<String, dynamic> map) {
     return AppLockConfig(
       isEnabled: map['isEnabled'] as bool? ?? false,
-      lockedApps: (map['lockedApps'] as List<dynamic>?)
+      lockedApps:
+          (map['lockedApps'] as List<dynamic>?)
               ?.map((e) => LockedApp.fromMap(e as Map<String, dynamic>))
               .toList() ??
           [],

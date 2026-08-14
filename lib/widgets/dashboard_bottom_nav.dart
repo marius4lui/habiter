@@ -15,26 +15,35 @@ class DashboardBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     // We're implementing a custom look over the standard NavigationBar to match the design EXACTLY.
     // Design: White/Glass background, icons with active state indicator dots or filled icons.
-    
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.9), // Glassy effect potential
+        color: Theme.of(context).scaffoldBackgroundColor.withValues(
+          alpha: 0.9,
+        ), // Glassy effect potential
         border: Border(
           top: BorderSide(
             color: isDark ? AppColorsDark.borderLight : AppColors.borderLight,
           ),
         ),
-        boxShadow: isDark ? [] : [
-           BoxShadow(
-             color: Colors.black.withValues(alpha: 0.05),
-             blurRadius: 10,
-             offset: const Offset(0, -5),
-           )
-        ],
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -5),
+                ),
+              ],
       ),
-      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.lg),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
       child: SafeArea(
         top: false,
         child: Row(
@@ -52,7 +61,7 @@ class DashboardBottomNav extends StatelessWidget {
               isActive: currentIndex == 1,
               onTap: () => onTap(1),
             ),
-             const SizedBox(width: 48), // Space for floating action button
+            const SizedBox(width: 48), // Space for floating action button
             _NavItem(
               icon: Icons.group_rounded, // Groups
               label: 'Community',
@@ -100,7 +109,7 @@ class _NavItem extends StatelessWidget {
               color: isActive ? AppColors.primary : AppColors.textTertiary,
               size: 28,
             ),
-            if (isActive) 
+            if (isActive)
               Container(
                 margin: const EdgeInsets.only(top: 4),
                 width: 4,
@@ -111,7 +120,7 @@ class _NavItem extends StatelessWidget {
                 ),
               )
             else
-               const SizedBox(height: 8), // Keep height consistent
+              const SizedBox(height: 8), // Keep height consistent
           ],
         ),
       ),

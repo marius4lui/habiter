@@ -39,20 +39,20 @@ class _ParticleBurstState extends State<ParticleBurst> {
       alignment: Alignment.center,
       children: _particles.map((p) {
         return Container(
-          width: p.size,
-          height: p.size,
-          decoration: BoxDecoration(
-            color: widget.color.withValues(alpha: p.opacity),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: widget.color.withValues(alpha: 0.5),
-                blurRadius: 8,
-                spreadRadius: 2,
-              )
-            ],
-          ),
-        )
+              width: p.size,
+              height: p.size,
+              decoration: BoxDecoration(
+                color: widget.color.withValues(alpha: p.opacity),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.color.withValues(alpha: 0.5),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+            )
             .animate()
             .move(
               duration: 600.ms,
@@ -60,10 +60,7 @@ class _ParticleBurstState extends State<ParticleBurst> {
               end: Offset(cos(p.angle) * p.distance, sin(p.angle) * p.distance),
               curve: Curves.easeOutCubic,
             )
-            .fadeOut(
-              delay: 200.ms,
-              duration: 400.ms,
-            )
+            .fadeOut(delay: 200.ms, duration: 400.ms)
             .scale(
               duration: 600.ms,
               begin: const Offset(0.2, 0.2),

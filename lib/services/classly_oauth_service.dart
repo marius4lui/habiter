@@ -7,36 +7,36 @@ import 'classly_client.dart';
 
 class ClasslyOAuthService {
   static const String clientId = 'habiter-app';
-  
+
   // For mobile platforms, use custom URL scheme
   static const String _mobileRedirectScheme = 'habiter';
   static const String _mobileRedirectUri = 'habiter://auth/callback';
-  
+
   // For desktop platforms, we'll use localhost with a dynamic port
   static const String _desktopCallbackPath = '/callback';
-  
+
   /// Check if running on desktop (Windows, Linux, macOS)
-  static bool get _isDesktop => 
+  static bool get _isDesktop =>
       !kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
 
   /// Performs the OAuth 2.0 Authorization Code Flow.
-  /// 
+  ///
   /// 1. Opens the browser for user to login at [baseUrl]/api/oauth/authorize
   /// 2. Waits for redirect to callback URL
   /// 3. Extracts authorization code
   /// 4. Exchanges code for access token
-  /// 
+  ///
   /// Returns a map containing the token response (access_token, class_id, etc.)
   Future<Map<String, dynamic>> authenticate({
     required String baseUrl,
     required ClasslyClient client,
   }) async {
     final cleanBaseUrl = baseUrl.trim().replaceAll(RegExp(r'/+$'), '');
-    
+
     // Determine redirect URI and callback scheme based on platform
     final String redirectUri;
     final String callbackUrlScheme;
-    
+
     if (_isDesktop) {
       // On desktop, use localhost with a fixed port
       // The port must match what's configured in the Classly OAuth app settings
@@ -48,7 +48,7 @@ class ClasslyOAuthService {
       redirectUri = _mobileRedirectUri;
       callbackUrlScheme = _mobileRedirectScheme;
     }
-    
+
     // Construct the authorization URL
     final authUri = Uri.parse('$cleanBaseUrl/api/oauth/authorize').replace(
       queryParameters: {

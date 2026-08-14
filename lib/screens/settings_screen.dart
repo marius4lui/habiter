@@ -59,8 +59,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _checkPermissions() async {
     if (Platform.isAndroid || Platform.isIOS) {
-      final granted =
-          await NotificationService.instance.areNotificationsEnabled();
+      final granted = await NotificationService.instance
+          .areNotificationsEnabled();
       setState(() => _permissionGranted = granted);
     } else {
       setState(() => _permissionGranted = false);
@@ -83,8 +83,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final settingsProvider = context.read<SettingsProvider>();
 
     final newPrefs = UserPreferences(
-      theme:
-          settingsProvider.preferenceFromThemeMode(settingsProvider.themeMode),
+      theme: settingsProvider.preferenceFromThemeMode(
+        settingsProvider.themeMode,
+      ),
       notifications: _notificationsEnabled,
       reminderTime:
           '${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}',
@@ -145,15 +146,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final gradient = isDark ? AppGradientsDark.appShell : AppGradients.appShell;
 
-    final captionColor =
-        isDark ? AppColorsDark.textTertiary : AppColors.textTertiary;
+    final captionColor = isDark
+        ? AppColorsDark.textTertiary
+        : AppColors.textTertiary;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title:
-            Text(l.settings, style: Theme.of(context).textTheme.displayMedium),
+        title: Text(
+          l.settings,
+          style: Theme.of(context).textTheme.displayMedium,
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
@@ -209,11 +213,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     isDark: isDark,
                     items: [
                       DropdownMenuItem(
-                          value: ThemeMode.light, child: Text(l.themeLight)),
+                        value: ThemeMode.light,
+                        child: Text(l.themeLight),
+                      ),
                       DropdownMenuItem(
-                          value: ThemeMode.dark, child: Text(l.themeDark)),
+                        value: ThemeMode.dark,
+                        child: Text(l.themeDark),
+                      ),
                       DropdownMenuItem(
-                          value: ThemeMode.system, child: Text(l.themeSystem)),
+                        value: ThemeMode.system,
+                        child: Text(l.themeSystem),
+                      ),
                     ],
                     onChanged: (value) async {
                       if (value != null) {
@@ -300,10 +310,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Center(
                 child: Text(
                   l.version('1.2.0'),
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: captionColor),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: captionColor),
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -330,8 +339,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required bool isDark,
   }) {
     final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
-    final borderColor =
-        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final borderColor = isDark
+        ? AppColorsDark.borderLight
+        : AppColors.borderLight;
     final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
 
     return ClipRRect(
@@ -353,11 +363,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     Icon(icon, color: primaryColor, size: 20),
                     const SizedBox(width: AppSpacing.sm),
-                    Text(title,
-                        style: Theme.of(context)
-                            .textTheme
-                            .displaySmall
-                            ?.copyWith(fontSize: 16)),
+                    Text(
+                      title,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.displaySmall?.copyWith(fontSize: 16),
+                    ),
                   ],
                 ),
               ),
@@ -371,11 +382,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildClasslyConnectionForm(
-      bool isDark, ClasslySyncProvider provider) {
-    final borderColor =
-        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
-    final surfaceMuted =
-        isDark ? AppColorsDark.surfaceMuted : AppColors.surfaceMuted;
+    bool isDark,
+    ClasslySyncProvider provider,
+  ) {
+    final borderColor = isDark
+        ? AppColorsDark.borderLight
+        : AppColors.borderLight;
+    final surfaceMuted = isDark
+        ? AppColorsDark.surfaceMuted
+        : AppColors.surfaceMuted;
     final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
 
     return Padding(
@@ -385,10 +400,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Text(
             'Classly verbinden',
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge
-                ?.copyWith(fontWeight: FontWeight.w600),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: AppSpacing.sm),
 
@@ -398,29 +412,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onPressed: provider.isConnecting
                   ? null
                   : () async {
-                      final url = _classlyUrlController.text.trim().isEmpty 
-                        ? ClasslySyncProvider.defaultBaseUrl 
-                        : _classlyUrlController.text.trim();
-                      
+                      final url = _classlyUrlController.text.trim().isEmpty
+                          ? ClasslySyncProvider.defaultBaseUrl
+                          : _classlyUrlController.text.trim();
+
                       _classlyUrlController.text = url; // Update UI if empty
 
                       await provider.connectWithOAuth(baseUrl: url);
-                      
+
                       if (!mounted) return;
                       if (provider.lastError == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Erfolgreich eingeloggt!')),
+                          const SnackBar(
+                            content: Text('Erfolgreich eingeloggt!'),
+                          ),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Login fehlgeschlagen: ${provider.lastError}')),
+                          SnackBar(
+                            content: Text(
+                              'Login fehlgeschlagen: ${provider.lastError}',
+                            ),
+                          ),
                         );
                       }
                     },
               icon: const Icon(Icons.login),
-              label: Text(provider.isConnecting ? 'Verbinden...' : 'Mit Classly anmelden (OAuth)'),
+              label: Text(
+                provider.isConnecting
+                    ? 'Verbinden...'
+                    : 'Mit Classly anmelden (OAuth)',
+              ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDark ? const Color(0xFF5865F2) : const Color(0xFF5865F2), // Classly/Discord Blue-ish
+                backgroundColor: isDark
+                    ? const Color(0xFF5865F2)
+                    : const Color(0xFF5865F2), // Classly/Discord Blue-ish
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
@@ -432,7 +458,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const Expanded(child: Divider()),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text('ODER manuell', style: Theme.of(context).textTheme.bodySmall),
+                child: Text(
+                  'ODER manuell',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
               const Expanded(child: Divider()),
             ],
@@ -495,8 +524,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         if (url.isEmpty || email.isEmpty || password.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text(
-                                    'Bitte URL, E-Mail und Passwort ausfüllen')),
+                              content: Text(
+                                'Bitte URL, E-Mail und Passwort ausfüllen',
+                              ),
+                            ),
                           );
                           return;
                         }
@@ -524,9 +555,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.lock_open),
-                label: Text(provider.isConnecting
-                    ? 'Verbinden...'
-                    : 'Einloggen'),
+                label: Text(
+                  provider.isConnecting ? 'Verbinden...' : 'Einloggen',
+                ),
               ),
               OutlinedButton.icon(
                 onPressed: provider.isSyncing
@@ -542,10 +573,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         }
                         // Import events as habits
                         final habitProvider = context.read<HabitProvider>();
-                        final imported = await habitProvider.importFromClasslyEvents(provider.events);
+                        final imported = await habitProvider
+                            .importFromClasslyEvents(provider.events);
                         if (!mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Sync: $imported Habits importiert')),
+                          SnackBar(
+                            content: Text('Sync: $imported Habits importiert'),
+                          ),
                         );
                       },
                 icon: provider.isSyncing
@@ -587,9 +621,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ? 'Token manuell ausblenden'
                   : 'Token manuell eingeben',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: primaryColor,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: primaryColor,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           if (_showTokenField) ...[
@@ -618,7 +652,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   if (url.isEmpty || token.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text('Bitte URL und Token ausfüllen')),
+                        content: Text('Bitte URL und Token ausfüllen'),
+                      ),
                     );
                     return;
                   }
@@ -640,8 +675,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildClasslyStatus(bool isDark, ClasslySyncProvider provider) {
-    final captionColor =
-        isDark ? AppColorsDark.textTertiary : AppColors.textTertiary;
+    final captionColor = isDark
+        ? AppColorsDark.textTertiary
+        : AppColors.textTertiary;
     final lastSync = provider.lastSync != null
         ? DateFormat('dd.MM.yyyy HH:mm').format(provider.lastSync!.toLocal())
         : 'Nie';
@@ -651,32 +687,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Status: $status',
-              style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            'Status: $status',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
           const SizedBox(height: AppSpacing.xs),
-          Text('Letzter Sync: $lastSync',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: captionColor)),
-          Text('Empfangene Events: ${provider.events.length}',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: captionColor)),
+          Text(
+            'Letzter Sync: $lastSync',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: captionColor),
+          ),
+          Text(
+            'Empfangene Events: ${provider.events.length}',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: captionColor),
+          ),
           if (provider.lastError != null)
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.xs),
               child: Text(
                 'Fehler: ${provider.lastError}',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: Colors.redAccent),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.redAccent),
               ),
             ),
         ],
@@ -706,10 +747,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Text(
                   l.permissionRequired,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.copyWith(fontWeight: FontWeight.w600),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 Text(
                   l.permissionRequiredDesc,
@@ -718,10 +758,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          TextButton(
-            onPressed: _requestPermissions,
-            child: Text(l.allow),
-          ),
+          TextButton(onPressed: _requestPermissions, child: Text(l.allow)),
         ],
       ),
     );
@@ -757,10 +794,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required VoidCallback onTap,
     required bool isDark,
   }) {
-    final surfaceMuted =
-        isDark ? AppColorsDark.surfaceMuted : AppColors.surfaceMuted;
-    final borderColor =
-        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final surfaceMuted = isDark
+        ? AppColorsDark.surfaceMuted
+        : AppColors.surfaceMuted;
+    final borderColor = isDark
+        ? AppColorsDark.borderLight
+        : AppColors.borderLight;
     final primaryColor = isDark ? AppColorsDark.primary : AppColors.primary;
 
     return ListTile(
@@ -789,9 +828,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 time.format(context),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: primaryColor,
-                    ),
+                  fontWeight: FontWeight.w600,
+                  color: primaryColor,
+                ),
               ),
             ],
           ),
@@ -807,10 +846,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required ValueChanged<T?> onChanged,
     required bool isDark,
   }) {
-    final surfaceMuted =
-        isDark ? AppColorsDark.surfaceMuted : AppColors.surfaceMuted;
-    final borderColor =
-        isDark ? AppColorsDark.borderLight : AppColors.borderLight;
+    final surfaceMuted = isDark
+        ? AppColorsDark.surfaceMuted
+        : AppColors.surfaceMuted;
+    final borderColor = isDark
+        ? AppColorsDark.borderLight
+        : AppColors.borderLight;
     final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
 
     return ListTile(

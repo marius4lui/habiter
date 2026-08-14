@@ -45,11 +45,7 @@ class ClasslyEventTopic {
 }
 
 class ClasslyEventLink {
-  ClasslyEventLink({
-    required this.id,
-    required this.url,
-    required this.label,
-  });
+  ClasslyEventLink({required this.id, required this.url, required this.label});
 
   final String id;
   final String url;
@@ -143,12 +139,9 @@ class ClasslySubject {
 }
 
 class ClasslyClient {
-  ClasslyClient({
-    required this.baseUrl,
-    http.Client? httpClient,
-    String? token,
-  })  : _http = httpClient ?? http.Client(),
-        _token = token;
+  ClasslyClient({required this.baseUrl, http.Client? httpClient, String? token})
+    : _http = httpClient ?? http.Client(),
+      _token = token;
 
   final String baseUrl;
   final http.Client _http;
@@ -159,7 +152,8 @@ class ClasslyClient {
   Map<String, String> _defaultHeaders() {
     if (_token == null) {
       throw ClasslyApiException(
-          'No token set. Call issueToken or set token first.');
+        'No token set. Call issueToken or set token first.',
+      );
     }
     return {
       'Authorization': 'Bearer $_token',
@@ -210,8 +204,9 @@ class ClasslyClient {
     if (updatedSince != null) {
       params['updated_since'] = updatedSince.toIso8601String();
     }
-    final uri =
-        Uri.parse('$baseUrl/api/events').replace(queryParameters: params);
+    final uri = Uri.parse(
+      '$baseUrl/api/events',
+    ).replace(queryParameters: params);
 
     final resp = await _http.get(uri, headers: _defaultHeaders());
     if (resp.statusCode != 200) {
@@ -281,7 +276,7 @@ class ClasslyClient {
     if (accessToken == null) {
       throw ClasslyApiException('Access token missing in response');
     }
-    
+
     // Update local token
     _token = accessToken;
     return data;
@@ -299,7 +294,9 @@ class ClasslyClient {
       );
     }
 
-    return ClasslyUserInfo.fromJson(jsonDecode(resp.body) as Map<String, dynamic>);
+    return ClasslyUserInfo.fromJson(
+      jsonDecode(resp.body) as Map<String, dynamic>,
+    );
   }
 
   // --- Push Notifications ---
@@ -318,7 +315,7 @@ class ClasslyClient {
     final resp = await _http.post(uri, headers: _defaultHeaders(), body: body);
 
     if (resp.statusCode != 200) {
-      // Don't throw if it's just already registered or minor issue? 
+      // Don't throw if it's just already registered or minor issue?
       // Docs say 200 OK. Let's strict for now.
       throw ClasslyApiException(
         'Registering push token failed: ${resp.body}',
@@ -332,7 +329,11 @@ class ClasslyClient {
     final uri = Uri.parse('$baseUrl/api/push/unregister');
     final body = jsonEncode({'device_token': deviceToken});
 
-    final resp = await _http.delete(uri, headers: _defaultHeaders(), body: body);
+    final resp = await _http.delete(
+      uri,
+      headers: _defaultHeaders(),
+      body: body,
+    );
 
     if (resp.statusCode != 200) {
       throw ClasslyApiException(

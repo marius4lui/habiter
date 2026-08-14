@@ -108,11 +108,13 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
         content: const Text('This action cannot be undone.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Delete', style: TextStyle(color: Colors.red))),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );
@@ -160,305 +162,334 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(widget.habit != null ? 'Edit Habit' : 'New Habit',
-                      style: AppTextStyles.h2),
-                  if (widget.habit != null)
-                    IconButton(
-                        onPressed: _deleteHabit,
-                        icon: const Icon(Icons.delete_outline,
-                            color: Colors.red)),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Name',
-                        hintText: 'e.g. Read 20 minutes',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Name is required';
-                        }
-                        return null;
-                      },
+                    Text(
+                      widget.habit != null ? 'Edit Habit' : 'New Habit',
+                      style: AppTextStyles.h2,
                     ),
-                    const SizedBox(height: AppSpacing.md),
-                    TextFormField(
-                      controller: _descriptionController,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Description',
-                        hintText: 'Optional description',
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Text('Category', style: AppTextStyles.h3),
-                    const SizedBox(height: AppSpacing.sm),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: categories
-                          .map(
-                            (c) => ChoiceChip(
-                              label: Text(c),
-                              selected: c == _category,
-                              onSelected: (_) {
-                                setState(() {
-                                  _category = c;
-                                  _icon = _iconSuggestions[c]?.first ?? _icon;
-                                });
-                              },
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Icon', style: AppTextStyles.h3),
-                        Row(
-                          children: [
-                            // Show currently selected icon
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                border: Border.all(color: AppColors.primary),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(_icon, style: const TextStyle(fontSize: 20)),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Text(
-                              'Tap below to change',
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
+                    if (widget.habit != null)
+                      IconButton(
+                        onPressed: _deleteHabit,
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: Colors.red,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    SizedBox(
-                      height: 52,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (_, index) {
-                          final icons = _iconSuggestions[_category] ?? _iconSuggestions.values.first;
-                          if (icons.isEmpty) return const SizedBox();
-                          final icon = icons[index % icons.length];
-                          final selected = icon == _icon;
-                          return GestureDetector(
-                            onTap: () => setState(() => _icon = icon),
-                            child: Container(
-                              width: 52,
-                              decoration: BoxDecoration(
-                                color: selected
-                                    ? AppColors.primary
-                                    : AppColors.surface,
-                                borderRadius:
-                                    BorderRadius.circular(AppBorderRadius.full),
-                                border: Border.all(
-                                  color: selected
-                                      ? AppColors.primary
-                                      : AppColors.borderLight,
-                                  width: selected ? 2 : 1,
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                icon,
-                                style: const TextStyle(fontSize: 22),
-                              ),
-                            ),
-                          );
-                        },
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(width: AppSpacing.sm),
-                        itemCount: (_iconSuggestions[_category] ?? _iconSuggestions.values.first).length,
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text('Color', style: AppTextStyles.h3),
-                    const SizedBox(height: AppSpacing.sm),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: colors
-                          .map(
-                            (color) => GestureDetector(
-                              onTap: () => setState(() => _color = color),
-                              child: Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: _fromHex(color),
-                                  borderRadius: BorderRadius.circular(
-                                      AppBorderRadius.full),
-                                  border: Border.all(
-                                    color: _color == color
-                                        ? AppColors.text
-                                        : Colors.transparent,
-                                    width: 3,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text('Frequency', style: AppTextStyles.h3),
-                    const SizedBox(height: AppSpacing.sm),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      children: HabitFrequency.values
-                          .map(
-                            (f) => ChoiceChip(
-                              label: Text(f.name[0].toUpperCase() +
-                                  f.name.substring(1)),
-                              selected: _frequency == f,
-                              onSelected: (_) => setState(() => _frequency = f),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    if (_frequency == HabitFrequency.custom) ...[
-                      const SizedBox(height: AppSpacing.md),
-                      Text('Select Days', style: AppTextStyles.h3),
-                      const SizedBox(height: AppSpacing.sm),
-                      Wrap(
-                        spacing: AppSpacing.xs,
-                        children: List.generate(7, (index) {
-                          final dayIndex = index + 1; // 1 = Monday
-                          final isSelected =
-                              _selectedWeekdays.contains(dayIndex);
-                          final dayName =
-                              ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index];
-                          return InkWell(
-                            onTap: () {
-                              setState(() {
-                                if (isSelected) {
-                                  _selectedWeekdays.remove(dayIndex);
-                                } else {
-                                  _selectedWeekdays.add(dayIndex);
-                                }
-                              });
-                            },
-                            borderRadius:
-                                BorderRadius.circular(AppBorderRadius.full),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : AppColors.surface,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.borderLight,
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                dayName,
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : AppColors.textSecondary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                    ],
-                    const SizedBox(height: AppSpacing.lg),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Target per day', style: AppTextStyles.h3),
-                        Row(
-                          children: [
-                            IconButton(
-                              onPressed: _targetCount > 1
-                                  ? () => setState(() => _targetCount--)
-                                  : null,
-                              icon: const Icon(Icons.remove_circle_outline),
-                            ),
-                            Text(
-                              '$_targetCount',
-                              style: AppTextStyles.h3,
-                            ),
-                            IconButton(
-                              onPressed: () => setState(() => _targetCount++),
-                              icon: const Icon(Icons.add_circle_outline),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: AppSpacing.md,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(AppBorderRadius.md),
-                          ),
-                        ),
-                        onPressed: _saving ? null : _save,
-                        child: _saving
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : Text(
-                                widget.habit != null
-                                    ? 'Update Habit'
-                                    : 'Create Habit',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                ),
-                              ),
-                      ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close),
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: AppSpacing.md),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Name',
+                          hintText: 'e.g. Read 20 minutes',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Name is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      TextFormField(
+                        controller: _descriptionController,
+                        maxLines: 3,
+                        decoration: const InputDecoration(
+                          labelText: 'Description',
+                          hintText: 'Optional description',
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Text('Category', style: AppTextStyles.h3),
+                      const SizedBox(height: AppSpacing.sm),
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: categories
+                            .map(
+                              (c) => ChoiceChip(
+                                label: Text(c),
+                                selected: c == _category,
+                                onSelected: (_) {
+                                  setState(() {
+                                    _category = c;
+                                    _icon = _iconSuggestions[c]?.first ?? _icon;
+                                  });
+                                },
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Icon', style: AppTextStyles.h3),
+                          Row(
+                            children: [
+                              // Show currently selected icon
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    AppBorderRadius.md,
+                                  ),
+                                  border: Border.all(color: AppColors.primary),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  _icon,
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              Text(
+                                'Tap below to change',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      SizedBox(
+                        height: 52,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (_, index) {
+                            final icons =
+                                _iconSuggestions[_category] ??
+                                _iconSuggestions.values.first;
+                            if (icons.isEmpty) return const SizedBox();
+                            final icon = icons[index % icons.length];
+                            final selected = icon == _icon;
+                            return GestureDetector(
+                              onTap: () => setState(() => _icon = icon),
+                              child: Container(
+                                width: 52,
+                                decoration: BoxDecoration(
+                                  color: selected
+                                      ? AppColors.primary
+                                      : AppColors.surface,
+                                  borderRadius: BorderRadius.circular(
+                                    AppBorderRadius.full,
+                                  ),
+                                  border: Border.all(
+                                    color: selected
+                                        ? AppColors.primary
+                                        : AppColors.borderLight,
+                                    width: selected ? 2 : 1,
+                                  ),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  icon,
+                                  style: const TextStyle(fontSize: 22),
+                                ),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(width: AppSpacing.sm),
+                          itemCount:
+                              (_iconSuggestions[_category] ??
+                                      _iconSuggestions.values.first)
+                                  .length,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Text('Color', style: AppTextStyles.h3),
+                      const SizedBox(height: AppSpacing.sm),
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: colors
+                            .map(
+                              (color) => GestureDetector(
+                                onTap: () => setState(() => _color = color),
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: _fromHex(color),
+                                    borderRadius: BorderRadius.circular(
+                                      AppBorderRadius.full,
+                                    ),
+                                    border: Border.all(
+                                      color: _color == color
+                                          ? AppColors.text
+                                          : Colors.transparent,
+                                      width: 3,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Text('Frequency', style: AppTextStyles.h3),
+                      const SizedBox(height: AppSpacing.sm),
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        children: HabitFrequency.values
+                            .map(
+                              (f) => ChoiceChip(
+                                label: Text(
+                                  f.name[0].toUpperCase() + f.name.substring(1),
+                                ),
+                                selected: _frequency == f,
+                                onSelected: (_) =>
+                                    setState(() => _frequency = f),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      if (_frequency == HabitFrequency.custom) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        Text('Select Days', style: AppTextStyles.h3),
+                        const SizedBox(height: AppSpacing.sm),
+                        Wrap(
+                          spacing: AppSpacing.xs,
+                          children: List.generate(7, (index) {
+                            final dayIndex = index + 1; // 1 = Monday
+                            final isSelected = _selectedWeekdays.contains(
+                              dayIndex,
+                            );
+                            final dayName = [
+                              'M',
+                              'T',
+                              'W',
+                              'T',
+                              'F',
+                              'S',
+                              'S',
+                            ][index];
+                            return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  if (isSelected) {
+                                    _selectedWeekdays.remove(dayIndex);
+                                  } else {
+                                    _selectedWeekdays.add(dayIndex);
+                                  }
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(
+                                AppBorderRadius.full,
+                              ),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.surface,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? AppColors.primary
+                                        : AppColors.borderLight,
+                                  ),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  dayName,
+                                  style: TextStyle(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : AppColors.textSecondary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ],
+                      const SizedBox(height: AppSpacing.lg),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Target per day', style: AppTextStyles.h3),
+                          Row(
+                            children: [
+                              IconButton(
+                                onPressed: _targetCount > 1
+                                    ? () => setState(() => _targetCount--)
+                                    : null,
+                                icon: const Icon(Icons.remove_circle_outline),
+                              ),
+                              Text('$_targetCount', style: AppTextStyles.h3),
+                              IconButton(
+                                onPressed: () => setState(() => _targetCount++),
+                                icon: const Icon(Icons.add_circle_outline),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: AppSpacing.md,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppBorderRadius.md,
+                              ),
+                            ),
+                          ),
+                          onPressed: _saving ? null : _save,
+                          child: _saving
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  widget.habit != null
+                                      ? 'Update Habit'
+                                      : 'Create Habit',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );

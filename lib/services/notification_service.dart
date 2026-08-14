@@ -8,8 +8,8 @@ import 'package:timezone/timezone.dart' as tz;
 import '../models/habit.dart';
 
 /// Callback for handling notification actions (marking habits complete)
-typedef NotificationActionCallback = Future<void> Function(
-    String habitId, String date);
+typedef NotificationActionCallback =
+    Future<void> Function(String habitId, String date);
 
 /// Singleton service for managing local notifications
 class NotificationService {
@@ -45,7 +45,8 @@ class NotificationService {
     // Don't initialize on desktop platforms
     if (!Platform.isAndroid && !Platform.isIOS) {
       debugPrint(
-          'NotificationService: Skipping initialization on non-mobile platform');
+        'NotificationService: Skipping initialization on non-mobile platform',
+      );
       _initialized = true;
       return;
     }
@@ -55,8 +56,9 @@ class NotificationService {
     tz.setLocalLocation(tz.getLocation('Europe/Berlin'));
 
     // Android settings
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
 
     // iOS settings
     final iosSettings = DarwinInitializationSettings(
@@ -103,22 +105,28 @@ class NotificationService {
     if (!Platform.isAndroid && !Platform.isIOS) return false;
 
     if (Platform.isAndroid) {
-      final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
-      
+      final androidPlugin = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+
       // Request notification permission (Android 13+)
-      final notificationsGranted = await androidPlugin?.requestNotificationsPermission();
-      
+      final notificationsGranted = await androidPlugin
+          ?.requestNotificationsPermission();
+
       // Request exact alarm permission (Android 12+)
       // This might open system settings if not auto-granted
-      final exactAlarmsGranted = await androidPlugin?.requestExactAlarmsPermission();
-      
+      final exactAlarmsGranted = await androidPlugin
+          ?.requestExactAlarmsPermission();
+
       return (notificationsGranted ?? false) && (exactAlarmsGranted ?? false);
     }
 
     if (Platform.isIOS) {
-      final iosPlugin = _plugin.resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin>();
+      final iosPlugin = _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >();
       final granted = await iosPlugin?.requestPermissions(
         alert: true,
         badge: true,
@@ -135,8 +143,10 @@ class NotificationService {
     if (!Platform.isAndroid && !Platform.isIOS) return false;
 
     if (Platform.isAndroid) {
-      final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final androidPlugin = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       return await androidPlugin?.areNotificationsEnabled() ?? false;
     }
 
@@ -147,8 +157,10 @@ class NotificationService {
   Future<AndroidScheduleMode> _getAndroidScheduleMode() async {
     if (!Platform.isAndroid) return AndroidScheduleMode.exactAllowWhileIdle;
 
-    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     // On Android 12+ (API 31+), check if we have permission
     // Provide a fallback for older versions where it's implicitly granted
@@ -157,20 +169,20 @@ class NotificationService {
     // where the permission concept doesn't exist (implicit grant).
     // Note: checkExactAlarmsPermission might return null on older Android versions
     // where the permission concept doesn't exist (implicit grant).
-    await androidPlugin?.requestExactAlarmsPermission(); 
+    await androidPlugin?.requestExactAlarmsPermission();
     // Using request here as a check because checkExactAlarmsPermission was added later/might differ.
     // Actually, requestExactAlarmsPermission returns current status or requests it.
     // Wait, let's use check logic if available or just assume if we fail the request, we fallback.
     // A safer bet is:
     // If we haven't asked yet, we might want to ask? But we do that on startup.
     // Here we just want to know if we CAN schedule.
-    
+
     // Better logic: use inexact if we suspect issues, but ideally we check.
     // Since we called requestPermissions() at app start, we can check again or just use safe mode.
-    
+
     // Let's rely on the method existing.
-    // return (await androidPlugin?.checkExactAlarmsPermission() ?? true) 
-    //    ? AndroidScheduleMode.exactAllowWhileIdle 
+    // return (await androidPlugin?.checkExactAlarmsPermission() ?? true)
+    //    ? AndroidScheduleMode.exactAllowWhileIdle
     //    : AndroidScheduleMode.inexactAllowWhileIdle;
 
     // To be safe with the API surface, I'll stick to what I know works:
@@ -178,18 +190,19 @@ class NotificationService {
     // If requestExactAlarmsPermission returns false, we don't have it.
     // But calling request again might be spammy?
     // The plugin doc says: "If the permission is already granted, the future completes with true."
-    
+
     // Let's just use inexact if exact fails? No, we can't try-catch the schedule method easily because it's a platform exception.
-    
+
     bool hasPermission = false;
     try {
-        hasPermission = await androidPlugin?.requestExactAlarmsPermission() ?? false;
+      hasPermission =
+          await androidPlugin?.requestExactAlarmsPermission() ?? false;
     } catch (e) {
-        // If the method doesn't exist or fails, assume we might have it (older android) or not.
-        // But on older android requestExactAlarmsPermission might not exist or verify differently.
-        hasPermission = true; // Default to true for older androids
+      // If the method doesn't exist or fails, assume we might have it (older android) or not.
+      // But on older android requestExactAlarmsPermission might not exist or verify differently.
+      hasPermission = true; // Default to true for older androids
     }
-    
+
     return hasPermission
         ? AndroidScheduleMode.exactAllowWhileIdle
         : AndroidScheduleMode.inexactAllowWhileIdle;
@@ -214,8 +227,14 @@ class NotificationService {
 
     // Calculate next occurrence
     final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    var scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
 
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
@@ -237,8 +256,10 @@ class NotificationService {
       categoryIdentifier: 'habiter_actions',
     );
 
-    const details =
-        NotificationDetails(android: androidDetails, iOS: iosDetails);
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
 
     await _plugin.zonedSchedule(
       _globalNotificationId,
@@ -278,8 +299,14 @@ class NotificationService {
 
     // Calculate next occurrence
     final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    var scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
 
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
@@ -309,8 +336,10 @@ class NotificationService {
       categoryIdentifier: 'habiter_actions',
     );
 
-    const details =
-        NotificationDetails(android: androidDetails, iOS: iosDetails);
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
 
     // Payload format: habitId|date
     final today = DateTime.now();
@@ -331,7 +360,8 @@ class NotificationService {
     );
 
     debugPrint(
-        'NotificationService: Scheduled habit notification for ${habit.name} at ${habit.notificationTime}');
+      'NotificationService: Scheduled habit notification for ${habit.name} at ${habit.notificationTime}',
+    );
   }
 
   /// Cancel notification for a specific habit
@@ -339,7 +369,8 @@ class NotificationService {
     final notificationId = habitId.hashCode.abs() % 100000 + 1;
     await _plugin.cancel(notificationId);
     debugPrint(
-        'NotificationService: Cancelled notification for habit $habitId');
+      'NotificationService: Cancelled notification for habit $habitId',
+    );
   }
 
   /// Cancel all notifications
@@ -373,7 +404,8 @@ class NotificationService {
   // Handle notification tap/action
   void _onNotificationResponse(NotificationResponse response) {
     debugPrint(
-        'NotificationService: Response received: ${response.actionId}, payload: ${response.payload}');
+      'NotificationService: Response received: ${response.actionId}, payload: ${response.payload}',
+    );
 
     if (response.actionId == 'mark_complete' && response.payload != null) {
       _handleMarkComplete(response.payload!);

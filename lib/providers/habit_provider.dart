@@ -166,14 +166,14 @@ class HabitProvider extends ChangeNotifier {
   Future<void> archiveHabit(String id) async {
     final index = habits.indexWhere((h) => h.id == id);
     if (index == -1) return;
-    
+
     final archivedHabit = habits[index].copyWith(isActive: false);
     habits[index] = archivedHabit;
     await StorageService.updateHabit(id, archivedHabit.toMap());
-    
+
     // Cancel notification for archived habit
     await NotificationService.instance.cancelHabitNotification(id);
-    
+
     debugPrint('HabitProvider: Archived habit: ${archivedHabit.name}');
     notifyListeners();
   }
@@ -181,14 +181,14 @@ class HabitProvider extends ChangeNotifier {
   Future<void> toggleHabitCompletion(String habitId, String date) async {
     final habitIndex = habits.indexWhere((h) => h.id == habitId);
     if (habitIndex == -1) return;
-    
+
     final habit = habits[habitIndex];
     final existingIndex = habitEntries.indexWhere(
       (entry) => entry.habitId == habitId && entry.date == date,
     );
     HabitEntry? entry;
     bool isNowCompleted = false;
-    
+
     if (existingIndex != -1) {
       final current = habitEntries[existingIndex];
       isNowCompleted = !current.completed;
@@ -215,15 +215,17 @@ class HabitProvider extends ChangeNotifier {
     }
 
     await StorageService.addHabitEntry(entry);
-    
+
     // If this is a Classly habit and it's now completed, archive it
     if (isNowCompleted && habit.description == 'Imported from Classly') {
-      debugPrint('HabitProvider: Archiving completed Classly habit: ${habit.name}');
+      debugPrint(
+        'HabitProvider: Archiving completed Classly habit: ${habit.name}',
+      );
       final archivedHabit = habit.copyWith(isActive: false);
       habits[habitIndex] = archivedHabit;
       await StorageService.updateHabit(habitId, archivedHabit.toMap());
     }
-    
+
     notifyListeners();
   }
 
@@ -282,7 +284,10 @@ class HabitProvider extends ChangeNotifier {
     String? model,
   }) async {
     await AIManager.saveConfig(
-        provider: provider, apiKey: apiKey, model: model);
+      provider: provider,
+      apiKey: apiKey,
+      model: model,
+    );
     notifyListeners();
   }
 
@@ -304,20 +309,20 @@ class HabitProvider extends ChangeNotifier {
     int imported = 0;
     // Check ALL habits (including archived) to avoid re-importing completed tasks
     final existingNames = habits.map((h) => h.name.toLowerCase()).toSet();
-    
+
     for (final event in events) {
       // Skip events without date (not relevant for habit tracking)
       if (event.date == null) continue;
-      
+
       // Skip INFO type events - they are just informational, not actionable tasks
       if (event.type.toLowerCase() == 'info') continue;
-      
+
       // Create habit name from event
       final name = event.title ?? event.subjectName ?? 'Classly Task';
-      
+
       // Skip if habit with same name already exists
       if (existingNames.contains(name.toLowerCase())) continue;
-      
+
       // Determine icon based on event type
       String icon;
       switch (event.type.toLowerCase()) {
@@ -334,7 +339,7 @@ class HabitProvider extends ChangeNotifier {
         default:
           icon = '📋';
       }
-      
+
       final habit = Habit(
         id: _uuid.v4(),
         name: name,
@@ -348,13 +353,13 @@ class HabitProvider extends ChangeNotifier {
         createdAt: DateTime.now(),
         isActive: true,
       );
-      
+
       habits = [habit, ...habits];
       await StorageService.addHabit(habit);
       existingNames.add(name.toLowerCase());
       imported++;
     }
-    
+
     if (imported > 0) {
       notifyListeners();
     }

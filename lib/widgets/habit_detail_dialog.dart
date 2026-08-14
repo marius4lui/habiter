@@ -98,7 +98,9 @@ class HabitDetailDialog extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: habitColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                              borderRadius: BorderRadius.circular(
+                                AppBorderRadius.full,
+                              ),
                             ),
                             child: Text(
                               habit.category,
@@ -117,7 +119,9 @@ class HabitDetailDialog extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.blue.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                                borderRadius: BorderRadius.circular(
+                                  AppBorderRadius.full,
+                                ),
                               ),
                               child: Text(
                                 'Classly',
@@ -202,7 +206,9 @@ class HabitDetailDialog extends StatelessWidget {
                   Text(
                     isCompleted ? 'Heute erledigt ✓' : 'Noch nicht erledigt',
                     style: AppTextStyles.body.copyWith(
-                      color: isCompleted ? AppColors.success : AppColors.warning,
+                      color: isCompleted
+                          ? AppColors.success
+                          : AppColors.warning,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -245,7 +251,7 @@ class HabitDetailDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-            
+
             // Secondary buttons row
             Row(
               children: [
@@ -326,15 +332,12 @@ class _DetailRow extends StatelessWidget {
           width: 100,
           child: Text(
             label,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
-        Expanded(
-          child: Text(
-            value,
-            style: AppTextStyles.body,
-          ),
-        ),
+        Expanded(child: Text(value, style: AppTextStyles.body)),
       ],
     );
   }

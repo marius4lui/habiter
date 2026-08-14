@@ -50,8 +50,11 @@ class DashboardHeader extends StatelessWidget {
             child: IconButton(
               onPressed: null, // TODO: Implement notification flow
               icon: Icon(
-                Icons.notifications_outlined, // Using material icon as closest to 'notifications' symbol
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                Icons
+                    .notifications_outlined, // Using material icon as closest to 'notifications' symbol
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
           ),

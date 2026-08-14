@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 03 – Toolchain- und Dependency-Kompatibilität aus den aktuellen Workflow-Pins ableiten, ADR konkretisieren und reproduzierbare Flutter-/Node-/pnpm-Pins einführen.
+**Resume Pointer:** Batch 04 – Die fünf aktiven Custom-Workflows gegen den Zieljob-Schnitt inventarisieren, zuerst Workflow-Vertragsprüfungen rot schreiben und anschließend konsolidieren.
 
 ---
 
@@ -104,6 +104,8 @@ Aktiv sind `Build All Platforms`, `Build APK`, `Comprehensive CI`, `Deploy Docs`
 | 2026-08-14 | `rrousselGit/riverpod` | `gh repo view` / Release-Abfrage | aktive Alternative, aber Migration erhöht Scope | Provider vorerst modularisieren | MIT |
 | 2026-08-14 | `simolus3/drift` | `gh release view` | Drift 2.34.3, starke Cross-Platform-Persistenz | kein sofortiger Wechsel ohne Bedarf | MIT |
 | 2026-08-14 | `flutter/packages` | `gh repo view flutter/packages` | SharedPreferences offiziell gepflegt | versionierte Repository-Schicht zunächst ausreichend | BSD-3-Clause |
+| 2026-08-14 | `nodejs/node` | `gh api repos/nodejs/node/releases/latest` | 26.7.0 ist aktuell, lokale 24.13.1-Linie bleibt die konservative LTS-Wahl | Node exakt auf 24.13.1 pinnen, keinen Current-Major erzwingen | MIT |
+| 2026-08-14 | `pnpm/pnpm` | `gh release view --repo pnpm/pnpm`; `gh search code "allowBuilds:"` | 11.21.0 aktuell; Buildskripte werden mit booleschem `allowBuilds` explizit erlaubt/verboten | `sharp` und `unrs-resolver` explizit `true`, frozen install verifiziert | MIT |
 | 2026-08-14 | `iSoron/uhabits` | `gh repo view --json ...` | klare Habit-Semantik, lokal | nur Produktprinzipien; kein GPL-Code | GPL-3.0 |
 | 2026-08-14 | `FriesI23/mhabit` | `gh repo view --json ...` | local-first, smart scoring, Multi-Platform | verzeihender Score als optionales Prinzip | Apache-2.0 |
 | 2026-08-14 | `xpavle00/Habo` | `gh repo view --json ...` | privacy-first | ehrliche Privacy-Kommunikation | GPL-3.0 |
@@ -199,7 +201,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `test(domain): lock in existing habit behavior`
 
 ### Batch 03: Toolchain-ADR und reproduzierbare Versionen
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Flutter/Java/Node/pnpm kompatibel pinnen und Lockfiles reproduzierbar machen.
 **Files:** Create `.fvmrc` oder `.tool-versions`; Modify `pubspec.yaml`, `pubspec.lock`, `landing_page/package.json`, `landing_page/pnpm-workspace.yaml`, Workflows, README; generated registrants nur durch Tools.
 **Behavior preserved:** Keine Produktänderung.
@@ -207,7 +209,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Implementation steps:** Upstream-Kompatibilität dokumentieren; minimal sinnvolle Upgrades; pnpm allowBuilds explizit; Release-Signing lokal fail-safe.
 **Commands:** `flutter pub get`; `pnpm install --frozen-lockfile`; Versionscript; Debug/Release-Build.
 **Expected result:** Identische Toolchain lokal/CI, kein untracked Lockfile.
-**Acceptance criteria:** [ ] Pins konsistent [ ] Signing ohne Secrets prüfbar [ ] Generator-Diffs erklärt.
+**Acceptance criteria:** [x] Pins konsistent [x] Signing ohne Secrets prüfbar [x] Generator-Diffs erklärt.
 **Migration/Rollback risk:** Dependency-API-Brüche; einzeln upgraden.
 **Commit:** `build(toolchain): align flutter node and java versions`
 
@@ -697,8 +699,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | Batch | Scope | Status | Tests | Commit | Risiken | Nächster Schritt |
 |---|---|---|---|---|---|---|
 | 01 | Baseline/Plan | VERIFIED | `Batches=40`; `Sections=25`; `InProgressRows=1`; `git diff --check` PASS | `8b8eedb` | keine | abgeschlossen |
-| 02 | Characterization | VERIFIED | Red: Reminder/Custom Days blieben alt; Green: 7 targeted + 11 full tests, analyze PASS | pending | unknown fields folgen Migration | SHA im Batch-03-Preflight nachtragen |
-| 03 | Toolchain | NOT_STARTED | pending | pending | Dependency-Brüche | ADR anwenden |
+| 02 | Characterization | VERIFIED | Red: Reminder/Custom Days blieben alt; Green: 7 targeted + 11 full tests, analyze PASS | `3630ce8` | unknown fields folgen Migration | abgeschlossen |
+| 03 | Toolchain | VERIFIED | Red: 3 Pin-Gates + Signing; Green: 6 targeted, 15 full, analyze/format/install/release PASS | pending | APK bewusst unsigned ohne Keystore | SHA im Batch-04-Preflight nachtragen |
 | 04 | CI | NOT_STARTED | pending | pending | Remote required checks | Workflows konsolidieren |
 | 05 | Fakes | NOT_STARTED | pending | pending | none | Interfaces erstellen |
 | 06 | Domain/Schedules | NOT_STARTED | pending | pending | Semantikmapping | Value Objects |
@@ -744,6 +746,8 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 01: `Select-String '^### Batch \d{2}:'` → 40; `Select-String '^## \d+\.'` → 25; Fortschrittstabelle → genau ein `IN_PROGRESS`; `git diff --check` → Exit 0; Worktree nach Isolierung der durch Baseline-Tools erzeugten No-op-Änderungen enthält ausschließlich das neue Plan-Dokument.
 - 2026-08-14, Batch 02 Red: `flutter test test/domain/habit_legacy_test.dart test/core/persistence/legacy_payload_test.dart` → Exit 1; erwarteter Fehler: `customDays` blieb `[1,3,5]` statt `[2,4,6]`. Ein zusätzlicher Testvergleich wurde von Objektidentität auf serialisierte Maps korrigiert.
 - 2026-08-14, Batch 02 Green: derselbe Target-Befehl → 7/7 PASS; formatierte Touched-Files → 0 Änderungen; `flutter analyze` → no issues; `flutter test` → 11/11 PASS.
+- 2026-08-14, Batch 03 Red: `flutter test test/toolchain_integrity_test.dart` → `.fvmrc` fehlte, Workflows nutzten 3.24.5/3.27.0, pnpm Policy fehlte; `flutter test test/config_integrity_test.dart` → Release-Signing war zwingend.
+- 2026-08-14, Batch 03 Green: pnpm 11.21.0 frozen install inklusive erlaubter nativer Builds PASS; 6/6 Toolchain/Config Tests PASS; `flutter build apk --release` PASS (56.7 MB, ohne Keystore bewusst unsigned; `apksigner` meldet `DOES NOT VERIFY`); `dart format .` normalisierte 31 Dateien, danach Formatcheck 39/39 ohne Änderung; `flutter analyze` no issues; `flutter test` 15/15 PASS.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 

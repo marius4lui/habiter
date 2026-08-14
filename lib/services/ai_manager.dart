@@ -51,25 +51,29 @@ class AIManager {
     if (!isConfigured || habits.isEmpty) return;
 
     final rng = Random();
-    final habitWithBestStreak = habits.map((habit) {
-      final streak = calculateStreak(habit.id, entries);
-      return (habit: habit, streak: streak.currentStreak);
-    }).fold<(Habit, int)?>(null, (prev, next) {
-      if (prev == null || next.streak > prev.$2) {
-        return (next.habit, next.streak);
-      }
-      return prev;
-    });
+    final habitWithBestStreak = habits
+        .map((habit) {
+          final streak = calculateStreak(habit.id, entries);
+          return (habit: habit, streak: streak.currentStreak);
+        })
+        .fold<(Habit, int)?>(null, (prev, next) {
+          if (prev == null || next.streak > prev.$2) {
+            return (next.habit, next.streak);
+          }
+          return prev;
+        });
 
-    final strugglingHabit = habits.map((habit) {
-      final stats = calculateHabitStats(habit, entries);
-      return (habit: habit, completion: stats.completionRate);
-    }).fold<(Habit, double)?>(null, (prev, next) {
-      if (prev == null || next.completion < prev.$2) {
-        return (next.habit, next.completion);
-      }
-      return prev;
-    });
+    final strugglingHabit = habits
+        .map((habit) {
+          final stats = calculateHabitStats(habit, entries);
+          return (habit: habit, completion: stats.completionRate);
+        })
+        .fold<(Habit, double)?>(null, (prev, next) {
+          if (prev == null || next.completion < prev.$2) {
+            return (next.habit, next.completion);
+          }
+          return prev;
+        });
 
     final recommendations = [
       if (habitWithBestStreak != null)

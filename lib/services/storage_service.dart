@@ -39,7 +39,9 @@ class StorageService {
   }
 
   static Future<void> updateHabit(
-      String id, Map<String, dynamic> updates) async {
+    String id,
+    Map<String, dynamic> updates,
+  ) async {
     final habits = await getHabits();
     final index = habits.indexWhere((h) => h.id == id);
     if (index != -1) {
@@ -57,8 +59,8 @@ class StorageService {
       final customDaysValue = updates['customDays'];
       final customDays = customDaysValue is List
           ? customDaysValue
-              .map((value) => (value as num).toInt())
-              .toList(growable: false)
+                .map((value) => (value as num).toInt())
+                .toList(growable: false)
           : existing.customDays;
       habits[index] = existing.copyWith(
         name: updates['name'] as String? ?? existing.name,
@@ -72,7 +74,8 @@ class StorageService {
         customDays: customDays,
         createdAt: updates['createdAt'] as DateTime? ?? existing.createdAt,
         isActive: updates['isActive'] as bool? ?? existing.isActive,
-        notificationEnabled: updates['notificationEnabled'] as bool? ??
+        notificationEnabled:
+            updates['notificationEnabled'] as bool? ??
             existing.notificationEnabled,
         notificationTime:
             updates['notificationTime'] as String? ?? existing.notificationTime,
@@ -169,8 +172,9 @@ class StorageService {
     final prefs = await _prefs();
     final stored = prefs.getString(_aiConfigKey);
     if (stored == null) return null;
-    return (jsonDecode(stored) as Map<String, dynamic>)
-        .map((key, value) => MapEntry(key, value.toString()));
+    return (jsonDecode(stored) as Map<String, dynamic>).map(
+      (key, value) => MapEntry(key, value.toString()),
+    );
   }
 
   static Future<void> saveAIConfig(Map<String, String> config) async {

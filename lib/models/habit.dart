@@ -100,9 +100,11 @@ class Habit {
       ),
       targetCount: (map['targetCount'] as num?)?.toInt() ?? 1,
       category: map['category'] as String? ?? 'General',
-      customDays:
-          (map['customDays'] as List<dynamic>?)?.map((e) => e as int).toList(),
-      createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ??
+      customDays: (map['customDays'] as List<dynamic>?)
+          ?.map((e) => e as int)
+          .toList(),
+      createdAt:
+          DateTime.tryParse(map['createdAt'] as String? ?? '') ??
           DateTime.now(),
       isActive: map['isActive'] as bool? ?? true,
       notificationEnabled: map['notificationEnabled'] as bool? ?? false,
@@ -151,7 +153,8 @@ class HabitEntry {
       date: map['date'] as String,
       completed: map['completed'] as bool? ?? false,
       count: (map['count'] as num?)?.toInt() ?? 0,
-      timestamp: DateTime.tryParse(map['timestamp'] as String? ?? '') ??
+      timestamp:
+          DateTime.tryParse(map['timestamp'] as String? ?? '') ??
           DateTime.now(),
     );
   }
@@ -232,7 +235,8 @@ class AIInsight {
       title: map['title'] as String? ?? 'Insight',
       message: map['message'] as String? ?? '',
       confidence: (map['confidence'] as num?)?.toDouble() ?? 0.5,
-      createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ??
+      createdAt:
+          DateTime.tryParse(map['createdAt'] as String? ?? '') ??
           DateTime.now(),
       isRead: map['isRead'] as bool? ?? false,
     );

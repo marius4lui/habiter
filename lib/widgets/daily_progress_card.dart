@@ -36,19 +36,19 @@ class DailyProgressCard extends StatelessWidget {
           child: Stack(
             children: [
               // Background decorative blob (simplified as valid code)
-               Positioned(
-                 right: -40,
-                 top: -40,
-                 child: Container(
-                   width: 128,
-                   height: 128,
-                   decoration: BoxDecoration(
-                     color: AppColors.primary.withValues(alpha: 0.1),
-                     shape: BoxShape.circle,
-                   ),
-                 ),
-               ),
-              
+              Positioned(
+                right: -40,
+                top: -40,
+                child: Container(
+                  width: 128,
+                  height: 128,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -89,12 +89,20 @@ class DailyProgressCard extends StatelessWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: animatedProgress >= 1.0
-                                      ? AppColors.secondary.withValues(alpha: 0.15)
-                                      : AppColors.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.sm),
+                                      ? AppColors.secondary.withValues(
+                                          alpha: 0.15,
+                                        )
+                                      : AppColors.primary.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                  borderRadius: BorderRadius.circular(
+                                    AppBorderRadius.sm,
+                                  ),
                                 ),
                                 child: Text(
-                                  animatedProgress >= 1.0 ? l.completed : l.onTrack,
+                                  animatedProgress >= 1.0
+                                      ? l.completed
+                                      : l.onTrack,
                                   style: AppTextStyles.caption.copyWith(
                                     color: animatedProgress >= 1.0
                                         ? AppColors.secondary
@@ -124,16 +132,20 @@ class DailyProgressCard extends StatelessWidget {
                       painter: _CircularProgressPainter(
                         progress: animatedProgress,
                         color: AppColors.primary,
-                        backgroundColor: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+                        backgroundColor: isDark
+                            ? Colors.grey[800]!
+                            : Colors.grey[200]!,
                       ),
                       child: Center(
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 400),
                           child: Icon(
-                            animatedProgress >= 1.0 ? Icons.celebration : Icons.eco,
+                            animatedProgress >= 1.0
+                                ? Icons.celebration
+                                : Icons.eco,
                             key: ValueKey(animatedProgress >= 1.0),
-                            color: animatedProgress >= 1.0 
-                                ? AppColors.secondary 
+                            color: animatedProgress >= 1.0
+                                ? AppColors.secondary
                                 : AppColors.primary,
                             size: 40,
                           ),
@@ -150,7 +162,6 @@ class DailyProgressCard extends StatelessWidget {
     );
   }
 }
-
 
 class _CircularProgressPainter extends CustomPainter {
   final double progress;
@@ -173,7 +184,7 @@ class _CircularProgressPainter extends CustomPainter {
       ..color = backgroundColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
-    
+
     canvas.drawCircle(center, radius, bgPaint);
 
     // Draw progress arc

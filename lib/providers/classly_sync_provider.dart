@@ -111,34 +111,6 @@ class ClasslySyncProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> connectWithCredentials({
-    required String baseUrl,
-    required String email,
-    required String password,
-    int? expiresInDays,
-  }) async {
-    if (_isConnecting) return;
-    _isConnecting = true;
-    _lastError = null;
-    notifyListeners();
-
-    try {
-      final cleanedBaseUrl = baseUrl.trim().replaceAll(RegExp(r'/+$'), '');
-      final client = ClasslyClient(baseUrl: cleanedBaseUrl);
-      final token = await client.issueToken(
-        email: email.trim(),
-        password: password,
-        expiresInDays: expiresInDays,
-      );
-      await connect(baseUrl: cleanedBaseUrl, token: token);
-    } catch (e) {
-      _lastError = e.toString();
-    } finally {
-      _isConnecting = false;
-      notifyListeners();
-    }
-  }
-
   Future<void> connectWithOAuth({required String baseUrl}) async {
     if (_isConnecting) return;
     _isConnecting = true;

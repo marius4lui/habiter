@@ -6,6 +6,7 @@ import '../../../core/application/feature_status.dart';
 import '../../../core/ids/id_generator.dart';
 import '../../../core/time/clock.dart';
 import '../../../models/habit.dart';
+import '../domain/habit_source.dart';
 import '../../history/application/habit_lifecycle_use_case.dart';
 import 'habit_repository.dart';
 
@@ -78,6 +79,7 @@ final class HabitsController extends ChangeNotifier {
     List<int>? customDays,
     bool notificationEnabled = false,
     String? notificationTime,
+    HabitSourceMetadata? source,
   }) async {
     final habit = Habit(
       id: _ids.next(),
@@ -93,6 +95,7 @@ final class HabitsController extends ChangeNotifier {
       notificationTime: notificationTime,
       createdAt: _clock.now(),
       isActive: true,
+      source: source,
     );
     await _repository.transact((draft) => draft.upsertHabit(habit));
     await load();

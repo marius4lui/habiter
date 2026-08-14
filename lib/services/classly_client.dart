@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../features/integrations/classly/classly_endpoint.dart';
+
 class ClasslyApiException implements Exception {
   ClasslyApiException(this.message, {this.statusCode});
 
@@ -139,12 +141,19 @@ class ClasslySubject {
 }
 
 class ClasslyClient {
-  ClasslyClient({required this.baseUrl, http.Client? httpClient, String? token})
-    : _http = httpClient ?? http.Client(),
+  ClasslyClient({
+    required String baseUrl,
+    http.Client? httpClient,
+    String? token,
+    Duration timeout = const Duration(seconds: 15),
+  }) : baseUrl = ClasslyEndpoint.parse(baseUrl).origin.toString(),
+       _http = httpClient ?? http.Client(),
+       _timeout = timeout,
       _token = token;
 
   final String baseUrl;
   final http.Client _http;
+  final Duration _timeout;
   String? _token;
 
   String? get token => _token;
@@ -152,48 +161,13 @@ class ClasslyClient {
   Map<String, String> _defaultHeaders() {
     if (_token == null) {
       throw ClasslyApiException(
-        'No token set. Call issueToken or set token first.',
+        'No access token is configured.',
       );
     }
     return {
       'Authorization': 'Bearer $_token',
       'Content-Type': 'application/json',
     };
-  }
-
-  Future<String> issueToken({
-    String? email,
-    String? password,
-    int? expiresInDays,
-  }) async {
-    final uri = Uri.parse('$baseUrl/api/token');
-    final body = <String, String>{};
-    if (email != null) body['email'] = email;
-    if (password != null) body['password'] = password;
-    if (expiresInDays != null) {
-      body['expires_in_days'] = expiresInDays.toString();
-    }
-
-    final resp = await _http.post(
-      uri,
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: body,
-    );
-
-    if (resp.statusCode != 200) {
-      throw ClasslyApiException(
-        'Token request failed: ${resp.body}',
-        statusCode: resp.statusCode,
-      );
-    }
-
-    final data = jsonDecode(resp.body) as Map<String, dynamic>;
-    final accessToken = data['access_token'] as String?;
-    if (accessToken == null) {
-      throw ClasslyApiException('Token missing in response');
-    }
-    _token = accessToken;
-    return accessToken;
   }
 
   Future<List<ClasslyEvent>> fetchEvents({
@@ -208,10 +182,12 @@ class ClasslyClient {
       '$baseUrl/api/events',
     ).replace(queryParameters: params);
 
-    final resp = await _http.get(uri, headers: _defaultHeaders());
+    final resp = await _http
+        .get(uri, headers: _defaultHeaders())
+        .timeout(_timeout);
     if (resp.statusCode != 200) {
       throw ClasslyApiException(
-        'Fetching events failed: ${resp.body}',
+        'Fetching events failed.',
         statusCode: resp.statusCode,
       );
     }
@@ -225,10 +201,12 @@ class ClasslyClient {
 
   Future<List<ClasslySubject>> fetchSubjects() async {
     final uri = Uri.parse('$baseUrl/api/subjects');
-    final resp = await _http.get(uri, headers: _defaultHeaders());
+    final resp = await _http
+        .get(uri, headers: _defaultHeaders())
+        .timeout(_timeout);
     if (resp.statusCode != 200) {
       throw ClasslyApiException(
-        'Fetching subjects failed: ${resp.body}',
+        'Fetching subjects failed.',
         statusCode: resp.statusCode,
       );
     }
@@ -247,7 +225,7 @@ class ClasslyClient {
     required String code,
     required String redirectUri,
     required String clientId,
-    String? clientSecret,
+    required String codeVerifier,
   }) async {
     final uri = Uri.parse('$baseUrl/api/oauth/token');
     final body = {
@@ -255,18 +233,18 @@ class ClasslyClient {
       'code': code,
       'client_id': clientId,
       'redirect_uri': redirectUri,
-      if (clientSecret != null) 'client_secret': clientSecret,
+      'code_verifier': codeVerifier,
     };
 
     final resp = await _http.post(
       uri,
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: body,
-    );
+    ).timeout(_timeout);
 
     if (resp.statusCode != 200) {
       throw ClasslyApiException(
-        'Token exchange failed: ${resp.body}',
+        'Token exchange failed.',
         statusCode: resp.statusCode,
       );
     }
@@ -285,11 +263,13 @@ class ClasslyClient {
   /// Fetches information about the authenticated user.
   Future<ClasslyUserInfo> getUserInfo() async {
     final uri = Uri.parse('$baseUrl/api/oauth/userinfo');
-    final resp = await _http.get(uri, headers: _defaultHeaders());
+    final resp = await _http
+        .get(uri, headers: _defaultHeaders())
+        .timeout(_timeout);
 
     if (resp.statusCode != 200) {
       throw ClasslyApiException(
-        'Fetching user info failed: ${resp.body}',
+        'Fetching user info failed.',
         statusCode: resp.statusCode,
       );
     }
@@ -312,13 +292,15 @@ class ClasslyClient {
       'platform': platform,
     });
 
-    final resp = await _http.post(uri, headers: _defaultHeaders(), body: body);
+    final resp = await _http
+        .post(uri, headers: _defaultHeaders(), body: body)
+        .timeout(_timeout);
 
     if (resp.statusCode != 200) {
       // Don't throw if it's just already registered or minor issue?
       // Docs say 200 OK. Let's strict for now.
       throw ClasslyApiException(
-        'Registering push token failed: ${resp.body}',
+        'Registering push token failed.',
         statusCode: resp.statusCode,
       );
     }
@@ -333,11 +315,11 @@ class ClasslyClient {
       uri,
       headers: _defaultHeaders(),
       body: body,
-    );
+    ).timeout(_timeout);
 
     if (resp.statusCode != 200) {
       throw ClasslyApiException(
-        'Unregistering push token failed: ${resp.body}',
+        'Unregistering push token failed.',
         statusCode: resp.statusCode,
       );
     }

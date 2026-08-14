@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import '../../../../models/habit.dart';
+import '../../domain/habit_source.dart';
 
 const _unset = Object();
 
@@ -106,6 +107,7 @@ final class HabitEditorDraft {
     Iterable<HabitPause> pauses = const <HabitPause>[],
     DateTime? archivedAt,
     DateTime? restoredAt,
+    HabitSourceMetadata? source,
   }) => Habit(
     id: id,
     name: name.trim(),
@@ -125,5 +127,6 @@ final class HabitEditorDraft {
     pauses: pauses,
     archivedAt: archivedAt,
     restoredAt: restoredAt,
+    source: source,
   );
 }

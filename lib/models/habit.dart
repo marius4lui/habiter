@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import '../features/habits/domain/habit_source.dart';
+
 const _unsetHabitField = Object();
 
 enum HabitFrequency { daily, weekly, custom }
@@ -59,7 +61,9 @@ class Habit {
     Iterable<HabitPause> pauses = const <HabitPause>[],
     this.archivedAt,
     this.restoredAt,
-  }) : pauses = List<HabitPause>.unmodifiable(pauses);
+    HabitSourceMetadata? source,
+  }) : pauses = List<HabitPause>.unmodifiable(pauses),
+       source = source ?? HabitSourceMetadata();
 
   final String id;
   final String name;
@@ -77,6 +81,7 @@ class Habit {
   final List<HabitPause> pauses;
   final DateTime? archivedAt;
   final DateTime? restoredAt;
+  final HabitSourceMetadata source;
 
   HabitLifecycleStatus get lifecycleStatus {
     if (isActive) return HabitLifecycleStatus.active;
@@ -106,6 +111,7 @@ class Habit {
     Iterable<HabitPause>? pauses,
     Object? archivedAt = _unsetHabitField,
     Object? restoredAt = _unsetHabitField,
+    HabitSourceMetadata? source,
   }) {
     return Habit(
       id: id ?? this.id,
@@ -134,6 +140,7 @@ class Habit {
       restoredAt: identical(restoredAt, _unsetHabitField)
           ? this.restoredAt
           : restoredAt as DateTime?,
+      source: source ?? this.source,
     );
   }
 
@@ -156,6 +163,9 @@ class Habit {
         'pauses': pauses.map((pause) => pause.toMap()).toList(growable: false),
       if (archivedAt != null) 'archivedAt': archivedAt!.toIso8601String(),
       if (restoredAt != null) 'restoredAt': restoredAt!.toIso8601String(),
+      if (source.kind != HabitSourceKind.local ||
+          source.additionalFields.isNotEmpty)
+        'source': source.toMap(),
     };
   }
 
@@ -186,6 +196,11 @@ class Habit {
       ),
       archivedAt: DateTime.tryParse(map['archivedAt'] as String? ?? ''),
       restoredAt: DateTime.tryParse(map['restoredAt'] as String? ?? ''),
+      source: map['source'] is Map
+          ? HabitSourceMetadata.fromMap(
+              Map<String, Object?>.from(map['source'] as Map),
+            )
+          : HabitSourceMetadata(),
     );
   }
 

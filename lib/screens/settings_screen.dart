@@ -30,8 +30,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _aiInsights = true;
   bool _permissionGranted = false;
   final _classlyUrlController = TextEditingController();
-  final _classlyEmailController = TextEditingController();
-  final _classlyPasswordController = TextEditingController();
   final _classlyTokenController = TextEditingController();
   bool _showTokenField = false;
   late final ReminderPermissionController _reminderPermissions;
@@ -418,8 +416,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void dispose() {
     _classlyUrlController.dispose();
-    _classlyEmailController.dispose();
-    _classlyPasswordController.dispose();
     _classlyTokenController.dispose();
     super.dispose();
   }
@@ -577,84 +573,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          TextField(
-            controller: _classlyEmailController,
-            decoration: InputDecoration(
-              labelText: 'E-Mail',
-              hintText: 'name@beispiel.de',
-              filled: true,
-              fillColor: surfaceMuted,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                borderSide: BorderSide(color: borderColor),
-              ),
-            ),
-            keyboardType: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          TextField(
-            controller: _classlyPasswordController,
-            decoration: InputDecoration(
-              labelText: 'Passwort',
-              filled: true,
-              fillColor: surfaceMuted,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppBorderRadius.sm),
-                borderSide: BorderSide(color: borderColor),
-              ),
-            ),
-            obscureText: true,
-          ),
-          const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: [
-              ElevatedButton.icon(
-                onPressed: provider.isConnecting
-                    ? null
-                    : () async {
-                        final url = _classlyUrlController.text.trim();
-                        final email = _classlyEmailController.text.trim();
-                        final password = _classlyPasswordController.text;
-                        if (url.isEmpty || email.isEmpty || password.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Bitte URL, E-Mail und Passwort ausfüllen',
-                              ),
-                            ),
-                          );
-                          return;
-                        }
-                        await provider.connectWithCredentials(
-                          baseUrl: url,
-                          email: email,
-                          password: password,
-                        );
-                        if (!mounted) return;
-                        if (provider.lastError == null) {
-                          _classlyPasswordController.clear();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Classly verbunden')),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(provider.lastError!)),
-                          );
-                        }
-                      },
-                icon: provider.isConnecting
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.lock_open),
-                label: Text(
-                  provider.isConnecting ? 'Verbinden...' : 'Einloggen',
-                ),
-              ),
               OutlinedButton.icon(
                 onPressed: provider.isSyncing
                     ? null

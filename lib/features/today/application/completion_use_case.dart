@@ -2,6 +2,7 @@ import '../../../core/ids/id_generator.dart';
 import '../../../core/time/clock.dart';
 import '../../../models/habit.dart';
 import '../../habits/application/habit_repository.dart';
+import '../../habits/domain/habit_source.dart';
 
 enum CompletionStatus {
   completed,
@@ -76,7 +77,7 @@ final class CompletionUseCase {
         timestamp: committedAt,
       );
       draft.upsertEntry(entry);
-      if (habit.description == 'Imported from Classly') {
+      if (habit.source.kind == HabitSourceKind.classlyCompatible) {
         draft.upsertHabit(habit.copyWith(isActive: false));
       }
       result = CompletionResult(

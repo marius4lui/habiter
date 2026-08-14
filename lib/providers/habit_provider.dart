@@ -10,6 +10,7 @@ import '../features/analytics/domain/habit_metrics.dart';
 import '../features/habits/application/habit_repository.dart';
 import '../features/habits/application/habits_controller.dart';
 import '../features/habits/data/key_value_habit_repository.dart';
+import '../features/habits/domain/habit_source.dart';
 import '../features/history/application/history_controller.dart';
 import '../features/history/application/habit_lifecycle_reminder_gateway.dart';
 import '../features/reminders/application/reminder_action_inbox.dart';
@@ -334,7 +335,10 @@ class HabitProvider extends ChangeNotifier {
   Future<int> importFromClasslyEvents(List<ClasslyEvent> events) async {
     int imported = 0;
     // Check ALL habits (including archived) to avoid re-importing completed tasks
-    final existingNames = habits.map((h) => h.name.toLowerCase()).toSet();
+    final existingEventIds = habits
+        .map((habit) => habit.source.externalId)
+        .whereType<String>()
+        .toSet();
 
     for (final event in events) {
       // Skip events without date (not relevant for habit tracking)
@@ -346,8 +350,7 @@ class HabitProvider extends ChangeNotifier {
       // Create habit name from event
       final name = event.title ?? event.subjectName ?? 'Classly Task';
 
-      // Skip if habit with same name already exists
-      if (existingNames.contains(name.toLowerCase())) continue;
+      if (existingEventIds.contains(event.id)) continue;
 
       // Determine icon based on event type
       String icon;
@@ -368,15 +371,22 @@ class HabitProvider extends ChangeNotifier {
 
       await _habitsController.add(
         name: name,
-        description: 'Imported from Classly',
+        description: null,
         color: '#4ECDC4', // Teal
         icon: icon,
         frequency: HabitFrequency.custom, // One-time event
-        customDays: [], // Empty = doesn't repeat on any day
+        customDays: <int>[event.date!.weekday],
         targetCount: 1,
         category: event.subjectName ?? 'Classly',
+        source: HabitSourceMetadata(
+          kind: HabitSourceKind.classlyCompatible,
+          externalId: event.id,
+          additionalFields: <String, Object?>{
+            'occursOn': LocalDate.fromDateTime(event.date!).toString(),
+          },
+        ),
       );
-      existingNames.add(name.toLowerCase());
+      existingEventIds.add(event.id);
       imported++;
     }
 

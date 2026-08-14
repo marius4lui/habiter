@@ -1,105 +1,92 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 
+import '../features/integrations/classly/classly_endpoint.dart';
 import 'classly_client.dart';
 
-class ClasslyOAuthService {
-  static const String clientId = 'habiter-app';
+typedef OAuthLauncher =
+    Future<String> Function(String authorizationUrl, String callbackScheme);
 
-  // For mobile platforms, use custom URL scheme
+class ClasslyOAuthService {
+  ClasslyOAuthService({OAuthLauncher? launcher, Random? random})
+    : _launcher = launcher ?? _launch,
+      _random = random ?? Random.secure();
+
+  static const String clientId = 'habiter-app';
   static const String _mobileRedirectScheme = 'habiter';
   static const String _mobileRedirectUri = 'habiter://auth/callback';
-
-  // For desktop platforms, we'll use localhost with a dynamic port
   static const String _desktopCallbackPath = '/callback';
 
-  /// Check if running on desktop (Windows, Linux, macOS)
+  final OAuthLauncher _launcher;
+  final Random _random;
+
   static bool get _isDesktop =>
       !kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
 
-  /// Performs the OAuth 2.0 Authorization Code Flow.
-  ///
-  /// 1. Opens the browser for user to login at [baseUrl]/api/oauth/authorize
-  /// 2. Waits for redirect to callback URL
-  /// 3. Extracts authorization code
-  /// 4. Exchanges code for access token
-  ///
-  /// Returns a map containing the token response (access_token, class_id, etc.)
   Future<Map<String, dynamic>> authenticate({
     required String baseUrl,
     required ClasslyClient client,
   }) async {
-    final cleanBaseUrl = baseUrl.trim().replaceAll(RegExp(r'/+$'), '');
-
-    // Determine redirect URI and callback scheme based on platform
-    final String redirectUri;
-    final String callbackUrlScheme;
-
-    if (_isDesktop) {
-      // On desktop, use localhost with a fixed port
-      // The port must match what's configured in the Classly OAuth app settings
-      const port = 43823; // Fixed port for OAuth callback
-      redirectUri = 'http://localhost:$port$_desktopCallbackPath';
-      callbackUrlScheme = 'http://localhost:$port';
-    } else {
-      // On mobile, use custom URL scheme
-      redirectUri = _mobileRedirectUri;
-      callbackUrlScheme = _mobileRedirectScheme;
-    }
-
-    // Construct the authorization URL
-    final authUri = Uri.parse('$cleanBaseUrl/api/oauth/authorize').replace(
-      queryParameters: {
+    final endpoint = ClasslyEndpoint.parse(baseUrl).origin;
+    final redirectUri = _isDesktop
+        ? 'http://localhost:43823$_desktopCallbackPath'
+        : _mobileRedirectUri;
+    final callbackScheme = _isDesktop
+        ? 'http://localhost:43823'
+        : _mobileRedirectScheme;
+    final state = _randomToken(32);
+    final verifier = _randomToken(64);
+    final challenge = base64Url
+        .encode(sha256.convert(ascii.encode(verifier)).bytes)
+        .replaceAll('=', '');
+    final authUri = endpoint.resolve('/api/oauth/authorize').replace(
+      queryParameters: <String, String>{
         'client_id': clientId,
         'redirect_uri': redirectUri,
         'response_type': 'code',
-        'scope': 'read:events', // Default scope
+        'scope': 'read:events',
+        'state': state,
+        'code_challenge': challenge,
+        'code_challenge_method': 'S256',
       },
     );
 
-    debugPrint('OAuth: Starting authentication flow');
-    debugPrint('OAuth: Auth URL: $authUri');
-    debugPrint('OAuth: Redirect URI: $redirectUri');
-    debugPrint('OAuth: Callback scheme: $callbackUrlScheme');
-    debugPrint('OAuth: Is desktop: $_isDesktop');
-
-    // Configure options for system browser on desktop
-    const options = FlutterWebAuth2Options(
-      // Use system browser instead of webview on desktop
-      useWebview: false,
-      // Use ephemeral session (don't persist cookies)
-      preferEphemeral: true,
-      // Timeout after 5 minutes (300000 milliseconds)
-      timeout: 300000,
+    final callback = Uri.parse(
+      await _launcher(authUri.toString(), callbackScheme),
     );
-
-    // Present the dialog to the user
-    final result = await FlutterWebAuth2.authenticate(
-      url: authUri.toString(),
-      callbackUrlScheme: callbackUrlScheme,
-      options: options,
-    );
-
-    debugPrint('OAuth: Received callback');
-
-    // Extract code from result URL
-    final code = Uri.parse(result).queryParameters['code'];
-    if (code == null) {
-      throw ClasslyApiException('No code found in redirect URL');
+    if (callback.queryParameters['state'] != state) {
+      throw ClasslyApiException('OAuth state validation failed.');
     }
-
-    debugPrint('OAuth: Extracted code, exchanging for token...');
-
-    // Exchange code for token
-    final tokenData = await client.exchangeCodeForToken(
+    final code = callback.queryParameters['code'];
+    if (code == null || code.isEmpty) {
+      throw ClasslyApiException('OAuth authorization code is missing.');
+    }
+    return client.exchangeCodeForToken(
       code: code,
       redirectUri: redirectUri,
       clientId: clientId,
+      codeVerifier: verifier,
     );
-
-    debugPrint('OAuth: Token exchange successful');
-    return tokenData;
   }
+
+  String _randomToken(int length) {
+    final bytes = List<int>.generate(length, (_) => _random.nextInt(256));
+    return base64Url.encode(bytes).replaceAll('=', '');
+  }
+
+  static Future<String> _launch(String url, String callbackScheme) =>
+      FlutterWebAuth2.authenticate(
+        url: url,
+        callbackUrlScheme: callbackScheme,
+        options: const FlutterWebAuth2Options(
+          useWebview: false,
+          preferEphemeral: true,
+          timeout: 300000,
+        ),
+      );
 }

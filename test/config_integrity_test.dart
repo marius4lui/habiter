@@ -15,9 +15,7 @@ void main() {
       );
     });
 
-    test(
-      'AndroidManifest.xml should not request exact-alarm permission',
-      () {
+    test('AndroidManifest.xml should not request exact-alarm permission', () {
         final manifestFile = File('android/app/src/main/AndroidManifest.xml');
         expect(
           manifestFile.existsSync(),
@@ -33,8 +31,7 @@ void main() {
               'Reminders use inexact scheduling by default and must not request '
               'the restricted exact-alarm permission.',
         );
-      },
-    );
+    });
 
     test(
       'proguard-rules.pro should exist and contain Gson and Local Notifications rules',

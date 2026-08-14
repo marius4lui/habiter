@@ -153,7 +153,7 @@ class StorageService {
     if (stored == null) {
       return UserPreferences(
         theme: ThemePreference.system,
-        notifications: true,
+        notifications: false,
         reminderTime: '20:00',
         aiInsights: true,
         language: 'en',

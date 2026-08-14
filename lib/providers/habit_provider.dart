@@ -50,7 +50,7 @@ class HabitProvider extends ChangeNotifier {
   List<AIInsight> aiInsights = [];
   UserPreferences preferences = UserPreferences(
     theme: ThemePreference.system,
-    notifications: true,
+    notifications: false,
     reminderTime: '20:00',
     aiInsights: true,
     language: 'en',
@@ -66,17 +66,6 @@ class HabitProvider extends ChangeNotifier {
 
       debugPrint('HabitProvider: Starting load...');
 
-      debugPrint('HabitProvider: Initializing AIManager...');
-      await AIManager.initialize();
-      debugPrint('HabitProvider: AIManager initialized');
-
-      debugPrint('HabitProvider: Initializing NotificationService...');
-      await NotificationService.instance.initialize();
-      debugPrint('HabitProvider: NotificationService initialized');
-
-      // Set up notification action callback
-      NotificationService.instance.setActionCallback(handleNotificationAction);
-
       debugPrint('HabitProvider: Loading habits from repository...');
       await _reloadHabitState();
       debugPrint('HabitProvider: Loaded ${habits.length} habits');
@@ -90,7 +79,16 @@ class HabitProvider extends ChangeNotifier {
       preferences = await StorageService.getUserPreferences();
       debugPrint('HabitProvider: Loaded preferences');
 
-      // Schedule global notification if enabled
+      final hasHabitNotifications = habits.any(
+        (habit) => habit.notificationEnabled && habit.notificationTime != null,
+      );
+      if (preferences.notifications || hasHabitNotifications) {
+        await NotificationService.instance.initialize();
+        NotificationService.instance.setActionCallback(
+          handleNotificationAction,
+        );
+      }
+
       if (preferences.notifications) {
         debugPrint('HabitProvider: Scheduling global notification...');
         await NotificationService.instance.scheduleGlobalDailyReminder(
@@ -101,27 +99,16 @@ class HabitProvider extends ChangeNotifier {
       }
 
       // Schedule individual habit notifications
-      debugPrint('HabitProvider: Scheduling individual habit notifications...');
-      for (final habit in habits) {
-        if (habit.notificationEnabled && habit.notificationTime != null) {
-          await NotificationService.instance.scheduleHabitNotification(habit);
-        }
-      }
-      debugPrint('HabitProvider: Individual notifications scheduled');
-
-      // Mock Data Initialization
-      if (habits.isEmpty) {
-        debugPrint('HabitProvider: Creating mock habit...');
-        await _habitsController.add(
-          name: 'Drink Water',
-          description: 'Stay hydrated! 💧',
-          color: '0xFF4ECDC4', // Teal/Cyan accent for visibility
-          icon: '💧',
-          frequency: HabitFrequency.daily,
-          targetCount: 8,
-          category: 'Health',
+      if (hasHabitNotifications) {
+        debugPrint(
+          'HabitProvider: Scheduling individual habit notifications...',
         );
-        debugPrint('HabitProvider: Mock habit created');
+        for (final habit in habits) {
+          if (habit.notificationEnabled && habit.notificationTime != null) {
+            await NotificationService.instance.scheduleHabitNotification(habit);
+          }
+        }
+        debugPrint('HabitProvider: Individual notifications scheduled');
       }
 
       debugPrint('HabitProvider: Load complete!');
@@ -257,6 +244,7 @@ class HabitProvider extends ChangeNotifier {
   }
 
   Future<void> generateInsights() async {
+    await AIManager.initialize();
     await AIManager.generateInsights(
       habits: habits,
       entries: habitEntries,

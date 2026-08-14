@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../core/design_system/haptics.dart';
+import '../features/onboarding/presentation/onboarding_empty_state.dart';
 import '../l10n/l10n.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
@@ -105,12 +106,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (allActiveHabits.isEmpty)
                       SliverFillRemaining(
                         hasScrollBody: false,
-                        child: Center(
-                          child: Text(
-                            context.l10n.noHabitsYet,
-                            style: AppTextStyles.body.copyWith(
-                              color: AppColors.textTertiary,
-                            ),
+                        child: OnboardingEmptyState(
+                          onCreateHabit: () => showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            useSafeArea: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => const AddHabitSheet(),
                           ),
                         ),
                       )

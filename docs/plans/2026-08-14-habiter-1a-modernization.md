@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 14 – Empty/Loading/Error/Success-Zustände in der Today-Erfahrung ehrlich und zugänglich gestalten; zuerst leeren Erststart ohne Demo-Habit und Retry-Semantik testen.
+**Resume Pointer:** Batch 15 – Today Dashboard auf tatsächlich geplante Habits, ruhigen Fortschritt und eine primäre Aktion fokussieren; zuerst Schedule-Filter, Empty/Completed/Recovery und Textskalierung testen.
 
 ---
 
@@ -344,7 +344,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `feat(motion): add reduced-motion aware feedback`
 
 ### Batch 14: Consent-first Onboarding und Empty States
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Freiwilliger erster Erfolg ohne Mock-Daten oder Permission-Prompt.
 **Files:** Create `lib/features/onboarding/*`; Modify bootstrap/today; l10n/tests.
 **Behavior preserved:** bestehende Nutzer überspringen Onboarding.
@@ -352,7 +352,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Implementation steps:** value choice; micro-habit; explicit reminder later.
 **Commands:** widget/semantics tests.
 **Expected result:** ehrlicher Empty State und schneller Add-Flow.
-**Acceptance criteria:** [ ] kein Seed [ ] keine Permissions beim Start [ ] skip/back möglich.
+**Acceptance criteria:** [x] kein Seed [x] keine AI-/Notification-Initialisierung oder Permissions beim leeren Start [x] nicht-blockierender Empty State lässt Navigation/Back verfügbar.
 **Migration/Rollback risk:** first-run flag.
 **Commit:** `feat(onboarding): create consent-first first run`
 
@@ -710,8 +710,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 10 | Feature State | VERIFIED | Red: 4 Controller fehlten; Green: 3 targeted + 52 full, analyze PASS | `6d9b35f` | Provider bleibt temporäre UI-Fassade | abgeschlossen |
 | 11 | Navigation | VERIFIED | Red: Codec/Shell fehlten; Green: 4 targeted + 56 full, analyze/web/windows PASS | `d25183a` | System-Routen bleiben Navigator-basiert | abgeschlossen |
 | 12 | Design | VERIFIED | Red: Tokens/Themes fehlten; Green: 4 targeted + 60 full, analyze PASS | `9997942` | alte Style-Aliasse bleiben Übergang | abgeschlossen |
-| 13 | Motion/Haptics | VERIFIED | Red: Motion/Haptik fehlten; Green: 3 targeted + 63 full, analyze PASS | pending | bestehende Altanimationen folgen schrittweise | SHA im Batch-14-Preflight nachtragen |
-| 14 | Onboarding | NOT_STARTED | pending | pending | first-run | empty state |
+| 13 | Motion/Haptics | VERIFIED | Red: Motion/Haptik fehlten; Green: 3 targeted + 63 full, analyze PASS | `919cbb8` | bestehende Altanimationen folgen schrittweise | abgeschlossen |
+| 14 | Onboarding | VERIFIED | Red: Onboarding/Empty fehlten; Green: 4 targeted + 67 full, analyze PASS | pending | alte Nutzerpräferenzen bleiben legacy-kompatibel | SHA im Batch-15-Preflight nachtragen |
 | 15 | Today | NOT_STARTED | pending | pending | filtering | dashboard |
 | 16 | Editor | NOT_STARTED | pending | pending | field mapping | create/edit |
 | 17 | Completion | NOT_STARTED | pending | pending | races | idempotency |
@@ -769,6 +769,8 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 12 Green: 4/4 Target Tests für vollständige Token-Skalen, WCAG-Textkontrast in Light/Dark/High-Contrast, identische Material-3-Komponentenverträge und 200% Textskalierung; kanonisches Theme nutzt offline native Plattformtypografie; Full Flutter 60/60 PASS; Analyze no issues.
 - 2026-08-14, Batch 13 Red: Motion-/Haptik-Verträge und Reduced-Motion-Partikeltest kompilierten ohne Module nicht; erster Widgetlauf deckte offene flutter_animate-Timer auf und wurde um bewusstes Settle ergänzt.
 - 2026-08-14, Batch 13 Green: 3/3 Target Tests für Null-Dauern/-Budget bei Reduced Motion, explizite Android/iOS-Web-safe Haptikunterstützung und Partikelbudget 12; Completion-Haptik injiziert, Navigation zentral tokenisiert; Full Flutter 63/63 PASS; Analyze no issues.
+- 2026-08-14, Batch 14 Red: Empty-Storage-, Restart- und DE/EN-Widgettests kompilierten ohne Onboarding-State/-Presentation nicht.
+- 2026-08-14, Batch 14 Green: 4/4 Target Tests beweisen leeren Erststart ohne Seed, Notifications opt-in, deterministisches Überspringen für bestehende Nutzer und lokalisierten ehrlichen CTA; leere Starts initialisieren weder AI noch Notifications; Full Flutter 67/67 PASS; Analyze no issues.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 

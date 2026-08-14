@@ -396,6 +396,27 @@ class AppLocalizationsDe extends AppLocalizations {
   String get restoreHabit => 'Habit wiederherstellen';
 
   @override
+  String get manageHabitLifecycle => 'Pausierte und archivierte Habits';
+
+  @override
+  String get noPausedOrArchivedHabits =>
+      'Keine pausierten oder archivierten Habits';
+
+  @override
+  String inactiveHabitCount(int count) => switch (count) {
+    1 => '1 Habit',
+    _ => '$count Habits',
+  };
+
+  @override
+  String get habitPaused =>
+      'Pausiert – geplante Tage zählen nicht gegen dich';
+
+  @override
+  String get habitArchived =>
+      'Archiviert – kann wiederhergestellt werden';
+
+  @override
   String get goal => 'Ziel';
 
   @override

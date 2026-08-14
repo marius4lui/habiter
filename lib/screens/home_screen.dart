@@ -6,6 +6,7 @@ import '../core/design_system/haptics.dart';
 import '../core/time/local_date.dart';
 import '../features/today/application/today_query.dart';
 import '../features/onboarding/presentation/onboarding_empty_state.dart';
+import '../features/history/presentation/habit_lifecycle_panel.dart';
 import '../l10n/l10n.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
@@ -100,6 +101,24 @@ class _HomeScreenState extends State<HomeScreen> {
                           progress: progress,
                           completedCount: completedCount,
                           totalCount: totalActive,
+                        ),
+                      ),
+                    ),
+
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: AppSpacing.lg),
+                    ),
+
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                        ),
+                        child: HabitLifecyclePanel(
+                          habits: provider.habits,
+                          onResume: provider.resumeHabit,
+                          onRestore: provider.restoreHabit,
+                          onDelete: provider.deleteHabit,
                         ),
                       ),
                     ),

@@ -818,6 +818,21 @@ abstract class AppLocalizations {
   /// **'Habit wiederherstellen'**
   String get restoreHabit;
 
+  /// No description provided for @manageHabitLifecycle.
+  String get manageHabitLifecycle;
+
+  /// No description provided for @noPausedOrArchivedHabits.
+  String get noPausedOrArchivedHabits;
+
+  /// No description provided for @inactiveHabitCount.
+  String inactiveHabitCount(int count);
+
+  /// No description provided for @habitPaused.
+  String get habitPaused;
+
+  /// No description provided for @habitArchived.
+  String get habitArchived;
+
   /// No description provided for @goal.
   ///
   /// In de, this message translates to:

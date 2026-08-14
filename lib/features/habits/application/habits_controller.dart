@@ -108,24 +108,28 @@ final class HabitsController extends ChangeNotifier {
     await load();
   }
 
-  Future<void> archive(String id) async {
+  Future<HabitLifecycleResult> archive(String id) async {
     final result = await _lifecycle.archive(id);
     if (result.changed) await load();
+    return result;
   }
 
-  Future<void> pause(String id) async {
+  Future<HabitLifecycleResult> pause(String id) async {
     final result = await _lifecycle.pause(id);
     if (result.changed) await load();
+    return result;
   }
 
-  Future<void> resume(String id) async {
+  Future<HabitLifecycleResult> resume(String id) async {
     final result = await _lifecycle.resume(id);
     if (result.changed) await load();
+    return result;
   }
 
-  Future<void> restore(String id) async {
+  Future<HabitLifecycleResult> restore(String id) async {
     final result = await _lifecycle.restore(id);
     if (result.changed) await load();
+    return result;
   }
 
   void _emit(HabitsState value) {

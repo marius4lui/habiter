@@ -8,6 +8,7 @@ import '../features/habits/application/habit_repository.dart';
 import '../features/habits/application/habits_controller.dart';
 import '../features/habits/data/key_value_habit_repository.dart';
 import '../features/history/application/history_controller.dart';
+import '../features/history/application/habit_lifecycle_reminder_gateway.dart';
 import '../features/today/application/today_controller.dart';
 import '../features/today/application/completion_use_case.dart';
 import '../models/habit.dart';
@@ -21,6 +22,7 @@ class HabitProvider extends ChangeNotifier {
     HabitRepository? repository,
     Clock clock = const SystemClock(),
     IdGenerator ids = const UuidIdGenerator(),
+    HabitLifecycleReminderGateway? lifecycleReminders,
   }) {
     final resolvedRepository =
         repository ?? KeyValueHabitRepository(SharedPreferencesKeyValueStore());
@@ -37,6 +39,8 @@ class HabitProvider extends ChangeNotifier {
       onChanged: _reloadHabitState,
     );
     _analyticsController = AnalyticsController();
+    _lifecycleReminders =
+        lifecycleReminders ?? const _LegacyLifecycleReminderGateway();
     _habitsController.addListener(notifyListeners);
     _historyController.addListener(notifyListeners);
   }
@@ -45,6 +49,7 @@ class HabitProvider extends ChangeNotifier {
   late final HistoryController _historyController;
   late final TodayController _todayController;
   late final AnalyticsController _analyticsController;
+  late final HabitLifecycleReminderGateway _lifecycleReminders;
 
   List<Habit> get habits => _habitsController.state.habits;
   List<HabitEntry> get habitEntries => _historyController.state.entries;
@@ -163,10 +168,8 @@ class HabitProvider extends ChangeNotifier {
   }
 
   Future<void> deleteHabit(String id) async {
-    // Cancel notification before deleting
-    await NotificationService.instance.cancelHabitNotification(id);
-
     await _habitsController.delete(id);
+    await _lifecycleReminders.cancelForHabit(id);
     await _historyController.load();
   }
 
@@ -174,32 +177,37 @@ class HabitProvider extends ChangeNotifier {
   Future<void> archiveHabit(String id) async {
     final habit = habits.where((item) => item.id == id).firstOrNull;
     if (habit == null) return;
-    await _habitsController.archive(id);
-
-    // Cancel notification for archived habit
-    await NotificationService.instance.cancelHabitNotification(id);
+    final result = await _habitsController.archive(id);
+    if (!result.changed) return;
+    await _lifecycleReminders.cancelForHabit(id);
 
     debugPrint('HabitProvider: Archived habit: ${habit.name}');
   }
 
   Future<void> pauseHabit(String id) async {
-    await _habitsController.pause(id);
-    await NotificationService.instance.cancelHabitNotification(id);
+    final result = await _habitsController.pause(id);
+    if (result.changed) await _lifecycleReminders.cancelForHabit(id);
   }
 
   Future<void> resumeHabit(String id) async {
-    await _habitsController.resume(id);
+    final result = await _habitsController.resume(id);
+    if (!result.changed) return;
     final habit = habits.where((item) => item.id == id).firstOrNull;
-    if (habit != null) {
-      await NotificationService.instance.scheduleHabitNotification(habit);
+    if (habit != null &&
+        habit.notificationEnabled &&
+        habit.notificationTime != null) {
+      await _lifecycleReminders.scheduleForHabit(habit);
     }
   }
 
   Future<void> restoreHabit(String id) async {
-    await _habitsController.restore(id);
+    final result = await _habitsController.restore(id);
+    if (!result.changed) return;
     final habit = habits.where((item) => item.id == id).firstOrNull;
-    if (habit != null) {
-      await NotificationService.instance.scheduleHabitNotification(habit);
+    if (habit != null &&
+        habit.notificationEnabled &&
+        habit.notificationTime != null) {
+      await _lifecycleReminders.scheduleForHabit(habit);
     }
   }
 
@@ -350,4 +358,17 @@ class HabitProvider extends ChangeNotifier {
     _historyController.dispose();
     super.dispose();
   }
+}
+
+final class _LegacyLifecycleReminderGateway
+    implements HabitLifecycleReminderGateway {
+  const _LegacyLifecycleReminderGateway();
+
+  @override
+  Future<void> cancelForHabit(String habitId) =>
+      NotificationService.instance.cancelHabitNotification(habitId);
+
+  @override
+  Future<void> scheduleForHabit(Habit habit) =>
+      NotificationService.instance.scheduleHabitNotification(habit);
 }

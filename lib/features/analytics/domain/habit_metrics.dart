@@ -120,10 +120,8 @@ abstract final class HabitMetricCalculator {
           available.add(date);
         }
       }
-      final scheduled = schedule.target.clamp(0, available.length) as int;
-      final completed =
-          available.where(completedDates.contains).length.clamp(0, scheduled)
-              as int;
+      final scheduled = schedule.target.clamp(0, available.length);
+      final completed = available\n          .where(completedDates.contains)\n          .length\n          .clamp(0, scheduled);
       weeks.add(
         WeeklyHabitMetric(
           weekStart: weekStart,

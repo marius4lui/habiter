@@ -53,6 +53,6 @@ final class NotificationIdRegistry {
       hash ^= byte;
       hash = (hash * 0x01000193) & 0xffffffff;
     }
-    return (hash & 0x7fffffff).clamp(1, 0x7fffffff) as int;
+    return (hash & 0x7fffffff).clamp(1, 0x7fffffff);
   }
 }

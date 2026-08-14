@@ -100,7 +100,7 @@ void main() {
       draft.upsertEntry(_entry(now));
     });
     final history = HistoryController(repository);
-    final analytics = AnalyticsController();
+    final analytics = AnalyticsController(_Clock(now));
 
     await history.load();
     final stats = analytics.statsFor(_habit(now), history.state.entries);

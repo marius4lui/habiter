@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../../habits/application/habit_repository.dart';
+import '../habits/application/habit_repository.dart';
 import '../../../models/habit.dart';
 
 enum ImportCollisionPolicy { keepExisting, replaceExisting }

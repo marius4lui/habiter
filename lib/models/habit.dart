@@ -359,7 +359,7 @@ class UserPreferences {
       'reminderTime': reminderTime,
       'aiInsights': aiInsights,
       'language': language,
-      'showRecoverySupport': showRecoverySupport,
+      if (!showRecoverySupport) 'showRecoverySupport': false,
     };
   }
 

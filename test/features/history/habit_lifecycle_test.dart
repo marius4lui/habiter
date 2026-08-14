@@ -202,10 +202,14 @@ void main() {
       await tester.pump();
       expect(callbacks, <String>['resume:habit-1']);
 
+      await tester.ensureVisible(find.byTooltip('Habit wiederherstellen'));
+      await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Habit wiederherstellen'));
       await tester.pump();
       expect(callbacks, <String>['resume:habit-1', 'restore:habit-2']);
 
+      await tester.ensureVisible(find.byTooltip('Löschen').last);
+      await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Löschen').last);
       await tester.pumpAndSettle();
       expect(find.text('Habit löschen'), findsOneWidget);
@@ -243,7 +247,7 @@ final class _SequenceClock implements Clock {
   _SequenceClock(this.values);
   final List<DateTime> values;
   @override
-  DateTime now() => values.removeAt(0);
+  DateTime now() => values.length == 1 ? values.single : values.removeAt(0);
 }
 
 final class _RecordingLifecycleReminders

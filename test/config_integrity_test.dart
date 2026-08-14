@@ -16,7 +16,7 @@ void main() {
     });
 
     test(
-      'AndroidManifest.xml should contain SCHEDULE_EXACT_ALARM permission',
+      'AndroidManifest.xml should not request exact-alarm permission',
       () {
         final manifestFile = File('android/app/src/main/AndroidManifest.xml');
         expect(
@@ -28,10 +28,10 @@ void main() {
         final content = manifestFile.readAsStringSync();
         expect(
           content.contains('android.permission.SCHEDULE_EXACT_ALARM'),
-          isTrue,
+          isFalse,
           reason:
-              'Missing SCHEDULE_EXACT_ALARM permission in AndroidManifest.xml. '
-              'This is required for exact alarms on Android 12+.',
+              'Reminders use inexact scheduling by default and must not request '
+              'the restricted exact-alarm permission.',
         );
       },
     );

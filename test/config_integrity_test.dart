@@ -16,21 +16,21 @@ void main() {
     });
 
     test('AndroidManifest.xml should not request exact-alarm permission', () {
-        final manifestFile = File('android/app/src/main/AndroidManifest.xml');
-        expect(
-          manifestFile.existsSync(),
-          isTrue,
-          reason: 'AndroidManifest.xml not found',
-        );
+      final manifestFile = File('android/app/src/main/AndroidManifest.xml');
+      expect(
+        manifestFile.existsSync(),
+        isTrue,
+        reason: 'AndroidManifest.xml not found',
+      );
 
-        final content = manifestFile.readAsStringSync();
-        expect(
-          content.contains('android.permission.SCHEDULE_EXACT_ALARM'),
-          isFalse,
-          reason:
-              'Reminders use inexact scheduling by default and must not request '
-              'the restricted exact-alarm permission.',
-        );
+      final content = manifestFile.readAsStringSync();
+      expect(
+        content.contains('android.permission.SCHEDULE_EXACT_ALARM'),
+        isFalse,
+        reason:
+            'Reminders use inexact scheduling by default and must not request '
+            'the restricted exact-alarm permission.',
+      );
     });
 
     test(

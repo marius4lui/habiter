@@ -10,8 +10,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const title = isDe ? "Live Demo - Habiter ausprobieren" : "Live Demo - Try Habiter";
     const description = isDe
-        ? "Teste den Habiter Habit Tracker direkt in deinem Browser. Erlebe das haptische Feedback und das organische Design."
-        : "Try the Habiter habit tracker right in your browser. Experience the haptic feedback and organic design.";
+        ? "Teste einen kleinen lokalen Habit-Flow direkt im Browser. Die Demo speichert nichts und bildet native Funktionen nicht nach."
+        : "Try a small local habit flow in your browser. The demo stores nothing and does not reproduce native features.";
 
     return {
         title,

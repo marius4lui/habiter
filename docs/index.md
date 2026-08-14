@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: "Habiter"
-  text: "Build Habits. Break Limits."
-  tagline: The beautifully designed, privacy-focused habit tracker for people who want to stick to their goals.
+  text: "Small steps. A calmer rhythm."
+  tagline: A local-first habit tracker with forgiving recovery and user-controlled data.
   image:
     src: /icon.png
     alt: Habiter Logo
@@ -20,12 +20,12 @@ hero:
       link: https://github.com/marius4lui/habiter
 
 features:
-  - icon: ✨
-    title: Beautiful UI
-    details: Stunning glassmorphism design with animated backgrounds that feel alive.
+  - icon: 🌱
+    title: Forgiving routines
+    details: Pause, archive, and return without losing your history.
   - icon: 🔒
     title: App Lock
-    details: Lock distracting apps (like TikTok or Instagram) until you complete your daily habits.
+    details: Optionally lock selected apps on Android, with explicit permissions and recovery controls.
   - icon: 📊
     title: Analytics
     details: Visualize your progress with detailed charts and streak tracking.
@@ -33,9 +33,9 @@ features:
     title: Privacy First
     details: Your data stays on your device. No cloud account required.
   - icon: 🔄
-    title: Classly Sync
-    details: Sync your homework and tasks from Classly as daily habits.
+    title: Optional imports
+    details: Import events from a trusted Classly-compatible HTTPS server after explicit OAuth setup.
   - icon: 🚀
     title: Cross-Platform
-    details: Built with Flutter - runs on Android, iOS, Windows, macOS and Linux.
+    details: Flutter shells target Android, iOS, Windows, macOS, Linux, and web; native capabilities vary by platform.
 ---

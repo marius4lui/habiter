@@ -715,28 +715,28 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 15 | Today | VERIFIED | Red: Query fehlte + 2 Overflows; Green: 4 targeted + 71 full, analyze PASS | `79c18df` | ungültige Legacy-Custom-Schedules bleiben außerhalb Today | abgeschlossen |
 | 16 | Editor | VERIFIED | Red: Draft/Reminder/320px fehlten; Green: 4 targeted + 75 full, analyze PASS | `c355031` | keine | abgeschlossen |
 | 17 | Completion | VERIFIED | Red: Use Case fehlte; Green: 4 targeted + 79 full, analyze PASS | `0882a62` | stale Undo wird sicher ignoriert | abgeschlossen |
-| 18 | History/Lifecycle | IN_PROGRESS | Cut: 3 targeted + 82 full, analyze PASS; UI/Reminder-Evidence offen | pending | pause semantics | Lifecycle-UI und Side-Effect-Tests abschließen |
-| 19 | Analytics | NOT_STARTED | pending | pending | metric changes | calculators |
-| 20 | Recovery | NOT_STARTED | pending | pending | copy | score |
-| 21 | Reminder Registry | NOT_STARTED | pending | pending | pending cleanup | IDs |
-| 22 | TZ/DST | NOT_STARTED | pending | pending | platform TZ | adapter |
-| 23 | Permissions | NOT_STARTED | pending | pending | OS variance | state machine |
-| 24 | Scheduler | NOT_STARTED | pending | pending | iOS cap | planner |
-| 25 | Actions | NOT_STARTED | pending | pending | isolates | inbox |
-| 26 | Reminder QA | NOT_STARTED | pending | pending | sensitive data | diagnostics |
-| 27 | App Lock Contract | NOT_STARTED | pending | pending | channel | typed adapter |
-| 28 | Native App Lock | NOT_STARTED | pending | pending | OEM/policy | lifecycle |
-| 29 | App Lock UX | NOT_STARTED | pending | pending | lockout | recovery |
-| 30 | Classly Lazy | NOT_STARTED | pending | pending | existing users | feature flag |
-| 31 | Classly Security | NOT_STARTED | pending | pending | OAuth compatibility | hardening |
-| 32 | AI Isolation | NOT_STARTED | pending | pending | key migration | experimental |
-| 33 | Settings | NOT_STARTED | pending | pending | mapping | sections |
-| 34 | Portability | NOT_STARTED | pending | pending | import safety | export/import |
-| 35 | Web Foundation | NOT_STARTED | pending | pending | Next migration | server-first |
-| 36 | Web Experience | NOT_STARTED | pending | pending | real assets | rebuild |
-| 37 | Demo/SEO/Perf | NOT_STARTED | pending | pending | lab variance | audit |
-| 38 | Remove Beta/Admin | NOT_STARTED | pending | pending | old links 404 | remove all refs |
-| 39 | Cleanup/Docs | NOT_STARTED | pending | pending | accidental delete | reference checks |
+| 18 | History/Lifecycle | IMPLEMENTED | lifecycle/widget/side-effect tests authored; Flutter gate deferred to CI | `f485652` | pause semantics | CI + device gate |
+| 19 | Analytics | IMPLEMENTED | schedule-aware calculator tests authored | `b8f346e` | metric changes | CI |
+| 20 | Recovery | IMPLEMENTED | deterministic recovery tests authored | `1676cdb` | copy | CI |
+| 21 | Reminder Registry | IMPLEMENTED | registry/reconcile tests authored | `25f3d76` | pending cleanup | CI |
+| 22 | TZ/DST | IMPLEMENTED | DST/timezone tests authored | `364c165` | platform TZ | CI + device |
+| 23 | Permissions | IMPLEMENTED | permission-state tests authored | `8220509` | OS variance | CI + device |
+| 24 | Scheduler | IMPLEMENTED | occurrence/capacity tests authored | `330cf9b` | iOS cap | CI |
+| 25 | Actions | IMPLEMENTED | durable inbox/action tests authored | `4fc10b4` | isolates | CI + device |
+| 26 | Reminder QA | IMPLEMENTED | diagnostics tests/docs authored | `696731b` | sensitive data | CI + device |
+| 27 | App Lock Contract | IMPLEMENTED | typed adapter tests authored | `5c396fd` | channel | CI |
+| 28 | Native App Lock | IMPLEMENTED | policy/static tests authored | `272b773` | OEM/policy | CI + device |
+| 29 | App Lock UX | IMPLEMENTED | recovery/widget tests authored | `2541ed5` | lockout | CI + device |
+| 30 | Classly Lazy | IMPLEMENTED | lazy/default-off tests authored | `27d3a45` | existing users | CI |
+| 31 | Classly Security | IMPLEMENTED | endpoint/redaction/source tests authored | `6437818` | OAuth compatibility | CI + test server |
+| 32 | AI Isolation | IMPLEMENTED | deterministic local coaching test authored | `1231eeb` | key migration | CI |
+| 33 | Settings | IMPLEMENTED | progressive-source contract test authored | `29f5b25` | mapping | CI/widget follow-up |
+| 34 | Portability | IMPLEMENTED | roundtrip/corrupt/future/collision tests authored | `fae4804` | import safety | CI + file picker device gate |
+| 35 | Web Foundation | IMPLEMENTED | server contract tests; CI gates configured | `8c6860c` | dependency install | CI |
+| 36 | Web Experience | IMPLEMENTED | responsive/reduced-motion CSS and honest content | `ff9f048` | real screenshots unavailable | browser CI/manual |
+| 37 | Demo/SEO/Perf | IMPLEMENTED | 3/3 Node contracts PASS | `76b1336` | lab variance | CI build/Lighthouse |
+| 38 | Remove Beta/Admin | VERIFIED_LOCAL | source/routes/dependency scan PASS; 3/3 Node contracts PASS | `06a284c` | old links 404 | CI build |
+| 39 | Cleanup/Docs | IMPLEMENTED | reference and claim scan; docs build pending | pending | accidental delete | commit + CI |
 | 40 | RC/PR | NOT_STARTED | pending | pending | external gates | verify/push/PR |
 
 ## 20. Test- und Verifikationslog

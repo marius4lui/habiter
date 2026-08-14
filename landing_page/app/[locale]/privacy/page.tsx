@@ -22,12 +22,12 @@ export default function PrivacyPage() {
                     content: "Habiter ist \"Privacy-First\" konzipiert. Standardmäßig werden alle Ihre Gewohnheitsdaten lokal auf Ihrem Gerät gespeichert.",
                     list: [
                         "Lokale Daten: Gewohnheiten, Verlauf und Einstellungen werden auf Ihrem Gerät gespeichert.",
-                        "Nutzungsdaten: Wir können anonymisierte Nutzungsdaten sammeln, um die App-Stabilität zu verbessern (z. B. Absturzberichte)."
+                        "Nutzungsdaten: Habiter aktiviert standardmäßig kein Analyse- oder Absturzbericht-Tracking."
                     ]
                 },
                 {
                     title: "3. KI-Funktionen",
-                    content: "Wenn Sie KI-Insights aktivieren, werden Ihre Gewohnheitsdaten (Namen, Beschreibungen, Verlauf) möglicherweise von unserem KI-Anbieter verarbeitet, um Erkenntnisse zu generieren. Diese Daten werden nicht zum Training der KI-Modelle verwendet."
+                    content: "Lokales Coaching führt keine Netzwerkanfrage aus. Wenn Sie die experimentelle Remote-AI ausdrücklich konfigurieren, können die von Ihnen freigegebenen Daten an den gewählten Anbieter übertragen werden; dessen Bedingungen gelten."
                 },
                 {
                     title: "4. Datensicherheit",
@@ -57,12 +57,12 @@ export default function PrivacyPage() {
                     content: "Habiter is designed with \"Privacy-First\" in mind. By default, all your habit data is stored locally on your device.",
                     list: [
                         "Local Data: Habits, history, and settings are stored on your device.",
-                        "Usage Data: We may collect anonymized usage data to improve app stability (e.g., crash reports)."
+                        "Usage data: Habiter enables no analytics or crash-report tracking by default."
                     ]
                 },
                 {
                     title: "3. AI Features",
-                    content: "If you enable AI Insights, your habit data (names, descriptions, history) may be processed by our AI provider to generate insights. This data is not used to train AI models."
+                    content: "Local coaching makes no network request. If you explicitly configure experimental remote AI, data you choose to share may be sent to the selected provider and is governed by that provider's terms."
                 },
                 {
                     title: "4. Data Security",

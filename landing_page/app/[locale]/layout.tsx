@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { isLocale } from "@/lib/dictionaries";
+import { notFound } from "next/navigation";
 
 type Props = {
     params: Promise<{ locale: string }>;
@@ -10,8 +12,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const title = isDe ? "Habiter App - Gewohnheiten, die bleiben" : "Habiter App - Build habits that stick";
     const description = isDe
-        ? "Die Habiter App ist dein Habit Tracker fuer taegliche Routinen, Streaks und Fokus. Modern, organisch und mit haptischem Feedback."
-        : "The Habiter App is a habit tracker for daily routines, streaks, and focus. Modern, organic, and built with haptic feedback.";
+        ? "Ein lokaler Habit Tracker für ruhige Routinen, freundliche Neustarts, Erinnerungen und kontrollierbare Daten."
+        : "A local-first habit tracker for calm routines, forgiving recovery, reminders, and user-controlled data.";
     const baseUrl = "https://habiter.qhrd.online";
 
     return {
@@ -80,11 +82,12 @@ export default async function LocaleLayout({
     params: Promise<{ locale: string }>;
 }) {
     const { locale } = await params;
+    if (!isLocale(locale)) notFound();
     const isDe = locale === "de";
     const baseUrl = "https://habiter.qhrd.online";
     const description = isDe
-        ? "Die Habiter App ist dein Habit Tracker fuer taegliche Routinen, Streaks und Fokus. Modern, organisch und mit haptischem Feedback."
-        : "The Habiter App is a habit tracker for daily routines, streaks, and focus. Modern, organic, and built with haptic feedback.";
+        ? "Ein lokaler Habit Tracker für ruhige Routinen, freundliche Neustarts und kontrollierbare Daten."
+        : "A local-first habit tracker for calm routines, forgiving recovery, and user-controlled data.";
 
     const jsonLd = {
         "@context": "https://schema.org",
@@ -97,12 +100,6 @@ export default async function LocaleLayout({
         brand: {
             "@type": "Brand",
             name: "Habiter",
-        },
-        offers: {
-            "@type": "Offer",
-            price: "0",
-            priceCurrency: "EUR",
-            availability: "https://schema.org/InStock",
         },
         inLanguage: isDe ? "de" : "en",
     };

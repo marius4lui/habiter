@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     template: '%s | Habiter',
     default: 'Habiter - Build better habits',
   },
-  description: "Track your habits and build a better routine with the Habiter App. Beautiful design meets haptic feedback.",
+  description: "A local-first habit tracker for calm routines, forgiving recovery, reminders, and user-controlled data.",
   keywords: [
     "Habiter",
     "Habiter App",
@@ -16,7 +16,6 @@ export const metadata: Metadata = {
     "routine",
     "productivity",
     "android app",
-    "organic design",
     "streaks",
   ],
   authors: [{ name: "Habiter Team" }],

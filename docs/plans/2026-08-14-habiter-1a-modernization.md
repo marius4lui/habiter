@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 07 – HabitRepository-Vertrag und atomare Mutationssemantik mit InMemory- und SharedPreferences-Adaptern zuerst per Red Tests definieren.
+**Resume Pointer:** Batch 08 – v0-Rohdaten in ein versioniertes Envelope migrieren; Backup, Unknown-Field-Erhalt, Quarantäne und idempotente Wiederholung zuerst per Red Fixtures spezifizieren.
 
 ---
 
@@ -253,7 +253,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `refactor(domain): define explicit habit schedules`
 
 ### Batch 07: Repository-Abstraktion
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Habit/Entry-Operationen über atomaren Repository-Vertrag führen.
 **Files:** Create `lib/features/habits/application/habit_repository.dart`, `lib/core/persistence/*.dart`; Modify Provider schrittweise.
 **Behavior preserved:** CRUD/Entries verhalten sich gleich.
@@ -261,7 +261,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Implementation steps:** Result-/Error-Typen; transactional mutate; SharedPreferences Adapter.
 **Commands:** Repository-Tests; full Flutter tests.
 **Expected result:** Widgets kennen StorageService nicht.
-**Acceptance criteria:** [ ] atomare API [ ] typisierte Fehler [ ] keine statischen Aufrufe in neuen Controllern.
+**Acceptance criteria:** [x] atomare API [x] typisierte Fehler [x] injizierbarer SharedPreferences-Adapter.
 **Migration/Rollback risk:** Parallelwrites; serialisierte Mutationen.
 **Commit:** `refactor(data): introduce habit repositories`
 
@@ -703,8 +703,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 03 | Toolchain | VERIFIED | Red: 3 Pin-Gates + Signing; Green: 6 targeted, 15 full, analyze/format/install/release PASS | `7152983` | APK bewusst unsigned ohne Keystore | abgeschlossen |
 | 04 | CI | VERIFIED | Red: 4 Workflow-Verträge; Green: 5 targeted + 20 full, YAML/Docs build PASS | `24de94a` | Landing bleibt baseline-rot; Required Checks extern | abgeschlossen |
 | 05 | Fakes | VERIFIED | Red: fehlende Ports/Fakes; Green: 5 targeted + 25 coverage, format/analyze/builds PASS | `349d29e` | Landing baseline-rot | abgeschlossen |
-| 06 | Domain/Schedules | VERIFIED | Red: fehlende Domain; Green: 10 targeted + 35 full, format/analyze PASS | pending | Habit-Payload-Extras folgen Batch 08 | SHA im Batch-07-Preflight nachtragen |
-| 07 | Repository | NOT_STARTED | pending | pending | concurrency | Adapter |
+| 06 | Domain/Schedules | VERIFIED | Red: fehlende Domain; Green: 10 targeted + 35 full, format/analyze PASS | `85b2737` | Habit-Payload-Extras folgen Batch 08 | abgeschlossen |
+| 07 | Repository | VERIFIED | Red: fehlende Repository/Adapter; Green: 7 targeted + 42 full, analyze PASS | pending | v0 Extras/Envelope folgen Batch 08 | SHA im Batch-08-Preflight nachtragen |
 | 08 | Migration | NOT_STARTED | pending | pending | Datenverlust | v0→v1 |
 | 09 | Bootstrap/DI | NOT_STARTED | pending | pending | startup | composition root |
 | 10 | Feature State | NOT_STARTED | pending | pending | listeners | split controller |
@@ -754,6 +754,8 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 05 Green/Checkpoint: Target 5/5 PASS; Format 51/51; Analyze no issues; `flutter test --coverage` 25/25 PASS; APK Debug PASS; APK Release PASS (unsigned); Flutter Web PASS mit bekanntem Wasm-Hinweis aus `flutter_secure_storage_web`; Windows Release PASS. Landing: frozen install PASS, TypeScript PASS, Lint weiterhin 6 Errors/4 Warnings ausschließlich in später zu entfernenden Beta/Admin-Flächen plus alter i18n, Build weiterhin FAIL auf fehlender Supabase-URL in `/de/feedback`; kein `test`-Script vorhanden. Diese bekannten Landing-Gates werden in Batches 35–38 beseitigt.
 - 2026-08-14, Batch 06 Red: Schedule-/LocalDate-Tests kompilierten wegen fehlender Domain nicht; ein initialer Hash-Implementierungsfehler wurde sichtbar und korrigiert.
 - 2026-08-14, Batch 06 Green: 10/10 Domain Tests für Leap Dates, Validation, Daily, Weekdays, X-mal/Woche, Map-Roundtrip, alle Legacy-Varianten sowie unbekannte zukünftige Source-Kinds/-Felder; Analyze no issues, Full Flutter 35/35 PASS.
+- 2026-08-14, Batch 07 Red: Repository-, Transaktions- und SharedPreferences-Adaptertests kompilierten wegen fehlender Grenzen nicht.
+- 2026-08-14, Batch 07 Green: 7/7 Target Tests für Legacy-Key-Load, atomare Habit/Entry-Commits, Cascade Delete, Rollback nach zweitem Write-Fehler, serialisierte Concurrent Mutations und typsichere SharedPreferences-Werte; Analyze no issues, Full Flutter 42/42 PASS.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 

@@ -371,7 +371,7 @@ class UserPreferences {
       ),
       notifications: map['notifications'] as bool? ?? true,
       reminderTime: map['reminderTime'] as String? ?? '20:00',
-      aiInsights: map['aiInsights'] as bool? ?? true,
+      aiInsights: map['aiInsights'] as bool? ?? false,
       language: map['language'] as String? ?? 'en',
       showRecoverySupport: map['showRecoverySupport'] as bool? ?? true,
     );

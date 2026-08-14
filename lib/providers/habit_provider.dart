@@ -78,7 +78,7 @@ class HabitProvider extends ChangeNotifier {
     theme: ThemePreference.system,
     notifications: false,
     reminderTime: '20:00',
-    aiInsights: true,
+    aiInsights: false,
     language: 'en',
   );
 

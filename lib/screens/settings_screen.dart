@@ -27,7 +27,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = false;
   TimeOfDay _reminderTime = const TimeOfDay(hour: 20, minute: 0);
-  bool _aiInsights = true;
+  bool _aiInsights = false;
   bool _permissionGranted = false;
   final _classlyUrlController = TextEditingController();
   final _classlyTokenController = TextEditingController();

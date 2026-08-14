@@ -90,8 +90,8 @@
   "themeSystem": "System",
   
   "aiFeatures": "AI Features",
-  "aiInsights": "AI Insights",
-  "aiInsightsDesc": "Intelligent analysis of your habits",
+  "aiInsights": "Local coaching",
+  "aiInsightsDesc": "Deterministic suggestions calculated on this device",
   
   "language": "Language",
   "appLanguage": "App Language",

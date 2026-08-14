@@ -1,13 +1,14 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'app/bootstrap.dart';
 import 'app/dependencies.dart';
+import 'app/navigation/app_route.dart';
+import 'app/navigation/app_router.dart';
+import 'app/shell/adaptive_app_shell.dart';
 import 'l10n/app_localizations.dart';
-import 'l10n/l10n.dart';
 import 'providers/app_lock_provider.dart';
 import 'providers/classly_sync_provider.dart';
 import 'providers/habit_provider.dart';
@@ -114,6 +115,11 @@ class HabiterApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<SettingsProvider>(
       builder: (context, settings, _) {
+        final router = AppRouter(
+          primaryBuilder: (_, route) => _RootShell(initialRoute: route),
+          settingsBuilder: (_) => const SettingsScreen(),
+          appLockBuilder: (_) => const AppLockScreen(),
+        );
         return MaterialApp(
           title: 'Habiter',
           debugShowCheckedModeBanner: false,
@@ -128,7 +134,10 @@ class HabiterApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          home: const _RootShell(),
+          initialRoute:
+              WidgetsBinding.instance.platformDispatcher.defaultRouteName,
+          onGenerateInitialRoutes: router.initialRoutes,
+          onGenerateRoute: router.routeFor,
         );
       },
     );
@@ -136,21 +145,25 @@ class HabiterApp extends StatelessWidget {
 }
 
 class _RootShell extends StatefulWidget {
-  const _RootShell();
+  const _RootShell({required this.initialRoute});
+
+  final AppRoute initialRoute;
 
   @override
   State<_RootShell> createState() => _RootShellState();
 }
 
 class _RootShellState extends State<_RootShell> {
-  int _index = 0;
+  late int _index;
   late final PageController _pageController;
+  HabitProvider? _habitProvider;
   final _pages = const [HomeScreen(), AnalyticsScreen()];
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _index = widget.initialRoute == AppRoute.analytics ? 1 : 0;
+    _pageController = PageController(initialPage: _index);
 
     // Listen to habit changes to update app lock status
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -160,31 +173,30 @@ class _RootShellState extends State<_RootShell> {
 
   void _setupHabitListener() {
     final habitProvider = context.read<HabitProvider>();
-    final appLockProvider = context.read<AppLockProvider>();
+    _habitProvider = habitProvider;
+    _updateAppLock();
+    habitProvider.addListener(_updateAppLock);
+  }
 
-    // Initial check
-    appLockProvider.updateHabitCompletion(
+  void _updateAppLock() {
+    final habitProvider = _habitProvider;
+    if (habitProvider == null || !mounted) return;
+    context.read<AppLockProvider>().updateHabitCompletion(
       habits: habitProvider.habits,
       entries: habitProvider.habitEntries,
     );
-
-    // Listen for changes
-    habitProvider.addListener(() {
-      appLockProvider.updateHabitCompletion(
-        habits: habitProvider.habits,
-        entries: habitProvider.habitEntries,
-      );
-    });
   }
 
   @override
   void dispose() {
+    _habitProvider?.removeListener(_updateAppLock);
     _pageController.dispose();
     super.dispose();
   }
 
   void _onNavChange(int index) {
     setState(() => _index = index);
+    _restoreRoute(index);
     _pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 400),
@@ -192,366 +204,43 @@ class _RootShellState extends State<_RootShell> {
     );
   }
 
+  void _onRouteSelected(AppRoute route) {
+    _onNavChange(route == AppRoute.analytics ? 1 : 0);
+  }
+
   void _onPageChanged(int index) {
     setState(() => _index = index);
+    _restoreRoute(index);
+  }
+
+  void _restoreRoute(int index) {
+    SystemNavigator.routeInformationUpdated(
+      uri: Uri.parse(
+        AppRouteCodec.encode(index == 0 ? AppRoute.today : AppRoute.analytics),
+      ),
+    );
   }
 
   void _openAppLock() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const AppLockScreen()));
+    Navigator.of(context).pushNamed(AppRouteCodec.encode(AppRoute.appLock));
   }
 
   void _openSettings() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+    Navigator.of(context).pushNamed(AppRouteCodec.encode(AppRoute.settings));
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isDesktop = MediaQuery.of(context).size.width >= 1024;
-
-    // Main content (shared between layouts)
-    Widget mainContent = PageView(
-      controller: _pageController,
-      onPageChanged: _onPageChanged,
-      physics: const BouncingScrollPhysics(),
-      children: _pages,
-    );
-
-    // Desktop layout with NavigationRail
-    if (isDesktop) {
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: isDark ? AppGradientsDark.appShell : AppGradients.appShell,
-        ),
-        child: Stack(
-          children: [
-            const _ShellBackground(),
-            Row(
-              children: [
-                // Desktop Sidebar Navigation
-                _DesktopSidebar(
-                  index: _index,
-                  onChange: _onNavChange,
-                  onOpenSettings: _openSettings,
-                  onOpenAppLock: _openAppLock,
-                ),
-                // Main content area
-                Expanded(
-                  child: Scaffold(
-                    backgroundColor: Colors.transparent,
-                    body: mainContent,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Mobile/Tablet layout with bottom nav
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: isDark ? AppGradientsDark.appShell : AppGradients.appShell,
-      ),
-      child: Stack(
-        children: [
-          const _ShellBackground(),
-          Scaffold(
-            extendBody: true,
-            backgroundColor: Colors.transparent,
-            body: mainContent,
-            floatingActionButton: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FloatingActionButton.small(
-                  heroTag: 'settings',
-                  onPressed: _openSettings,
-                  backgroundColor: isDark
-                      ? AppColorsDark.surface
-                      : AppColors.surface,
-                  child: Icon(
-                    Icons.settings_outlined,
-                    color: isDark
-                        ? AppColorsDark.textSecondary
-                        : AppColors.textSecondary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Consumer<AppLockProvider>(
-                  builder: (context, appLock, _) {
-                    if (!appLock.isSupported) return const SizedBox.shrink();
-                    return FloatingActionButton.small(
-                      heroTag: 'applock',
-                      onPressed: _openAppLock,
-                      backgroundColor: appLock.isEnabled
-                          ? (isDark ? AppColorsDark.primary : AppColors.primary)
-                          : (isDark
-                                ? AppColorsDark.surface
-                                : AppColors.surface),
-                      child: Icon(
-                        appLock.isEnabled ? Icons.lock : Icons.lock_open,
-                        color: appLock.isEnabled
-                            ? Colors.white
-                            : (isDark
-                                  ? AppColorsDark.textSecondary
-                                  : AppColors.textSecondary),
-                        size: 20,
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
-            bottomNavigationBar: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                0,
-                AppSpacing.md,
-                AppSpacing.md,
-              ),
-              child: _GlassNavBar(index: _index, onChange: _onNavChange),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _GlassNavBar extends StatelessWidget {
-  const _GlassNavBar({required this.index, required this.onChange});
-
-  final int index;
-  final ValueChanged<int> onChange;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
-    final borderColor = isDark
-        ? AppColorsDark.borderLight
-        : AppColors.borderLight;
-    final l = context.l10n;
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: surfaceColor.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: borderColor),
-            boxShadow: AppShadows.soft,
-          ),
-          child: NavigationBar(
-            selectedIndex: index,
-            onDestinationSelected: onChange,
-            destinations: [
-              NavigationDestination(
-                icon: const Icon(Icons.checklist_rtl),
-                selectedIcon: const Icon(Icons.checklist_rtl),
-                label: l.navHabits,
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.query_stats),
-                selectedIcon: const Icon(Icons.query_stats),
-                label: l.navAnalytics,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Desktop sidebar navigation with NavigationRail
-class _DesktopSidebar extends StatelessWidget {
-  const _DesktopSidebar({
-    required this.index,
-    required this.onChange,
-    required this.onOpenSettings,
-    required this.onOpenAppLock,
-  });
-
-  final int index;
-  final ValueChanged<int> onChange;
-  final VoidCallback onOpenSettings;
-  final VoidCallback onOpenAppLock;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l = context.l10n;
-    final surfaceColor = isDark ? AppColorsDark.surface : AppColors.surface;
-    final borderColor = isDark ? AppColorsDark.border : AppColors.border;
-
-    return Container(
-      width: 80,
-      decoration: BoxDecoration(
-        color: surfaceColor.withValues(alpha: 0.95),
-        border: Border(right: BorderSide(color: borderColor, width: 1)),
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 24),
-          // App Icon/Logo
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              'assets/images/app_icon.png',
-              width: 48,
-              height: 48,
-              fit: BoxFit.cover,
-            ),
-          ),
-          const SizedBox(height: 32),
-          // Navigation Rail
-          Expanded(
-            child: NavigationRail(
-              selectedIndex: index,
-              onDestinationSelected: onChange,
-              backgroundColor: Colors.transparent,
-              indicatorColor: AppColors.primary.withValues(alpha: 0.15),
-              labelType: NavigationRailLabelType.all,
-              destinations: [
-                NavigationRailDestination(
-                  icon: const Icon(Icons.checklist_rtl_outlined),
-                  selectedIcon: Icon(
-                    Icons.checklist_rtl,
-                    color: isDark ? AppColorsDark.primary : AppColors.primary,
-                  ),
-                  label: Text(l.navHabits),
-                ),
-                NavigationRailDestination(
-                  icon: const Icon(Icons.query_stats_outlined),
-                  selectedIcon: Icon(
-                    Icons.query_stats,
-                    color: isDark ? AppColorsDark.primary : AppColors.primary,
-                  ),
-                  label: Text(l.navAnalytics),
-                ),
-              ],
-            ),
-          ),
-          // Bottom action buttons
-          const Divider(height: 1),
-          const SizedBox(height: 16),
-          // App Lock button
-          Consumer<AppLockProvider>(
-            builder: (context, appLock, _) {
-              if (!appLock.isSupported) return const SizedBox.shrink();
-              return IconButton(
-                onPressed: onOpenAppLock,
-                icon: Icon(
-                  appLock.isEnabled ? Icons.lock : Icons.lock_open,
-                  color: appLock.isEnabled
-                      ? (isDark ? AppColorsDark.primary : AppColors.primary)
-                      : (isDark
-                            ? AppColorsDark.textSecondary
-                            : AppColors.textSecondary),
-                ),
-                tooltip: 'App Lock',
-              );
-            },
-          ),
-          const SizedBox(height: 8),
-          // Settings button
-          IconButton(
-            onPressed: onOpenSettings,
-            icon: Icon(
-              Icons.settings_outlined,
-              color: isDark
-                  ? AppColorsDark.textSecondary
-                  : AppColors.textSecondary,
-            ),
-            tooltip: 'Settings',
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
-  }
-}
-
-class _ShellBackground extends StatelessWidget {
-  const _ShellBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    return const IgnorePointer(
-      child: Stack(
-        children: [
-          _GlowOrb(
-            size: 320,
-            top: -120,
-            left: -70,
-            colors: [Color(0xFF1B52FF), Color(0x662563EB)],
-          ),
-          _GlowOrb(
-            size: 260,
-            bottom: -40,
-            right: -20,
-            colors: [Color(0xFF0FCFBB), Color(0x6600C9A7)],
-          ),
-          _GlowOrb(
-            size: 180,
-            top: 220,
-            right: 120,
-            colors: [Color(0xFFFF9C55), Color(0x55FFB86C)],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({
-    required this.size,
-    this.top,
-    this.left,
-    this.right,
-    this.bottom,
-    required this.colors,
-  });
-
-  final double size;
-  final double? top;
-  final double? left;
-  final double? right;
-  final double? bottom;
-  final List<Color> colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      top: top,
-      left: left,
-      right: right,
-      bottom: bottom,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: colors,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
+    return AdaptiveAppShell(
+      selected: _index == 0 ? AppRoute.today : AppRoute.analytics,
+      onSelected: _onRouteSelected,
+      onOpenSettings: _openSettings,
+      onOpenAppLock: _openAppLock,
+      child: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        physics: const BouncingScrollPhysics(),
+        children: _pages,
       ),
     );
   }

@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 11 – adaptive Navigation und Shell für 320px bis Desktop extrahieren; zuerst Breakpoints, Route-Codec, Back- und Keyboard-Semantik per Widgettest festschreiben.
+**Resume Pointer:** Batch 12 – organisches Habiter Design System aus Farb-, Typo-, Spacing-, Shape- und State-Tokens aufbauen; zuerst Token-Vollständigkeit, Theme-Snapshots und Kontrastgrenzen testen.
 
 ---
 
@@ -305,7 +305,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `refactor(state): split monolithic app state`
 
 ### Batch 11: Adaptive Navigation und Shell
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Mobile, Tablet, Desktop, Web mit konsistenter Navigation und Deep Links.
 **Files:** Create `lib/app/navigation/*`, `lib/app/shell/*`; Modify `home_screen.dart`, `main.dart`; tests.
 **Behavior preserved:** Today/Analytics/App Lock/Settings erreichbar.
@@ -313,7 +313,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Implementation steps:** NavigationBar/Rail; focus order; route codec.
 **Commands:** widget/semantics tests; web/windows build.
 **Expected result:** adaptive Shell ohne Overflow.
-**Acceptance criteria:** [ ] 320px bis Desktop [ ] Keyboard [ ] richtige Back-Semantik.
+**Acceptance criteria:** [x] 320px bis Desktop [x] Keyboard [x] richtige Back-Semantik und kanonische Route-Restoration.
 **Migration/Rollback risk:** Navigation state.
 **Commit:** `feat(navigation): add adaptive application shell`
 
@@ -707,8 +707,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 07 | Repository | VERIFIED | Red: fehlende Repository/Adapter; Green: 7 targeted + 42 full, analyze PASS | `6ef5c15` | v0 Extras/Envelope folgen Batch 08 | abgeschlossen |
 | 08 | Migration | VERIFIED | Red: fehlende Migration; Green: 9 targeted + 46 full, analyze PASS | `10fa73a` | Legacy-Keys bleiben als Rollback-Quelle | abgeschlossen |
 | 09 | Bootstrap/DI | VERIFIED | Red: fehlende Bootstrap-Verträge; Green: 3 targeted + 49 full, analyze/web-debug PASS | `b64b11e` | Secure-Storage-Wasm-Warnung bleibt | abgeschlossen |
-| 10 | Feature State | VERIFIED | Red: 4 Controller fehlten; Green: 3 targeted + 52 full, analyze PASS | pending | Provider bleibt temporäre UI-Fassade | SHA im Batch-11-Preflight nachtragen |
-| 11 | Navigation | NOT_STARTED | pending | pending | state restore | adaptive shell |
+| 10 | Feature State | VERIFIED | Red: 4 Controller fehlten; Green: 3 targeted + 52 full, analyze PASS | `6d9b35f` | Provider bleibt temporäre UI-Fassade | abgeschlossen |
+| 11 | Navigation | VERIFIED | Red: Codec/Shell fehlten; Green: 4 targeted + 56 full, analyze/web/windows PASS | pending | System-Routen bleiben Navigator-basiert | SHA im Batch-12-Preflight nachtragen |
 | 12 | Design | NOT_STARTED | pending | pending | visual drift | tokens |
 | 13 | Motion/Haptics | NOT_STARTED | pending | pending | performance | reduced motion |
 | 14 | Onboarding | NOT_STARTED | pending | pending | first-run | empty state |
@@ -762,6 +762,9 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 09 Green: 3/3 Target Tests beweisen Migration vor Repository-Verifikation, keinen optionalen Service im Cold Start sowie redigierten retrybaren Fehlerzustand; Classly-Autoload entfernt; Full Flutter 49/49 PASS; Analyze no issues; Web Debug PASS mit bekannter Secure-Storage-Wasm-Warnung.
 - 2026-08-14, Batch 10 Red: Tests kompilierten ohne Today-, Habits-, History- und Analytics-Controller sowie typisierte Feature-States nicht.
 - 2026-08-14, Batch 10 Green: 3/3 Target Tests für immutable/ordered Habit-State, deterministisches Toggle samt Refresh und read-only History/Analytics; HabitProvider delegiert als temporäre UI-Fassade an injizierte Controller; Full Flutter 52/52 PASS; Analyze no issues.
+- 2026-08-14, Checkpoint 10: Format 73 Dateien, Analyze und Coverage 52/52 PASS; APK Debug, unsigned APK Release, Web Release und Windows Release PASS. Landing: Frozen Install/TypeScript PASS; bekannte Baseline Lint 6 Fehler/4 Warnungen, kein Test-Script, Build ohne Supabase-URL rot. Docs Build PASS; Produktions-Audit 0, VitePress-Dev-Transitiven 3 Findings. Branch bis `6d9b35f` gepusht.
+- 2026-08-14, Batch 11 Red: Route-Codec-, Adaptive-Shell-, Keyboard- und Back-Tests kompilierten ohne Navigationsmodule nicht.
+- 2026-08-14, Batch 11 Green: 4/4 Target Tests für Deep-Link-Codec/Restoration, 320px/1200px Layout, Ctrl+1/2 und sekundäre Route mit System-Back; alte doppelte Shell entfernt und Listener lifecycle-sicher; Full Flutter 56/56 PASS; Analyze, Web Release und Windows Release PASS mit bekannter Secure-Storage-Wasm-Warnung.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 

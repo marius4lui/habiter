@@ -3,12 +3,16 @@ import 'package:intl/intl.dart';
 
 import '../models/habit.dart';
 import '../models/locked_app.dart';
-import '../services/app_lock_service.dart';
+import '../features/app_lock/domain/app_lock_gateway.dart';
+import '../features/app_lock/infrastructure/method_channel_app_lock_gateway.dart';
 import '../services/storage_service.dart';
 
 /// Provider for managing app lock state and logic
 class AppLockProvider extends ChangeNotifier {
-  AppLockProvider();
+  AppLockProvider({AppLockGateway? gateway})
+    : _gateway = gateway ?? const MethodChannelAppLockGateway();
+
+  final AppLockGateway _gateway;
 
   AppLockConfig _config = const AppLockConfig();
   List<LockedApp> _availableApps = [];
@@ -31,7 +35,7 @@ class AppLockProvider extends ChangeNotifier {
   bool get hasOverlayPermission => _hasOverlayPermission;
   bool get hasAllPermissions =>
       _hasUsageStatsPermission && _hasOverlayPermission;
-  bool get isSupported => AppLockService.isSupported;
+  bool get isSupported => _gateway.isSupported;
 
   /// Load saved config and check permissions
   Future<void> load() async {
@@ -56,19 +60,29 @@ class AppLockProvider extends ChangeNotifier {
   Future<void> checkPermissions() async {
     if (!isSupported) return;
 
-    _hasUsageStatsPermission = await AppLockService.hasUsageStatsPermission();
-    _hasOverlayPermission = await AppLockService.hasOverlayPermission();
+    final result = await _gateway.permissions();
+    if (result case AppLockSuccess<AppLockPermissionSnapshot>(:final value)) {
+      _hasUsageStatsPermission = value.usageAccess;
+      _hasOverlayPermission = value.overlay;
+      _error = null;
+    } else if (result case AppLockFailure<AppLockPermissionSnapshot>(
+      :final safeMessage,
+    )) {
+      _hasUsageStatsPermission = false;
+      _hasOverlayPermission = false;
+      _error = safeMessage;
+    }
     notifyListeners();
   }
 
   /// Request usage stats permission
   Future<void> requestUsageStatsPermission() async {
-    await AppLockService.requestUsageStatsPermission();
+    await _gateway.requestUsageAccess();
   }
 
   /// Request overlay permission
   Future<void> requestOverlayPermission() async {
-    await AppLockService.requestOverlayPermission();
+    await _gateway.requestOverlay();
   }
 
   /// Load list of installed non-system apps
@@ -79,7 +93,11 @@ class AppLockProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final apps = await AppLockService.getInstalledApps();
+      final result = await _gateway.installedApps();
+      if (result is AppLockFailure<List<LockedApp>>) {
+        throw _AppLockSafeException(result.safeMessage);
+      }
+      final apps = (result as AppLockSuccess<List<LockedApp>>).value;
 
       // Merge with saved locked apps to preserve isLocked state
       final lockedPackages = _config.lockedApps
@@ -99,8 +117,8 @@ class AppLockProvider extends ChangeNotifier {
       });
 
       _error = null;
-    } catch (e) {
-      _error = 'Failed to load installed apps';
+    } on _AppLockSafeException catch (error) {
+      _error = error.message;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -153,9 +171,20 @@ class AppLockProvider extends ChangeNotifier {
     await StorageService.saveAppLockConfig(_config);
 
     if (_config.isEnabled && _config.lockedPackageNames.isNotEmpty) {
-      await AppLockService.startMonitoring(_config.lockedPackageNames);
+      final result = await _gateway.start(_config.lockedPackageNames);
+      if (result case AppLockFailure<bool>(:final safeMessage)) {
+        _config = _config.copyWith(isEnabled: false);
+        await StorageService.saveAppLockConfig(_config);
+        await _gateway.stop();
+        _error = safeMessage;
+      } else if (result case AppLockSuccess<bool>(value: false)) {
+        _config = _config.copyWith(isEnabled: false);
+        await StorageService.saveAppLockConfig(_config);
+        await _gateway.stop();
+        _error = 'App Lock stopped because required access is unavailable.';
+      }
     } else {
-      await AppLockService.stopMonitoring();
+      await _gateway.stop();
     }
   }
 
@@ -213,13 +242,21 @@ class AppLockProvider extends ChangeNotifier {
     }
 
     // Update incomplete habits for overlay display
-    await AppLockService.updateIncompleteHabits(incompleteHabitNames);
-
-    // Notify native service
-    if (habitsComplete) {
-      await AppLockService.notifyHabitsComplete();
-    } else {
-      await AppLockService.notifyHabitsIncomplete();
+    final result = await _gateway.syncCompletion(
+      complete: habitsComplete,
+      incompleteHabitNames: incompleteHabitNames,
+    );
+    if (result case AppLockFailure<void>(:final safeMessage)) {
+      _error = safeMessage;
+      _config = _config.copyWith(isEnabled: false);
+      await StorageService.saveAppLockConfig(_config);
+      await _gateway.stop();
+      notifyListeners();
     }
   }
+}
+
+final class _AppLockSafeException implements Exception {
+  const _AppLockSafeException(this.message);
+  final String message;
 }

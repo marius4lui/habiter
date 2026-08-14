@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../core/design_system/habiter_theme.dart';
+
 class AppColors {
   // Primary
   static const primary = Color(0xFF90B280); // Muted Green
@@ -253,80 +255,18 @@ class AppStyles {
 }
 
 ThemeData buildAppTheme() {
-  final base = ThemeData(
-    useMaterial3: true,
-    fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
-    brightness: Brightness.light,
-    scaffoldBackgroundColor: AppColors.background,
-  );
-
-  return base.copyWith(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      surface: AppColors.cardLight,
-      onSurface: AppColors.textMain,
-      brightness: Brightness.light,
-    ),
-    scaffoldBackgroundColor: AppColors.background,
-    cardTheme: CardThemeData(
-      color: AppColors.cardLight,
-      elevation: 0, // Using manual shadows for neumorph
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-      ),
-    ),
-    textTheme: GoogleFonts.plusJakartaSansTextTheme(base.textTheme).copyWith(
-      displayLarge: AppTextStyles.h1.copyWith(color: AppColors.textMain),
-      displayMedium: AppTextStyles.h2.copyWith(color: AppColors.textMain),
-      bodyLarge: AppTextStyles.body.copyWith(color: AppColors.textMain),
-      bodyMedium: AppTextStyles.bodySmall.copyWith(
-        color: AppColors.textSecondary,
-      ),
-    ),
-    iconTheme: const IconThemeData(color: AppColors.textMain),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
-      shape: CircleBorder(),
-      iconSize: 28,
-      elevation: 8,
-    ),
-  );
+  return HabiterTheme.light();
 }
 
 /// Build dark theme for the app
 ThemeData buildDarkTheme() {
-  final base = ThemeData(
-    useMaterial3: true,
-    fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
-    brightness: Brightness.dark,
-    scaffoldBackgroundColor: AppColors.backgroundDark,
-  );
+  return HabiterTheme.dark();
+}
 
-  return base.copyWith(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      surface: AppColors.cardDark,
-      onSurface: Colors.white,
-      brightness: Brightness.dark,
-    ),
-    scaffoldBackgroundColor: AppColors.backgroundDark,
-    cardTheme: CardThemeData(
-      color: AppColors.cardDark,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-      ),
-    ),
-    textTheme: GoogleFonts.plusJakartaSansTextTheme(
-      base.textTheme,
-    ).apply(bodyColor: Colors.white, displayColor: Colors.white),
-    iconTheme: const IconThemeData(color: Colors.white),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
-      shape: CircleBorder(),
-      elevation: 8,
-    ),
-  );
+ThemeData buildHighContrastAppTheme() {
+  return HabiterTheme.light(highContrast: true);
+}
+
+ThemeData buildHighContrastDarkTheme() {
+  return HabiterTheme.dark(highContrast: true);
 }

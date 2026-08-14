@@ -125,6 +125,8 @@ class HabiterApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: buildAppTheme(),
           darkTheme: buildDarkTheme(),
+          highContrastTheme: buildHighContrastAppTheme(),
+          highContrastDarkTheme: buildHighContrastDarkTheme(),
           themeMode: settings.themeMode,
           locale: settings.locale,
           supportedLocales: AppLocalizations.supportedLocales,

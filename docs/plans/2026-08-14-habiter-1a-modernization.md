@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 12 – organisches Habiter Design System aus Farb-, Typo-, Spacing-, Shape- und State-Tokens aufbauen; zuerst Token-Vollständigkeit, Theme-Snapshots und Kontrastgrenzen testen.
+**Resume Pointer:** Batch 13 – Motion- und Haptik-Tokens mit Reduced-Motion- und Plattform-Fallbacks einführen; zuerst Dauer-Nullung, Partikelbudget und unsupported Haptics testen.
 
 ---
 
@@ -318,7 +318,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `feat(navigation): add adaptive application shell`
 
 ### Batch 12: Habiter Design System
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Farb-, Typo-, Spacing-, Shape- und State-Tokens in ruhiger organischer Sprache.
 **Files:** Create `lib/core/design_system/*`; Modify `app_theme.dart`; token/golden tests.
 **Behavior preserved:** Light/Dark/System.
@@ -326,7 +326,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Implementation steps:** ColorScheme; high contrast; component themes; remove scattered Hex schrittweise.
 **Commands:** golden/semantics tests; analyze.
 **Expected result:** ein kohärentes System.
-**Acceptance criteria:** [ ] Light/Dark/High Contrast [ ] Text scaling [ ] platform targets.
+**Acceptance criteria:** [x] Light/Dark/High Contrast [x] 200% Text scaling [x] adaptive platform density und offline native typography.
 **Migration/Rollback risk:** Golden drift.
 **Commit:** `feat(design): introduce accessible habiter tokens`
 
@@ -708,8 +708,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 08 | Migration | VERIFIED | Red: fehlende Migration; Green: 9 targeted + 46 full, analyze PASS | `10fa73a` | Legacy-Keys bleiben als Rollback-Quelle | abgeschlossen |
 | 09 | Bootstrap/DI | VERIFIED | Red: fehlende Bootstrap-Verträge; Green: 3 targeted + 49 full, analyze/web-debug PASS | `b64b11e` | Secure-Storage-Wasm-Warnung bleibt | abgeschlossen |
 | 10 | Feature State | VERIFIED | Red: 4 Controller fehlten; Green: 3 targeted + 52 full, analyze PASS | `6d9b35f` | Provider bleibt temporäre UI-Fassade | abgeschlossen |
-| 11 | Navigation | VERIFIED | Red: Codec/Shell fehlten; Green: 4 targeted + 56 full, analyze/web/windows PASS | pending | System-Routen bleiben Navigator-basiert | SHA im Batch-12-Preflight nachtragen |
-| 12 | Design | NOT_STARTED | pending | pending | visual drift | tokens |
+| 11 | Navigation | VERIFIED | Red: Codec/Shell fehlten; Green: 4 targeted + 56 full, analyze/web/windows PASS | `d25183a` | System-Routen bleiben Navigator-basiert | abgeschlossen |
+| 12 | Design | VERIFIED | Red: Tokens/Themes fehlten; Green: 4 targeted + 60 full, analyze PASS | pending | alte Style-Aliasse bleiben Übergang | SHA im Batch-13-Preflight nachtragen |
 | 13 | Motion/Haptics | NOT_STARTED | pending | pending | performance | reduced motion |
 | 14 | Onboarding | NOT_STARTED | pending | pending | first-run | empty state |
 | 15 | Today | NOT_STARTED | pending | pending | filtering | dashboard |
@@ -765,6 +765,8 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Checkpoint 10: Format 73 Dateien, Analyze und Coverage 52/52 PASS; APK Debug, unsigned APK Release, Web Release und Windows Release PASS. Landing: Frozen Install/TypeScript PASS; bekannte Baseline Lint 6 Fehler/4 Warnungen, kein Test-Script, Build ohne Supabase-URL rot. Docs Build PASS; Produktions-Audit 0, VitePress-Dev-Transitiven 3 Findings. Branch bis `6d9b35f` gepusht.
 - 2026-08-14, Batch 11 Red: Route-Codec-, Adaptive-Shell-, Keyboard- und Back-Tests kompilierten ohne Navigationsmodule nicht.
 - 2026-08-14, Batch 11 Green: 4/4 Target Tests für Deep-Link-Codec/Restoration, 320px/1200px Layout, Ctrl+1/2 und sekundäre Route mit System-Back; alte doppelte Shell entfernt und Listener lifecycle-sicher; Full Flutter 56/56 PASS; Analyze, Web Release und Windows Release PASS mit bekannter Secure-Storage-Wasm-Warnung.
+- 2026-08-14, Batch 12 Red: Token-, Vier-Paletten-Kontrast-, Theme-Contract- und 200%-Textskalierungs-Tests kompilierten ohne Design-System-Module nicht; erster Green-Versuch entdeckte zusätzlich einen verbotenen Google-Fonts-Netzwerkload im Test.
+- 2026-08-14, Batch 12 Green: 4/4 Target Tests für vollständige Token-Skalen, WCAG-Textkontrast in Light/Dark/High-Contrast, identische Material-3-Komponentenverträge und 200% Textskalierung; kanonisches Theme nutzt offline native Plattformtypografie; Full Flutter 60/60 PASS; Analyze no issues.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 

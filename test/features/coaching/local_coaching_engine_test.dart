@@ -13,6 +13,7 @@ void main() {
       targetCount: 1,
       category: 'Growth',
       createdAt: DateTime.utc(2026, 8, 1),
+      isActive: true,
     );
     final now = DateTime.utc(2026, 8, 14, 12);
     const engine = LocalCoachingEngine();

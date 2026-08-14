@@ -87,7 +87,7 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
           channel,
-          (_) => throw const PlatformException(code: 'denied'),
+          (_) => throw PlatformException(code: 'denied'),
         );
     const failing = MethodChannelAppLockGateway(
       channel: channel,

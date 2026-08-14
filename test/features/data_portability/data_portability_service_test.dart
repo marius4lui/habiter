@@ -61,6 +61,7 @@ Habit _habit(String id) => Habit(
   targetCount: 1,
   category: 'General',
   createdAt: DateTime.utc(2026, 8, 14),
+  isActive: true,
 );
 
 final class InMemoryKeyValueStore implements KeyValueStore {

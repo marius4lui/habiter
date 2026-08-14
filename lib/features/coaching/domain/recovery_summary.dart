@@ -21,7 +21,7 @@ final class RecoverySummary {
   factory RecoverySummary.fromMetrics(HabitMetrics metrics) {
     final score = metrics.scheduled == 0
         ? 0
-        : (metrics.completionRate * 100).round().clamp(0, 100) as int;
+        : (metrics.completionRate * 100).round().clamp(0, 100);
     final state = metrics.scheduled == 0
         ? RecoveryState.newStart
         : score >= 80

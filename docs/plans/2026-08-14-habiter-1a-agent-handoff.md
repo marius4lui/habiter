@@ -1,5 +1,8 @@
 # Habiter 1A Modernization – Agent Handoff
 
+> **Abgeschlossen am 2026-08-14:** Dieser Übergabeauftrag wurde vollständig abgearbeitet. Der verbindliche Abschlussnachweis steht in Abschnitt 25 des Modernisierungsplans und in PR #5. Alle verfügbaren automatischen GitHub-Gates sind grün; reale Geräte-, Signierungs-, Release- und Deployment-Gates bleiben ausdrücklich extern/manuell. Der Kandidat wurde nicht gemergt, released oder deployed.
+
+
 **Cut date:** 2026-08-14
 
 **Repository:** `marius4lui/habiter`

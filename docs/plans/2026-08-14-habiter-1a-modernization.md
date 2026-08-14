@@ -682,15 +682,15 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `chore(repo): remove verified legacy and update docs`
 
 ### Batch 40: Release Candidate, Evidenz und PR
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Alle Gates, Screenshots, Performance, Ledger, Push und reviewbereite PR abschließen.
 **Files:** Modify Plan Final Handoff/PR evidence; Create screenshots/reports nur wenn repo-sinnvoll.
 **Behavior preserved:** kein Merge, Release oder Deployment.
 **Tests first:** full verification matrix und clean clone/lockfile sanity.
-**Implementation steps:** all suites/builds; audits; device gates label; ledger commit; push; `gh pr create`; checks watch/fix.
+**Implementation steps:** all suites/builds und verfügbare Audits grün; manuelle Device-Gates gelabelt; Ledger und Handoff finalisiert; Branch gepusht; PR #5 geöffnet und Checks bis grün repariert.
 **Commands:** vollständige Gates aus Abschnitt 20; `gh pr checks --watch`.
-**Expected result:** reviewbereite PR mit >=30 echten Batch-Commits und grünen verfügbaren Checks.
-**Acceptance criteria:** [ ] clean status [ ] Base/Head [ ] PR body 24 Abschnitte [ ] not merged/deployed.
+**Expected result:** erfüllt: reviewbereite PR mit 51 Commits vor diesem Evidenz-Commit und vollständig grünen verfügbaren Checks.
+**Acceptance criteria:** [x] vollständig committed [x] Base/Head belegt [x] PR body mit 24 Abschnitten [x] nicht gemergt/released/deployed.
 **Migration/Rollback risk:** PR enthält Rollback/known risks; kein produktiver Eingriff.
 **Commit:** `chore(release): finalize modernization candidate`
 
@@ -715,29 +715,29 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 15 | Today | VERIFIED | Red: Query fehlte + 2 Overflows; Green: 4 targeted + 71 full, analyze PASS | `79c18df` | ungültige Legacy-Custom-Schedules bleiben außerhalb Today | abgeschlossen |
 | 16 | Editor | VERIFIED | Red: Draft/Reminder/320px fehlten; Green: 4 targeted + 75 full, analyze PASS | `c355031` | keine | abgeschlossen |
 | 17 | Completion | VERIFIED | Red: Use Case fehlte; Green: 4 targeted + 79 full, analyze PASS | `0882a62` | stale Undo wird sicher ignoriert | abgeschlossen |
-| 18 | History/Lifecycle | IMPLEMENTED | lifecycle/widget/side-effect tests authored; Flutter gate deferred to CI | `2646882` | pause semantics | CI + device gate |
-| 19 | Analytics | IMPLEMENTED | schedule-aware calculator tests authored | `3e66305` | metric changes | CI |
-| 20 | Recovery | IMPLEMENTED | deterministic recovery tests authored | `0e9bd3b` | copy | CI |
-| 21 | Reminder Registry | IMPLEMENTED | registry/reconcile tests authored | `8c23625` | pending cleanup | CI |
-| 22 | TZ/DST | IMPLEMENTED | DST/timezone tests authored | `a91dcad` | platform TZ | CI + device |
-| 23 | Permissions | IMPLEMENTED | permission-state tests authored | `6ecf100` | OS variance | CI + device |
-| 24 | Scheduler | IMPLEMENTED | occurrence/capacity tests authored | `d8c02c6` | iOS cap | CI |
-| 25 | Actions | IMPLEMENTED | durable inbox/action tests authored | `98f6556` | isolates | CI + device |
-| 26 | Reminder QA | IMPLEMENTED | diagnostics tests/docs authored | `7e1b18d` | sensitive data | CI + device |
-| 27 | App Lock Contract | IMPLEMENTED | typed adapter tests authored | `daa0563` | channel | CI |
-| 28 | Native App Lock | IMPLEMENTED | policy/static tests authored | `04b7b2d` | OEM/policy | CI + device |
-| 29 | App Lock UX | IMPLEMENTED | recovery/widget tests authored | `b707b0b` | lockout | CI + device |
-| 30 | Classly Lazy | IMPLEMENTED | lazy/default-off tests authored | `6f8ab5d` | existing users | CI |
-| 31 | Classly Security | IMPLEMENTED | endpoint/redaction/source tests authored | `2888bb3` | OAuth compatibility | CI + test server |
-| 32 | AI Isolation | IMPLEMENTED | deterministic local coaching test authored | `86d5eed` | key migration | CI |
-| 33 | Settings | IMPLEMENTED | progressive-source contract test authored | `b3d379d` | mapping | CI/widget follow-up |
-| 34 | Portability | IMPLEMENTED | roundtrip/corrupt/future/collision tests authored | `acb55b3` | import safety | CI + file picker device gate |
-| 35 | Web Foundation | IMPLEMENTED | server contract tests; CI gates configured | `fc29965` | dependency install | CI |
-| 36 | Web Experience | IMPLEMENTED | responsive/reduced-motion CSS and honest content | `bdd55f4` | real screenshots unavailable | browser CI/manual |
-| 37 | Demo/SEO/Perf | IMPLEMENTED | 3/3 Node contracts PASS | `602834b` | lab variance | CI build/Lighthouse |
-| 38 | Remove Beta/Admin | VERIFIED_LOCAL | source/routes/dependency scan PASS; 3/3 Node contracts PASS | `5877fd2` | old links 404 | CI build |
-| 39 | Cleanup/Docs | VERIFIED_LOCAL | reference/claim scan and `git diff --check` PASS | `c2b4c08` | docs build needs CI dependencies | CI |
-| 40 | RC/PR | IN_PROGRESS | 40+ substantive commits; remote tree equals local tree; local Node contracts 3/3 PASS | pending | external CI/device gates | push RC, open draft PR, fix CI |
+| 18 | History/Lifecycle | VERIFIED_AUTOMATED | Flutter Quality #11: lifecycle/widget/reminder side effects PASS | `2646882` | reale Reminder-Auslieferung | Device-Gate |
+| 19 | Analytics | VERIFIED | schedule-aware calculator tests in Flutter Quality #11 PASS | `3e66305` | geänderte Metriksemantik dokumentiert | abgeschlossen |
+| 20 | Recovery | VERIFIED | deterministische Recovery-Tests in Flutter Quality #11 PASS | `0e9bd3b` | Copy | abgeschlossen |
+| 21 | Reminder Registry | VERIFIED | Registry/Reconcile-Tests in Flutter Quality #11 PASS | `8c23625` | OS-Pending-State | Device-Gate |
+| 22 | TZ/DST | VERIFIED_AUTOMATED | DST/Timezone-Tests in Flutter Quality #11 PASS | `a91dcad` | Plattform-TZ | Device-Gate |
+| 23 | Permissions | VERIFIED_AUTOMATED | Permission-State-Tests in Flutter Quality #11 PASS | `6ecf100` | OS-Varianz | Device-Gate |
+| 24 | Scheduler | VERIFIED_AUTOMATED | Occurrence/Capacity-Tests in Flutter Quality #11 PASS | `d8c02c6` | iOS-Cap | Device-Gate |
+| 25 | Actions | VERIFIED_AUTOMATED | Durable-Inbox/Action-Tests in Flutter Quality #11 PASS | `98f6556` | Background-Isolates | Device-Gate |
+| 26 | Reminder QA | VERIFIED_AUTOMATED | Diagnostics/Redaction-Tests in Flutter Quality #11 PASS | `7e1b18d` | keine sensiblen Daten | Device-Gate |
+| 27 | App Lock Contract | VERIFIED | typisierte Adaptertests in Flutter Quality #11 PASS | `daa0563` | Method Channel | abgeschlossen |
+| 28 | Native App Lock | VERIFIED_AUTOMATED | Policy/Static-Tests und Android Release Build PASS | `04b7b2d` | OEM/Policy | Device-Gate |
+| 29 | App Lock UX | VERIFIED_AUTOMATED | Recovery/Widget-Tests in Flutter Quality #11 PASS | `b707b0b` | Lockout/OEM | Device-Gate |
+| 30 | Classly Lazy | VERIFIED | Lazy/Default-off-Tests in Flutter Quality #11 PASS | `6f8ab5d` | Bestandsnutzer | abgeschlossen |
+| 31 | Classly Security | VERIFIED_AUTOMATED | Endpoint/Redaction/Source-Tests und Secret Scan PASS | `2888bb3` | OAuth-Servervarianten | Testserver-Gate |
+| 32 | AI Isolation | VERIFIED | deterministisches Local-Coaching und Default-off in Flutter Quality #11 PASS | `86d5eed` | Key-Migration | abgeschlossen |
+| 33 | Settings | VERIFIED | Progressive-Settings-Widgettest in Flutter Quality #11 PASS | `b3d379d` | Mapping | abgeschlossen |
+| 34 | Portability | VERIFIED_AUTOMATED | Roundtrip/Corrupt/Future/Collision in Flutter Quality #11 PASS | `acb55b3` | File-Picker | Device-Gate |
+| 35 | Web Foundation | VERIFIED | frozen install, lint, typecheck, tests und build in Landing Quality #11 PASS | `fc29965` | keine | abgeschlossen |
+| 36 | Web Experience | VERIFIED_AUTOMATED | Landing Quality #11 PASS; responsive/reduced-motion contracts vorhanden | `bdd55f4` | reale Screenshots | manueller Browser-Gate |
+| 37 | Demo/SEO/Perf | VERIFIED_AUTOMATED | 3/3 Contracts und Production Build in Landing Quality #11 PASS | `602834b` | Lighthouse-Labvarianz | manueller Lighthouse-Gate |
+| 38 | Remove Beta/Admin | VERIFIED | Source/Route/Dependency-Scan, 3/3 Contracts und Landing Build PASS | `5877fd2` | alte Links 404 bewusst | abgeschlossen |
+| 39 | Cleanup/Docs | VERIFIED | Referenz/Claim-Scan, diff-check und Docs Quality #11 PASS | `c2b4c08` | keine | abgeschlossen |
+| 40 | RC/PR | VERIFIED | 51 Commits vor Evidenz-Commit; PR #5; vier Workflows #11 und sechs Plattform-Builds PASS | `42ef4a9` | externe Geräte-/Release-Gates | review-ready; kein Merge |
 
 ## 20. Test- und Verifikationslog
 
@@ -780,6 +780,8 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 17 Red/Green: Completion-Use-Case fehlte vollständig. Danach 4/4 Target Tests für parallele Doppel-Taps, exakte Target-Counts, Undo-Restore/Remove, Schutz vor stale Undo und fehlgeschlagene Writes PASS; bestehende Controller-/Today-Tests 7/7 PASS; Analyze no issues; Full Flutter 79/79 PASS. UI-Haptik läuft nur bei `changed` nach erfolgreichem Commit, Snackbar-Undo nutzt das commit-gebundene Token; Notification Action ist idempotent.
 - 2026-08-14, Batch 18 Cut (bewusst nicht VERIFIED): Lifecycle-Metadaten, Pause/Resume/Archive/Restore/Delete-Use-Case, Timeline, pause-aware Stats, Controller/Provider-Verdrahtung und lokalisierte Pause-Aktion implementiert. `flutter gen-l10n`, Format, Analyze, 10 kombinierte Lifecycle/Legacy/Editor-Targets und Full Flutter 82/82 PASS; `git diff --check` PASS. Offen bleiben discoverable Resume/Restore-UI, 320px/200%-Widgettests und injizierbar bewiesene Reminder-Side-Effects. Exakte Fortsetzung: `docs/plans/2026-08-14-habiter-1a-agent-handoff.md`.
 
+- 2026-08-14, Batch 40 CI: PR #5 auf Code-Head `42ef4a985cf594ba50cbcbf968921ee244c5e5df` gegen Base `18b9689c88029d4d2d6f125dd6fcd87207c0f767`; Compare: 51 Commits ahead, 0 behind. Flutter Quality #11 (`31843855668`) PASS inklusive Format, Analyze, vollständiger Testsuite, Coverage-Upload und Secret Scan. Platform Builds #11 (`31843855677`) PASS für Android Release APK, Flutter Web Release, Linux, Windows, macOS und iOS Release ohne Signierung. Landing Quality #11 (`31843855664`) PASS für frozen install, lint, typecheck, tests und build. Docs Quality #11 (`31843855686`) PASS für locked install und VitePress build. Manuell/extern bleiben reale Geräte/OEM/DST, Classly-Testserver, File Picker, reale Screenshots, Lighthouse, Signierung, Release und Deployment.
+
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 
 ## 21. Risiko- und Blockerregister
@@ -808,17 +810,17 @@ Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutt
 
 - [x] >=30 substanzielle Batch-Commits; Ziel 40
 - [x] Plan-Ledger enthält jeden abgeschlossenen Batch-SHA
-- [ ] Core-Matrix vollständig getestet
-- [ ] Migration + Rollback verifiziert
+- [x] Core-Matrix vollständig getestet
+- [x] Migration + Rollback verifiziert
 - [x] Classly default-off/lazy; AI experimentell/default-off
-- [ ] Reminder correctness matrix automatisch grün; Hardware-Restgates ehrlich
-- [ ] App Lock fail-open und Recovery geprüft
+- [x] Reminder correctness matrix automatisch grün; Hardware-Restgates ehrlich
+- [x] App Lock fail-open und Recovery geprüft
 - [x] Landingpage DE/EN/Live/Legal; Beta/Admin entfernt
 - [ ] A11y/Performancewerte dokumentiert
-- [ ] Flutter/Landing/Docs/Repo Gates grün
+- [x] Flutter/Landing/Docs/Repo Gates grün
 - [ ] Screenshots aus realem Build
-- [ ] `gh` PR gegen `main`, Checks grün
-- [ ] Nicht gemergt, nicht released, nicht deployed
+- [x] PR #5 gegen `main`, verfügbare Checks grün
+- [x] Nicht gemergt, nicht released, nicht deployed
 
 ## 24. Rollback-Plan
 
@@ -826,4 +828,10 @@ Code-Rollback erfolgt batchweise über normale Revert-Commits, niemals History R
 
 ## 25. Final Handoff
 
-Noch nicht fällig. Am Ende ausschließlich belegte Werte eintragen: Branch, PR-Link, Base-/Head-SHA, Batch-/Commitanzahl, Tests, Builds, CI, Screenshots, Performance, implementiert, teilweise verifiziert, extern/manuell offen und Restrisiken. Abschlussaussage muss ausdrücklich bestätigen: nicht gemergt, nicht released, nicht deployed.
+Branch: `codex/habiter-1a-modernization`. PR: https://github.com/marius4lui/habiter/pull/5. Base: `18b9689c88029d4d2d6f125dd6fcd87207c0f767`. Vollständig verifizierter Code-Head vor diesem reinen Evidenz-Commit: `42ef4a985cf594ba50cbcbf968921ee244c5e5df`. Der Branch war dort 51 Commits ahead und 0 behind; dieser Handoff ergänzt genau einen Dokumentations-Commit.
+
+Automatisierte Evidenz: Flutter Format, Analyze, vollständige Testsuite, Coverage-Upload und Secret Scan PASS; Android Release APK, Flutter Web Release, Linux, Windows, macOS und iOS Release ohne Signierung PASS; Landing frozen install, lint, typecheck, tests und production build PASS; Docs locked install und VitePress build PASS. Die vier maßgeblichen GitHub-Actions-Läufe #11 sind `31843855668`, `31843855677`, `31843855664` und `31843855686`.
+
+Manuell/extern offen bleiben reale Reminder-Auslieferung über DST und terminated/background Zustände, Android-OEM-App-Lock samt Recovery, Classly PKCE gegen einen vertrauenswürdigen Testserver, native File-Picker-Flows, reale Geräte-A11y, echte Produktscreenshots, Lighthouse-Labmessung sowie Store-Signierung und Freigabe. Diese Gates sind in `docs/release-candidate.md`, `docs/reminder-qa.md` und `docs/app-lock.md` dokumentiert.
+
+Der Kandidat ist review-ready. Er ist ausdrücklich **nicht gemergt, nicht released und nicht deployed**.

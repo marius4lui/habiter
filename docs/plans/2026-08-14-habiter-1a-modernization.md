@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 02 – Legacy-Fixtures aus den realen SharedPreferences-Formaten erstellen und zuerst fehlende Reminder-/Schedule-Roundtrip-Tests rot ausführen.
+**Resume Pointer:** Batch 03 – Toolchain- und Dependency-Kompatibilität aus den aktuellen Workflow-Pins ableiten, ADR konkretisieren und reproduzierbare Flutter-/Node-/pnpm-Pins einführen.
 
 ---
 
@@ -186,7 +186,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `docs(modernization): capture verified baseline`
 
 ### Batch 02: Characterization Tests für Domain und Legacy-Payloads
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Bestehende JSON-, Entry-, Streak- und Settings-Semantik vor Refactor einfrieren.
 **Files:** Create `test/fixtures/legacy/*.json`, `test/domain/habit_legacy_test.dart`, `test/core/persistence/legacy_payload_test.dart`; Modify `lib/models/habit.dart` nur für testbare Parser-Grenzen.
 **Behavior preserved:** Alle aktuellen Felder und Defaults werden explizit charakterisiert.
@@ -696,8 +696,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 
 | Batch | Scope | Status | Tests | Commit | Risiken | Nächster Schritt |
 |---|---|---|---|---|---|---|
-| 01 | Baseline/Plan | VERIFIED | `Batches=40`; `Sections=25`; `InProgressRows=1`; `git diff --check` PASS | pending | keine | SHA in Batch-02-Preflight nachtragen |
-| 02 | Characterization | NOT_STARTED | pending | pending | Legacy-Semantik | Fixtures schreiben und Red verifizieren |
+| 01 | Baseline/Plan | VERIFIED | `Batches=40`; `Sections=25`; `InProgressRows=1`; `git diff --check` PASS | `8b8eedb` | keine | abgeschlossen |
+| 02 | Characterization | VERIFIED | Red: Reminder/Custom Days blieben alt; Green: 7 targeted + 11 full tests, analyze PASS | pending | unknown fields folgen Migration | SHA im Batch-03-Preflight nachtragen |
 | 03 | Toolchain | NOT_STARTED | pending | pending | Dependency-Brüche | ADR anwenden |
 | 04 | CI | NOT_STARTED | pending | pending | Remote required checks | Workflows konsolidieren |
 | 05 | Fakes | NOT_STARTED | pending | pending | none | Interfaces erstellen |
@@ -742,6 +742,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Datum, exakter Befehl, Exit-Code und relevantes Ergebnis ergänzt. Alle fünf Batches: volle Flutter- und Landing-Suite, relevante Builds, Branch-Push und Risiko-Review.
 
 - 2026-08-14, Batch 01: `Select-String '^### Batch \d{2}:'` → 40; `Select-String '^## \d+\.'` → 25; Fortschrittstabelle → genau ein `IN_PROGRESS`; `git diff --check` → Exit 0; Worktree nach Isolierung der durch Baseline-Tools erzeugten No-op-Änderungen enthält ausschließlich das neue Plan-Dokument.
+- 2026-08-14, Batch 02 Red: `flutter test test/domain/habit_legacy_test.dart test/core/persistence/legacy_payload_test.dart` → Exit 1; erwarteter Fehler: `customDays` blieb `[1,3,5]` statt `[2,4,6]`. Ein zusätzlicher Testvergleich wurde von Objektidentität auf serialisierte Maps korrigiert.
+- 2026-08-14, Batch 02 Green: derselbe Target-Befehl → 7/7 PASS; formatierte Touched-Files → 0 Änderungen; `flutter analyze` → no issues; `flutter test` → 11/11 PASS.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 

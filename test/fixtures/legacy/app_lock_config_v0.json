@@ -1,0 +1,13 @@
+{
+  "isEnabled": true,
+  "lockedApps": [
+    {
+      "packageName": "com.example.social",
+      "appName": "Social",
+      "iconBytes": null,
+      "isLocked": true
+    }
+  ],
+  "lockUntilAllHabitsComplete": false,
+  "requiredHabitIds": ["legacy-daily-water"]
+}

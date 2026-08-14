@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../models/habit.dart';
 
@@ -8,11 +9,13 @@ class BentoHabitCard extends StatelessWidget {
     required this.habit,
     this.completed = false,
     this.onEdit,
+    this.onComplete,
   });
 
   final Habit habit;
   final bool completed;
   final VoidCallback? onEdit;
+  final VoidCallback? onComplete;
 
   Color _parseColor(String colorStr) {
     try {
@@ -123,12 +126,14 @@ class BentoHabitCard extends StatelessWidget {
                         color: AppColors.textTertiary,
                       ),
                     ),
-                    Text(
-                      completed ? 'Done' : 'Pending',
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textTertiary,
+                    if (completed)
+                      const Icon(Icons.check_circle, color: AppColors.success)
+                    else
+                      IconButton.filledTonal(
+                        tooltip: context.l10n.completed,
+                        onPressed: onComplete,
+                        icon: const Icon(Icons.check_rounded),
                       ),
-                    ),
                   ],
                 ),
               ],

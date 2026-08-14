@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 15 – Today Dashboard auf tatsächlich geplante Habits, ruhigen Fortschritt und eine primäre Aktion fokussieren; zuerst Schedule-Filter, Empty/Completed/Recovery und Textskalierung testen.
+**Resume Pointer:** Batch 16 – Habit Create/Edit als validierten zugänglichen Editor für Schedules und optionale Reminder neu aufbauen; zuerst Feldverlust, Custom Days, lange deutsche Texte und Tastatur testen.
 
 ---
 
@@ -357,7 +357,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `feat(onboarding): create consent-first first run`
 
 ### Batch 15: Today Dashboard
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Geplante heutige Habits fokussiert, zugänglich und responsive darstellen.
 **Files:** Create/Modify `lib/features/today/presentation/*`; retire passende alte Widgets; tests.
 **Behavior preserved:** Completion/Details/Navigation.
@@ -365,7 +365,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Implementation steps:** Today query; progress; one primary action; honest copy.
 **Commands:** widget/golden/semantics tests.
 **Expected result:** ruhiger daily focus.
-**Acceptance criteria:** [ ] one-tap [ ] ungeplante Habits getrennt [ ] kein toxischer Zustand.
+**Acceptance criteria:** [x] one-tap Completion [x] ungeplante/inaktive Habits aus Today getrennt [x] neutraler Fortschritt ohne erfundene Personalisierung oder toxischen Zustand.
 **Migration/Rollback risk:** Filtersemantik.
 **Commit:** `feat(today): redesign daily habit focus`
 
@@ -711,8 +711,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 11 | Navigation | VERIFIED | Red: Codec/Shell fehlten; Green: 4 targeted + 56 full, analyze/web/windows PASS | `d25183a` | System-Routen bleiben Navigator-basiert | abgeschlossen |
 | 12 | Design | VERIFIED | Red: Tokens/Themes fehlten; Green: 4 targeted + 60 full, analyze PASS | `9997942` | alte Style-Aliasse bleiben Übergang | abgeschlossen |
 | 13 | Motion/Haptics | VERIFIED | Red: Motion/Haptik fehlten; Green: 3 targeted + 63 full, analyze PASS | `919cbb8` | bestehende Altanimationen folgen schrittweise | abgeschlossen |
-| 14 | Onboarding | VERIFIED | Red: Onboarding/Empty fehlten; Green: 4 targeted + 67 full, analyze PASS | pending | alte Nutzerpräferenzen bleiben legacy-kompatibel | SHA im Batch-15-Preflight nachtragen |
-| 15 | Today | NOT_STARTED | pending | pending | filtering | dashboard |
+| 14 | Onboarding | VERIFIED | Red: Onboarding/Empty fehlten; Green: 4 targeted + 67 full, analyze PASS | `1146aeb` | alte Nutzerpräferenzen bleiben legacy-kompatibel | abgeschlossen |
+| 15 | Today | VERIFIED | Red: Query fehlte + 2 Overflows; Green: 4 targeted + 71 full, analyze PASS | pending | ungültige Legacy-Custom-Schedules bleiben außerhalb Today | SHA im Batch-16-Preflight nachtragen |
 | 16 | Editor | NOT_STARTED | pending | pending | field mapping | create/edit |
 | 17 | Completion | NOT_STARTED | pending | pending | races | idempotency |
 | 18 | History/Lifecycle | NOT_STARTED | pending | pending | pause semantics | lifecycle |
@@ -771,6 +771,8 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 13 Green: 3/3 Target Tests für Null-Dauern/-Budget bei Reduced Motion, explizite Android/iOS-Web-safe Haptikunterstützung und Partikelbudget 12; Completion-Haptik injiziert, Navigation zentral tokenisiert; Full Flutter 63/63 PASS; Analyze no issues.
 - 2026-08-14, Batch 14 Red: Empty-Storage-, Restart- und DE/EN-Widgettests kompilierten ohne Onboarding-State/-Presentation nicht.
 - 2026-08-14, Batch 14 Green: 4/4 Target Tests beweisen leeren Erststart ohne Seed, Notifications opt-in, deterministisches Überspringen für bestehende Nutzer und lokalisierten ehrlichen CTA; leere Starts initialisieren weder AI noch Notifications; Full Flutter 67/67 PASS; Analyze no issues.
+- 2026-08-14, Batch 15 Red: Today-Query fehlte; nach Query-Green deckte der 320px-/200%-Test 177px horizontalen und 251px vertikalen Overflow im alten Progress-Widget auf.
+- 2026-08-14, Batch 15 Green: 4/4 Target Tests für Daily/Weekly/Custom-Schedule-Filter, Completed/Pending/Progress, scrollbare 320px-/200%-Darstellung und One-Tap-Completion; Progress-Card adaptiv/semantisch neu gebaut, Fake-Name entfernt und Header lokalisiert; Full Flutter 71/71 PASS; Analyze no issues.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 

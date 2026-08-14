@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
-import '../theme/app_theme.dart';
+
+import '../core/design_system/motion.dart';
+import '../core/design_system/tokens.dart';
 import '../l10n/l10n.dart';
 
 class DailyProgressCard extends StatelessWidget {
   const DailyProgressCard({
     super.key,
-    required this.progress, // 0.0 to 1.0
+    required this.progress,
     required this.completedCount,
     required this.totalCount,
   });
@@ -17,145 +18,58 @@ class DailyProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l = context.l10n;
-
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final resolvedProgress = progress.clamp(0.0, 1.0);
     return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: progress),
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.easeOutCubic,
-      builder: (context, animatedProgress, child) {
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(AppBorderRadius.xxl), // 32
-            boxShadow: isDark ? AppShadows.neumorphDark : AppShadows.neumorph,
-          ),
-          child: Stack(
-            children: [
-              // Background decorative blob (simplified as valid code)
-              Positioned(
-                right: -40,
-                top: -40,
-                child: Container(
-                  width: 128,
-                  height: 128,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l.yourDailyFlow,
-                          style: AppTextStyles.h2.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(
-                          l.keepMomentum,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textTertiary,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-                        Row(
-                          children: [
-                            Text(
-                              '${(animatedProgress * 100).round()}%',
-                              style: AppTextStyles.h1.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 300),
-                              child: Container(
-                                key: ValueKey(animatedProgress >= 1.0),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.sm,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: animatedProgress >= 1.0
-                                      ? AppColors.secondary.withValues(
-                                          alpha: 0.15,
-                                        )
-                                      : AppColors.primary.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                  borderRadius: BorderRadius.circular(
-                                    AppBorderRadius.sm,
-                                  ),
-                                ),
-                                child: Text(
-                                  animatedProgress >= 1.0
-                                      ? l.completed
-                                      : l.onTrack,
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: animatedProgress >= 1.0
-                                        ? AppColors.secondary
-                                        : AppColors.primary,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(
-                          l.habitsCompleted(completedCount, totalCount),
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textTertiary,
-                          ),
-                        ),
+      tween: Tween<double>(begin: 0, end: resolvedProgress),
+      duration: HabiterMotion.emphasized.duration(
+        reduced: context.reduceMotion,
+      ),
+      curve: HabiterMotion.emphasized.curve,
+      builder: (context, animatedProgress, _) {
+        return Semantics(
+          container: true,
+          label: l10n.habitsCompleted(completedCount, totalCount),
+          value: '${(animatedProgress * 100).round()}%',
+          child: Card(
+            margin: EdgeInsets.zero,
+            child: Padding(
+              padding: const EdgeInsets.all(HabiterSpace.lg),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final compact =
+                      constraints.maxWidth < 420 ||
+                      MediaQuery.textScalerOf(context).scale(1) > 1.3;
+                  final details = _ProgressDetails(
+                    progress: animatedProgress,
+                    completedCount: completedCount,
+                    totalCount: totalCount,
+                  );
+                  final indicator = _ProgressIndicator(
+                    progress: animatedProgress,
+                    color: theme.colorScheme.primary,
+                  );
+                  if (compact) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        details,
+                        const SizedBox(height: HabiterSpace.lg),
+                        Align(alignment: Alignment.center, child: indicator),
                       ],
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  // Circular Progress
-                  SizedBox(
-                    width: 120,
-                    height: 120,
-                    child: CustomPaint(
-                      painter: _CircularProgressPainter(
-                        progress: animatedProgress,
-                        color: AppColors.primary,
-                        backgroundColor: isDark
-                            ? Colors.grey[800]!
-                            : Colors.grey[200]!,
-                      ),
-                      child: Center(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 400),
-                          child: Icon(
-                            animatedProgress >= 1.0
-                                ? Icons.celebration
-                                : Icons.eco,
-                            key: ValueKey(animatedProgress >= 1.0),
-                            color: animatedProgress >= 1.0
-                                ? AppColors.secondary
-                                : AppColors.primary,
-                            size: 40,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                    );
+                  }
+                  return Row(
+                    children: <Widget>[
+                      Expanded(child: details),
+                      const SizedBox(width: HabiterSpace.lg),
+                      indicator,
+                    ],
+                  );
+                },
               ),
-            ],
+            ),
           ),
         );
       },
@@ -163,54 +77,83 @@ class DailyProgressCard extends StatelessWidget {
   }
 }
 
-class _CircularProgressPainter extends CustomPainter {
-  final double progress;
-  final Color color;
-  final Color backgroundColor;
-
-  _CircularProgressPainter({
+class _ProgressDetails extends StatelessWidget {
+  const _ProgressDetails({
     required this.progress,
-    required this.color,
-    required this.backgroundColor,
+    required this.completedCount,
+    required this.totalCount,
   });
 
+  final double progress;
+  final int completedCount;
+  final int totalCount;
+
   @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - 6) / 2; // Subtract stroke width
-
-    // Draw background ring
-    final bgPaint = Paint()
-      ..color = backgroundColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
-
-    canvas.drawCircle(center, radius, bgPaint);
-
-    // Draw progress arc
-    final progressPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 3;
-
-    // -90 degrees start angle
-    const startAngle = -math.pi / 2;
-    final sweepAngle = 2 * math.pi * progress;
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      startAngle,
-      sweepAngle,
-      false,
-      progressPaint,
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Text(l10n.yourDailyFlow, style: theme.textTheme.headlineSmall),
+        const SizedBox(height: HabiterSpace.xs),
+        Text(l10n.keepMomentum, style: theme.textTheme.bodyMedium),
+        const SizedBox(height: HabiterSpace.md),
+        Wrap(
+          spacing: HabiterSpace.sm,
+          runSpacing: HabiterSpace.sm,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: <Widget>[
+            Text(
+              '${(progress * 100).round()}%',
+              style: theme.textTheme.headlineMedium?.copyWith(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Chip(label: Text(progress >= 1 ? l10n.completed : l10n.onTrack)),
+          ],
+        ),
+        const SizedBox(height: HabiterSpace.xs),
+        Text(
+          l10n.habitsCompleted(completedCount, totalCount),
+          style: theme.textTheme.bodyMedium,
+        ),
+      ],
     );
   }
+}
+
+class _ProgressIndicator extends StatelessWidget {
+  const _ProgressIndicator({required this.progress, required this.color});
+
+  final double progress;
+  final Color color;
 
   @override
-  bool shouldRepaint(_CircularProgressPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-        oldDelegate.color != color ||
-        oldDelegate.backgroundColor != backgroundColor;
+  Widget build(BuildContext context) {
+    return SizedBox.square(
+      dimension: 88,
+      child: Stack(
+        alignment: Alignment.center,
+        children: <Widget>[
+          SizedBox.expand(
+            child: CircularProgressIndicator(
+              value: progress,
+              strokeWidth: 8,
+              strokeCap: StrokeCap.round,
+              color: color,
+              backgroundColor: color.withValues(alpha: 0.14),
+            ),
+          ),
+          Icon(
+            progress >= 1 ? Icons.check_rounded : Icons.eco_outlined,
+            color: color,
+            size: 32,
+          ),
+        ],
+      ),
+    );
   }
 }

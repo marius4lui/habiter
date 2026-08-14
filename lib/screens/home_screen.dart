@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../core/design_system/haptics.dart';
+import '../core/time/local_date.dart';
+import '../features/today/application/today_query.dart';
 import '../features/onboarding/presentation/onboarding_empty_state.dart';
 import '../l10n/l10n.dart';
 import '../providers/habit_provider.dart';
@@ -53,14 +55,18 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    final allActiveHabits = provider.habits.where((h) => h.isActive).toList();
+    final today = LocalDate.fromDateTime(DateTime.now());
+    final todaySnapshot = TodayQuery.forDate(
+      date: today,
+      habits: provider.habits,
+      entries: provider.habitEntries,
+    );
+    final allActiveHabits = todaySnapshot.scheduled;
 
     // Calculate stats for daily progress
     final totalActive = allActiveHabits.length;
-    final completedCount = allActiveHabits
-        .where((h) => isHabitCompletedToday(h.id, provider.habitEntries))
-        .length;
-    final progress = totalActive == 0 ? 0.0 : completedCount / totalActive;
+    final completedCount = todaySnapshot.completed.length;
+    final progress = todaySnapshot.progress;
 
     return Scaffold(
       extendBody: true, // Important for glass effect if needed
@@ -175,6 +181,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: BentoHabitCard(
                                         habit: habit,
                                         completed: false,
+                                        onComplete: () async {
+                                          await context
+                                              .read<HapticGateway>()
+                                              .success();
+                                          await provider.toggleHabitCompletion(
+                                            habit.id,
+                                            dateStr,
+                                          );
+                                        },
                                         onEdit: () => showModalBottomSheet(
                                           context: context,
                                           isScrollControlled: true,

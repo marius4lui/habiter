@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 
 class DashboardHeader extends StatelessWidget {
@@ -8,7 +9,10 @@ class DashboardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final dateString = DateFormat('EEEE, MMM d').format(now);
+    final dateString = DateFormat(
+      'EEEE, MMM d',
+      Localizations.localeOf(context).languageCode,
+    ).format(now);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -30,7 +34,7 @@ class DashboardHeader extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                '${_getGreeting()}, Alex',
+                _getGreeting(context, now.hour),
                 style: AppTextStyles.h1.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
@@ -47,15 +51,9 @@ class DashboardHeader extends StatelessWidget {
                   ? AppShadows.neumorphSmDark
                   : AppShadows.neumorphSm,
             ),
-            child: IconButton(
-              onPressed: null, // TODO: Implement notification flow
-              icon: Icon(
-                Icons
-                    .notifications_outlined, // Using material icon as closest to 'notifications' symbol
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
+            child: Icon(
+              Icons.eco_outlined,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
         ],
@@ -63,10 +61,9 @@ class DashboardHeader extends StatelessWidget {
     );
   }
 
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
+  String _getGreeting(BuildContext context, int hour) {
+    if (hour < 12) return context.l10n.goodMorning;
+    if (hour < 17) return context.l10n.goodAfternoon;
+    return context.l10n.goodEvening;
   }
 }

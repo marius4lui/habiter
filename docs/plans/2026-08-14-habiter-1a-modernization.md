@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 04 – Die fünf aktiven Custom-Workflows gegen den Zieljob-Schnitt inventarisieren, zuerst Workflow-Vertragsprüfungen rot schreiben und anschließend konsolidieren.
+**Resume Pointer:** Batch 05 – Clock-, ID-, Key-Value-, Notification- und Platform-Channel-Verträge als kleine Interfaces definieren und Recording Fakes zuerst per Red Tests spezifizieren.
 
 ---
 
@@ -214,7 +214,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `build(toolchain): align flutter node and java versions`
 
 ### Batch 04: CI-Konsolidierung
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Doppelte/missverständliche Workflows durch klare Flutter-, Landing-, Docs- und Plattformjobs ersetzen.
 **Files:** Modify/Delete `.github/workflows/*.yml`; Modify `.github/workflows/README.md`.
 **Behavior preserved:** PRs bauen und testen, Releases entstehen nicht aus PRs.
@@ -222,7 +222,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Implementation steps:** Concurrency, Cache, Least Privilege, echte Summary, Artifact-Namen, Signing-Gates.
 **Commands:** lokale YAML-Prüfung; `gh workflow list`; `git diff --check`.
 **Expected result:** Drei Qualitätsworkflows plus klar getrennte Plattformbuilds.
-**Acceptance criteria:** [ ] keine Placebo-Gates [ ] keine Release-Aktion auf PR [ ] konsistente Pins.
+**Acceptance criteria:** [x] keine Placebo-Gates [x] keine Release-Aktion auf PR [x] konsistente Pins.
 **Migration/Rollback risk:** Required Checks extern nicht ändern; im PR empfehlen.
 **Commit:** `ci: replace duplicated and misleading workflows`
 
@@ -700,8 +700,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 |---|---|---|---|---|---|---|
 | 01 | Baseline/Plan | VERIFIED | `Batches=40`; `Sections=25`; `InProgressRows=1`; `git diff --check` PASS | `8b8eedb` | keine | abgeschlossen |
 | 02 | Characterization | VERIFIED | Red: Reminder/Custom Days blieben alt; Green: 7 targeted + 11 full tests, analyze PASS | `3630ce8` | unknown fields folgen Migration | abgeschlossen |
-| 03 | Toolchain | VERIFIED | Red: 3 Pin-Gates + Signing; Green: 6 targeted, 15 full, analyze/format/install/release PASS | pending | APK bewusst unsigned ohne Keystore | SHA im Batch-04-Preflight nachtragen |
-| 04 | CI | NOT_STARTED | pending | pending | Remote required checks | Workflows konsolidieren |
+| 03 | Toolchain | VERIFIED | Red: 3 Pin-Gates + Signing; Green: 6 targeted, 15 full, analyze/format/install/release PASS | `7152983` | APK bewusst unsigned ohne Keystore | abgeschlossen |
+| 04 | CI | VERIFIED | Red: 4 Workflow-Verträge; Green: 5 targeted + 20 full, YAML/Docs build PASS | pending | Landing bleibt baseline-rot; Required Checks extern | SHA im Batch-05-Preflight nachtragen |
 | 05 | Fakes | NOT_STARTED | pending | pending | none | Interfaces erstellen |
 | 06 | Domain/Schedules | NOT_STARTED | pending | pending | Semantikmapping | Value Objects |
 | 07 | Repository | NOT_STARTED | pending | pending | concurrency | Adapter |
@@ -748,6 +748,8 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 02 Green: derselbe Target-Befehl → 7/7 PASS; formatierte Touched-Files → 0 Änderungen; `flutter analyze` → no issues; `flutter test` → 11/11 PASS.
 - 2026-08-14, Batch 03 Red: `flutter test test/toolchain_integrity_test.dart` → `.fvmrc` fehlte, Workflows nutzten 3.24.5/3.27.0, pnpm Policy fehlte; `flutter test test/config_integrity_test.dart` → Release-Signing war zwingend.
 - 2026-08-14, Batch 03 Green: pnpm 11.21.0 frozen install inklusive erlaubter nativer Builds PASS; 6/6 Toolchain/Config Tests PASS; `flutter build apk --release` PASS (56.7 MB, ohne Keystore bewusst unsigned; `apksigner` meldet `DOES NOT VERIFY`); `dart format .` normalisierte 31 Dateien, danach Formatcheck 39/39 ohne Änderung; `flutter analyze` no issues; `flutter test` 15/15 PASS.
+- 2026-08-14, Batch 04 Red: `flutter test test/ci_workflow_test.dart` → 4/4 FAIL für fünf Legacy-Workflows, fehlende Zielnamen, Permissions/Concurrency und Release-Aktionen.
+- 2026-08-14, Batch 04 Green: 4 neue YAML-Workflows syntaktisch geprüft; Target 5/5 PASS; Format 40/40, Analyze no issues, Full Flutter 20/20 PASS; `npm ci` + `npm run docs:build` PASS mit VitePress 1.6.4. `npm audit` bleibt mit 3 transitiven Vite/esbuild Findings offen; Upstream latest stable 1.6.4 hat laut Audit keinen Fix, VitePress 2 ist am 2026-08-14 nur Alpha und wird nicht blind übernommen.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 
@@ -762,6 +764,7 @@ Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutt
 | Exact Alarm Store Policy | OPEN | inexact default; exact nur bewusste begründete Option |
 | Classly OAuth Servervarianten | OPEN | standardsicherer Flow, Compatibility dokumentieren |
 | Legal-Wahrheitsgehalt | OPEN | Inhalte erhalten; keine unbelegten Änderungen |
+| VitePress 1.6.4 Audit | OPEN | 3 transitive Vite/esbuild Findings ohne Stable-Fix; V2 Alpha nicht blind übernehmen, in Batch 39 erneut prüfen |
 | Repo Settings/Branch Protection | EXTERNAL | nur PR-Empfehlung, keine Änderung ohne Freigabe |
 
 ## 22. Legacy-Removal-Liste

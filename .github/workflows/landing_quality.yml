@@ -1,0 +1,55 @@
+name: Landing Quality
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'landing_page/**'
+      - '.github/workflows/landing_quality.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'landing_page/**'
+      - '.github/workflows/landing_quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: landing-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Landing Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: landing_page
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.1'
+          cache: pnpm
+          cache-dependency-path: landing_page/pnpm-lock.yaml
+
+      - name: Activate pnpm
+        run: corepack enable && corepack prepare pnpm@11.21.0 --activate
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm exec tsc --noEmit
+
+      - name: Build
+        run: pnpm build

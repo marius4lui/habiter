@@ -1,79 +1,45 @@
-# GitHub Actions Quick Reference
+# Habiter CI workflows
 
-## 🚀 Workflows
+Habiter exposes four intentionally scoped custom workflows. Their job names are
+stable so they can be selected as required checks after repository settings are
+approved separately.
 
-### APK Build
-```bash
-# Trigger: Push, PR, Manual, Release
-Actions → Build APK → Run workflow
-```
-**Output**: Universal APK + Split APKs (arm64, armv7, x86_64)
+| Workflow | Stable check | Purpose |
+|---|---|---|
+| `flutter_quality.yml` | `Flutter Quality` | Format, analyze, tests with coverage, generated-file drift, secret scan |
+| `landing_quality.yml` | `Landing Quality` | Frozen pnpm install, ESLint, TypeScript and production build |
+| `docs.yml` | `Docs Quality` | Reproducible VitePress build on PRs; Pages deployment only after a push to `main` |
+| `platform_builds.yml` | platform job names | Android, web, Linux, macOS, Windows and unsigned iOS build verification |
 
-### Comprehensive CI
-```bash
-# Trigger: Push, PR, Manual
-# Läuft automatisch bei jedem Push/PR
-```
-**Checks**: Format, Analyze, Tests, Build, Security
+All workflows use concurrency cancellation, explicit permissions and the pinned
+versions from `.fvmrc`, `.node-version` and `.java-version`. Pull requests never
+create a release, upload to an existing release or deploy Pages.
 
----
+## Recommended repository settings
 
-## 📦 Artifacts Download
+Do not change these settings without separate approval. Recommended required
+checks for `main` are `Flutter Quality`, `Landing Quality`, `Docs Quality` and
+the applicable platform build jobs. Branch protection should require a pull
+request and an up-to-date branch.
 
-Nach erfolgreichem Build:
+## Local equivalents
 
-1. Actions → Workflow-Run auswählen
-2. Scroll zu "Artifacts"
-3. Download:
-   - `habiter-v1.2.0+3-universal` (Universal APK)
-   - `habiter-v1.2.0+3-split-apks` (Optimierte APKs)
+```powershell
+dart format --output=none --set-exit-if-changed .
+flutter analyze --fatal-infos
+flutter test --coverage
 
----
+Set-Location landing_page
+corepack pnpm@11.21.0 install --frozen-lockfile
+corepack pnpm@11.21.0 lint
+corepack pnpm@11.21.0 exec tsc --noEmit
+corepack pnpm@11.21.0 build
 
-## 🛡️ Branch Protection
-
-Empfohlene Einstellungen für `main`:
-
-Settings → Branches → Add rule
-
-- ✅ Require pull request before merging
-- ✅ Require status checks:
-  - Code Quality Checks
-  - Run Tests
-  - Build Verification
-- ✅ Require branches to be up to date
-
----
-
-## 🐛 Troubleshooting
-
-### Format-Fehler
-```bash
-dart format .
-git add .
-git commit -m "Format code"
+Set-Location ..\docs
+npm ci
+npm run docs:build
 ```
 
-### Analysis-Fehler
-```bash
-flutter analyze
-# Beheben Sie die angezeigten Issues
-```
-
----
-
-## 📊 CI Status
-
-Alle Workflows zeigen ihren Status in:
-- Pull Requests (automatisch)
-- Actions Tab (manuell)
-- Commit-Status (Badge)
-
----
-
-## 🎯 Nächste Schritte
-
-1. ✅ Workflows sind erstellt und einsatzbereit
-2. ⚠️ Branch Protection Rules einrichten
-3. ⚠️ 83 Analysis-Issues beheben (separater Task)
-4. 💡 Optional: Codecov für Coverage-Tracking
+Release signing and store publication are deliberately outside pull-request CI.
+Without the external keystore, Android produces an unsigned release artifact for
+build verification only.

@@ -1,7 +1,7 @@
 "use client";
 
 import { Footer, Header } from "@/components";
-import { Locale } from "@/lib/i18n";
+import { Locale } from "@/lib/dictionaries";
 import { useParams } from "next/navigation";
 
 export default function TermsPage() {

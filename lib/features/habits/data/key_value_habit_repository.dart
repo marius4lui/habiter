@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import '../../../core/persistence/key_value_store.dart';
+import '../../../core/persistence/storage_envelope.dart';
 import '../../../models/habit.dart';
 import '../application/habit_repository.dart';
 
@@ -24,6 +25,11 @@ final class KeyValueHabitRepository implements HabitRepository {
     FutureOr<void> Function(HabitRepositoryDraft draft) mutation,
   ) {
     return _enqueue(() async {
+      final envelopeValue = await _store.read(StorageEnvelope.storageKey);
+      if (envelopeValue != null) {
+        await _transactEnvelope(envelopeValue, mutation);
+        return;
+      }
       final oldHabits = await _store.read(habitsKey);
       final oldEntries = await _store.read(entriesKey);
       try {
@@ -55,6 +61,16 @@ final class KeyValueHabitRepository implements HabitRepository {
 
   Future<HabitRepositorySnapshot> _loadUnlocked() async {
     try {
+      final envelopeValue = await _store.read(StorageEnvelope.storageKey);
+      if (envelopeValue != null) {
+        if (envelopeValue is! String) {
+          throw const HabitRepositoryException(
+            'The storage envelope was not JSON text.',
+          );
+        }
+        final envelope = StorageEnvelope.fromJson(envelopeValue);
+        return _decode(envelope.data[habitsKey], envelope.data[entriesKey]);
+      }
       return _decode(
         await _store.read(habitsKey),
         await _store.read(entriesKey),
@@ -80,12 +96,7 @@ final class KeyValueHabitRepository implements HabitRepository {
     T Function(Map<String, dynamic>) decode,
   ) {
     if (value == null) return <T>[];
-    if (value is! String) {
-      throw const HabitRepositoryException(
-        'A persisted habit collection was not JSON text.',
-      );
-    }
-    final json = jsonDecode(value);
+    final Object? json = value is String ? jsonDecode(value) : value;
     if (json is! List) {
       throw const HabitRepositoryException(
         'A persisted habit collection was not a JSON list.',
@@ -94,6 +105,76 @@ final class KeyValueHabitRepository implements HabitRepository {
     return json
         .map((item) => decode(Map<String, dynamic>.from(item as Map)))
         .toList(growable: false);
+  }
+
+  Future<void> _transactEnvelope(
+    Object envelopeValue,
+    FutureOr<void> Function(HabitRepositoryDraft draft) mutation,
+  ) async {
+    try {
+      if (envelopeValue is! String) {
+        throw const FormatException('Envelope is not JSON text.');
+      }
+      final envelope = StorageEnvelope.fromJson(envelopeValue);
+      final snapshot = _decode(
+        envelope.data[habitsKey],
+        envelope.data[entriesKey],
+      );
+      final draft = HabitRepositoryDraft(
+        habits: snapshot.habits,
+        entries: snapshot.entries,
+      );
+      await mutation(draft);
+      final data = Map<String, Object?>.from(envelope.data)
+        ..[habitsKey] = _mergeHabits(envelope.data[habitsKey], draft.habits)
+        ..[entriesKey] = _mergeEntries(
+          envelope.data[entriesKey],
+          draft.entries,
+        );
+      await _store.write(
+        StorageEnvelope.storageKey,
+        envelope.withData(data).toJson(),
+      );
+    } catch (error) {
+      if (error is HabitRepositoryException) rethrow;
+      throw HabitRepositoryException(
+        'The versioned habit transaction failed.',
+        cause: error,
+      );
+    }
+  }
+
+  List<Map<String, Object?>> _mergeHabits(
+    Object? oldValue,
+    List<Habit> habits,
+  ) {
+    final oldById = _mapsById(oldValue);
+    return habits
+        .map(
+          (habit) => <String, Object?>{...?oldById[habit.id], ...habit.toMap()},
+        )
+        .toList(growable: false);
+  }
+
+  List<Map<String, Object?>> _mergeEntries(
+    Object? oldValue,
+    List<HabitEntry> entries,
+  ) {
+    final oldById = _mapsById(oldValue);
+    return entries
+        .map(
+          (entry) => <String, Object?>{...?oldById[entry.id], ...entry.toMap()},
+        )
+        .toList(growable: false);
+  }
+
+  Map<String, Map<String, Object?>> _mapsById(Object? value) {
+    if (value is! List) return <String, Map<String, Object?>>{};
+    return <String, Map<String, Object?>>{
+      for (final item in value)
+        if (item is Map && item['id'] is String)
+          item['id'] as String: Map<String, Object?>.from(item),
+    };
   }
 
   Future<void> _restore(String key, Object? value) async {

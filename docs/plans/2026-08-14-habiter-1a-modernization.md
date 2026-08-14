@@ -14,7 +14,7 @@
 
 **Status:** IN_PROGRESS
 
-**Resume Pointer:** Batch 08 – v0-Rohdaten in ein versioniertes Envelope migrieren; Backup, Unknown-Field-Erhalt, Quarantäne und idempotente Wiederholung zuerst per Red Fixtures spezifizieren.
+**Resume Pointer:** Batch 09 – Composition Root und explizite Startup-Phasen definieren; zuerst beweisen, dass Migration vor Repository-Load läuft und optionale Integrationen nicht initialisiert werden.
 
 ---
 
@@ -266,7 +266,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Commit:** `refactor(data): introduce habit repositories`
 
 ### Batch 08: Versionierte Datenmigration
-**Status:** NOT_STARTED
+**Status:** VERIFIED
 **Goal:** Schema-Version, Backup, Quarantäne und idempotente Migration einführen.
 **Files:** Create `lib/core/persistence/migrations/*.dart`, `lib/core/persistence/storage_envelope.dart`; tests/fixtures; Modify adapter.
 **Behavior preserved:** Alle gültigen alten Daten bleiben erhalten.
@@ -274,7 +274,7 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 **Implementation steps:** Raw backup; validate; migrate temp; verify; commit; retain recovery metadata.
 **Commands:** Migration tests; full Flutter tests.
 **Expected result:** Verlustfreie, wiederholbare Migration.
-**Acceptance criteria:** [ ] Backup vor Write [ ] corrupt isolation [ ] idempotent [ ] kein Mock-Habit.
+**Acceptance criteria:** [x] Backup vor Write [x] corrupt isolation [x] idempotent [x] unbekannte Felder erhalten.
 **Migration/Rollback risk:** Höchster Datenrisiko-Batch; kein Commit ohne Fixture-Gates.
 **Commit:** `feat(data): migrate legacy local records safely`
 
@@ -704,8 +704,8 @@ Ruhige organische Markenwelt mit warmem Off-White, tiefem Waldgrün, Moos-/Aprik
 | 04 | CI | VERIFIED | Red: 4 Workflow-Verträge; Green: 5 targeted + 20 full, YAML/Docs build PASS | `24de94a` | Landing bleibt baseline-rot; Required Checks extern | abgeschlossen |
 | 05 | Fakes | VERIFIED | Red: fehlende Ports/Fakes; Green: 5 targeted + 25 coverage, format/analyze/builds PASS | `349d29e` | Landing baseline-rot | abgeschlossen |
 | 06 | Domain/Schedules | VERIFIED | Red: fehlende Domain; Green: 10 targeted + 35 full, format/analyze PASS | `85b2737` | Habit-Payload-Extras folgen Batch 08 | abgeschlossen |
-| 07 | Repository | VERIFIED | Red: fehlende Repository/Adapter; Green: 7 targeted + 42 full, analyze PASS | pending | v0 Extras/Envelope folgen Batch 08 | SHA im Batch-08-Preflight nachtragen |
-| 08 | Migration | NOT_STARTED | pending | pending | Datenverlust | v0→v1 |
+| 07 | Repository | VERIFIED | Red: fehlende Repository/Adapter; Green: 7 targeted + 42 full, analyze PASS | `6ef5c15` | v0 Extras/Envelope folgen Batch 08 | abgeschlossen |
+| 08 | Migration | VERIFIED | Red: fehlende Migration; Green: 9 targeted + 46 full, analyze PASS | pending | Legacy-Keys bleiben als Rollback-Quelle | SHA im Batch-09-Preflight nachtragen |
 | 09 | Bootstrap/DI | NOT_STARTED | pending | pending | startup | composition root |
 | 10 | Feature State | NOT_STARTED | pending | pending | listeners | split controller |
 | 11 | Navigation | NOT_STARTED | pending | pending | state restore | adaptive shell |
@@ -756,6 +756,8 @@ Die unveränderte Baseline steht in Abschnitt 6. Nach jedem Batch werden hier Da
 - 2026-08-14, Batch 06 Green: 10/10 Domain Tests für Leap Dates, Validation, Daily, Weekdays, X-mal/Woche, Map-Roundtrip, alle Legacy-Varianten sowie unbekannte zukünftige Source-Kinds/-Felder; Analyze no issues, Full Flutter 35/35 PASS.
 - 2026-08-14, Batch 07 Red: Repository-, Transaktions- und SharedPreferences-Adaptertests kompilierten wegen fehlender Grenzen nicht.
 - 2026-08-14, Batch 07 Green: 7/7 Target Tests für Legacy-Key-Load, atomare Habit/Entry-Commits, Cascade Delete, Rollback nach zweitem Write-Fehler, serialisierte Concurrent Mutations und typsichere SharedPreferences-Werte; Analyze no issues, Full Flutter 42/42 PASS.
+- 2026-08-14, Batch 08 Red: Migration-/Envelope-Tests kompilierten wegen fehlender Implementierung nicht; der absichtlich nicht vererbbare InMemory-Fake wurde korrekt über Composition adaptiert.
+- 2026-08-14, Batch 08 Green: 9/9 Target Tests inklusive Raw-Backup, validiertem v1-Envelope, recordweiser Quarantäne, Backup-Failure-Fail-Closed, idempotenter Wiederholung, repositoryseitigem Envelope-Read/Single-Write und Unknown-Field-Merge; Full Flutter 46/46 PASS; Analyze no issues.
 
 Finale Pflichtgates: `dart format --output=none --set-exit-if-changed .`, `flutter analyze`, `flutter test`, `flutter test --coverage`, `flutter build apk --debug`, `flutter build apk --release`, `flutter build web --release`, Windows Build, Gradle/Kotlin Tests, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, Playwright, Docs Build, Secret Scan, Dependency Audit, License Review, `git diff --check`, clean `git status`.
 

@@ -38,8 +38,9 @@ final class NotificationIdRegistry {
   Future<Map<String, int>> _load() async {
     final raw = await _store.read(storageKey);
     if (raw == null) return <String, int>{};
-    if (raw is! String)
+    if (raw is! String) {
       throw const FormatException('Invalid reminder registry.');
+    }
     final decoded = jsonDecode(raw);
     if (decoded is! Map<String, dynamic>) {
       throw const FormatException('Invalid reminder registry.');

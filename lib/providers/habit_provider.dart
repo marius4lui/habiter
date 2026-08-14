@@ -4,6 +4,7 @@ import '../core/ids/id_generator.dart';
 import '../core/persistence/shared_preferences_key_value_store.dart';
 import '../core/time/clock.dart';
 import '../features/analytics/application/analytics_controller.dart';
+import '../features/analytics/domain/habit_metrics.dart';
 import '../features/habits/application/habit_repository.dart';
 import '../features/habits/application/habits_controller.dart';
 import '../features/habits/data/key_value_habit_repository.dart';
@@ -38,7 +39,7 @@ class HabitProvider extends ChangeNotifier {
       clock: clock,
       onChanged: _reloadHabitState,
     );
-    _analyticsController = AnalyticsController();
+    _analyticsController = AnalyticsController(clock);
     _lifecycleReminders =
         lifecycleReminders ?? const _LegacyLifecycleReminderGateway();
     _habitsController.addListener(notifyListeners);
@@ -224,6 +225,11 @@ class HabitProvider extends ChangeNotifier {
   HabitStats getHabitStats(String habitId) {
     final habit = habits.firstWhere((h) => h.id == habitId);
     return _analyticsController.statsFor(habit, habitEntries);
+  }
+
+  HabitMetrics getHabitMetrics(String habitId) {
+    final habit = habits.firstWhere((item) => item.id == habitId);
+    return _analyticsController.metricsFor(habit, habitEntries);
   }
 
   Future<void> addAIInsight(AIInsight insight) async {

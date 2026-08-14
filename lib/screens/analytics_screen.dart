@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/habit.dart';
+import '../features/analytics/domain/habit_metrics.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
-import '../utils/habit_utils.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -27,14 +27,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final double avgCompletionRate = activeHabits.isEmpty
         ? 0.0
         : activeHabits
-                  .map(
-                    (h) => calculateHabitStats(
-                      h,
-                      provider.habitEntries,
-                    ).completionRate,
-                  )
+                  .map((habit) => provider.getHabitMetrics(habit.id).completionRate)
                   .reduce((a, b) => a + b) /
-              activeHabits.length;
+              activeHabits.length *
+              100;
 
     Habit? selectedHabit;
     if (selectedHabitId != null) {
@@ -72,14 +68,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               if (activeHabits.isNotEmpty) ...[
                 _WeeklyChartCard(
                   habits: activeHabits,
-                  entries: provider.habitEntries,
                   selectedHabit: selectedHabit,
+                  metrics: selectedHabit == null
+                      ? null
+                      : provider.getHabitMetrics(selectedHabit.id),
                   onSelectHabit: (id) => setState(() => selectedHabitId = id),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 _HabitStatsGrid(
                   habits: activeHabits,
-                  entries: provider.habitEntries,
+                  metricsFor: provider.getHabitMetrics,
                 ),
               ],
             ],
@@ -265,22 +263,20 @@ class _HeroNumber extends StatelessWidget {
 class _WeeklyChartCard extends StatelessWidget {
   const _WeeklyChartCard({
     required this.habits,
-    required this.entries,
     required this.selectedHabit,
+    required this.metrics,
     required this.onSelectHabit,
   });
 
   final List<Habit> habits;
-  final List<HabitEntry> entries;
   final Habit? selectedHabit;
+  final HabitMetrics? metrics;
   final ValueChanged<String> onSelectHabit;
 
   @override
   Widget build(BuildContext context) {
     final habit = selectedHabit ?? (habits.isNotEmpty ? habits.first : null);
-    final data = habit == null
-        ? <WeeklyData>[]
-        : getWeeklyData(habit.id, entries);
+    final data = metrics?.weeks ?? const <WeeklyHabitMetric>[];
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
@@ -358,10 +354,17 @@ class _WeeklyChartCard extends StatelessWidget {
               ),
             )
           else
-            SizedBox(
-              height: 220,
-              child: LineChart(
-                LineChartData(
+            Semantics(
+              label: data
+                  .map(
+                    (week) =>
+                        '${week.weekStart}: ${week.completed} of ${week.scheduled}',
+                  )
+                  .join(', '),
+              child: SizedBox(
+                height: 220,
+                child: LineChart(
+                  LineChartData(
                   gridData: const FlGridData(show: false),
                   titlesData: FlTitlesData(
                     leftTitles: AxisTitles(
@@ -390,7 +393,7 @@ class _WeeklyChartCard extends StatelessWidget {
                           return Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
-                              data[index].week,
+                              data[index].weekStart.toString().substring(5),
                               style: AppTextStyles.caption.copyWith(
                                 color: isDark
                                     ? AppColorsDark.textSecondary
@@ -438,10 +441,11 @@ class _WeeklyChartCard extends StatelessWidget {
                       ),
                       spots: [
                         for (var i = 0; i < data.length; i++)
-                          FlSpot(i.toDouble(), data[i].completions.toDouble()),
+                          FlSpot(i.toDouble(), data[i].completed.toDouble()),
                       ],
                     ),
                   ],
+                  ),
                 ),
               ),
             ),
@@ -452,10 +456,10 @@ class _WeeklyChartCard extends StatelessWidget {
 }
 
 class _HabitStatsGrid extends StatelessWidget {
-  const _HabitStatsGrid({required this.habits, required this.entries});
+  const _HabitStatsGrid({required this.habits, required this.metricsFor});
 
   final List<Habit> habits;
-  final List<HabitEntry> entries;
+  final HabitMetrics Function(String habitId) metricsFor;
 
   @override
   Widget build(BuildContext context) {
@@ -463,7 +467,7 @@ class _HabitStatsGrid extends StatelessWidget {
       spacing: AppSpacing.md,
       runSpacing: AppSpacing.md,
       children: habits.map((habit) {
-        final stats = calculateHabitStats(habit, entries);
+        final stats = metricsFor(habit.id);
         return SizedBox(
           width: MediaQuery.of(context).size.width > 900
               ? (MediaQuery.of(context).size.width -
@@ -522,15 +526,16 @@ class _HabitStatsGrid extends StatelessWidget {
                       children: [
                         _StatPill(
                           label: 'Streak',
-                          value: '${stats.streakData.currentStreak}',
+                          value: '${stats.currentStreak}',
                         ),
                         _StatPill(
                           label: 'Success',
-                          value: '${stats.completionRate.toStringAsFixed(0)}%',
+                          value:
+                              '${(stats.completionRate * 100).toStringAsFixed(0)}%',
                         ),
                         _StatPill(
                           label: 'Total',
-                          value: '${stats.totalCompletions}',
+                          value: '${stats.completed}',
                         ),
                       ],
                     ),

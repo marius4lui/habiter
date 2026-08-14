@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../habits/application/habit_repository.dart';
+import '../../habits/application/habit_repository.dart';
 import '../../../models/habit.dart';
 
 enum ImportCollisionPolicy { keepExisting, replaceExisting }
@@ -42,7 +42,9 @@ final class DataPortabilityService {
     return ImportPreview(
       habits: decoded.habits.length,
       entries: decoded.entries.length,
-      collisions: decoded.habits.where((habit) => ids.contains(habit.id)).length,
+      collisions: decoded.habits
+          .where((habit) => ids.contains(habit.id))
+          .length,
     );
   }
 

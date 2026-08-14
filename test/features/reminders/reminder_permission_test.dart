@@ -13,29 +13,38 @@ void main() {
     expect(gateway.requests, 1);
   });
 
-  test('granted, permanently denied and unsupported states do not prompt', () async {
-    for (final status in <ReminderPermissionStatus>[
-      ReminderPermissionStatus.granted,
-      ReminderPermissionStatus.permanentlyDenied,
-      ReminderPermissionStatus.unsupported,
-    ]) {
-      final gateway = _PermissionGateway(status);
-      final controller = ReminderPermissionController(gateway);
-      expect((await controller.requestAfterUserIntent()).notifications, status);
-      expect(gateway.requests, 0);
-    }
-  });
+  test(
+    'granted, permanently denied and unsupported states do not prompt',
+    () async {
+      for (final status in <ReminderPermissionStatus>[
+        ReminderPermissionStatus.granted,
+        ReminderPermissionStatus.permanentlyDenied,
+        ReminderPermissionStatus.unsupported,
+      ]) {
+        final gateway = _PermissionGateway(status);
+        final controller = ReminderPermissionController(gateway);
+        expect(
+          (await controller.requestAfterUserIntent()).notifications,
+          status,
+        );
+        expect(gateway.requests, 0);
+      }
+    },
+  );
 
-  test('exact alarm capability is informative and never blocks reminders', () async {
-    final gateway = _PermissionGateway(
-      ReminderPermissionStatus.granted,
-      exactAlarmAvailable: false,
-    );
-    final state = await ReminderPermissionController(gateway).refresh();
+  test(
+    'exact alarm capability is informative and never blocks reminders',
+    () async {
+      final gateway = _PermissionGateway(
+        ReminderPermissionStatus.granted,
+        exactAlarmAvailable: false,
+      );
+      final state = await ReminderPermissionController(gateway).refresh();
 
-    expect(state.canSchedule, isTrue);
-    expect(state.exactAlarmAvailable, isFalse);
-  });
+      expect(state.canSchedule, isTrue);
+      expect(state.exactAlarmAvailable, isFalse);
+    },
+  );
 }
 
 final class _PermissionGateway implements ReminderPermissionGateway {

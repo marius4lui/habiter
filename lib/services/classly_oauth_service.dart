@@ -44,17 +44,19 @@ class ClasslyOAuthService {
     final challenge = base64Url
         .encode(sha256.convert(ascii.encode(verifier)).bytes)
         .replaceAll('=', '');
-    final authUri = endpoint.resolve('/api/oauth/authorize').replace(
-      queryParameters: <String, String>{
-        'client_id': clientId,
-        'redirect_uri': redirectUri,
-        'response_type': 'code',
-        'scope': 'read:events',
-        'state': state,
-        'code_challenge': challenge,
-        'code_challenge_method': 'S256',
-      },
-    );
+    final authUri = endpoint
+        .resolve('/api/oauth/authorize')
+        .replace(
+          queryParameters: <String, String>{
+            'client_id': clientId,
+            'redirect_uri': redirectUri,
+            'response_type': 'code',
+            'scope': 'read:events',
+            'state': state,
+            'code_challenge': challenge,
+            'code_challenge_method': 'S256',
+          },
+        );
 
     final callback = Uri.parse(
       await _launcher(authUri.toString(), callbackScheme),

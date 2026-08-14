@@ -192,10 +192,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiFeatures => 'AI Features';
 
   @override
-  String get aiInsights => 'AI Insights';
+  String get aiInsights => 'Local coaching';
 
   @override
-  String get aiInsightsDesc => 'Intelligent analysis of your habits';
+  String get aiInsightsDesc =>
+      'Deterministic suggestions calculated on this device';
 
   @override
   String get language => 'Language';
@@ -422,14 +423,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noPausedOrArchivedHabits => 'No paused or archived habits';
 
   @override
-  String inactiveHabitCount(int count) => switch (count) {
-    1 => '1 habit',
-    _ => '$count habits',
-  };
+  String inactiveHabitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count habits',
+      one: '1 habit',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get habitPaused =>
-      'Paused — planned days do not count against you';
+  String get habitPaused => 'Paused — planned days do not count against you';
 
   @override
   String get habitArchived => 'Archived — available to restore';
@@ -457,8 +462,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recoveryHide => 'Hide supportive score';
 
   @override
-  String recoveryFormula(int completed, int scheduled, int score) =>
-      '$completed of $scheduled eligible plans completed = $score%';
+  String recoveryFormula(int completed, int scheduled, int score) {
+    return '$completed of $scheduled eligible plans completed = $score%';
+  }
 
   @override
   String get reminderDiagnostics => 'Reminder diagnostics';
@@ -468,15 +474,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Review permissions and pending reminders safely';
 
   @override
-  String get reminderPermissionGranted =>
-      'Notification permission is granted';
+  String get reminderPermissionGranted => 'Notification permission is granted';
 
   @override
   String get reminderPermissionMissing =>
       'Notification permission is not available';
 
   @override
-  String pendingReminders(int count) => 'Pending reminders: $count';
+  String pendingReminders(int count) {
+    return 'Pending reminders: $count';
+  }
 
   @override
   String get noPendingReminders => 'No pending reminders';

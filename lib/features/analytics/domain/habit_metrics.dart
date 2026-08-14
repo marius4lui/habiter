@@ -120,11 +120,10 @@ abstract final class HabitMetricCalculator {
           available.add(date);
         }
       }
-      final scheduled = schedule.target.clamp(0, available.length);
-      final completed = available
-          .where(completedDates.contains)
-          .length
-          .clamp(0, scheduled);
+      final scheduled = schedule.target.clamp(0, available.length) as int;
+      final completed =
+          available.where(completedDates.contains).length.clamp(0, scheduled)
+              as int;
       weeks.add(
         WeeklyHabitMetric(
           weekStart: weekStart,
@@ -192,8 +191,7 @@ abstract final class HabitMetricCalculator {
     ];
   }
 
-  static LocalDate _weekStart(LocalDate date) =>
-      date.addDays(1 - date.weekday);
+  static LocalDate _weekStart(LocalDate date) => date.addDays(1 - date.weekday);
 
   static bool _inactiveOn(Habit habit, LocalDate date) {
     final value = date.toString();

@@ -7,26 +7,32 @@ import 'package:timezone/timezone.dart' as tz;
 void main() {
   setUpAll(tz_data.initializeTimeZones);
 
-  test('resolves Berlin spring gap and fall overlap without a fixed offset', () {
-    final berlin = tz.getLocation('Europe/Berlin');
-    final spring = DeviceTimeZoneService.resolveWallClock(
-      location: berlin,
-      date: LocalDate(2026, 3, 29),
-      hour: 2,
-      minute: 30,
-    );
-    final fall = DeviceTimeZoneService.resolveWallClock(
-      location: berlin,
-      date: LocalDate(2026, 10, 25),
-      hour: 2,
-      minute: 30,
-    );
+  test(
+    'resolves Berlin spring gap and fall overlap without a fixed offset',
+    () {
+      final berlin = tz.getLocation('Europe/Berlin');
+      final spring = DeviceTimeZoneService.resolveWallClock(
+        location: berlin,
+        date: LocalDate(2026, 3, 29),
+        hour: 2,
+        minute: 30,
+      );
+      final fall = DeviceTimeZoneService.resolveWallClock(
+        location: berlin,
+        date: LocalDate(2026, 10, 25),
+        hour: 2,
+        minute: 30,
+      );
 
-    expect(spring.hour, 3);
-    expect(spring.minute, 30);
-    expect(fall.hour, 2);
-    expect(fall.timeZoneOffset, anyOf(const Duration(hours: 1), const Duration(hours: 2)));
-  });
+      expect(spring.hour, 3);
+      expect(spring.minute, 30);
+      expect(fall.hour, 2);
+      expect(
+        fall.timeZoneOffset,
+        anyOf(const Duration(hours: 1), const Duration(hours: 2)),
+      );
+    },
+  );
 
   test('resolves New York and Kolkata using their device rules', () {
     final date = LocalDate(2026, 8, 14);

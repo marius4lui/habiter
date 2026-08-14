@@ -149,7 +149,7 @@ class ClasslyClient {
   }) : baseUrl = ClasslyEndpoint.parse(baseUrl).origin.toString(),
        _http = httpClient ?? http.Client(),
        _timeout = timeout,
-      _token = token;
+       _token = token;
 
   final String baseUrl;
   final http.Client _http;
@@ -160,9 +160,7 @@ class ClasslyClient {
 
   Map<String, String> _defaultHeaders() {
     if (_token == null) {
-      throw ClasslyApiException(
-        'No access token is configured.',
-      );
+      throw ClasslyApiException('No access token is configured.');
     }
     return {
       'Authorization': 'Bearer $_token',
@@ -236,11 +234,13 @@ class ClasslyClient {
       'code_verifier': codeVerifier,
     };
 
-    final resp = await _http.post(
-      uri,
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: body,
-    ).timeout(_timeout);
+    final resp = await _http
+        .post(
+          uri,
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body,
+        )
+        .timeout(_timeout);
 
     if (resp.statusCode != 200) {
       throw ClasslyApiException(
@@ -311,11 +311,9 @@ class ClasslyClient {
     final uri = Uri.parse('$baseUrl/api/push/unregister');
     final body = jsonEncode({'device_token': deviceToken});
 
-    final resp = await _http.delete(
-      uri,
-      headers: _defaultHeaders(),
-      body: body,
-    ).timeout(_timeout);
+    final resp = await _http
+        .delete(uri, headers: _defaultHeaders(), body: body)
+        .timeout(_timeout);
 
     if (resp.statusCode != 200) {
       throw ClasslyApiException(

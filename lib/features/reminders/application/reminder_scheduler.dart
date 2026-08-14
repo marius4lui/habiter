@@ -102,13 +102,19 @@ final class ReminderScheduler {
   final NotificationGateway _gateway;
 
   Future<void> replaceWith(Iterable<PlannedReminder> plan) async {
-    final desired = {for (final reminder in plan) reminder.logicalKey: reminder};
+    final desired = {
+      for (final reminder in plan) reminder.logicalKey: reminder,
+    };
     final registered = await _registry.snapshot();
-    for (final stale in registered.keys.where((key) => !desired.containsKey(key))) {
+    for (final stale in registered.keys.where(
+      (key) => !desired.containsKey(key),
+    )) {
       await _gateway.cancel(registered[stale]!);
       await _registry.release(stale);
     }
-    final pendingIds = (await _gateway.pending()).map((item) => item.id).toSet();
+    final pendingIds = (await _gateway.pending())
+        .map((item) => item.id)
+        .toSet();
     for (final entry in desired.entries) {
       final id = await _registry.idFor(entry.key);
       if (pendingIds.contains(id)) continue;
@@ -123,9 +129,7 @@ final class ReminderScheduler {
           scheduledFor: reminder.scheduledFor,
           title: reminder.habit.name,
           body: 'A planned opportunity is ready when you are.',
-          payload: <String, String>{
-            'schema': jsonEncode(payload.toMap()),
-          },
+          payload: <String, String>{'schema': jsonEncode(payload.toMap())},
         ),
       );
     }

@@ -35,13 +35,17 @@ final class LocalCoachingEngine {
     required DateTime now,
   }) {
     if (habits.isEmpty) return const <AIInsight>[];
-    final ranked = habits
-        .map((habit) => (habit, calculateStreak(habit.id, entries).currentStreak))
-        .toList()
-      ..sort((a, b) {
-        final streak = b.$2.compareTo(a.$2);
-        return streak != 0 ? streak : a.$1.id.compareTo(b.$1.id);
-      });
+    final ranked =
+        habits
+            .map(
+              (habit) =>
+                  (habit, calculateStreak(habit.id, entries).currentStreak),
+            )
+            .toList()
+          ..sort((a, b) {
+            final streak = b.$2.compareTo(a.$2);
+            return streak != 0 ? streak : a.$1.id.compareTo(b.$1.id);
+          });
     final best = ranked.first;
     return <AIInsight>[
       AIInsight(

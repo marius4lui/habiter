@@ -36,14 +36,17 @@ void main() {
       supported: true,
     );
 
-    expect((await gateway.installedApps() as AppLockSuccess).value, hasLength(1));
+    expect(
+      (await gateway.installedApps() as AppLockSuccess).value,
+      hasLength(1),
+    );
     final permissions =
-        (await gateway.permissions() as AppLockSuccess<AppLockPermissionSnapshot>)
+        (await gateway.permissions()
+                as AppLockSuccess<AppLockPermissionSnapshot>)
             .value;
     expect(permissions.ready, isTrue);
     expect(
-      (await gateway.start(<String>['org.example.app'])
-              as AppLockSuccess<bool>)
+      (await gateway.start(<String>['org.example.app']) as AppLockSuccess<bool>)
           .value,
       isTrue,
     );
@@ -53,15 +56,18 @@ void main() {
     );
     await gateway.stop();
 
-    expect(calls.map((call) => call.method), containsAll(<String>[
-      'getInstalledApps',
-      'hasUsageStatsPermission',
-      'hasOverlayPermission',
-      'startMonitoring',
-      'updateIncompleteHabits',
-      'habitsIncomplete',
-      'stopMonitoring',
-    ]));
+    expect(
+      calls.map((call) => call.method),
+      containsAll(<String>[
+        'getInstalledApps',
+        'hasUsageStatsPermission',
+        'hasOverlayPermission',
+        'startMonitoring',
+        'updateIncompleteHabits',
+        'habitsIncomplete',
+        'stopMonitoring',
+      ]),
+    );
     expect(
       calls.firstWhere((call) => call.method == 'startMonitoring').arguments,
       <String, Object?>{
@@ -87,7 +93,7 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
           channel,
-          (_) => throw PlatformException(code: 'denied'),
+          (_) => throw const PlatformException(code: 'denied'),
         );
     const failing = MethodChannelAppLockGateway(
       channel: channel,

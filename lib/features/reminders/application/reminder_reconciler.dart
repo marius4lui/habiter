@@ -30,11 +30,12 @@ final class ReminderReconciler {
     for (final id in unknown) {
       await _gateway.cancel(id);
     }
-    final missing = registered.entries
-        .where((entry) => !pendingIds.contains(entry.value))
-        .map((entry) => entry.key)
-        .toList()
-      ..sort();
+    final missing =
+        registered.entries
+            .where((entry) => !pendingIds.contains(entry.value))
+            .map((entry) => entry.key)
+            .toList()
+          ..sort();
     return ReminderReconciliation(
       cancelledUnknownIds: List<int>.unmodifiable(unknown),
       missingLogicalKeys: List<String>.unmodifiable(missing),

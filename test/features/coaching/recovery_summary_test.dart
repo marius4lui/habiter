@@ -4,21 +4,24 @@ import 'package:habiter/features/coaching/domain/recovery_summary.dart';
 import 'package:habiter/models/habit.dart';
 
 void main() {
-  test('support score is transparent and derived without historical writes', () {
-    final metrics = HabitMetrics(
-      scheduled: 10,
-      completed: 6,
-      currentStreak: 2,
-      longestStreak: 4,
-      weeks: const <WeeklyHabitMetric>[],
-    );
+  test(
+    'support score is transparent and derived without historical writes',
+    () {
+      final metrics = HabitMetrics(
+        scheduled: 10,
+        completed: 6,
+        currentStreak: 2,
+        longestStreak: 4,
+        weeks: const <WeeklyHabitMetric>[],
+      );
 
-    final summary = RecoverySummary.fromMetrics(metrics);
+      final summary = RecoverySummary.fromMetrics(metrics);
 
-    expect(summary.score, 60);
-    expect(summary.state, RecoveryState.rebuilding);
-    expect(metrics.completed, 6);
-  });
+      expect(summary.score, 60);
+      expect(summary.state, RecoveryState.rebuilding);
+      expect(metrics.completed, 6);
+    },
+  );
 
   test('empty and low histories use neutral return states', () {
     RecoverySummary summary(int scheduled, int completed) =>

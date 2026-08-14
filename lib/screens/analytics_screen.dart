@@ -28,7 +28,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final double avgCompletionRate = activeHabits.isEmpty
         ? 0.0
         : activeHabits
-                  .map((habit) => provider.getHabitMetrics(habit.id).completionRate)
+                  .map(
+                    (habit) =>
+                        provider.getHabitMetrics(habit.id).completionRate,
+                  )
                   .reduce((a, b) => a + b) /
               activeHabits.length *
               100;
@@ -81,9 +84,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   RecoveryCard(
                     metrics: provider.getHabitMetrics(selectedHabit.id),
                     onHide: () => provider.updatePreferences(
-                      provider.preferences.copyWith(
-                        showRecoverySupport: false,
-                      ),
+                      provider.preferences.copyWith(showRecoverySupport: false),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -378,86 +379,86 @@ class _WeeklyChartCard extends StatelessWidget {
                 height: 220,
                 child: LineChart(
                   LineChartData(
-                  gridData: const FlGridData(show: false),
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 36,
-                        interval: 1,
-                        getTitlesWidget: (value, _) => Text(
-                          value.toInt().toString(),
-                          style: AppTextStyles.caption.copyWith(
-                            color: isDark
-                                ? AppColorsDark.textSecondary
-                                : AppColors.textSecondary,
+                    gridData: const FlGridData(show: false),
+                    titlesData: FlTitlesData(
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 36,
+                          interval: 1,
+                          getTitlesWidget: (value, _) => Text(
+                            value.toInt().toString(),
+                            style: AppTextStyles.caption.copyWith(
+                              color: isDark
+                                  ? AppColorsDark.textSecondary
+                                  : AppColors.textSecondary,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          final index = value.toInt();
-                          if (index < 0 || index >= data.length) {
-                            return const SizedBox();
-                          }
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              data[index].weekStart.toString().substring(5),
-                              style: AppTextStyles.caption.copyWith(
-                                color: isDark
-                                    ? AppColorsDark.textSecondary
-                                    : AppColors.textSecondary,
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) {
+                            final index = value.toInt();
+                            if (index < 0 || index >= data.length) {
+                              return const SizedBox();
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Text(
+                                data[index].weekStart.toString().substring(5),
+                                style: AppTextStyles.caption.copyWith(
+                                  color: isDark
+                                      ? AppColorsDark.textSecondary
+                                      : AppColors.textSecondary,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                  ),
-                  borderData: FlBorderData(
-                    show: true,
-                    border: Border.all(
-                      color: isDark
-                          ? AppColorsDark.border
-                          : AppColors.borderLight,
-                    ),
-                  ),
-                  minY: 0,
-                  lineBarsData: [
-                    LineChartBarData(
-                      isCurved: true,
-                      gradient: LinearGradient(
-                        colors: [_fromHex(habit!.color), AppColors.primary],
-                      ),
-                      barWidth: 3,
-                      dotData: const FlDotData(show: true),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        gradient: LinearGradient(
-                          colors: [
-                            _fromHex(habit.color).withValues(alpha: 0.18),
-                            AppColors.primary.withValues(alpha: 0.05),
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
+                            );
+                          },
                         ),
                       ),
-                      spots: [
-                        for (var i = 0; i < data.length; i++)
-                          FlSpot(i.toDouble(), data[i].completed.toDouble()),
-                      ],
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
                     ),
-                  ],
+                    borderData: FlBorderData(
+                      show: true,
+                      border: Border.all(
+                        color: isDark
+                            ? AppColorsDark.border
+                            : AppColors.borderLight,
+                      ),
+                    ),
+                    minY: 0,
+                    lineBarsData: [
+                      LineChartBarData(
+                        isCurved: true,
+                        gradient: LinearGradient(
+                          colors: [_fromHex(habit!.color), AppColors.primary],
+                        ),
+                        barWidth: 3,
+                        dotData: const FlDotData(show: true),
+                        belowBarData: BarAreaData(
+                          show: true,
+                          gradient: LinearGradient(
+                            colors: [
+                              _fromHex(habit.color).withValues(alpha: 0.18),
+                              AppColors.primary.withValues(alpha: 0.05),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                        spots: [
+                          for (var i = 0; i < data.length; i++)
+                            FlSpot(i.toDouble(), data[i].completed.toDouble()),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -546,10 +547,7 @@ class _HabitStatsGrid extends StatelessWidget {
                           value:
                               '${(stats.completionRate * 100).toStringAsFixed(0)}%',
                         ),
-                        _StatPill(
-                          label: 'Total',
-                          value: '${stats.completed}',
-                        ),
+                        _StatPill(label: 'Total', value: '${stats.completed}'),
                       ],
                     ),
                   ],

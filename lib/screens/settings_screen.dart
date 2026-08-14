@@ -78,8 +78,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 initialValue: settings.themeMode,
                 decoration: const InputDecoration(labelText: 'Theme'),
                 items: const [
-                  DropdownMenuItem(value: ThemeMode.system, child: Text('System')),
-                  DropdownMenuItem(value: ThemeMode.light, child: Text('Light')),
+                  DropdownMenuItem(
+                    value: ThemeMode.system,
+                    child: Text('System'),
+                  ),
+                  DropdownMenuItem(
+                    value: ThemeMode.light,
+                    child: Text('Light'),
+                  ),
                   DropdownMenuItem(value: ThemeMode.dark, child: Text('Dark')),
                 ],
                 onChanged: (value) {
@@ -137,15 +143,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: const Text('Recovery support'),
                 subtitle: const Text('Show non-punitive restart suggestions.'),
                 value: preferences.showRecoverySupport,
-                onChanged: (value) => _update(
-                  preferences.copyWith(showRecoverySupport: value),
-                ),
+                onChanged: (value) =>
+                    _update(preferences.copyWith(showRecoverySupport: value)),
               ),
               const ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.phonelink_lock_outlined),
                 title: Text('Local-first data'),
-                subtitle: Text('Habit data stays on this device unless you explicitly export or connect an integration.'),
+                subtitle: Text(
+                  'Habit data stays on this device unless you explicitly export or connect an integration.',
+                ),
               ),
             ],
           ),
@@ -156,10 +163,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.lock_outline),
                 title: const Text('Configure app lock'),
-                subtitle: const Text('Android only. Review permissions and recovery before enabling.'),
+                subtitle: const Text(
+                  'Android only. Review permissions and recovery before enabling.',
+                ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const AppLockScreen()),
+                  MaterialPageRoute<void>(
+                    builder: (_) => const AppLockScreen(),
+                  ),
                 ),
               ),
             ],
@@ -172,7 +183,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 ListTile(
                   title: const Text('Classly-compatible import'),
-                  subtitle: const Text('OAuth or a manually supplied token; HTTPS endpoints only.'),
+                  subtitle: const Text(
+                    'OAuth or a manually supplied token; HTTPS endpoints only.',
+                  ),
                   onTap: _openClassly,
                 ),
                 ListTile(
@@ -248,7 +261,9 @@ class _ClasslyDialogState extends State<_ClasslyDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Only connect a trusted public HTTPS server. Disconnecting clears all stored credentials.'),
+            const Text(
+              'Only connect a trusted public HTTPS server. Disconnecting clears all stored credentials.',
+            ),
             TextField(
               controller: endpoint,
               decoration: const InputDecoration(labelText: 'HTTPS endpoint'),
@@ -258,16 +273,24 @@ class _ClasslyDialogState extends State<_ClasslyDialog> {
               controller: token,
               obscureText: true,
               onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(labelText: 'Optional access token'),
+              decoration: const InputDecoration(
+                labelText: 'Optional access token',
+              ),
             ),
             if (provider.lastError != null)
-              Text(provider.lastError!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              Text(
+                provider.lastError!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
           ],
         ),
       ),
       actions: [
         if (provider.isConnected)
-          TextButton(onPressed: provider.disconnect, child: const Text('Disconnect')),
+          TextButton(
+            onPressed: provider.disconnect,
+            child: const Text('Disconnect'),
+          ),
         TextButton(
           onPressed: provider.isConnecting
               ? null
@@ -277,7 +300,8 @@ class _ClasslyDialogState extends State<_ClasslyDialog> {
         FilledButton(
           onPressed: token.text.trim().isEmpty
               ? null
-              : () => provider.connect(baseUrl: endpoint.text, token: token.text),
+              : () =>
+                    provider.connect(baseUrl: endpoint.text, token: token.text),
           child: const Text('Use token'),
         ),
       ],

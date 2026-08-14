@@ -1,6 +1,9 @@
 abstract interface class PlatformFileAdapter {
   Future<String?> openText();
-  Future<bool> saveText({required String suggestedName, required String contents});
+  Future<bool> saveText({
+    required String suggestedName,
+    required String contents,
+  });
 }
 
 final class UnsupportedPlatformFileAdapter implements PlatformFileAdapter {
@@ -10,5 +13,8 @@ final class UnsupportedPlatformFileAdapter implements PlatformFileAdapter {
   Future<String?> openText() async => null;
 
   @override
-  Future<bool> saveText({required String suggestedName, required String contents}) async => false;
+  Future<bool> saveText({
+    required String suggestedName,
+    required String contents,
+  }) async => false;
 }

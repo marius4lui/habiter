@@ -12,23 +12,29 @@ import '../../support/fakes/recording_notification_gateway.dart';
 void main() {
   setUpAll(tz_data.initializeTimeZones);
 
-  test('planner covers daily, weekdays and times-per-week without duplicates', () {
-    final plan = ReminderPlanner.plan(
-      habits: <Habit>[
-        _habit('daily', HabitFrequency.daily),
-        _habit('custom', HabitFrequency.custom, customDays: <int>[1, 3]),
-        _habit('weekly', HabitFrequency.weekly, target: 2),
-      ],
-      start: LocalDate(2026, 8, 3),
-      location: tz.getLocation('Europe/Berlin'),
-      horizonDays: 7,
-    );
+  test(
+    'planner covers daily, weekdays and times-per-week without duplicates',
+    () {
+      final plan = ReminderPlanner.plan(
+        habits: <Habit>[
+          _habit('daily', HabitFrequency.daily),
+          _habit('custom', HabitFrequency.custom, customDays: <int>[1, 3]),
+          _habit('weekly', HabitFrequency.weekly, target: 2),
+        ],
+        start: LocalDate(2026, 8, 3),
+        location: tz.getLocation('Europe/Berlin'),
+        horizonDays: 7,
+      );
 
-    expect(plan.where((item) => item.habit.id == 'daily'), hasLength(7));
-    expect(plan.where((item) => item.habit.id == 'custom'), hasLength(2));
-    expect(plan.where((item) => item.habit.id == 'weekly'), hasLength(2));
-    expect(plan.map((item) => item.logicalKey).toSet(), hasLength(plan.length));
-  });
+      expect(plan.where((item) => item.habit.id == 'daily'), hasLength(7));
+      expect(plan.where((item) => item.habit.id == 'custom'), hasLength(2));
+      expect(plan.where((item) => item.habit.id == 'weekly'), hasLength(2));
+      expect(
+        plan.map((item) => item.logicalKey).toSet(),
+        hasLength(plan.length),
+      );
+    },
+  );
 
   test('planner respects lifecycle and the iOS pending capacity', () {
     final plan = ReminderPlanner.plan(
@@ -61,7 +67,10 @@ void main() {
     await scheduler.replaceWith(first);
     expect(await gateway.pending(), hasLength(2));
     await scheduler.replaceWith(first);
-    expect(gateway.calls.where((call) => call.operation == 'schedule'), hasLength(2));
+    expect(
+      gateway.calls.where((call) => call.operation == 'schedule'),
+      hasLength(2),
+    );
 
     await scheduler.replaceWith(first.take(1));
     expect(await gateway.pending(), hasLength(1));

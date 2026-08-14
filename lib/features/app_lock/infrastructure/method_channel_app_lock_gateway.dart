@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -23,16 +25,22 @@ final class MethodChannelAppLockGateway implements AppLockGateway {
     'getInstalledApps',
     decode: (value) {
       final list = value as List<dynamic>? ?? const <dynamic>[];
-      return list.map((item) {
-        final map = Map<String, dynamic>.from(item as Map<dynamic, dynamic>);
-        return LockedApp(
-          packageName: map['packageName']! as String,
-          appName: map['appName']! as String,
-          iconBytes: map['iconBytes'] == null
-              ? null
-              : Uint8List.fromList(List<int>.from(map['iconBytes'] as List)),
-        );
-      }).toList(growable: false);
+      return list
+          .map((item) {
+            final map = Map<String, dynamic>.from(
+              item as Map<dynamic, dynamic>,
+            );
+            return LockedApp(
+              packageName: map['packageName']! as String,
+              appName: map['appName']! as String,
+              iconBytes: map['iconBytes'] == null
+                  ? null
+                  : Uint8List.fromList(
+                      List<int>.from(map['iconBytes'] as List),
+                    ),
+            );
+          })
+          .toList(growable: false);
     },
   );
 
@@ -105,19 +113,15 @@ final class MethodChannelAppLockGateway implements AppLockGateway {
   }
 
   @override
-  Future<AppLockResult<bool>> isBatteryOptimized() => _invoke(
-    'isBatteryOptimized',
-    decode: (value) => value as bool? ?? false,
-  );
+  Future<AppLockResult<bool>> isBatteryOptimized() =>
+      _invoke('isBatteryOptimized', decode: (value) => value as bool? ?? false);
 
   @override
   Future<AppLockResult<void>> openBatterySettings() =>
       _void('requestBatteryOptimizationExemption');
 
-  Future<AppLockResult<void>> _void(
-    String method, {
-    Object? arguments,
-  }) => _invoke(method, arguments: arguments, decode: (_) {});
+  Future<AppLockResult<void>> _void(String method, {Object? arguments}) =>
+      _invoke(method, arguments: arguments, decode: (_) {});
 
   Future<AppLockResult<T>> _invoke<T>(
     String method, {

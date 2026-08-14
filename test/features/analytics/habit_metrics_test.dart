@@ -37,9 +37,7 @@ void main() {
       frequency: HabitFrequency.weekly,
       targetCount: 3,
       createdAt: DateTime.utc(2026, 8, 3),
-      pauses: <HabitPause>[
-        HabitPause(startedAt: DateTime.utc(2026, 8, 5)),
-      ],
+      pauses: <HabitPause>[HabitPause(startedAt: DateTime.utc(2026, 8, 5))],
     );
 
     final metrics = HabitMetricCalculator.calculate(

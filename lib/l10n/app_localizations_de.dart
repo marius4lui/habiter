@@ -194,10 +194,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get aiFeatures => 'KI-Features';
 
   @override
-  String get aiInsights => 'AI Insights';
+  String get aiInsights => 'Lokales Coaching';
 
   @override
-  String get aiInsightsDesc => 'Intelligente Analyse deiner Habits';
+  String get aiInsightsDesc =>
+      'Deterministische Vorschläge, die auf diesem Gerät berechnet werden';
 
   @override
   String get language => 'Sprache';
@@ -426,18 +427,21 @@ class AppLocalizationsDe extends AppLocalizations {
       'Keine pausierten oder archivierten Habits';
 
   @override
-  String inactiveHabitCount(int count) => switch (count) {
-    1 => '1 Habit',
-    _ => '$count Habits',
-  };
+  String inactiveHabitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Habits',
+      one: '1 Habit',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get habitPaused =>
-      'Pausiert – geplante Tage zählen nicht gegen dich';
+  String get habitPaused => 'Pausiert – geplante Tage zählen nicht gegen dich';
 
   @override
-  String get habitArchived =>
-      'Archiviert – kann wiederhergestellt werden';
+  String get habitArchived => 'Archiviert – kann wiederhergestellt werden';
 
   @override
   String get recoveryTitle => 'Dein Tempo, ohne Druck';
@@ -462,8 +466,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get recoveryHide => 'Unterstützenden Wert ausblenden';
 
   @override
-  String recoveryFormula(int completed, int scheduled, int score) =>
-      '$completed von $scheduled berücksichtigten Plänen erledigt = $score%';
+  String recoveryFormula(int completed, int scheduled, int score) {
+    return '$completed von $scheduled berücksichtigten Plänen erledigt = $score%';
+  }
 
   @override
   String get reminderDiagnostics => 'Reminder-Diagnose';
@@ -480,7 +485,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Benachrichtigungen sind nicht verfügbar';
 
   @override
-  String pendingReminders(int count) => 'Ausstehende Reminder: $count';
+  String pendingReminders(int count) {
+    return 'Ausstehende Reminder: $count';
+  }
 
   @override
   String get noPendingReminders => 'Keine ausstehenden Reminder';

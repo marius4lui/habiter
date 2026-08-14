@@ -19,7 +19,9 @@ final class ClasslyEndpoint {
         host.endsWith('.localhost') ||
         host.endsWith('.local') ||
         _isPrivateAddress(host)) {
-      throw const FormatException('Local and private endpoints are not allowed.');
+      throw const FormatException(
+        'Local and private endpoints are not allowed.',
+      );
     }
     if (uri.hasPort && uri.port != 443) {
       throw const FormatException('Only the standard HTTPS port is allowed.');

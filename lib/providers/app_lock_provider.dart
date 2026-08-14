@@ -9,11 +9,9 @@ import '../services/storage_service.dart';
 
 /// Provider for managing app lock state and logic
 class AppLockProvider extends ChangeNotifier {
-  AppLockProvider({
-    AppLockGateway? gateway,
-    Clock clock = const SystemClock(),
-  }) : _gateway = gateway ?? const MethodChannelAppLockGateway(),
-       _clock = clock;
+  AppLockProvider({AppLockGateway? gateway, Clock clock = const SystemClock()})
+    : _gateway = gateway ?? const MethodChannelAppLockGateway(),
+      _clock = clock;
 
   final AppLockGateway _gateway;
   final Clock _clock;

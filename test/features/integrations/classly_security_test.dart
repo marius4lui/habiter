@@ -65,7 +65,6 @@ void main() {
       category: 'School',
       customDays: const <int>[5],
       createdAt: DateTime.utc(2026, 8, 14),
-      isActive: true,
       source: HabitSourceMetadata(
         kind: HabitSourceKind.classlyCompatible,
         externalId: 'event-42',

@@ -27,7 +27,10 @@ void main() {
       action: 'complete',
     );
 
-    expect(ReminderPayload.fromMap(payload.toMap()).occurrence, LocalDate(2026, 8, 14));
+    expect(
+      ReminderPayload.fromMap(payload.toMap()).occurrence,
+      LocalDate(2026, 8, 14),
+    );
     expect(
       () => ReminderPayload.fromMap(<String, Object?>{
         ...payload.toMap(),
@@ -67,6 +70,8 @@ void main() {
 
     expect(result.cancelledUnknownIds, <int>[42]);
     expect(result.missingLogicalKeys, <String>['habit:missing']);
-    expect((await gateway.pending()).map((request) => request.id), <int>[knownId]);
+    expect((await gateway.pending()).map((request) => request.id), <int>[
+      knownId,
+    ]);
   });
 }

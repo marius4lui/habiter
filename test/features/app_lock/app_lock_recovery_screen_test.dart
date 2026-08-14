@@ -17,8 +17,12 @@ void main() {
 
   setUp(() => SharedPreferences.setMockInitialValues(<String, Object>{}));
 
-  testWidgets('unsupported platform explains scope without controls', (tester) async {
-    final provider = AppLockProvider(gateway: _AppLockGateway(supported: false));
+  testWidgets('unsupported platform explains scope without controls', (
+    tester,
+  ) async {
+    final provider = AppLockProvider(
+      gateway: _AppLockGateway(supported: false),
+    );
     await tester.pumpWidget(_app(provider));
     await tester.pumpAndSettle();
 
@@ -26,7 +30,9 @@ void main() {
     expect(find.byType(SwitchListTile), findsNothing);
   });
 
-  testWidgets('permission flow survives 320px and 200 percent text', (tester) async {
+  testWidgets('permission flow survives 320px and 200 percent text', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(320, 720);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -44,7 +50,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('enabled App Lock always exposes one-tap disable', (tester) async {
+  testWidgets('enabled App Lock always exposes one-tap disable', (
+    tester,
+  ) async {
     final gateway = _AppLockGateway(usage: true, overlay: true);
     final provider = AppLockProvider(gateway: gateway);
     await provider.load();
@@ -60,40 +68,49 @@ void main() {
     expect(gateway.stops, greaterThan(0));
   });
 
-  test('midnight recomputes completion and fails open for the new day', () async {
-    final gateway = _AppLockGateway(usage: true, overlay: true);
-    final clock = FakeClock(DateTime.utc(2026, 8, 14, 23, 59));
-    final provider = AppLockProvider(gateway: gateway, clock: clock);
-    await provider.load();
-    await provider.loadInstalledApps();
-    await provider.toggleAppLock('org.example.app');
-    await provider.setEnabled(true);
-    final habit = Habit(
-      id: 'habit',
-      name: 'Walk',
-      color: '#000000',
-      icon: 'H',
-      frequency: HabitFrequency.daily,
-      targetCount: 1,
-      category: 'Test',
-      createdAt: DateTime.utc(2026, 8, 1),
-      isActive: true,
-    );
-    final entry = HabitEntry(
-      id: 'entry',
-      habitId: 'habit',
-      date: '2026-08-14',
-      completed: true,
-      count: 1,
-      timestamp: clock.now(),
-    );
+  test(
+    'midnight recomputes completion and fails open for the new day',
+    () async {
+      final gateway = _AppLockGateway(usage: true, overlay: true);
+      final clock = FakeClock(DateTime.utc(2026, 8, 14, 23, 59));
+      final provider = AppLockProvider(gateway: gateway, clock: clock);
+      await provider.load();
+      await provider.loadInstalledApps();
+      await provider.toggleAppLock('org.example.app');
+      await provider.setEnabled(true);
+      final habit = Habit(
+        id: 'habit',
+        name: 'Walk',
+        color: '#000000',
+        icon: 'H',
+        frequency: HabitFrequency.daily,
+        targetCount: 1,
+        category: 'Test',
+        createdAt: DateTime.utc(2026, 8, 1),
+        isActive: true,
+      );
+      final entry = HabitEntry(
+        id: 'entry',
+        habitId: 'habit',
+        date: '2026-08-14',
+        completed: true,
+        count: 1,
+        timestamp: clock.now(),
+      );
 
-    await provider.updateHabitCompletion(habits: <Habit>[habit], entries: <HabitEntry>[entry]);
-    clock.advance(const Duration(minutes: 2));
-    await provider.updateHabitCompletion(habits: <Habit>[habit], entries: <HabitEntry>[entry]);
+      await provider.updateHabitCompletion(
+        habits: <Habit>[habit],
+        entries: <HabitEntry>[entry],
+      );
+      clock.advance(const Duration(minutes: 2));
+      await provider.updateHabitCompletion(
+        habits: <Habit>[habit],
+        entries: <HabitEntry>[entry],
+      );
 
-    expect(gateway.completionStates, containsAllInOrder(<bool>[true, false]));
-  });
+      expect(gateway.completionStates, containsAllInOrder(<bool>[true, false]));
+    },
+  );
 }
 
 Widget _app(AppLockProvider provider) => ChangeNotifierProvider.value(
@@ -112,7 +129,11 @@ Widget _app(AppLockProvider provider) => ChangeNotifierProvider.value(
 );
 
 final class _AppLockGateway implements AppLockGateway {
-  _AppLockGateway({this.supported = true, this.usage = false, this.overlay = false});
+  _AppLockGateway({
+    this.supported = true,
+    this.usage = false,
+    this.overlay = false,
+  });
 
   final bool supported;
   bool usage;

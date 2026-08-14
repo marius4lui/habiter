@@ -16,24 +16,27 @@ void main() {
     expect(vault.reads, 0);
   });
 
-  test('legacy connected users migrate only when opening lazy settings', () async {
-    SharedPreferences.setMockInitialValues(<String, Object>{
-      'classly_base_url': 'https://school.example',
-    });
-    final vault = _Vault(token: 'legacy-token');
-    final provider = ClasslySyncProvider(credentialVault: vault);
+  test(
+    'legacy connected users migrate only when opening lazy settings',
+    () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        'classly_base_url': 'https://school.example',
+      });
+      final vault = _Vault(token: 'legacy-token');
+      final provider = ClasslySyncProvider(credentialVault: vault);
 
-    expect(vault.reads, 0);
-    await provider.load();
+      expect(vault.reads, 0);
+      await provider.load();
 
-    expect(provider.enabled, isTrue);
-    expect(provider.legacyConnectionMigrated, isTrue);
-    expect(vault.reads, 1);
-    expect(
-      (await SharedPreferences.getInstance()).getBool('classly_enabled'),
-      isTrue,
-    );
-  });
+      expect(provider.enabled, isTrue);
+      expect(provider.legacyConnectionMigrated, isTrue);
+      expect(vault.reads, 1);
+      expect(
+        (await SharedPreferences.getInstance()).getBool('classly_enabled'),
+        isTrue,
+      );
+    },
+  );
 
   test('composition has no root provider or bundled default endpoint', () {
     final main = File('lib/main.dart').readAsStringSync();

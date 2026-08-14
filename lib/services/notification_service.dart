@@ -6,6 +6,7 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../models/habit.dart';
+import '../features/reminders/infrastructure/device_time_zone_service.dart';
 
 /// Callback for handling notification actions (marking habits complete)
 typedef NotificationActionCallback =
@@ -37,6 +38,9 @@ class NotificationService {
   static const int _globalNotificationId = 0;
 
   bool _initialized = false;
+  final DeviceTimeZoneService _timeZones = DeviceTimeZoneService(
+    const MethodChannelDeviceTimeZoneGateway(),
+  );
 
   /// Initialize the notification plugin and timezone data
   Future<void> initialize() async {
@@ -53,7 +57,7 @@ class NotificationService {
 
     // Initialize timezone
     tz.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('Europe/Berlin'));
+    await _timeZones.initialize();
 
     // Android settings
     const androidSettings = AndroidInitializationSettings(

@@ -16,9 +16,11 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.ByteArrayOutputStream
+import java.util.TimeZone
 
 class MainActivity: FlutterActivity() {
     private val CHANNEL = "com.habiter.app/applock"
+    private val TIME_ZONE_CHANNEL = "com.habiter.app/timezone"
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -80,6 +82,12 @@ class MainActivity: FlutterActivity() {
                 else -> {
                     result.notImplemented()
                 }
+            }
+        }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, TIME_ZONE_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getTimeZoneId" -> result.success(TimeZone.getDefault().id)
+                else -> result.notImplemented()
             }
         }
     }

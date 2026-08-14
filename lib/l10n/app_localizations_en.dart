@@ -306,7 +306,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loadingApps => 'Loading apps...';
 
   @override
-  String get noAppsFound => 'No apps found';
+  String get noAppsFound =>
+      'No visible launcher apps were found. App visibility depends on Android policy.';
 
   @override
   String selectAppsToLock(int count) {
@@ -319,6 +320,28 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get androidOnlyDesc =>
       'App Lock is only available on Android devices.';
+
+  @override
+  String get appLockRecovery => 'App Lock is safely off';
+
+  @override
+  String get appLockReliability => 'Device reliability';
+
+  @override
+  String get appLockReliabilityDescription =>
+      'Android and manufacturer power policies can stop monitoring. Habiter turns App Lock off when required access is missing.';
+
+  @override
+  String get disableAppLock => 'Disable App Lock now';
+
+  @override
+  String get batterySettings => 'Open battery settings';
+
+  @override
+  String get refreshPermissions => 'Check permissions again';
+
+  @override
+  String get grant => 'Grant';
 
   @override
   String get yourDailyFlow => 'Your Daily Flow';

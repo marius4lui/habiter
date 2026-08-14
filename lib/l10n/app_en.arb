@@ -142,7 +142,7 @@
   "overlayPermission": "Display over other apps",
   "overlayPermissionDesc": "Show lock screen",
   "loadingApps": "Loading apps...",
-  "noAppsFound": "No apps found",
+  "noAppsFound": "No visible launcher apps were found. App visibility depends on Android policy.",
   "selectAppsToLock": "Select apps to lock ({count})",
   "@selectAppsToLock": {
     "placeholders": {
@@ -151,6 +151,13 @@
   },
   "androidOnly": "Android Only",
   "androidOnlyDesc": "App Lock is only available on Android devices.",
+  "appLockRecovery": "App Lock is safely off",
+  "appLockReliability": "Device reliability",
+  "appLockReliabilityDescription": "Android and manufacturer power policies can stop monitoring. Habiter turns App Lock off when required access is missing.",
+  "disableAppLock": "Disable App Lock now",
+  "batterySettings": "Open battery settings",
+  "refreshPermissions": "Check permissions again",
+  "grant": "Grant",
   
   "yourDailyFlow": "Your Daily Flow",
   "keepMomentum": "Keep the momentum going!",

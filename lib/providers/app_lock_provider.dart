@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
+import '../core/time/clock.dart';
+import '../core/time/local_date.dart';
 import '../models/habit.dart';
 import '../models/locked_app.dart';
 import '../features/app_lock/domain/app_lock_gateway.dart';
@@ -9,10 +9,14 @@ import '../services/storage_service.dart';
 
 /// Provider for managing app lock state and logic
 class AppLockProvider extends ChangeNotifier {
-  AppLockProvider({AppLockGateway? gateway})
-    : _gateway = gateway ?? const MethodChannelAppLockGateway();
+  AppLockProvider({
+    AppLockGateway? gateway,
+    Clock clock = const SystemClock(),
+  }) : _gateway = gateway ?? const MethodChannelAppLockGateway(),
+       _clock = clock;
 
   final AppLockGateway _gateway;
+  final Clock _clock;
 
   AppLockConfig _config = const AppLockConfig();
   List<LockedApp> _availableApps = [];
@@ -20,6 +24,7 @@ class AppLockProvider extends ChangeNotifier {
   String? _error;
   bool _hasUsageStatsPermission = false;
   bool _hasOverlayPermission = false;
+  bool? _batteryOptimized;
 
   // Cache for habit data to allow sync on config changes
   List<Habit> _lastHabits = [];
@@ -35,6 +40,7 @@ class AppLockProvider extends ChangeNotifier {
   bool get hasOverlayPermission => _hasOverlayPermission;
   bool get hasAllPermissions =>
       _hasUsageStatsPermission && _hasOverlayPermission;
+  bool? get batteryOptimized => _batteryOptimized;
   bool get isSupported => _gateway.isSupported;
 
   /// Load saved config and check permissions
@@ -47,6 +53,7 @@ class AppLockProvider extends ChangeNotifier {
     try {
       _config = await StorageService.getAppLockConfig();
       await checkPermissions();
+      await checkBatteryOptimization();
       _error = null;
     } catch (e) {
       _error = 'Failed to load app lock config';
@@ -84,6 +91,15 @@ class AppLockProvider extends ChangeNotifier {
   Future<void> requestOverlayPermission() async {
     await _gateway.requestOverlay();
   }
+
+  Future<void> checkBatteryOptimization() async {
+    final result = await _gateway.isBatteryOptimized();
+    if (result case AppLockSuccess<bool>(:final value)) {
+      _batteryOptimized = value;
+    }
+  }
+
+  Future<void> openBatterySettings() => _gateway.openBatterySettings();
 
   /// Load list of installed non-system apps
   Future<void> loadInstalledApps() async {
@@ -144,6 +160,11 @@ class AppLockProvider extends ChangeNotifier {
 
   /// Enable or disable app lock feature
   Future<void> setEnabled(bool enabled) async {
+    if (enabled && (!hasAllPermissions || _config.lockedPackageNames.isEmpty)) {
+      _error = 'Choose at least one app and grant both permissions first.';
+      notifyListeners();
+      return;
+    }
     _config = _config.copyWith(isEnabled: enabled);
     await _saveAndSync();
     await _syncHabitCompletionState();
@@ -202,7 +223,7 @@ class AppLockProvider extends ChangeNotifier {
   Future<void> _syncHabitCompletionState() async {
     if (!_config.isEnabled) return;
 
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final today = LocalDate.fromDateTime(_clock.now()).toString();
 
     // Get list of incomplete habits
     List<String> incompleteHabitNames = [];

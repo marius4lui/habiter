@@ -686,6 +686,20 @@ abstract class AppLocalizations {
   /// **'App Lock ist nur auf Android Geräten verfügbar.'**
   String get androidOnlyDesc;
 
+  String get appLockRecovery;
+
+  String get appLockReliability;
+
+  String get appLockReliabilityDescription;
+
+  String get disableAppLock;
+
+  String get batterySettings;
+
+  String get refreshPermissions;
+
+  String get grant;
+
   /// No description provided for @yourDailyFlow.
   ///
   /// In de, this message translates to:

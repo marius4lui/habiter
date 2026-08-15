@@ -1,197 +1,45 @@
-<div align="center">
+# Habiter
 
-# 🌱 Habiter
+Habiter is a local-first habit application with a static product website and a versioned release API. The repository is a single monorepo and starts its new public product line at `1.0.0`.
 
-**Build better habits, one day at a time.**
+## Repository
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.24.5-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
-[![Platforms](https://img.shields.io/badge/Platforms-Android%20%7C%20iOS%20%7C%20Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Web-4285F4?style=for-the-badge)](https://github.com/marius4lui/habiter/releases)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/marius4lui/habiter?style=for-the-badge&color=blue)](https://github.com/marius4lui/habiter/releases/latest)
+```text
+apps/habiter       Flutter application and platform projects
+apps/website       Standalone product page
+apps/release-api   Cloudflare Worker for releases, updates and downloads
+packages/release-core
+                    Release manifest, schema and deterministic tooling
+docs                Product and engineering documentation
+```
 
-<img src="assets/images/app_icon.png" width="120" alt="Habiter Logo" />
+## Development
 
-*A beautiful, cross-platform habit tracker built with Flutter*
-
-[Download](#-download) • [Features](#-features) • [Screenshots](#-screenshots) • [Getting Started](#-getting-started) • [Contributing](#-contributing)
-
-</div>
-
----
-
-## ✨ Features
-
-<table>
-<tr>
-<td width="50%">
-
-### 📱 Cross-Platform
-Works seamlessly on **Android**, **iOS**, **Windows**, **macOS**, **Linux**, and **Web** from a single codebase.
-
-### 🖥️ Desktop Optimized
-Responsive layout with **NavigationRail sidebar** on desktop, **bottom navigation** on mobile.
-
-### 🌙 Dark Mode
-Beautiful dark theme with carefully crafted colors that are easy on the eyes.
-
-</td>
-<td width="50%">
-
-### 📊 Analytics
-Track your progress with **weekly charts**, **streaks**, and **completion rates**.
-
-### 🔔 Reminders
-Never miss a habit with **customizable notifications**.
-
-### 🔒 Privacy First
-All data stored **locally** on your device. No accounts required.
-
-</td>
-</tr>
-</table>
-
----
-
-## 📥 Download
-
-### Latest Release: v1.3.3
-
-| Platform | Download |
-|----------|----------|
-| 🤖 **Android** | [APK (Universal)](https://github.com/marius4lui/habiter/releases/latest) |
-| 🪟 **Windows** | [Windows x64](https://github.com/marius4lui/habiter/releases/latest) |
-| 🐧 **Linux** | [Linux x64](https://github.com/marius4lui/habiter/releases/latest) |
-| 🍎 **macOS** | [macOS](https://github.com/marius4lui/habiter/releases/latest) |
-| 🌐 **Web** | [Web App](https://github.com/marius4lui/habiter/releases/latest) |
-
----
-
-## 🖼️ Screenshots
-
-<div align="center">
-
-| Mobile | Desktop |
-|--------|---------|
-| *Mobile view with bottom navigation* | *Desktop view with sidebar navigation* |
-
-</div>
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- [Flutter SDK](https://docs.flutter.dev/get-started/install) (3.24.5 or higher)
-- [Git](https://git-scm.com/)
-
-### Installation
+Flutter commands run from `apps/habiter`:
 
 ```bash
-# Clone the repository
-git clone https://github.com/marius4lui/habiter.git
-
-# Navigate to project directory
-cd habiter
-
-# Install dependencies
-flutter pub get
-
-# Run the app
-flutter run
+flutter pub get --enforce-lockfile
+dart format --output=none --set-exit-if-changed .
+flutter analyze --fatal-infos
+flutter test
 ```
 
-### Build for Production
+Workspace commands run from the repository root:
 
 ```bash
-# Android APK
-flutter build apk --release
-
-# Windows
-flutter build windows --release
-
-# Linux
-flutter build linux --release
-
-# macOS
-flutter build macos --release
-
-# Web
-flutter build web --release
+pnpm install --frozen-lockfile
+pnpm release:validate
+pnpm release:test
+pnpm website:check
+pnpm --filter @habiter/release-api types
+pnpm --filter @habiter/release-api check
+pnpm --filter @habiter/release-api deploy:dry
 ```
 
----
+## Releases
 
-## 🏗️ Project Structure
+`packages/release-core/data/releases.json` is the human-reviewed source of truth. A tag is accepted only when its SemVer, Flutter version, build number and release entry agree. Normal pushes never publish application releases.
 
-```
-habiter/
-├── lib/
-│   ├── l10n/              # Localization (EN/DE)
-│   ├── models/            # Data models
-│   ├── providers/         # State management
-│   ├── screens/           # App screens
-│   ├── theme/             # App theming
-│   ├── utils/             # Utility functions
-│   └── widgets/           # Reusable widgets
-├── assets/
-│   └── images/            # App icons & images
-├── android/               # Android configuration
-├── ios/                   # iOS configuration
-├── windows/               # Windows configuration
-├── linux/                 # Linux configuration
-├── macos/                 # macOS configuration
-└── web/                   # Web configuration
-```
+The first new line is `1.0.0+10000`. Android release builds fail unless valid signing material is present. Windows, Linux and macOS bundles carry checksums but are not code-signed in v1.
 
----
-
-## 🛠️ Tech Stack
-
-| Technology | Purpose |
-|------------|---------|
-| **Flutter** | Cross-platform UI framework |
-| **Provider** | State management |
-| **SharedPreferences** | Local data persistence |
-| **fl_chart** | Beautiful charts |
-| **Google Fonts** | Typography (Plus Jakarta Sans) |
-| **flutter_animate** | Smooth animations |
-
----
-
-## 🌍 Localization
-
-Habiter supports multiple languages:
-
-- 🇬🇧 English
-- 🇩🇪 German (Deutsch)
-
-Want to contribute a translation? See [Contributing](#-contributing).
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-<div align="center">
-
-**Made with ❤️ and Flutter**
-
-⭐ Star this repo if you find it helpful!
-
-</div>
+Operational release, signing, recovery and rollback instructions are in [docs/release-operations.md](docs/release-operations.md).

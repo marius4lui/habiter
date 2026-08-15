@@ -124,7 +124,12 @@ jobs:
           NORMALIZED_EXPECTED=$(printf '%s' "$EXPECTED_SHA256" | tr -d ': ' | tr '[:upper:]' '[:lower:]')
           NORMALIZED_OUTPUT=$(printf '%s' "$CERT_OUTPUT" | tr -d ': ' | tr '[:upper:]' '[:lower:]')
           printf '%s' "$NORMALIZED_OUTPUT" | grep -F "$NORMALIZED_EXPECTED"
-          jarsigner -verify -strict "dist/habiter-$VERSION-android-playstore.aab"
+          AAB="dist/habiter-$VERSION-android-playstore.aab"
+          jarsigner -verify "$AAB"
+          AAB_CERT=$(keytool -printcert -jarfile "$AAB")
+          printf '%s\n' "$AAB_CERT"
+          NORMALIZED_AAB_CERT=$(printf '%s' "$AAB_CERT" | tr -d ': ' | tr '[:upper:]' '[:lower:]')
+          printf '%s' "$NORMALIZED_AAB_CERT" | grep -F "$NORMALIZED_EXPECTED"
       - uses: actions/upload-artifact@v4
         with:
           name: release-android

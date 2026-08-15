@@ -68,6 +68,24 @@ void main() {
     expect(gateway.stops, greaterThan(0));
   });
 
+  testWidgets('app picker shows friendly names and keeps package IDs hidden', (
+    tester,
+  ) async {
+    final provider = AppLockProvider(
+      gateway: _AppLockGateway(usage: true, overlay: true),
+    );
+    await provider.load();
+    await provider.loadInstalledApps();
+    await tester.pumpWidget(_app(provider));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Example'), findsOneWidget);
+    expect(find.text('org.example.app'), findsNothing);
+    await tester.enterText(find.byType(TextField), 'missing');
+    await tester.pump();
+    expect(find.text('No matching apps'), findsOneWidget);
+  });
+
   test(
     'midnight recomputes completion and fails open for the new day',
     () async {

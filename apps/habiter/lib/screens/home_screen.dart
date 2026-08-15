@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
+import '../core/design_system/components.dart';
 import '../core/design_system/haptics.dart';
+import '../core/design_system/motion.dart';
+import '../core/design_system/tokens.dart';
 import '../core/time/local_date.dart';
-import '../features/today/application/today_query.dart';
-import '../features/onboarding/presentation/onboarding_empty_state.dart';
 import '../features/history/presentation/habit_lifecycle_panel.dart';
+import '../features/onboarding/presentation/onboarding_empty_state.dart';
+import '../features/today/application/today_query.dart';
 import '../l10n/l10n.dart';
+import '../models/habit.dart';
 import '../providers/habit_provider.dart';
-import '../theme/app_theme.dart';
-import '../utils/habit_utils.dart';
-
-import '../widgets/dashboard_header.dart';
-import '../widgets/calendar_strip.dart';
-import '../widgets/daily_progress_card.dart';
-import '../widgets/bento_habit_card.dart';
 import '../widgets/add_habit_sheet.dart';
 import '../widgets/habit_detail_dialog.dart';
 
@@ -27,376 +24,50 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _showCompleted = false;
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<HabitProvider>();
-
     if (provider.loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Center(child: CircularProgressIndicator());
     }
+    if (provider.error != null) return _LoadError(onRetry: provider.refresh);
 
-    if (provider.error != null) {
-      return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                provider.error!,
-                style: Theme.of(context).textTheme.displaySmall,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              ElevatedButton(
-                onPressed: provider.refresh,
-                child: Text(context.l10n.retry),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    final today = LocalDate.fromDateTime(DateTime.now());
-    final todaySnapshot = TodayQuery.forDate(
-      date: today,
+    final date = LocalDate.fromDateTime(DateTime.now());
+    final snapshot = TodayQuery.forDate(
+      date: date,
       habits: provider.habits,
       entries: provider.habitEntries,
     );
-    final allActiveHabits = todaySnapshot.scheduled;
-
-    // Calculate stats for daily progress
-    final totalActive = allActiveHabits.length;
-    final completedCount = todaySnapshot.completed.length;
-    final progress = todaySnapshot.progress;
 
     return Scaffold(
-      extendBody: true, // Important for glass effect if needed
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        bottom:
-            false, // Let content go behind bottom nav if needed, but we used column mostly
-        child: Stack(
-          children: [
-            // Main Scrollable Content
-            Positioned.fill(
-              // On desktop (no bottom nav), use no bottom padding; on mobile leave space for bottom nav
-              bottom: MediaQuery.of(context).size.width >= 1024 ? 0 : 100,
-              child: RefreshIndicator(
-                onRefresh: provider.refresh,
-                child: CustomScrollView(
-                  slivers: [
-                    // Header
-                    const SliverToBoxAdapter(child: DashboardHeader()),
-
-                    // Calendar Strip
-                    const SliverToBoxAdapter(child: CalendarStrip()),
-
-                    // Daily Progress Hero
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                        ),
-                        child: DailyProgressCard(
-                          progress: progress,
-                          completedCount: completedCount,
-                          totalCount: totalActive,
-                        ),
-                      ),
-                    ),
-
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: AppSpacing.lg),
-                    ),
-
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                        ),
-                        child: HabitLifecyclePanel(
-                          habits: provider.habits,
-                          onResume: provider.resumeHabit,
-                          onRestore: provider.restoreHabit,
-                          onDelete: provider.deleteHabit,
-                        ),
-                      ),
-                    ),
-
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: AppSpacing.lg),
-                    ),
-
-                    // Incomplete Habits Grid
-                    if (allActiveHabits.isEmpty)
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: OnboardingEmptyState(
-                          onCreateHabit: () => showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            useSafeArea: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (_) => const AddHabitSheet(),
-                          ),
-                        ),
-                      )
-                    else ...[
-                      // Filter for incomplete habits today
-                      Builder(
-                        builder: (context) {
-                          final incompleteHabits = allActiveHabits
-                              .where(
-                                (h) => !isHabitCompletedToday(
-                                  h.id,
-                                  provider.habitEntries,
-                                ),
-                              )
-                              .toList();
-
-                          if (incompleteHabits.isEmpty) {
-                            return SliverToBoxAdapter(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.lg,
-                                ),
-                                child: Text(
-                                  context.l10n.allHabitsCompleted,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            );
-                          }
-
-                          return SliverPadding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg,
-                            ),
-                            sliver: SliverGrid(
-                              gridDelegate:
-                                  const SliverGridDelegateWithMaxCrossAxisExtent(
-                                    maxCrossAxisExtent: 220,
-                                    mainAxisSpacing: AppSpacing.md,
-                                    crossAxisSpacing: AppSpacing.md,
-                                    childAspectRatio: 0.85,
-                                  ),
-                              delegate: SliverChildBuilderDelegate((
-                                context,
-                                index,
-                              ) {
-                                final habit = incompleteHabits[index];
-                                final today = DateTime.now();
-                                final dateStr =
-                                    '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-
-                                return GestureDetector(
-                                      onTap: () => _showHabitDetail(
-                                        context,
-                                        habit,
-                                        false,
-                                        dateStr,
-                                        provider,
-                                      ),
-                                      child: BentoHabitCard(
-                                        habit: habit,
-                                        completed: false,
-                                        onComplete: () async {
-                                          await _completeHabit(
-                                            context,
-                                            provider,
-                                            habit.id,
-                                            dateStr,
-                                          );
-                                        },
-                                        onEdit: () => showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          useSafeArea: true,
-                                          builder: (_) =>
-                                              AddHabitSheet(habit: habit),
-                                        ),
-                                      ),
-                                    )
-                                    .animate(delay: (index * 50).ms)
-                                    .fadeIn()
-                                    .slideY(begin: 0.1, end: 0);
-                              }, childCount: incompleteHabits.length),
-                            ),
-                          );
-                        },
-                      ),
-
-                      // Completed Habits Section
-                      Builder(
-                        builder: (context) {
-                          final completedHabits = allActiveHabits
-                              .where(
-                                (h) => isHabitCompletedToday(
-                                  h.id,
-                                  provider.habitEntries,
-                                ),
-                              )
-                              .toList();
-
-                          if (completedHabits.isEmpty) {
-                            return const SliverToBoxAdapter(
-                              child: SizedBox.shrink(),
-                            );
-                          }
-
-                          return SliverToBoxAdapter(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: AppSpacing.xl),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.lg,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.check_circle,
-                                        color: AppColors.success,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: AppSpacing.sm),
-                                      Text(
-                                        context.l10n.todayCompleted(
-                                          completedHabits.length,
-                                        ),
-                                        style: AppTextStyles.h3.copyWith(
-                                          color: AppColors.success,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: AppSpacing.md),
-                                SizedBox(
-                                  height: 90,
-                                  child: ListView.separated(
-                                    scrollDirection: Axis.horizontal,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppSpacing.lg,
-                                    ),
-                                    itemCount: completedHabits.length,
-                                    separatorBuilder: (_, __) =>
-                                        const SizedBox(width: AppSpacing.sm),
-                                    itemBuilder: (context, index) {
-                                      final habit = completedHabits[index];
-                                      final today = DateTime.now();
-                                      final dateStr =
-                                          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-
-                                      return GestureDetector(
-                                        onTap: () => _showHabitDetail(
-                                          context,
-                                          habit,
-                                          true,
-                                          dateStr,
-                                          provider,
-                                        ),
-                                        child: Container(
-                                          width: 90,
-                                          padding: const EdgeInsets.all(
-                                            AppSpacing.sm,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.success.withValues(
-                                              alpha: 0.1,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              AppBorderRadius.md,
-                                            ),
-                                            border: Border.all(
-                                              color: AppColors.success
-                                                  .withValues(alpha: 0.3),
-                                            ),
-                                          ),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Stack(
-                                                alignment:
-                                                    Alignment.bottomRight,
-                                                children: [
-                                                  Text(
-                                                    habit.icon,
-                                                    style: const TextStyle(
-                                                      fontSize: 26,
-                                                    ),
-                                                  ),
-                                                  Container(
-                                                    padding:
-                                                        const EdgeInsets.all(2),
-                                                    decoration:
-                                                        const BoxDecoration(
-                                                          color:
-                                                              AppColors.success,
-                                                          shape:
-                                                              BoxShape.circle,
-                                                        ),
-                                                    child: const Icon(
-                                                      Icons.check,
-                                                      color: Colors.white,
-                                                      size: 10,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                habit.name,
-                                                style: AppTextStyles.caption
-                                                    .copyWith(fontSize: 11),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: 120), // Bottom padding
-                    ),
-                  ],
+      backgroundColor: Colors.transparent,
+      floatingActionButton: FloatingActionButton.extended(
+        key: const Key('add-habit-fab'),
+        onPressed: () => _openEditor(context),
+        icon: const Icon(Icons.add_rounded),
+        label: Text(context.l10n.addHabit),
+      ),
+      body: RefreshIndicator(
+        onRefresh: provider.refresh,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: HabiterContent(
+                maxWidth: HabiterSize.wideContentMax,
+                child: _TodayContent(
+                  snapshot: snapshot,
+                  allHabits: provider.habits,
+                  showCompleted: _showCompleted,
+                  onToggleCompleted: () =>
+                      setState(() => _showCompleted = !_showCompleted),
+                  onCreateHabit: () => _openEditor(context),
+                  onComplete: (habit) => _complete(provider, habit, date),
+                  onOpen: (habit, completed) =>
+                      _openDetails(provider, habit, completed, date.toString()),
                 ),
-              ),
-            ),
-
-            // Floating Action Button
-            Positioned(
-              // Position lower on mobile (above bottom nav) but at bottom on desktop
-              bottom: MediaQuery.of(context).size.width >= 1024
-                  ? AppSpacing.lg
-                  : 110,
-              right: AppSpacing.lg,
-              child: FloatingActionButton(
-                onPressed: () => showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  useSafeArea: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (_) => const AddHabitSheet(),
-                ),
-                backgroundColor: Theme.of(context).brightness == Brightness.dark
-                    ? AppColorsDark.primary
-                    : AppColors.primary,
-                elevation: 8,
-                child: const Icon(Icons.add, size: 28, color: Colors.white),
               ),
             ),
           ],
@@ -405,58 +76,574 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showHabitDetail(
-    BuildContext context,
-    habit,
-    bool isCompleted,
-    String dateStr,
+  Future<void> _complete(
     HabitProvider provider,
-  ) {
-    showDialog(
-      context: context,
-      builder: (ctx) => HabitDetailDialog(
-        habit: habit,
-        isCompleted: isCompleted,
-        onComplete: () async {
-          if (isCompleted) {
-            await provider.toggleHabitCompletion(habit.id, dateStr);
-          } else {
-            await _completeHabit(context, provider, habit.id, dateStr);
-          }
-        },
-        onArchive: () => provider.archiveHabit(habit.id),
-        onPause: () => provider.pauseHabit(habit.id),
-        onEdit: () => showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          useSafeArea: true,
-          builder: (_) => AddHabitSheet(habit: habit),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _completeHabit(
-    BuildContext context,
-    HabitProvider provider,
-    String habitId,
-    String date,
+    Habit habit,
+    LocalDate date,
   ) async {
-    final result = await provider.completeHabit(habitId, date);
-    if (!context.mounted || !result.changed) return;
+    final result = await provider.completeHabit(habit.id, date.toString());
+    if (!mounted || !result.changed) return;
     await context.read<HapticGateway>().success();
-    if (!context.mounted) return;
-    final token = result.undoToken;
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(context.l10n.todayDone),
-        action: token == null
+        action: result.undoToken == null
             ? null
             : SnackBarAction(
                 label: context.l10n.undoComplete,
-                onPressed: () => provider.undoCompletion(token),
+                onPressed: () => provider.undoCompletion(result.undoToken!),
               ),
       ),
     );
   }
+
+  void _openEditor(BuildContext context, [Habit? habit]) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => AddHabitSheet(habit: habit),
+    );
+  }
+
+  void _openDetails(
+    HabitProvider provider,
+    Habit habit,
+    bool completed,
+    String date,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => HabitDetailDialog(
+        habit: habit,
+        isCompleted: completed,
+        onComplete: () async {
+          if (completed) {
+            await provider.toggleHabitCompletion(habit.id, date);
+          } else {
+            await _complete(provider, habit, LocalDate.parse(date));
+          }
+        },
+        onArchive: () => provider.archiveHabit(habit.id),
+        onPause: () => provider.pauseHabit(habit.id),
+        onEdit: () => _openEditor(context, habit),
+      ),
+    );
+  }
+}
+
+class _TodayContent extends StatelessWidget {
+  const _TodayContent({
+    required this.snapshot,
+    required this.allHabits,
+    required this.showCompleted,
+    required this.onToggleCompleted,
+    required this.onCreateHabit,
+    required this.onComplete,
+    required this.onOpen,
+  });
+
+  final TodaySnapshot snapshot;
+  final List<Habit> allHabits;
+  final bool showCompleted;
+  final VoidCallback onToggleCompleted;
+  final VoidCallback onCreateHabit;
+  final ValueChanged<Habit> onComplete;
+  final void Function(Habit habit, bool completed) onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final date = DateFormat.yMMMMEEEEd(
+      Localizations.localeOf(context).toLanguageTag(),
+    ).format(now);
+    final greeting = now.hour < 12
+        ? context.l10n.goodMorning
+        : now.hour < 17
+        ? context.l10n.goodAfternoon
+        : context.l10n.goodEvening;
+
+    if (allHabits.isEmpty) {
+      return Column(
+        children: [
+          HabiterPageIntro(
+            eyebrow: date,
+            title: greeting,
+            subtitle: context.l10n.todaySubtitle,
+          ),
+          const SizedBox(height: HabiterSpace.xl),
+          OnboardingEmptyState(onCreateHabit: onCreateHabit),
+        ],
+      );
+    }
+
+    final next = snapshot.pending.firstOrNull;
+    final primary = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AnimatedSwitcher(
+          duration: HabiterMotion.standard.duration(
+            reduced: context.reduceMotion,
+          ),
+          child: next == null
+              ? snapshot.scheduled.isEmpty
+                    ? const _NothingScheduledState(
+                        key: ValueKey('nothing-scheduled-state'),
+                      )
+                    : const _CompletionState(key: ValueKey('complete-state'))
+              : _NextHabitHero(
+                  key: ValueKey('next-${next.id}'),
+                  habit: next,
+                  onComplete: () => onComplete(next),
+                  onOpen: () => onOpen(next, false),
+                ),
+        ),
+        if (snapshot.pending.length > 1) ...[
+          const SizedBox(height: HabiterSpace.xl),
+          HabiterSectionHeader(
+            title: context.l10n.remainingToday,
+            subtitle: context.l10n.remainingCount(snapshot.pending.length - 1),
+          ),
+          const SizedBox(height: HabiterSpace.sm2),
+          for (final habit in snapshot.pending.skip(1)) ...[
+            _HabitRow(
+              habit: habit,
+              onComplete: () => onComplete(habit),
+              onOpen: () => onOpen(habit, false),
+            ),
+            const SizedBox(height: HabiterSpace.sm),
+          ],
+        ],
+      ],
+    );
+    final secondary = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (snapshot.completed.isNotEmpty)
+          _CompletedPanel(
+            habits: snapshot.completed,
+            expanded: showCompleted,
+            onToggle: onToggleCompleted,
+            onOpen: (habit) => onOpen(habit, true),
+          ),
+        if (snapshot.completed.isNotEmpty)
+          const SizedBox(height: HabiterSpace.sm2),
+        HabitLifecyclePanel(
+          habits: allHabits,
+          onResume: context.read<HabitProvider>().resumeHabit,
+          onRestore: context.read<HabitProvider>().restoreHabit,
+          onDelete: context.read<HabitProvider>().deleteHabit,
+        ),
+      ],
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        HabiterPageIntro(
+          eyebrow: date,
+          title: greeting,
+          subtitle: context.l10n.todaySubtitle,
+        ),
+        const SizedBox(height: HabiterSpace.lg),
+        if (snapshot.scheduled.isNotEmpty) ...[
+          _ProgressSummary(snapshot: snapshot),
+          const SizedBox(height: HabiterSpace.lg),
+        ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth < HabiterSize.expandedBreakpoint) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  primary,
+                  const SizedBox(height: HabiterSpace.lg),
+                  secondary,
+                ],
+              );
+            }
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 3, child: primary),
+                const SizedBox(width: HabiterSpace.lg),
+                Expanded(flex: 2, child: secondary),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _ProgressSummary extends StatelessWidget {
+  const _ProgressSummary({required this.snapshot});
+  final TodaySnapshot snapshot;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final complete = snapshot.completed.length;
+    final total = snapshot.scheduled.length;
+    return Semantics(
+      container: true,
+      label: context.l10n.habitsCompleted(complete, total),
+      value: '${(snapshot.progress * 100).round()}%',
+      child: HabiterSurface(
+        padding: const EdgeInsets.all(HabiterSpace.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    context.l10n.dailyProgress,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                Text(
+                  '$complete / $total',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelLarge?.copyWith(color: scheme.primary),
+                ),
+              ],
+            ),
+            const SizedBox(height: HabiterSpace.sm2),
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: snapshot.progress),
+              duration: HabiterMotion.emphasized.duration(
+                reduced: context.reduceMotion,
+              ),
+              curve: HabiterMotion.emphasized.curve,
+              builder: (_, value, __) => LinearProgressIndicator(
+                value: value,
+                minHeight: 8,
+                borderRadius: BorderRadius.circular(HabiterRadius.pill),
+                backgroundColor: scheme.primary.withValues(alpha: .12),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NextHabitHero extends StatelessWidget {
+  const _NextHabitHero({
+    super.key,
+    required this.habit,
+    required this.onComplete,
+    required this.onOpen,
+  });
+
+  final Habit habit;
+  final VoidCallback onComplete;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = habit.color.asHabiterColor;
+    return Semantics(
+      container: true,
+      label: context.l10n.nextUp,
+      child: Material(
+        color: Color.alphaBlend(
+          accent.withValues(
+            alpha: theme.brightness == Brightness.dark ? .14 : .09,
+          ),
+          theme.colorScheme.surfaceContainerLow,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(HabiterRadius.prominent),
+          side: BorderSide(color: accent.withValues(alpha: .28)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onOpen,
+          child: Padding(
+            padding: const EdgeInsets.all(HabiterSpace.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.nextUp.toUpperCase(),
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: accent,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: HabiterSpace.md),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _HabitIcon(habit: habit, size: 56),
+                    const SizedBox(width: HabiterSpace.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            habit.name,
+                            style: theme.textTheme.headlineMedium,
+                          ),
+                          const SizedBox(height: HabiterSpace.xs),
+                          Text(
+                            _habitMeta(context, habit),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: HabiterSpace.lg),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: onComplete,
+                    icon: const Icon(Icons.check_rounded),
+                    label: Text(context.l10n.markAsComplete),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HabitRow extends StatelessWidget {
+  const _HabitRow({
+    required this.habit,
+    required this.onComplete,
+    required this.onOpen,
+  });
+  final Habit habit;
+  final VoidCallback onComplete;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) => HabiterSurface(
+    onTap: onOpen,
+    child: Row(
+      children: [
+        _HabitIcon(habit: habit),
+        const SizedBox(width: HabiterSpace.sm2),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(habit.name, style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 2),
+              Text(
+                _habitMeta(context, habit),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        IconButton.filledTonal(
+          tooltip: context.l10n.completeHabit(habit.name),
+          onPressed: onComplete,
+          icon: const Icon(Icons.check_rounded),
+        ),
+      ],
+    ),
+  );
+}
+
+class _HabitIcon extends StatelessWidget {
+  const _HabitIcon({required this.habit, this.size = 48});
+  final Habit habit;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = habit.color.asHabiterColor;
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: .15),
+        borderRadius: BorderRadius.circular(size * .3),
+      ),
+      child: Text(habit.icon, style: TextStyle(fontSize: size * .45)),
+    );
+  }
+}
+
+class _CompletedPanel extends StatelessWidget {
+  const _CompletedPanel({
+    required this.habits,
+    required this.expanded,
+    required this.onToggle,
+    required this.onOpen,
+  });
+  final List<Habit> habits;
+  final bool expanded;
+  final VoidCallback onToggle;
+  final ValueChanged<Habit> onOpen;
+
+  @override
+  Widget build(BuildContext context) => HabiterSurface(
+    padding: EdgeInsets.zero,
+    child: Column(
+      children: [
+        ListTile(
+          onTap: onToggle,
+          leading: Icon(
+            Icons.check_circle_outline,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          title: Text(context.l10n.completedToday),
+          subtitle: Text(context.l10n.todayCompleted(habits.length)),
+          trailing: AnimatedRotation(
+            turns: expanded ? .5 : 0,
+            duration: HabiterMotion.quick.duration(
+              reduced: context.reduceMotion,
+            ),
+            child: const Icon(Icons.expand_more_rounded),
+          ),
+        ),
+        AnimatedSize(
+          duration: HabiterMotion.standard.duration(
+            reduced: context.reduceMotion,
+          ),
+          child: expanded
+              ? Column(
+                  children: [
+                    const Divider(height: 1),
+                    for (final habit in habits)
+                      ListTile(
+                        onTap: () => onOpen(habit),
+                        leading: Text(
+                          habit.icon,
+                          style: const TextStyle(fontSize: 22),
+                        ),
+                        title: Text(habit.name),
+                        trailing: const Icon(Icons.check_rounded),
+                      ),
+                  ],
+                )
+              : const SizedBox(width: double.infinity),
+        ),
+      ],
+    ),
+  );
+}
+
+class _CompletionState extends StatelessWidget {
+  const _CompletionState({super.key});
+
+  @override
+  Widget build(BuildContext context) => HabiterSurface(
+    padding: const EdgeInsets.all(HabiterSpace.lg),
+    child: Row(
+      children: [
+        Icon(
+          Icons.check_circle_rounded,
+          color: Theme.of(context).colorScheme.primary,
+          size: 34,
+        ),
+        const SizedBox(width: HabiterSpace.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                context.l10n.allHabitsCompleted,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: HabiterSpace.xs),
+              Text(
+                context.l10n.completedQuietly,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _NothingScheduledState extends StatelessWidget {
+  const _NothingScheduledState({super.key});
+
+  @override
+  Widget build(BuildContext context) => HabiterSurface(
+    padding: const EdgeInsets.all(HabiterSpace.lg),
+    child: Row(
+      children: [
+        Icon(
+          Icons.wb_sunny_outlined,
+          color: Theme.of(context).colorScheme.primary,
+          size: 34,
+        ),
+        const SizedBox(width: HabiterSpace.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                context.l10n.nothingScheduledTitle,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: HabiterSpace.xs),
+              Text(
+                context.l10n.nothingScheduledBody,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _LoadError extends StatelessWidget {
+  const _LoadError({required this.onRetry});
+  final Future<void> Function() onRetry;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: HabiterEmptyState(
+      icon: Icons.sync_problem_outlined,
+      title: context.l10n.bootstrapErrorTitle,
+      body: context.l10n.permissionRequiredDesc,
+      action: FilledButton.icon(
+        onPressed: onRetry,
+        icon: const Icon(Icons.refresh),
+        label: Text(context.l10n.retry),
+      ),
+    ),
+  );
+}
+
+String _habitMeta(BuildContext context, Habit habit) {
+  final schedule = switch (habit.frequency) {
+    HabitFrequency.daily => context.l10n.daily,
+    HabitFrequency.weekly => context.l10n.perWeek(habit.targetCount),
+    HabitFrequency.custom => context.l10n.onDays,
+  };
+  return '${habit.category} · $schedule';
 }

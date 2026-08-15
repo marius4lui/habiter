@@ -5,6 +5,7 @@ import '../models/habit.dart';
 import '../models/locked_app.dart';
 import '../features/app_lock/domain/app_lock_gateway.dart';
 import '../features/app_lock/infrastructure/method_channel_app_lock_gateway.dart';
+import '../features/today/application/today_query.dart';
 import '../services/storage_service.dart';
 
 /// Provider for managing app lock state and logic
@@ -40,6 +41,8 @@ class AppLockProvider extends ChangeNotifier {
       _hasUsageStatsPermission && _hasOverlayPermission;
   bool? get batteryOptimized => _batteryOptimized;
   bool get isSupported => _gateway.isSupported;
+  List<Habit> get availableActiveHabits =>
+      _lastHabits.where((habit) => habit.isActive).toList(growable: false);
 
   /// Load saved config and check permissions
   Future<void> load() async {
@@ -221,44 +224,25 @@ class AppLockProvider extends ChangeNotifier {
   Future<void> _syncHabitCompletionState() async {
     if (!_config.isEnabled) return;
 
-    final today = LocalDate.fromDateTime(_clock.now()).toString();
-
-    // Get list of incomplete habits
-    List<String> incompleteHabitNames = [];
-
-    bool habitsComplete;
+    final snapshot = TodayQuery.forDate(
+      date: LocalDate.fromDateTime(_clock.now()),
+      habits: _lastHabits,
+      entries: _lastEntries,
+    );
+    final List<String> incompleteHabitNames;
     if (_config.lockUntilAllHabitsComplete) {
-      // Check all active habits
-      final activeHabits = _lastHabits.where((h) => h.isActive).toList();
-      for (final habit in activeHabits) {
-        final isComplete = _lastEntries.any(
-          (e) => e.habitId == habit.id && e.date == today && e.completed,
-        );
-        if (!isComplete) {
-          incompleteHabitNames.add(habit.name);
-        }
-      }
-      habitsComplete = incompleteHabitNames.isEmpty;
+      incompleteHabitNames = snapshot.pending
+          .map((habit) => habit.name)
+          .toList(growable: false);
     } else {
-      // Check specific required habits
-      final requiredIds = _config.requiredHabitIds ?? [];
-      if (requiredIds.isEmpty) {
-        habitsComplete = true;
-      } else {
-        for (final habitId in requiredIds) {
-          final habit = _lastHabits.where((h) => h.id == habitId).firstOrNull;
-          if (habit == null) continue;
-
-          final isComplete = _lastEntries.any(
-            (e) => e.habitId == habitId && e.date == today && e.completed,
-          );
-          if (!isComplete) {
-            incompleteHabitNames.add(habit.name);
-          }
-        }
-        habitsComplete = incompleteHabitNames.isEmpty;
-      }
+      final requiredIds = (_config.requiredHabitIds ?? const <String>[])
+          .toSet();
+      incompleteHabitNames = snapshot.pending
+          .where((habit) => requiredIds.contains(habit.id))
+          .map((habit) => habit.name)
+          .toList(growable: false);
     }
+    final habitsComplete = incompleteHabitNames.isEmpty;
 
     // Update incomplete habits for overlay display
     final result = await _gateway.syncCompletion(

@@ -176,6 +176,7 @@ Concrete release responses are immutable; latest, update, and download decisions
 - A GitHub Release remains a draft until every artifact, checksum, metadata file, and API deployment succeeds.
 
 See the [release operating model](docs/release-operations.md) for versioning, signing, recovery, rollback, and secret rotation.
+The [mobile UX system](docs/mobile-ux-system.md) documents the product hierarchy, design primitives, accessibility contract, and visual regression matrix.
 
 ## Contributing
 

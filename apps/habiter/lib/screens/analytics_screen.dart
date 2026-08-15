@@ -1,12 +1,15 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../models/habit.dart';
+import '../core/design_system/components.dart';
+import '../core/design_system/tokens.dart';
 import '../features/analytics/domain/habit_metrics.dart';
 import '../features/coaching/presentation/recovery_card.dart';
+import '../l10n/l10n.dart';
+import '../models/habit.dart';
 import '../providers/habit_provider.dart';
-import '../theme/app_theme.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -16,198 +19,109 @@ class AnalyticsScreen extends StatefulWidget {
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
-  String? selectedHabitId;
+  String? _selectedHabitId;
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<HabitProvider>();
-    final activeHabits = provider.habits.where((h) => h.isActive).toList();
-    final totalCompletions = provider.habitEntries
-        .where((e) => e.completed)
+    final habits = provider.habits.where((habit) => habit.isActive).toList();
+    final selected =
+        habits.where((habit) => habit.id == _selectedHabitId).firstOrNull ??
+        habits.firstOrNull;
+    final completed = provider.habitEntries
+        .where((entry) => entry.completed)
         .length;
-    final double avgCompletionRate = activeHabits.isEmpty
+    final average = habits.isEmpty
         ? 0.0
-        : activeHabits
+        : habits
                   .map(
                     (habit) =>
                         provider.getHabitMetrics(habit.id).completionRate,
                   )
-                  .reduce((a, b) => a + b) /
-              activeHabits.length *
-              100;
-
-    Habit? selectedHabit;
-    if (selectedHabitId != null) {
-      try {
-        selectedHabit = activeHabits.firstWhere((h) => h.id == selectedHabitId);
-      } catch (_) {
-        selectedHabit = null;
-      }
-    }
-    selectedHabit ??= activeHabits.isNotEmpty ? activeHabits.first : null;
+                  .fold<double>(0, (sum, value) => sum + value) /
+              habits.length;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: Theme.of(context).brightness == Brightness.dark
-              ? AppGradientsDark.appShell
-              : AppGradients.appShell,
-        ),
-        child: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.xl,
-            ),
-            children: [
-              _AnalyticsHero(
-                activeHabits: activeHabits.length,
-                totalCompletions: totalCompletions,
-                avgCompletionRate: avgCompletionRate,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              if (activeHabits.isNotEmpty) ...[
-                _WeeklyChartCard(
-                  habits: activeHabits,
-                  selectedHabit: selectedHabit,
-                  metrics: selectedHabit == null
-                      ? null
-                      : provider.getHabitMetrics(selectedHabit.id),
-                  onSelectHabit: (id) => setState(() => selectedHabitId = id),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                if (provider.preferences.showRecoverySupport &&
-                    selectedHabit != null) ...[
-                  RecoveryCard(
-                    metrics: provider.getHabitMetrics(selectedHabit.id),
-                    onHide: () => provider.updatePreferences(
-                      provider.preferences.copyWith(showRecoverySupport: false),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                ],
-                _HabitStatsGrid(
-                  habits: activeHabits,
-                  metricsFor: provider.getHabitMetrics,
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AnalyticsHero extends StatelessWidget {
-  const _AnalyticsHero({
-    required this.activeHabits,
-    required this.totalCompletions,
-    required this.avgCompletionRate,
-  });
-
-  final int activeHabits;
-  final int totalCompletions;
-  final double avgCompletionRate;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        boxShadow: Theme.of(context).brightness == Brightness.dark
-            ? AppShadows.neumorphDark
-            : AppShadows.neumorph,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: ListView(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Analytics',
-                      style: AppTextStyles.h1.copyWith(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? AppColorsDark.text
-                            : AppColors.textMain,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Track your progress, celebrate wins, adjust early.',
-                      style: AppTextStyles.bodySecondary.copyWith(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? AppColorsDark.textSecondary
-                            : AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
+          HabiterContent(
+            maxWidth: HabiterSize.wideContentMax,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                HabiterPageIntro(
+                  eyebrow: context.l10n.analytics,
+                  title: context.l10n.analyticsTitle,
+                  subtitle: context.l10n.analyticsBody,
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
+                const SizedBox(height: HabiterSpace.lg),
+                _Overview(
+                  active: habits.length,
+                  completed: completed,
+                  average: average,
                 ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.2),
+                const SizedBox(height: HabiterSpace.lg),
+                if (selected == null)
+                  HabiterEmptyState(
+                    icon: Icons.insights_outlined,
+                    title: context.l10n.noAnalyticsTitle,
+                    body: context.l10n.noAnalyticsBody,
+                  )
+                else ...[
+                  _HabitSelector(
+                    habits: habits,
+                    selected: selected,
+                    onChanged: (habitId) =>
+                        setState(() => _selectedHabitId = habitId),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.auto_graph,
-                      size: 18,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Live overview',
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.primary,
+                  const SizedBox(height: HabiterSpace.md),
+                  _WeeklyChart(
+                    habit: selected,
+                    metrics: provider.getHabitMetrics(selected.id),
+                  ),
+                  if (provider.preferences.showRecoverySupport) ...[
+                    const SizedBox(height: HabiterSpace.md),
+                    RecoveryCard(
+                      metrics: provider.getHabitMetrics(selected.id),
+                      onHide: () => provider.updatePreferences(
+                        provider.preferences.copyWith(
+                          showRecoverySupport: false,
+                        ),
                       ),
                     ),
                   ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          Row(
-            children: [
-              _HeroNumber(
-                label: 'Active habits',
-                value: '$activeHabits',
-                icon: Icons.blur_circular,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              _HeroNumber(
-                label: 'Total wins',
-                value: '$totalCompletions',
-                icon: Icons.check_circle,
-                color: AppColors.secondary,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              _HeroNumber(
-                label: 'Avg success',
-                value: '${avgCompletionRate.toStringAsFixed(0)}%',
-                icon: Icons.trending_up,
-                color: AppColors.warning,
-              ),
-            ],
+                  const SizedBox(height: HabiterSpace.xl),
+                  HabiterSectionHeader(
+                    title: context.l10n.activeHabitsLabel,
+                    subtitle: context.l10n.analyticsSubtitle,
+                  ),
+                  const SizedBox(height: HabiterSpace.sm2),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final twoColumns = constraints.maxWidth >= 620;
+                      final width = twoColumns
+                          ? (constraints.maxWidth - HabiterSpace.sm2) / 2
+                          : constraints.maxWidth;
+                      return Wrap(
+                        spacing: HabiterSpace.sm2,
+                        runSpacing: HabiterSpace.sm2,
+                        children: [
+                          for (final habit in habits)
+                            SizedBox(
+                              width: width,
+                              child: _HabitMetricCard(
+                                habit: habit,
+                                metrics: provider.getHabitMetrics(habit.id),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ],
+            ),
           ),
         ],
       ),
@@ -215,400 +129,313 @@ class _AnalyticsHero extends StatelessWidget {
   }
 }
 
-class _HeroNumber extends StatelessWidget {
-  const _HeroNumber({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
+class _Overview extends StatelessWidget {
+  const _Overview({
+    required this.active,
+    required this.completed,
+    required this.average,
   });
+  final int active;
+  final int completed;
+  final double average;
 
-  final String label;
-  final String value;
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final compact =
+          constraints.maxWidth < 430 ||
+          MediaQuery.textScalerOf(context).scale(1) > 1.35;
+      final items = [
+        _Metric(
+          icon: Icons.eco_outlined,
+          value: '$active',
+          label: context.l10n.activeHabitsLabel,
+        ),
+        _Metric(
+          icon: Icons.check_circle_outline,
+          value: '$completed',
+          label: context.l10n.totalWinsLabel,
+        ),
+        _Metric(
+          icon: Icons.trending_up_rounded,
+          value: '${(average * 100).round()}%',
+          label: context.l10n.averageSuccessLabel,
+        ),
+      ];
+      return HabiterSurface(
+        padding: const EdgeInsets.all(HabiterSpace.sm),
+        child: compact
+            ? Column(children: items)
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [for (final item in items) Expanded(child: item)],
+              ),
+      );
+    },
+  );
+}
+
+class _Metric extends StatelessWidget {
+  const _Metric({required this.icon, required this.value, required this.label});
   final IconData icon;
-  final Color color;
+  final String value;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              value,
-              style: TextStyle(
-                color: color,
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.5,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Builder(
-              builder: (context) {
-                final isDark = Theme.of(context).brightness == Brightness.dark;
-                return Text(
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.all(HabiterSpace.sm),
+      child: Row(
+        children: [
+          Icon(icon, color: theme.colorScheme.primary, size: 22),
+          const SizedBox(width: HabiterSpace.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(value, style: theme.textTheme.titleLarge),
+                Text(
                   label,
-                  style: TextStyle(
-                    color: isDark
-                        ? AppColorsDark.textSecondary
-                        : AppColors.textSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                  maxLines: 2,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                );
-              },
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _WeeklyChartCard extends StatelessWidget {
-  const _WeeklyChartCard({
+class _HabitSelector extends StatelessWidget {
+  const _HabitSelector({
     required this.habits,
-    required this.selectedHabit,
-    required this.metrics,
-    required this.onSelectHabit,
+    required this.selected,
+    required this.onChanged,
   });
-
   final List<Habit> habits;
-  final Habit? selectedHabit;
-  final HabitMetrics? metrics;
-  final ValueChanged<String> onSelectHabit;
+  final Habit selected;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) => DropdownButtonFormField<String>(
+    initialValue: selected.id,
+    isExpanded: true,
+    decoration: InputDecoration(
+      labelText: context.l10n.habit,
+      prefixIcon: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Text(selected.icon, style: const TextStyle(fontSize: 20)),
+      ),
+    ),
+    items: [
+      for (final habit in habits)
+        DropdownMenuItem(
+          value: habit.id,
+          child: Text(habit.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
+    ],
+    onChanged: (value) {
+      if (value != null) onChanged(value);
+    },
+  );
+}
+
+class _WeeklyChart extends StatelessWidget {
+  const _WeeklyChart({required this.habit, required this.metrics});
+  final Habit habit;
+  final HabitMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
-    final habit = selectedHabit ?? (habits.isNotEmpty ? habits.first : null);
-    final data = metrics?.weeks ?? const <WeeklyHabitMetric>[];
-
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: isDark ? AppGradientsDark.cardSheen : AppGradients.cardSheen,
-        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-        border: Border.all(
-          color: isDark ? AppColorsDark.border : AppColors.borderLight,
-        ),
-        boxShadow: isDark ? AppShadows.neumorphSmDark : AppShadows.soft,
+    final theme = Theme.of(context);
+    final weeks = metrics.weeks.length > 8
+        ? metrics.weeks.sublist(metrics.weeks.length - 8)
+        : metrics.weeks;
+    return HabiterSurface(
+      padding: const EdgeInsets.all(HabiterSpace.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(context.l10n.weeklyProgress, style: theme.textTheme.titleLarge),
+          const SizedBox(height: HabiterSpace.xs),
+          Text(
+            context.l10n.trackToSeeProgress,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: HabiterSpace.lg),
+          if (weeks.isEmpty)
+            SizedBox(
+              height: 160,
+              child: Center(child: Text(context.l10n.insightsAppearHere)),
+            )
+          else
+            Semantics(
+              label: weeks
+                  .map(
+                    (week) =>
+                        '${week.weekStart}: ${week.completed}/${week.scheduled}',
+                  )
+                  .join(', '),
+              child: ExcludeSemantics(
+                child: SizedBox(
+                  height: 220,
+                  child: LineChart(
+                    LineChartData(
+                      minY: 0,
+                      maxY: weeks
+                          .map((week) => week.scheduled.toDouble())
+                          .fold<double>(
+                            1,
+                            (max, value) => value > max ? value : max,
+                          ),
+                      gridData: FlGridData(
+                        drawVerticalLine: false,
+                        getDrawingHorizontalLine: (_) => FlLine(
+                          color: theme.colorScheme.outlineVariant,
+                          strokeWidth: 1,
+                        ),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      titlesData: FlTitlesData(
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 28,
+                            getTitlesWidget: (value, _) => Text(
+                              '${value.round()}',
+                              style: theme.textTheme.labelSmall,
+                            ),
+                          ),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 32,
+                            interval: 1,
+                            getTitlesWidget: (value, _) {
+                              final index = value.round();
+                              if (index < 0 || index >= weeks.length) {
+                                return const SizedBox();
+                              }
+                              final date = DateTime.parse(
+                                '${weeks[index].weekStart}T00:00:00',
+                              );
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  DateFormat.Md(
+                                    Localizations.localeOf(
+                                      context,
+                                    ).toLanguageTag(),
+                                  ).format(date),
+                                  style: theme.textTheme.labelSmall,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: [
+                            for (var index = 0; index < weeks.length; index++)
+                              FlSpot(
+                                index.toDouble(),
+                                weeks[index].completed.toDouble(),
+                              ),
+                          ],
+                          isCurved: true,
+                          barWidth: 3,
+                          color: habit.color.asHabiterColor,
+                          dotData: const FlDotData(show: true),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            color: habit.color.asHabiterColor.withValues(
+                              alpha: .1,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
+    );
+  }
+}
+
+class _HabitMetricCard extends StatelessWidget {
+  const _HabitMetricCard({required this.habit, required this.metrics});
+  final Habit habit;
+  final HabitMetrics metrics;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final values = [
+      (context.l10n.streakLabel, '${metrics.currentStreak}'),
+      (context.l10n.bestStreakLabel, '${metrics.longestStreak}'),
+      (context.l10n.successLabel, '${(metrics.completionRate * 100).round()}%'),
+    ];
+    return HabiterSurface(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Weekly progress',
-                style: AppTextStyles.h3.copyWith(
-                  color: isDark ? AppColorsDark.text : AppColors.textMain,
-                ),
-              ),
-              Flexible(
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 150),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColorsDark.surfaceMuted
-                        : AppColors.surfaceMuted,
-                    borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                    border: Border.all(
-                      color: isDark ? AppColorsDark.border : AppColors.border,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: habit?.id,
-                        isExpanded: true,
-                        borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                        items: habits
-                            .map(
-                              (h) => DropdownMenuItem(
-                                value: h.id,
-                                child: Text(
-                                  h.name,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          if (value != null) onSelectHabit(value);
-                        },
-                      ),
-                    ),
-                  ),
-                ),
+              Text(habit.icon, style: const TextStyle(fontSize: 24)),
+              const SizedBox(width: HabiterSpace.sm),
+              Expanded(
+                child: Text(habit.name, style: theme.textTheme.titleMedium),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          if (data.isEmpty)
-            Text(
-              'Track a habit to see weekly performance.',
-              style: AppTextStyles.bodySecondary.copyWith(
-                color: isDark
-                    ? AppColorsDark.textSecondary
-                    : AppColors.textSecondary,
-              ),
-            )
-          else
-            Semantics(
-              label: data
-                  .map(
-                    (week) =>
-                        '${week.weekStart}: ${week.completed} of ${week.scheduled}',
-                  )
-                  .join(', '),
-              child: SizedBox(
-                height: 220,
-                child: LineChart(
-                  LineChartData(
-                    gridData: const FlGridData(show: false),
-                    titlesData: FlTitlesData(
-                      leftTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          reservedSize: 36,
-                          interval: 1,
-                          getTitlesWidget: (value, _) => Text(
-                            value.toInt().toString(),
-                            style: AppTextStyles.caption.copyWith(
-                              color: isDark
-                                  ? AppColorsDark.textSecondary
-                                  : AppColors.textSecondary,
-                            ),
-                          ),
+          const SizedBox(height: HabiterSpace.md),
+          Wrap(
+            spacing: HabiterSpace.md,
+            runSpacing: HabiterSpace.sm,
+            children: [
+              for (final value in values)
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 84),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        value.$2,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: habit.color.asHabiterColor,
                         ),
                       ),
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          getTitlesWidget: (value, meta) {
-                            final index = value.toInt();
-                            if (index < 0 || index >= data.length) {
-                              return const SizedBox();
-                            }
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 6),
-                              child: Text(
-                                data[index].weekStart.toString().substring(5),
-                                style: AppTextStyles.caption.copyWith(
-                                  color: isDark
-                                      ? AppColorsDark.textSecondary
-                                      : AppColors.textSecondary,
-                                ),
-                              ),
-                            );
-                          },
+                      Text(
+                        value.$1,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
                         ),
-                      ),
-                      rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                    ),
-                    borderData: FlBorderData(
-                      show: true,
-                      border: Border.all(
-                        color: isDark
-                            ? AppColorsDark.border
-                            : AppColors.borderLight,
-                      ),
-                    ),
-                    minY: 0,
-                    lineBarsData: [
-                      LineChartBarData(
-                        isCurved: true,
-                        gradient: LinearGradient(
-                          colors: [_fromHex(habit!.color), AppColors.primary],
-                        ),
-                        barWidth: 3,
-                        dotData: const FlDotData(show: true),
-                        belowBarData: BarAreaData(
-                          show: true,
-                          gradient: LinearGradient(
-                            colors: [
-                              _fromHex(habit.color).withValues(alpha: 0.18),
-                              AppColors.primary.withValues(alpha: 0.05),
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
-                        spots: [
-                          for (var i = 0; i < data.length; i++)
-                            FlSpot(i.toDouble(), data[i].completed.toDouble()),
-                        ],
                       ),
                     ],
                   ),
                 ),
-              ),
-            ),
+            ],
+          ),
         ],
       ),
     );
   }
 }
-
-class _HabitStatsGrid extends StatelessWidget {
-  const _HabitStatsGrid({required this.habits, required this.metricsFor});
-
-  final List<Habit> habits;
-  final HabitMetrics Function(String habitId) metricsFor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: AppSpacing.md,
-      runSpacing: AppSpacing.md,
-      children: habits.map((habit) {
-        final stats = metricsFor(habit.id);
-        return SizedBox(
-          width: MediaQuery.of(context).size.width > 900
-              ? (MediaQuery.of(context).size.width -
-                        (AppSpacing.lg * 2) -
-                        (AppSpacing.md * 2)) /
-                    3
-              : MediaQuery.of(context).size.width > 640
-              ? (MediaQuery.of(context).size.width -
-                        (AppSpacing.lg * 2) -
-                        AppSpacing.md) /
-                    2
-              : double.infinity,
-          child: Builder(
-            builder: (ctx) {
-              final isDark = Theme.of(ctx).brightness == Brightness.dark;
-              return Container(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  gradient: isDark
-                      ? AppGradientsDark.cardSheen
-                      : AppGradients.cardSheen,
-                  borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                  border: Border.all(
-                    color: isDark
-                        ? AppColorsDark.border
-                        : AppColors.borderLight,
-                  ),
-                  boxShadow: isDark
-                      ? AppShadows.neumorphSmDark
-                      : AppShadows.soft,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        _HabitBadge(colorHex: habit.color, icon: habit.icon),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Text(
-                            habit.name,
-                            style: AppTextStyles.h3.copyWith(
-                              color: isDark
-                                  ? AppColorsDark.text
-                                  : AppColors.textMain,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _StatPill(
-                          label: 'Streak',
-                          value: '${stats.currentStreak}',
-                        ),
-                        _StatPill(
-                          label: 'Success',
-                          value:
-                              '${(stats.completionRate * 100).toStringAsFixed(0)}%',
-                        ),
-                        _StatPill(label: 'Total', value: '${stats.completed}'),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
-
-class _HabitBadge extends StatelessWidget {
-  const _HabitBadge({required this.colorHex, required this.icon});
-
-  final String colorHex;
-  final String icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: _fromHex(colorHex).withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(AppBorderRadius.full),
-        border: Border.all(color: _fromHex(colorHex).withValues(alpha: 0.25)),
-      ),
-      child: Text(icon, style: const TextStyle(fontSize: 18)),
-    );
-  }
-}
-
-class _StatPill extends StatelessWidget {
-  const _StatPill({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Column(
-      children: [
-        Text(
-          value,
-          style: AppTextStyles.h3.copyWith(
-            color: isDark ? AppColorsDark.primary : AppColors.primary,
-          ),
-        ),
-        Text(
-          label,
-          style: AppTextStyles.caption.copyWith(
-            color: isDark
-                ? AppColorsDark.textSecondary
-                : AppColors.textSecondary,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-Color _fromHex(String hex) => Color(int.parse(hex.replaceFirst('#', '0xff')));

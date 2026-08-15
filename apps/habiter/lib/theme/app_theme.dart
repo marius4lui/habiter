@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../core/design_system/habiter_theme.dart';
 
@@ -200,8 +199,7 @@ class AppGradientsDark {
 }
 
 class AppTextStyles {
-  // We strictly use Plus Jakarta Sans as per design
-  static final _base = GoogleFonts.plusJakartaSans();
+  static const _base = TextStyle();
 
   static final h1 = _base.copyWith(
     fontSize: 24,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/habit_provider.dart';
+import '../l10n/l10n.dart';
 import '../services/ai_manager.dart';
 import '../theme/app_theme.dart';
 
@@ -52,7 +53,7 @@ class _AISetupDialogState extends State<AISetupDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Experimental remote AI'),
+      title: Text(context.l10n.experimentalAi),
       content: Form(
         key: _formKey,
         child: Column(
@@ -60,13 +61,15 @@ class _AISetupDialogState extends State<AISetupDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Optional and off by default. The key stays in secure device storage. Provider requests may cost money and share habit data.',
+              context.l10n.remoteAiDisclosure,
               style: AppTextStyles.bodySecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             DropdownButtonFormField<String>(
               initialValue: _provider,
-              decoration: const InputDecoration(labelText: 'Provider'),
+              decoration: InputDecoration(
+                labelText: context.l10n.providerLabel,
+              ),
               items: const [
                 DropdownMenuItem(
                   value: 'openai',
@@ -86,9 +89,9 @@ class _AISetupDialogState extends State<AISetupDialog> {
             TextFormField(
               controller: _apiKeyController,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'API key'),
+              decoration: InputDecoration(labelText: context.l10n.apiKeyLabel),
               validator: (v) => v == null || v.trim().isEmpty
-                  ? 'API key is required to enable AI'
+                  ? context.l10n.apiKeyRequired
                   : null,
             ),
           ],
@@ -97,7 +100,7 @@ class _AISetupDialogState extends State<AISetupDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.cancel),
         ),
         ElevatedButton(
           onPressed: _saving ? null : _save,
@@ -111,7 +114,7 @@ class _AISetupDialogState extends State<AISetupDialog> {
                   width: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Save'),
+              : Text(context.l10n.save),
         ),
       ],
     );

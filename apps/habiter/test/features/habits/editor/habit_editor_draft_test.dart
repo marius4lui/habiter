@@ -66,6 +66,16 @@ void main() {
     expect(invalid.validate(), contains('notificationTime'));
   });
 
+  test('weekly targets cannot exceed the seven days in a week', () {
+    final invalid = HabitEditorDraft.initial().copyWith(
+      name: 'Walk',
+      frequency: HabitFrequency.weekly,
+      targetCount: 8,
+    );
+
+    expect(invalid.validate(), containsPair('targetCount', 'range'));
+  });
+
   testWidgets('German editor is scrollable, keyboard-safe, and cancel-safe', (
     tester,
   ) async {

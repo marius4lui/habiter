@@ -86,7 +86,10 @@ final class HabitEditorDraft {
   Map<String, String> validate() {
     final errors = <String, String>{};
     if (name.trim().isEmpty) errors['name'] = 'required';
-    if (targetCount < 1 || targetCount > 99) errors['targetCount'] = 'range';
+    final maximumTarget = frequency == HabitFrequency.weekly ? 7 : 99;
+    if (targetCount < 1 || targetCount > maximumTarget) {
+      errors['targetCount'] = 'range';
+    }
     if (frequency == HabitFrequency.custom &&
         (customDays.isEmpty || customDays.any((day) => day < 1 || day > 7))) {
       errors['customDays'] = 'required';

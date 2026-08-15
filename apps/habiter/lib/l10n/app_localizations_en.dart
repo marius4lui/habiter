@@ -109,6 +109,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get targetPerDay => 'Target per day';
 
   @override
+  String get targetPerWeek => 'Target per week';
+
+  @override
   String get daily => 'Daily';
 
   @override
@@ -514,4 +517,345 @@ class AppLocalizationsEn extends AppLocalizations {
   String perDayTarget(int count) {
     return '${count}x per day';
   }
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get todaySubtitle => 'One clear next step, at your pace.';
+
+  @override
+  String get nextUp => 'Next up';
+
+  @override
+  String get nextUpDescription => 'A small action is enough.';
+
+  @override
+  String get remainingToday => 'Still for today';
+
+  @override
+  String remainingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count habits left',
+      one: '1 habit left',
+      zero: 'Nothing left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dailyProgress => 'Daily progress';
+
+  @override
+  String completeHabit(String name) {
+    return 'Complete $name';
+  }
+
+  @override
+  String openHabit(String name) {
+    return 'Open $name';
+  }
+
+  @override
+  String get completedToday => 'Completed today';
+
+  @override
+  String get completedQuietly =>
+      'Everything planned is done. Enjoy the space you made.';
+
+  @override
+  String get addHabit => 'Add habit';
+
+  @override
+  String get habitBasics => 'The habit';
+
+  @override
+  String get habitBasicsHint => 'Give this action a clear, friendly identity.';
+
+  @override
+  String get habitSchedule => 'Rhythm';
+
+  @override
+  String get habitScheduleHint =>
+      'Choose when this habit should appear. Paused days stay neutral.';
+
+  @override
+  String get habitReminder => 'Reminder';
+
+  @override
+  String get habitReminderHint => 'Optional and fully controlled by you.';
+
+  @override
+  String get continueLabel => 'Continue';
+
+  @override
+  String get backLabel => 'Back';
+
+  @override
+  String get saveHabit => 'Save habit';
+
+  @override
+  String stepOf(int step, int total) {
+    return 'Step $step of $total';
+  }
+
+  @override
+  String get scheduleRequired => 'Choose at least one day.';
+
+  @override
+  String get reminderTimeRequired =>
+      'Choose a reminder time or turn reminders off.';
+
+  @override
+  String get optional => 'Optional';
+
+  @override
+  String get analyticsTitle => 'Your rhythm';
+
+  @override
+  String get analyticsBody =>
+      'Notice patterns without turning progress into pressure.';
+
+  @override
+  String get activeHabitsLabel => 'Active habits';
+
+  @override
+  String get totalWinsLabel => 'Completed';
+
+  @override
+  String get averageSuccessLabel => 'Follow-through';
+
+  @override
+  String get noAnalyticsTitle => 'Your patterns will appear here';
+
+  @override
+  String get noAnalyticsBody =>
+      'Complete a habit a few times to build a useful, private history.';
+
+  @override
+  String get streakLabel => 'Current rhythm';
+
+  @override
+  String get bestStreakLabel => 'Best rhythm';
+
+  @override
+  String get successLabel => 'Follow-through';
+
+  @override
+  String get appLockTitle => 'Focus with App Lock';
+
+  @override
+  String get appLockBody =>
+      'Keep selected apps out of reach until today\'s habits are complete.';
+
+  @override
+  String get appLockStatusOn => 'App Lock is on';
+
+  @override
+  String get appLockStatusOff => 'App Lock is off';
+
+  @override
+  String get appLockPermissionIntro =>
+      'Two Android permissions make blocking possible. You can revoke either one at any time.';
+
+  @override
+  String get searchApps => 'Search apps';
+
+  @override
+  String get selectedApps => 'Selected apps';
+
+  @override
+  String get availableApps => 'Available apps';
+
+  @override
+  String get noMatchingApps => 'No matching apps';
+
+  @override
+  String get appSelected => 'Selected';
+
+  @override
+  String get appNotSelected => 'Not selected';
+
+  @override
+  String get permissionsReady => 'Permissions ready';
+
+  @override
+  String get permissionsNeedAttention => 'Setup needs attention';
+
+  @override
+  String get recoveryAndReliability => 'Reliability & recovery';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsBody =>
+      'Shape Habiter around your routine. Your habit data stays on this device.';
+
+  @override
+  String get focusAndAppLock => 'Focus & App Lock';
+
+  @override
+  String get privacyAndData => 'Data & privacy';
+
+  @override
+  String get localFirstTitle => 'Stored on this device';
+
+  @override
+  String get localFirstBody =>
+      'Habits stay local unless you explicitly export them or connect an integration.';
+
+  @override
+  String get configureAppLock => 'Configure App Lock';
+
+  @override
+  String get configureAppLockBody =>
+      'Android only · permissions and a one-tap recovery switch';
+
+  @override
+  String get recoverySupport => 'Gentle recovery support';
+
+  @override
+  String get recoverySupportBody =>
+      'Show non-punitive suggestions after a missed day.';
+
+  @override
+  String get advancedIntegrations => 'Advanced & integrations';
+
+  @override
+  String get advancedIntegrationsBody => 'Optional tools, off by default';
+
+  @override
+  String get classlyImport => 'Classly-compatible import';
+
+  @override
+  String get experimentalAi => 'Experimental remote AI';
+
+  @override
+  String get dailyReminderOff =>
+      'Off — permission is requested only when you enable it.';
+
+  @override
+  String dailyReminderAt(String time) {
+    return 'Scheduled for $time';
+  }
+
+  @override
+  String get bootstrapErrorTitle => 'Habiter could not start safely';
+
+  @override
+  String get exportData => 'Export a backup';
+
+  @override
+  String get exportDataBody =>
+      'Copy a JSON backup to the clipboard for your secure storage.';
+
+  @override
+  String get importData => 'Import a backup';
+
+  @override
+  String get importDataBody =>
+      'Review a Habiter JSON backup before adding its data.';
+
+  @override
+  String get backupCopied => 'Backup copied to the clipboard';
+
+  @override
+  String get pasteBackup => 'Paste backup JSON';
+
+  @override
+  String get reviewImport => 'Review import';
+
+  @override
+  String importSummary(int habits, int entries, int collisions) {
+    return '$habits habits · $entries entries · $collisions already exist';
+  }
+
+  @override
+  String get importComplete =>
+      'Import complete. Existing habits were kept and the pre-import backup was copied.';
+
+  @override
+  String get invalidBackup => 'This backup could not be read.';
+
+  @override
+  String get disconnect => 'Disconnect';
+
+  @override
+  String get connectWithOauth => 'Connect with OAuth';
+
+  @override
+  String get useToken => 'Use token';
+
+  @override
+  String get trustedHttpsOnly =>
+      'Connect only a trusted public HTTPS server. Disconnecting clears stored credentials.';
+
+  @override
+  String get httpsEndpoint => 'HTTPS endpoint';
+
+  @override
+  String get optionalAccessToken => 'Optional access token';
+
+  @override
+  String get remoteAiOn =>
+      'Enabled. Provider requests may share data and incur costs.';
+
+  @override
+  String get remoteAiOff => 'Off. Local coaching does not require an API key.';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get providerLabel => 'Provider';
+
+  @override
+  String get apiKeyLabel => 'API key';
+
+  @override
+  String get increaseTarget => 'Increase daily target';
+
+  @override
+  String get decreaseTarget => 'Decrease daily target';
+
+  @override
+  String get bootstrapErrorBody =>
+      'Your data was left untouched. Try starting Habiter again.';
+
+  @override
+  String get remoteAiDisclosure =>
+      'Optional and off by default. The key stays in secure device storage. Provider requests may cost money and share habit data.';
+
+  @override
+  String get apiKeyRequired => 'Enter an API key to enable remote AI.';
+
+  @override
+  String get unlockRule => 'Unlock rule';
+
+  @override
+  String get allHabitsRequired => 'Finish all of today\'s habits';
+
+  @override
+  String get allHabitsRequiredBody =>
+      'Selected apps become available when today\'s list is complete.';
+
+  @override
+  String get specificHabitsRequired => 'Use selected habits only';
+
+  @override
+  String get specificHabitsRequiredBody =>
+      'Choose which habits control App Lock.';
+
+  @override
+  String get requiredHabits => 'Habits required to unlock';
+
+  @override
+  String get nothingScheduledTitle => 'Nothing is scheduled today';
+
+  @override
+  String get nothingScheduledBody =>
+      'Your next habit will appear here when its rhythm comes around.';
 }

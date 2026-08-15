@@ -296,6 +296,12 @@ abstract class AppLocalizations {
   /// **'Ziel pro Tag'**
   String get targetPerDay;
 
+  /// No description provided for @targetPerWeek.
+  ///
+  /// In de, this message translates to:
+  /// **'Ziel pro Woche'**
+  String get targetPerWeek;
+
   /// No description provided for @daily.
   ///
   /// In de, this message translates to:
@@ -1015,6 +1021,606 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count}x pro Tag'**
   String perDayTarget(int count);
+
+  /// No description provided for @today.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute'**
+  String get today;
+
+  /// No description provided for @todaySubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein klarer nächster Schritt, in deinem Tempo.'**
+  String get todaySubtitle;
+
+  /// No description provided for @nextUp.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Nächstes'**
+  String get nextUp;
+
+  /// No description provided for @nextUpDescription.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine kleine Handlung reicht.'**
+  String get nextUpDescription;
+
+  /// No description provided for @remainingToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch für heute'**
+  String get remainingToday;
+
+  /// No description provided for @remainingCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Nichts mehr offen} =1{Noch 1 Habit} other{Noch {count} Habits}}'**
+  String remainingCount(int count);
+
+  /// No description provided for @dailyProgress.
+  ///
+  /// In de, this message translates to:
+  /// **'Tagesfortschritt'**
+  String get dailyProgress;
+
+  /// No description provided for @completeHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} abschließen'**
+  String completeHabit(String name);
+
+  /// No description provided for @openHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} öffnen'**
+  String openHabit(String name);
+
+  /// No description provided for @completedToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute erledigt'**
+  String get completedToday;
+
+  /// No description provided for @completedQuietly.
+  ///
+  /// In de, this message translates to:
+  /// **'Alles Geplante ist erledigt. Genieß den Freiraum.'**
+  String get completedQuietly;
+
+  /// No description provided for @addHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit hinzufügen'**
+  String get addHabit;
+
+  /// No description provided for @habitBasics.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Habit'**
+  String get habitBasics;
+
+  /// No description provided for @habitBasicsHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Gib der Handlung eine klare, freundliche Identität.'**
+  String get habitBasicsHint;
+
+  /// No description provided for @habitSchedule.
+  ///
+  /// In de, this message translates to:
+  /// **'Rhythmus'**
+  String get habitSchedule;
+
+  /// No description provided for @habitScheduleHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle, wann der Habit erscheint. Pausierte Tage bleiben neutral.'**
+  String get habitScheduleHint;
+
+  /// No description provided for @habitReminder.
+  ///
+  /// In de, this message translates to:
+  /// **'Erinnerung'**
+  String get habitReminder;
+
+  /// No description provided for @habitReminderHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Optional und vollständig unter deiner Kontrolle.'**
+  String get habitReminderHint;
+
+  /// No description provided for @continueLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter'**
+  String get continueLabel;
+
+  /// No description provided for @backLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Zurück'**
+  String get backLabel;
+
+  /// No description provided for @saveHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit speichern'**
+  String get saveHabit;
+
+  /// No description provided for @stepOf.
+  ///
+  /// In de, this message translates to:
+  /// **'Schritt {step} von {total}'**
+  String stepOf(int step, int total);
+
+  /// No description provided for @scheduleRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle mindestens einen Tag.'**
+  String get scheduleRequired;
+
+  /// No description provided for @reminderTimeRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle eine Uhrzeit oder schalte Erinnerungen aus.'**
+  String get reminderTimeRequired;
+
+  /// No description provided for @optional.
+  ///
+  /// In de, this message translates to:
+  /// **'Optional'**
+  String get optional;
+
+  /// No description provided for @analyticsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Rhythmus'**
+  String get analyticsTitle;
+
+  /// No description provided for @analyticsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Erkenne Muster, ohne Fortschritt in Druck zu verwandeln.'**
+  String get analyticsBody;
+
+  /// No description provided for @activeHabitsLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktive Habits'**
+  String get activeHabitsLabel;
+
+  /// No description provided for @totalWinsLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Erledigt'**
+  String get totalWinsLabel;
+
+  /// No description provided for @averageSuccessLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Drangeblieben'**
+  String get averageSuccessLabel;
+
+  /// No description provided for @noAnalyticsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Muster erscheinen hier'**
+  String get noAnalyticsTitle;
+
+  /// No description provided for @noAnalyticsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Schließe Habits einige Male ab, um eine hilfreiche, private Historie aufzubauen.'**
+  String get noAnalyticsBody;
+
+  /// No description provided for @streakLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktueller Rhythmus'**
+  String get streakLabel;
+
+  /// No description provided for @bestStreakLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Bester Rhythmus'**
+  String get bestStreakLabel;
+
+  /// No description provided for @successLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Drangeblieben'**
+  String get successLabel;
+
+  /// No description provided for @appLockTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Fokus mit App Lock'**
+  String get appLockTitle;
+
+  /// No description provided for @appLockBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Halte ausgewählte Apps zurück, bis deine heutigen Habits erledigt sind.'**
+  String get appLockBody;
+
+  /// No description provided for @appLockStatusOn.
+  ///
+  /// In de, this message translates to:
+  /// **'App Lock ist aktiv'**
+  String get appLockStatusOn;
+
+  /// No description provided for @appLockStatusOff.
+  ///
+  /// In de, this message translates to:
+  /// **'App Lock ist aus'**
+  String get appLockStatusOff;
+
+  /// No description provided for @appLockPermissionIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Zwei Android-Berechtigungen ermöglichen die Sperre. Du kannst beide jederzeit entziehen.'**
+  String get appLockPermissionIntro;
+
+  /// No description provided for @searchApps.
+  ///
+  /// In de, this message translates to:
+  /// **'Apps suchen'**
+  String get searchApps;
+
+  /// No description provided for @selectedApps.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausgewählte Apps'**
+  String get selectedApps;
+
+  /// No description provided for @availableApps.
+  ///
+  /// In de, this message translates to:
+  /// **'Verfügbare Apps'**
+  String get availableApps;
+
+  /// No description provided for @noMatchingApps.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine passenden Apps'**
+  String get noMatchingApps;
+
+  /// No description provided for @appSelected.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausgewählt'**
+  String get appSelected;
+
+  /// No description provided for @appNotSelected.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht ausgewählt'**
+  String get appNotSelected;
+
+  /// No description provided for @permissionsReady.
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigungen bereit'**
+  String get permissionsReady;
+
+  /// No description provided for @permissionsNeedAttention.
+  ///
+  /// In de, this message translates to:
+  /// **'Einrichtung benötigt Aufmerksamkeit'**
+  String get permissionsNeedAttention;
+
+  /// No description provided for @recoveryAndReliability.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuverlässigkeit & Wiederherstellung'**
+  String get recoveryAndReliability;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Passe Habiter an deinen Alltag an. Deine Habit-Daten bleiben auf diesem Gerät.'**
+  String get settingsBody;
+
+  /// No description provided for @focusAndAppLock.
+  ///
+  /// In de, this message translates to:
+  /// **'Fokus & App Lock'**
+  String get focusAndAppLock;
+
+  /// No description provided for @privacyAndData.
+  ///
+  /// In de, this message translates to:
+  /// **'Daten & Datenschutz'**
+  String get privacyAndData;
+
+  /// No description provided for @localFirstTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf diesem Gerät gespeichert'**
+  String get localFirstTitle;
+
+  /// No description provided for @localFirstBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Habits bleiben lokal, außer du exportierst sie bewusst oder verbindest eine Integration.'**
+  String get localFirstBody;
+
+  /// No description provided for @configureAppLock.
+  ///
+  /// In de, this message translates to:
+  /// **'App Lock einrichten'**
+  String get configureAppLock;
+
+  /// No description provided for @configureAppLockBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Android · Berechtigungen und Ausschalten mit einem Tipp'**
+  String get configureAppLockBody;
+
+  /// No description provided for @recoverySupport.
+  ///
+  /// In de, this message translates to:
+  /// **'Sanfte Neustart-Hilfe'**
+  String get recoverySupport;
+
+  /// No description provided for @recoverySupportBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt wertfreie Vorschläge nach ausgelassenen Tagen.'**
+  String get recoverySupportBody;
+
+  /// No description provided for @advancedIntegrations.
+  ///
+  /// In de, this message translates to:
+  /// **'Erweitert & Integrationen'**
+  String get advancedIntegrations;
+
+  /// No description provided for @advancedIntegrationsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Optionale Werkzeuge, standardmäßig aus'**
+  String get advancedIntegrationsBody;
+
+  /// No description provided for @classlyImport.
+  ///
+  /// In de, this message translates to:
+  /// **'Classly-kompatibler Import'**
+  String get classlyImport;
+
+  /// No description provided for @experimentalAi.
+  ///
+  /// In de, this message translates to:
+  /// **'Experimentelle Remote-KI'**
+  String get experimentalAi;
+
+  /// No description provided for @dailyReminderOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus — die Berechtigung wird erst beim Einschalten angefragt.'**
+  String get dailyReminderOff;
+
+  /// No description provided for @dailyReminderAt.
+  ///
+  /// In de, this message translates to:
+  /// **'Geplant für {time}'**
+  String dailyReminderAt(String time);
+
+  /// No description provided for @bootstrapErrorTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter konnte nicht sicher starten'**
+  String get bootstrapErrorTitle;
+
+  /// No description provided for @exportData.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup exportieren'**
+  String get exportData;
+
+  /// No description provided for @exportDataBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Kopiert ein JSON-Backup für deine sichere Ablage in die Zwischenablage.'**
+  String get exportDataBody;
+
+  /// No description provided for @importData.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup importieren'**
+  String get importData;
+
+  /// No description provided for @importDataBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe ein Habiter-JSON-Backup, bevor Daten hinzugefügt werden.'**
+  String get importDataBody;
+
+  /// No description provided for @backupCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup wurde in die Zwischenablage kopiert'**
+  String get backupCopied;
+
+  /// No description provided for @pasteBackup.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup-JSON einfügen'**
+  String get pasteBackup;
+
+  /// No description provided for @reviewImport.
+  ///
+  /// In de, this message translates to:
+  /// **'Import prüfen'**
+  String get reviewImport;
+
+  /// No description provided for @importSummary.
+  ///
+  /// In de, this message translates to:
+  /// **'{habits} Habits · {entries} Einträge · {collisions} bereits vorhanden'**
+  String importSummary(int habits, int entries, int collisions);
+
+  /// No description provided for @importComplete.
+  ///
+  /// In de, this message translates to:
+  /// **'Import abgeschlossen. Bestehende Habits wurden behalten und das Backup vor dem Import wurde kopiert.'**
+  String get importComplete;
+
+  /// No description provided for @invalidBackup.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Backup konnte nicht gelesen werden.'**
+  String get invalidBackup;
+
+  /// No description provided for @disconnect.
+  ///
+  /// In de, this message translates to:
+  /// **'Trennen'**
+  String get disconnect;
+
+  /// No description provided for @connectWithOauth.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit OAuth verbinden'**
+  String get connectWithOauth;
+
+  /// No description provided for @useToken.
+  ///
+  /// In de, this message translates to:
+  /// **'Token verwenden'**
+  String get useToken;
+
+  /// No description provided for @trustedHttpsOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbinde nur einen vertrauenswürdigen öffentlichen HTTPS-Server. Beim Trennen werden Zugangsdaten gelöscht.'**
+  String get trustedHttpsOnly;
+
+  /// No description provided for @httpsEndpoint.
+  ///
+  /// In de, this message translates to:
+  /// **'HTTPS-Endpunkt'**
+  String get httpsEndpoint;
+
+  /// No description provided for @optionalAccessToken.
+  ///
+  /// In de, this message translates to:
+  /// **'Optionales Zugriffs-Token'**
+  String get optionalAccessToken;
+
+  /// No description provided for @remoteAiOn.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiv. Anbieter-Anfragen können Daten teilen und Kosten verursachen.'**
+  String get remoteAiOn;
+
+  /// No description provided for @remoteAiOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus. Lokales Coaching benötigt keinen API-Key.'**
+  String get remoteAiOff;
+
+  /// No description provided for @save.
+  ///
+  /// In de, this message translates to:
+  /// **'Speichern'**
+  String get save;
+
+  /// No description provided for @providerLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Anbieter'**
+  String get providerLabel;
+
+  /// No description provided for @apiKeyLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'API-Key'**
+  String get apiKeyLabel;
+
+  /// No description provided for @increaseTarget.
+  ///
+  /// In de, this message translates to:
+  /// **'Tagesziel erhöhen'**
+  String get increaseTarget;
+
+  /// No description provided for @decreaseTarget.
+  ///
+  /// In de, this message translates to:
+  /// **'Tagesziel verringern'**
+  String get decreaseTarget;
+
+  /// No description provided for @bootstrapErrorBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Daten wurden nicht verändert. Versuche Habiter erneut zu starten.'**
+  String get bootstrapErrorBody;
+
+  /// No description provided for @remoteAiDisclosure.
+  ///
+  /// In de, this message translates to:
+  /// **'Optional und standardmäßig aus. Der Schlüssel bleibt im sicheren Gerätespeicher. Anbieter-Anfragen können Kosten verursachen und Habit-Daten teilen.'**
+  String get remoteAiDisclosure;
+
+  /// No description provided for @apiKeyRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Gib einen API-Key ein, um Remote-KI zu aktivieren.'**
+  String get apiKeyRequired;
+
+  /// No description provided for @unlockRule.
+  ///
+  /// In de, this message translates to:
+  /// **'Freigaberegel'**
+  String get unlockRule;
+
+  /// No description provided for @allHabitsRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle heutigen Habits abschließen'**
+  String get allHabitsRequired;
+
+  /// No description provided for @allHabitsRequiredBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausgewählte Apps werden verfügbar, sobald die heutige Liste erledigt ist.'**
+  String get allHabitsRequiredBody;
+
+  /// No description provided for @specificHabitsRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur ausgewählte Habits verwenden'**
+  String get specificHabitsRequired;
+
+  /// No description provided for @specificHabitsRequiredBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle, welche Habits App Lock steuern.'**
+  String get specificHabitsRequiredBody;
+
+  /// No description provided for @requiredHabits.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Freigeben erforderliche Habits'**
+  String get requiredHabits;
+
+  /// No description provided for @nothingScheduledTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute ist nichts geplant'**
+  String get nothingScheduledTitle;
+
+  /// No description provided for @nothingScheduledBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein nächster Habit erscheint hier, sobald sein Rhythmus wieder dran ist.'**
+  String get nothingScheduledBody;
 }
 
 class _AppLocalizationsDelegate

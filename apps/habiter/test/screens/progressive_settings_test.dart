@@ -8,8 +8,8 @@ void main() {
       'lib/screens/settings_screen.dart',
     ).readAsString();
     expect(source, contains("Key('advanced-integrations')"));
-    expect(source, contains('Optional, disabled by default'));
-    expect(source, contains('Privacy & data'));
+    expect(source, contains('context.l10n.advancedIntegrationsBody'));
+    expect(source, contains('context.l10n.privacyAndData'));
     expect(source, isNot(contains('connectWithCredentials')));
   });
 }

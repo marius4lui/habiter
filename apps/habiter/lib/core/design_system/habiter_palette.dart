@@ -17,27 +17,27 @@ final class HabiterPalette {
   });
 
   static const light = HabiterPalette(
-    primary: Color(0xFF285943),
+    primary: Color(0xFF356859),
     onPrimary: Colors.white,
-    secondary: Color(0xFF925B3D),
+    secondary: Color(0xFF8B5D48),
     onSecondary: Colors.white,
-    surface: Color(0xFFFFFDF7),
-    surfaceContainer: Color(0xFFF2EEE4),
-    onSurface: Color(0xFF1D2A24),
-    outline: Color(0xFF68776F),
-    error: Color(0xFF9B2C2C),
+    surface: Color(0xFFFAF9F5),
+    surfaceContainer: Color(0xFFF0F1EC),
+    onSurface: Color(0xFF1E2925),
+    outline: Color(0xFF727C76),
+    error: Color(0xFF9A3B36),
     onError: Colors.white,
   );
 
   static const dark = HabiterPalette(
-    primary: Color(0xFFA9D6B8),
-    onPrimary: Color(0xFF102018),
-    secondary: Color(0xFFF0B89B),
-    onSecondary: Color(0xFF2D160B),
-    surface: Color(0xFF171C19),
-    surfaceContainer: Color(0xFF222A25),
-    onSurface: Color(0xFFF1F5F0),
-    outline: Color(0xFF9BA9A0),
+    primary: Color(0xFFA8D8C3),
+    onPrimary: Color(0xFF0B2118),
+    secondary: Color(0xFFF0B9A0),
+    onSecondary: Color(0xFF30170D),
+    surface: Color(0xFF151A18),
+    surfaceContainer: Color(0xFF202724),
+    onSurface: Color(0xFFEAF1ED),
+    outline: Color(0xFF919C96),
     error: Color(0xFFFFB4AB),
     onError: Color(0xFF4A1010),
   );

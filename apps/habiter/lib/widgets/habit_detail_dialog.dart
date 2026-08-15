@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../core/design_system/components.dart';
+import '../core/design_system/tokens.dart';
+import '../features/habits/domain/habit_source.dart';
 import '../l10n/l10n.dart';
 import '../models/habit.dart';
-import '../theme/app_theme.dart';
 
-/// A dialog that shows detailed information about a habit
-/// with options to complete or archive it.
 class HabitDetailDialog extends StatelessWidget {
   const HabitDetailDialog({
     super.key,
@@ -25,308 +25,189 @@ class HabitDetailDialog extends StatelessWidget {
   final VoidCallback onPause;
   final VoidCallback onEdit;
 
-  Color _parseColor(String colorStr) {
-    try {
-      if (colorStr.startsWith('#')) {
-        return Color(int.parse(colorStr.replaceFirst('#', '0xff')));
-      }
-      return Color(int.parse(colorStr));
-    } catch (_) {
-      return AppColors.primary;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final habitColor = _parseColor(habit.color);
-    final isClasslyHabit = habit.description == 'Imported from Classly';
-
+    final theme = Theme.of(context);
+    final accent = habit.color.asHabiterColor;
     return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
+        borderRadius: BorderRadius.circular(HabiterRadius.prominent),
       ),
-      child: Container(
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: 400,
-          maxHeight: MediaQuery.sizeOf(context).height * 0.9,
-        ),
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          color: isDark ? AppColorsDark.surface : AppColors.surface,
-          borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-          border: Border.all(
-            color: isDark ? AppColorsDark.borderLight : AppColors.borderLight,
-          ),
+          maxWidth: 480,
+          maxHeight: MediaQuery.sizeOf(context).height * .9,
         ),
         child: SingleChildScrollView(
+          padding: const EdgeInsets.all(HabiterSpace.lg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header with icon and name
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 56,
-                    height: 56,
+                    width: 58,
+                    height: 58,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: habitColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                      border: Border.all(
-                        color: habitColor.withValues(alpha: 0.3),
+                      color: accent.withValues(alpha: .15),
+                      borderRadius: BorderRadius.circular(
+                        HabiterRadius.control,
                       ),
                     ),
-                    child: Center(
-                      child: Text(
-                        habit.icon,
-                        style: const TextStyle(fontSize: 28),
-                      ),
+                    child: Text(
+                      habit.icon,
+                      style: const TextStyle(fontSize: 28),
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.md),
+                  const SizedBox(width: HabiterSpace.sm2),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          habit.name,
-                          style: AppTextStyles.h2,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
+                        Text(habit.name, style: theme.textTheme.headlineSmall),
+                        const SizedBox(height: HabiterSpace.xs),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.sm,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: habitColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(
-                                  AppBorderRadius.full,
-                                ),
-                              ),
-                              child: Text(
-                                habit.category,
-                                style: AppTextStyles.caption.copyWith(
-                                  color: habitColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                            Chip(
+                              label: Text(habit.category),
+                              visualDensity: VisualDensity.compact,
                             ),
-                            if (isClasslyHabit) ...[
-                              const SizedBox(width: AppSpacing.sm),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.sm,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(
-                                    AppBorderRadius.full,
-                                  ),
-                                ),
-                                child: Text(
-                                  'Classly',
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: Colors.blue,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                            if (habit.source.kind ==
+                                HabitSourceKind.classlyCompatible)
+                              const Chip(
+                                label: Text('Classly'),
+                                visualDensity: VisualDensity.compact,
                               ),
-                            ],
                           ],
                         ),
                       ],
                     ),
                   ),
                   IconButton(
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).closeButtonTooltip,
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Icons.close_rounded),
                   ),
                 ],
               ),
-
-              const SizedBox(height: AppSpacing.lg),
-              const Divider(),
-              const SizedBox(height: AppSpacing.md),
-
-              // Details section
-              if (habit.description != null &&
-                  habit.description!.isNotEmpty) ...[
-                _DetailRow(
-                  icon: Icons.description_outlined,
-                  label: 'Beschreibung',
-                  value: habit.description!,
-                ),
-                const SizedBox(height: AppSpacing.sm),
+              if (habit.description?.trim().isNotEmpty == true) ...[
+                const SizedBox(height: HabiterSpace.lg),
+                Text(habit.description!, style: theme.textTheme.bodyLarge),
               ],
-
-              _DetailRow(
-                icon: Icons.repeat,
-                label: 'Frequenz',
-                value: _frequencyText(habit.frequency),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-
-              _DetailRow(
-                icon: Icons.flag_outlined,
-                label: 'Ziel',
-                value: '${habit.targetCount}x pro Tag',
-              ),
-              const SizedBox(height: AppSpacing.sm),
-
-              _DetailRow(
-                icon: Icons.calendar_today_outlined,
-                label: 'Erstellt am',
-                value: DateFormat('dd.MM.yyyy').format(habit.createdAt),
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-              const Divider(),
-              const SizedBox(height: AppSpacing.md),
-
-              // Status
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: isCompleted
-                      ? AppColors.success.withValues(alpha: 0.1)
-                      : AppColors.warning.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                  border: Border.all(
-                    color: isCompleted
-                        ? AppColors.success.withValues(alpha: 0.3)
-                        : AppColors.warning.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
+              const SizedBox(height: HabiterSpace.lg),
+              HabiterSurface(
+                padding: EdgeInsets.zero,
+                child: Column(
                   children: [
-                    Icon(
-                      isCompleted ? Icons.check_circle : Icons.pending,
-                      color: isCompleted
-                          ? AppColors.success
-                          : AppColors.warning,
+                    _DetailTile(
+                      icon: Icons.repeat_rounded,
+                      label: context.l10n.frequency,
+                      value: _frequency(context),
                     ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      isCompleted ? 'Heute erledigt ✓' : 'Noch nicht erledigt',
-                      style: AppTextStyles.body.copyWith(
-                        color: isCompleted
-                            ? AppColors.success
-                            : AppColors.warning,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    const Divider(height: 1, indent: 56),
+                    _DetailTile(
+                      icon: Icons.flag_outlined,
+                      label: context.l10n.goal,
+                      value: habit.frequency == HabitFrequency.weekly
+                          ? context.l10n.perWeek(habit.targetCount)
+                          : context.l10n.perDayTarget(habit.targetCount),
+                    ),
+                    const Divider(height: 1, indent: 56),
+                    _DetailTile(
+                      icon: Icons.calendar_today_outlined,
+                      label: context.l10n.createdAt,
+                      value: DateFormat.yMMMd(
+                        Localizations.localeOf(context).toLanguageTag(),
+                      ).format(habit.createdAt),
                     ),
                   ],
                 ),
               ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // Action buttons - redesigned for better UX
-              // Main action button (full width)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    onComplete();
-                    Navigator.of(context).pop();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isCompleted
-                        ? AppColors.textSecondary
-                        : AppColors.success,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                    ),
+              const SizedBox(height: HabiterSpace.md),
+              Semantics(
+                liveRegion: true,
+                child: Container(
+                  padding: const EdgeInsets.all(HabiterSpace.md),
+                  decoration: BoxDecoration(
+                    color: isCompleted
+                        ? theme.colorScheme.primaryContainer
+                        : theme.colorScheme.secondaryContainer,
+                    borderRadius: BorderRadius.circular(HabiterRadius.control),
                   ),
-                  icon: Icon(
-                    isCompleted
-                        ? Icons.undo_rounded
-                        : Icons.check_circle_rounded,
-                    size: 22,
-                  ),
-                  label: Text(
-                    isCompleted
-                        ? 'Rückgängig machen'
-                        : 'Als erledigt markieren',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isCompleted
+                            ? Icons.check_circle_rounded
+                            : Icons.schedule_rounded,
+                      ),
+                      const SizedBox(width: HabiterSpace.sm),
+                      Expanded(
+                        child: Text(
+                          isCompleted
+                              ? context.l10n.todayDone
+                              : context.l10n.notCompleted,
+                          style: theme.textTheme.titleSmall,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.md),
-
-              // Lifecycle actions stay full-width for large text and small phones.
-              Column(
+              const SizedBox(height: HabiterSpace.lg),
+              FilledButton.icon(
+                onPressed: () {
+                  onComplete();
+                  Navigator.of(context).pop();
+                },
+                icon: Icon(
+                  isCompleted ? Icons.undo_rounded : Icons.check_rounded,
+                ),
+                label: Text(
+                  isCompleted
+                      ? context.l10n.undoComplete
+                      : context.l10n.markAsComplete,
+                ),
+              ),
+              const SizedBox(height: HabiterSpace.sm),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  onEdit();
+                },
+                icon: const Icon(Icons.edit_outlined),
+                label: Text(context.l10n.edit),
+              ),
+              const SizedBox(height: HabiterSpace.sm),
+              Row(
                 children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        onEdit();
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppBorderRadius.md,
-                          ),
-                        ),
-                      ),
-                      icon: const Icon(Icons.edit_outlined, size: 18),
-                      label: Text(context.l10n.edit),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
+                  Expanded(
+                    child: TextButton.icon(
                       onPressed: () {
                         onPause();
                         Navigator.of(context).pop();
                       },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppBorderRadius.md,
-                          ),
-                        ),
-                      ),
-                      icon: const Icon(Icons.pause_circle_outline, size: 18),
+                      icon: const Icon(Icons.pause_circle_outline_rounded),
                       label: Text(context.l10n.pauseHabit),
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.sm),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
+                  const SizedBox(width: HabiterSpace.sm),
+                  Expanded(
+                    child: TextButton.icon(
                       onPressed: () {
                         onArchive();
                         Navigator.of(context).pop();
                       },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.error,
-                        side: const BorderSide(color: AppColors.error),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppBorderRadius.md,
-                          ),
-                        ),
-                      ),
-                      icon: const Icon(Icons.archive_outlined, size: 18),
+                      icon: const Icon(Icons.archive_outlined),
                       label: Text(context.l10n.archive),
                     ),
                   ),
@@ -339,47 +220,24 @@ class HabitDetailDialog extends StatelessWidget {
     );
   }
 
-  String _frequencyText(HabitFrequency freq) {
-    switch (freq) {
-      case HabitFrequency.daily:
-        return 'Täglich';
-      case HabitFrequency.weekly:
-        return 'Wöchentlich';
-      case HabitFrequency.custom:
-        return 'Benutzerdefiniert';
-    }
-  }
+  String _frequency(BuildContext context) => switch (habit.frequency) {
+    HabitFrequency.daily => context.l10n.daily,
+    HabitFrequency.weekly => context.l10n.perWeek(habit.targetCount),
+    HabitFrequency.custom => context.l10n.custom,
+  };
 }
 
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({
+class _DetailTile extends StatelessWidget {
+  const _DetailTile({
     required this.icon,
     required this.label,
     required this.value,
   });
-
   final IconData icon;
   final String label;
   final String value;
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 18, color: AppColors.textSecondary),
-        const SizedBox(width: AppSpacing.sm),
-        SizedBox(
-          width: 100,
-          child: Text(
-            label,
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ),
-        Expanded(child: Text(value, style: AppTextStyles.body)),
-      ],
-    );
-  }
+  Widget build(BuildContext context) =>
+      ListTile(leading: Icon(icon), title: Text(label), subtitle: Text(value));
 }

@@ -11,6 +11,7 @@ import 'app/shell/adaptive_app_shell.dart';
 import 'core/design_system/haptics.dart';
 import 'core/design_system/motion.dart';
 import 'l10n/app_localizations.dart';
+import 'l10n/l10n.dart';
 import 'providers/app_lock_provider.dart';
 import 'providers/habit_provider.dart';
 import 'providers/settings_provider.dart';
@@ -62,17 +63,51 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
         if (!result.isReady) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-            home: Scaffold(
-              body: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.sync_problem_outlined, size: 40),
-                    const SizedBox(height: 16),
-                    Text(result.failure!.diagnostic),
-                    const SizedBox(height: 16),
-                    FilledButton(onPressed: _retry, child: const Text('Retry')),
-                  ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            home: Builder(
+              builder: (context) => Scaffold(
+                body: SafeArea(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.sync_problem_outlined,
+                              size: 48,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              context.l10n.bootstrapErrorTitle,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              context.l10n.bootstrapErrorBody,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 20),
+                            FilledButton.icon(
+                              onPressed: _retry,
+                              icon: const Icon(Icons.refresh_rounded),
+                              label: Text(context.l10n.retry),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

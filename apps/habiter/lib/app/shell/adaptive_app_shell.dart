@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../core/design_system/tokens.dart';
+import '../../l10n/app_localizations.dart';
 import '../navigation/app_route.dart';
 
 final class _SelectRouteIntent extends Intent {
@@ -18,7 +20,7 @@ class AdaptiveAppShell extends StatelessWidget {
     required this.child,
   });
 
-  static const desktopBreakpoint = 1024.0;
+  static const desktopBreakpoint = HabiterSize.desktopBreakpoint;
 
   final AppRoute selected;
   final ValueChanged<AppRoute> onSelected;
@@ -60,44 +62,64 @@ class AdaptiveAppShell extends StatelessWidget {
   }
 
   Widget _compact(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final todayLabel = l10n?.today ?? 'Today';
+    final analyticsLabel = l10n?.analytics ?? 'Analytics';
+    final appLockLabel = l10n?.appLock ?? 'App lock';
+    final settingsLabel = l10n?.settings ?? 'Settings';
     return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.eco_rounded,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            const Text('Habiter'),
+          ],
+        ),
+        actions: [
+          IconButton(
+            tooltip: appLockLabel,
+            onPressed: onOpenAppLock,
+            icon: const Icon(Icons.lock_outline_rounded),
+          ),
+          IconButton(
+            tooltip: settingsLabel,
+            onPressed: onOpenSettings,
+            icon: const Icon(Icons.settings_outlined),
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: child,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: _selectIndex,
-        destinations: const <NavigationDestination>[
+        destinations: <NavigationDestination>[
           NavigationDestination(
-            icon: Icon(Icons.checklist_rtl_outlined),
-            selectedIcon: Icon(Icons.checklist_rtl),
-            label: 'Today',
+            icon: const Icon(Icons.today_outlined),
+            selectedIcon: const Icon(Icons.today_rounded),
+            label: todayLabel,
           ),
           NavigationDestination(
-            icon: Icon(Icons.query_stats_outlined),
-            selectedIcon: Icon(Icons.query_stats),
-            label: 'Analytics',
+            icon: const Icon(Icons.insights_outlined),
+            selectedIcon: const Icon(Icons.insights_rounded),
+            label: analyticsLabel,
           ),
         ],
       ),
-      floatingActionButton: Wrap(
-        spacing: 8,
-        children: <Widget>[
-          IconButton.filledTonal(
-            tooltip: 'App lock',
-            onPressed: onOpenAppLock,
-            icon: const Icon(Icons.lock_outline),
-          ),
-          IconButton.filledTonal(
-            tooltip: 'Settings',
-            onPressed: onOpenSettings,
-            icon: const Icon(Icons.settings_outlined),
-          ),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
   }
 
   Widget _desktop(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final todayLabel = l10n?.today ?? 'Today';
+    final analyticsLabel = l10n?.analytics ?? 'Analytics';
+    final appLockLabel = l10n?.appLock ?? 'App lock';
+    final settingsLabel = l10n?.settings ?? 'Settings';
     return Scaffold(
       body: Row(
         children: <Widget>[
@@ -105,16 +127,16 @@ class AdaptiveAppShell extends StatelessWidget {
             selectedIndex: _selectedIndex,
             onDestinationSelected: _selectIndex,
             labelType: NavigationRailLabelType.all,
-            destinations: const <NavigationRailDestination>[
+            destinations: <NavigationRailDestination>[
               NavigationRailDestination(
-                icon: Icon(Icons.checklist_rtl_outlined),
-                selectedIcon: Icon(Icons.checklist_rtl),
-                label: Text('Today'),
+                icon: const Icon(Icons.today_outlined),
+                selectedIcon: const Icon(Icons.today_rounded),
+                label: Text(todayLabel),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.query_stats_outlined),
-                selectedIcon: Icon(Icons.query_stats),
-                label: Text('Analytics'),
+                icon: const Icon(Icons.insights_outlined),
+                selectedIcon: const Icon(Icons.insights_rounded),
+                label: Text(analyticsLabel),
               ),
             ],
             trailing: Expanded(
@@ -122,12 +144,12 @@ class AdaptiveAppShell extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   IconButton(
-                    tooltip: 'App lock',
+                    tooltip: appLockLabel,
                     onPressed: onOpenAppLock,
                     icon: const Icon(Icons.lock_outline),
                   ),
                   IconButton(
-                    tooltip: 'Settings',
+                    tooltip: settingsLabel,
                     onPressed: onOpenSettings,
                     icon: const Icon(Icons.settings_outlined),
                   ),

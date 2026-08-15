@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../core/design_system/components.dart';
+import '../core/design_system/tokens.dart';
 import '../features/reminders/application/reminder_permission_controller.dart';
 import '../features/reminders/infrastructure/local_reminder_permission_gateway.dart';
+import '../l10n/l10n.dart';
 import '../models/habit.dart';
 import '../providers/classly_sync_provider.dart';
 import '../providers/habit_provider.dart';
@@ -50,154 +54,227 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<void> _openClassly() async {
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) => ChangeNotifierProvider(
-        create: (_) => ClasslySyncProvider()..load(),
-        child: const _ClasslyDialog(),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final habits = context.watch<HabitProvider>();
     final preferences = habits.preferences;
     final settings = context.watch<SettingsProvider>();
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(context.l10n.settings)),
       body: ListView(
         key: const Key('progressive-settings'),
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
         children: [
-          _Section(
-            title: 'Appearance',
-            children: [
-              DropdownButtonFormField<ThemeMode>(
-                initialValue: settings.themeMode,
-                decoration: const InputDecoration(labelText: 'Theme'),
-                items: const [
-                  DropdownMenuItem(
-                    value: ThemeMode.system,
-                    child: Text('System'),
-                  ),
-                  DropdownMenuItem(
-                    value: ThemeMode.light,
-                    child: Text('Light'),
-                  ),
-                  DropdownMenuItem(value: ThemeMode.dark, child: Text('Dark')),
-                ],
-                onChanged: (value) {
-                  if (value != null) settings.setThemeMode(value);
-                },
-              ),
-              const SizedBox(height: 12),
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'de', label: Text('Deutsch')),
-                  ButtonSegment(value: 'en', label: Text('English')),
-                ],
-                selected: <String>{settings.locale.languageCode},
-                onSelectionChanged: (value) =>
-                    settings.setLocale(Locale(value.single)),
-              ),
-            ],
-          ),
-          _Section(
-            title: 'Reminders',
-            children: [
-              SwitchListTile.adaptive(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Daily reminder'),
-                subtitle: Text(
-                  preferences.notifications
-                      ? 'Scheduled at ${preferences.reminderTime}'
-                      : 'Off — permission is requested only after you enable it.',
-                ),
-                value: preferences.notifications,
-                onChanged: (value) async {
-                  if (value) {
-                    final state = await _permissions.requestAfterUserIntent();
-                    if (!state.canSchedule || !mounted) return;
-                  }
-                  await _update(preferences.copyWith(notifications: value));
-                },
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                enabled: preferences.notifications,
-                title: const Text('Reminder time'),
-                trailing: Text(preferences.reminderTime),
-                onTap: preferences.notifications
-                    ? () => _chooseReminderTime(preferences)
-                    : null,
-              ),
-            ],
-          ),
-          _Section(
-            title: 'Privacy & data',
-            children: [
-              SwitchListTile.adaptive(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Recovery support'),
-                subtitle: const Text('Show non-punitive restart suggestions.'),
-                value: preferences.showRecoverySupport,
-                onChanged: (value) =>
-                    _update(preferences.copyWith(showRecoverySupport: value)),
-              ),
-              const ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.phonelink_lock_outlined),
-                title: Text('Local-first data'),
-                subtitle: Text(
-                  'Habit data stays on this device unless you explicitly export or connect an integration.',
-                ),
-              ),
-            ],
-          ),
-          _Section(
-            title: 'App lock',
-            children: [
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.lock_outline),
-                title: const Text('Configure app lock'),
-                subtitle: const Text(
-                  'Android only. Review permissions and recovery before enabling.',
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const AppLockScreen(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Card(
-            child: ExpansionTile(
-              key: const Key('advanced-integrations'),
-              title: const Text('Advanced integrations'),
-              subtitle: const Text('Optional, disabled by default'),
+          HabiterContent(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ListTile(
-                  title: const Text('Classly-compatible import'),
-                  subtitle: const Text(
-                    'OAuth or a manually supplied token; HTTPS endpoints only.',
-                  ),
-                  onTap: _openClassly,
+                HabiterPageIntro(
+                  eyebrow: context.l10n.settings,
+                  title: context.l10n.settingsTitle,
+                  subtitle: context.l10n.settingsBody,
                 ),
-                ListTile(
-                  title: const Text('Experimental remote AI'),
-                  subtitle: Text(
-                    AIManager.isConfigured
-                        ? 'Enabled. Provider requests may share data and incur costs.'
-                        : 'Off. Local coaching does not require an API key.',
-                  ),
-                  onTap: () => showDialog<void>(
-                    context: context,
-                    builder: (_) => const AISetupDialog(),
+                const SizedBox(height: HabiterSpace.lg),
+                _SettingsSection(
+                  icon: Icons.palette_outlined,
+                  title: context.l10n.appearance,
+                  children: [
+                    DropdownButtonFormField<ThemeMode>(
+                      initialValue: settings.themeMode,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: context.l10n.theme,
+                      ),
+                      items: [
+                        DropdownMenuItem(
+                          value: ThemeMode.system,
+                          child: Text(context.l10n.themeSystem),
+                        ),
+                        DropdownMenuItem(
+                          value: ThemeMode.light,
+                          child: Text(context.l10n.themeLight),
+                        ),
+                        DropdownMenuItem(
+                          value: ThemeMode.dark,
+                          child: Text(context.l10n.themeDark),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) settings.setThemeMode(value);
+                      },
+                    ),
+                    const SizedBox(height: HabiterSpace.md),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final compact =
+                            constraints.maxWidth < 360 ||
+                            MediaQuery.textScalerOf(context).scale(1) > 1.3;
+                        if (compact) {
+                          return DropdownButtonFormField<String>(
+                            initialValue: settings.locale.languageCode,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              labelText: context.l10n.language,
+                            ),
+                            items: [
+                              DropdownMenuItem(
+                                value: 'de',
+                                child: Text(context.l10n.german),
+                              ),
+                              DropdownMenuItem(
+                                value: 'en',
+                                child: Text(context.l10n.english),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              if (value != null) {
+                                settings.setLocale(Locale(value));
+                              }
+                            },
+                          );
+                        }
+                        return SegmentedButton<String>(
+                          segments: [
+                            ButtonSegment(
+                              value: 'de',
+                              label: Text(context.l10n.german),
+                            ),
+                            ButtonSegment(
+                              value: 'en',
+                              label: Text(context.l10n.english),
+                            ),
+                          ],
+                          selected: {settings.locale.languageCode},
+                          onSelectionChanged: (value) =>
+                              settings.setLocale(Locale(value.single)),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                _SettingsSection(
+                  icon: Icons.notifications_none_rounded,
+                  title: context.l10n.notifications,
+                  children: [
+                    SwitchListTile.adaptive(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(context.l10n.dailyReminder),
+                      subtitle: Text(
+                        preferences.notifications
+                            ? context.l10n.dailyReminderAt(
+                                preferences.reminderTime,
+                              )
+                            : context.l10n.dailyReminderOff,
+                      ),
+                      value: preferences.notifications,
+                      onChanged: (value) async {
+                        if (value) {
+                          final state = await _permissions
+                              .requestAfterUserIntent();
+                          if (!state.canSchedule || !mounted) return;
+                        }
+                        await _update(
+                          preferences.copyWith(notifications: value),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      enabled: preferences.notifications,
+                      leading: const Icon(Icons.schedule_outlined),
+                      title: Text(context.l10n.reminderTime),
+                      trailing: Text(preferences.reminderTime),
+                      onTap: preferences.notifications
+                          ? () => _chooseReminderTime(preferences)
+                          : null,
+                    ),
+                  ],
+                ),
+                _SettingsSection(
+                  icon: Icons.center_focus_strong_outlined,
+                  title: context.l10n.focusAndAppLock,
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.lock_outline_rounded),
+                      title: Text(context.l10n.configureAppLock),
+                      subtitle: Text(context.l10n.configureAppLockBody),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const AppLockScreen(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                _SettingsSection(
+                  icon: Icons.shield_outlined,
+                  title: context.l10n.privacyAndData,
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.smartphone_outlined),
+                      title: Text(context.l10n.localFirstTitle),
+                      subtitle: Text(context.l10n.localFirstBody),
+                    ),
+                    SwitchListTile.adaptive(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(context.l10n.recoverySupport),
+                      subtitle: Text(context.l10n.recoverySupportBody),
+                      value: preferences.showRecoverySupport,
+                      onChanged: (value) => _update(
+                        preferences.copyWith(showRecoverySupport: value),
+                      ),
+                    ),
+                    const Divider(),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.copy_all_outlined),
+                      title: Text(context.l10n.exportData),
+                      subtitle: Text(context.l10n.exportDataBody),
+                      onTap: _exportData,
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.file_download_outlined),
+                      title: Text(context.l10n.importData),
+                      subtitle: Text(context.l10n.importDataBody),
+                      onTap: _importData,
+                    ),
+                  ],
+                ),
+                HabiterSurface(
+                  padding: EdgeInsets.zero,
+                  child: ExpansionTile(
+                    key: const Key('advanced-integrations'),
+                    leading: const Icon(Icons.tune_rounded),
+                    title: Text(context.l10n.advancedIntegrations),
+                    subtitle: Text(context.l10n.advancedIntegrationsBody),
+                    childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    children: [
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(context.l10n.classlyImport),
+                        subtitle: Text(context.l10n.trustedHttpsOnly),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: _openClassly,
+                      ),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(context.l10n.experimentalAi),
+                        subtitle: Text(
+                          AIManager.isConfigured
+                              ? context.l10n.remoteAiOn
+                              : context.l10n.remoteAiOff,
+                        ),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: () => showDialog<void>(
+                          context: context,
+                          builder: (_) => const AISetupDialog(),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -207,23 +284,124 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+
+  Future<void> _exportData() async {
+    final data = await context.read<HabitProvider>().exportData();
+    await Clipboard.setData(ClipboardData(text: data));
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(context.l10n.backupCopied)));
+  }
+
+  Future<void> _importData() async {
+    final controller = TextEditingController();
+    final input = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.importData),
+        content: TextField(
+          controller: controller,
+          minLines: 5,
+          maxLines: 10,
+          decoration: InputDecoration(hintText: context.l10n.pasteBackup),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(context.l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, controller.text),
+            child: Text(context.l10n.reviewImport),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (input == null || input.trim().isEmpty || !mounted) return;
+    try {
+      final preview = await context.read<HabitProvider>().previewImport(input);
+      if (!mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(context.l10n.reviewImport),
+          content: Text(
+            context.l10n.importSummary(
+              preview.habits,
+              preview.entries,
+              preview.collisions,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(context.l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(context.l10n.importData),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+      final recoveryBackup = await context.read<HabitProvider>().importData(
+        input,
+      );
+      await Clipboard.setData(ClipboardData(text: recoveryBackup));
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.importComplete)));
+    } on FormatException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.invalidBackup)));
+    }
+  }
+
+  Future<void> _openClassly() => showDialog<void>(
+    context: context,
+    builder: (_) => ChangeNotifierProvider(
+      create: (_) => ClasslySyncProvider()..load(),
+      child: const _ClasslyDialog(),
+    ),
+  );
 }
 
-class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.children});
+class _SettingsSection extends StatelessWidget {
+  const _SettingsSection({
+    required this.icon,
+    required this.title,
+    required this.children,
+  });
+  final IconData icon;
   final String title;
   final List<Widget> children;
 
   @override
-  Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.only(bottom: 12),
-    child: Padding(
-      padding: const EdgeInsets.all(16),
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: HabiterSpace.sm2),
+    child: HabiterSurface(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(title, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(icon, color: Theme.of(context).colorScheme.primary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: HabiterSpace.sm),
           ...children,
         ],
       ),
@@ -256,32 +434,36 @@ class _ClasslyDialogState extends State<_ClasslyDialog> {
       endpoint.text = provider.baseUrl!;
     }
     return AlertDialog(
-      title: const Text('Classly-compatible import'),
+      title: Text(context.l10n.classlyImport),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Only connect a trusted public HTTPS server. Disconnecting clears all stored credentials.',
-            ),
+            Text(context.l10n.trustedHttpsOnly),
+            const SizedBox(height: 16),
             TextField(
               controller: endpoint,
-              decoration: const InputDecoration(labelText: 'HTTPS endpoint'),
+              decoration: InputDecoration(
+                labelText: context.l10n.httpsEndpoint,
+              ),
               keyboardType: TextInputType.url,
             ),
+            const SizedBox(height: 12),
             TextField(
               controller: token,
               obscureText: true,
               onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(
-                labelText: 'Optional access token',
+              decoration: InputDecoration(
+                labelText: context.l10n.optionalAccessToken,
               ),
             ),
-            if (provider.lastError != null)
+            if (provider.lastError != null) ...[
+              const SizedBox(height: 8),
               Text(
                 provider.lastError!,
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
+            ],
           ],
         ),
       ),
@@ -289,20 +471,20 @@ class _ClasslyDialogState extends State<_ClasslyDialog> {
         if (provider.isConnected)
           TextButton(
             onPressed: provider.disconnect,
-            child: const Text('Disconnect'),
+            child: Text(context.l10n.disconnect),
           ),
         TextButton(
           onPressed: provider.isConnecting
               ? null
               : () => provider.connectWithOAuth(baseUrl: endpoint.text),
-          child: const Text('Connect with OAuth'),
+          child: Text(context.l10n.connectWithOauth),
         ),
         FilledButton(
           onPressed: token.text.trim().isEmpty
               ? null
               : () =>
                     provider.connect(baseUrl: endpoint.text, token: token.text),
-          child: const Text('Use token'),
+          child: Text(context.l10n.useToken),
         ),
       ],
     );

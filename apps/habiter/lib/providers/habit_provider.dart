@@ -7,6 +7,7 @@ import '../core/time/clock.dart';
 import '../core/time/local_date.dart';
 import '../features/analytics/application/analytics_controller.dart';
 import '../features/analytics/domain/habit_metrics.dart';
+import '../features/data_portability/data_portability_service.dart';
 import '../features/habits/application/habit_repository.dart';
 import '../features/habits/application/habits_controller.dart';
 import '../features/habits/data/key_value_habit_repository.dart';
@@ -33,6 +34,7 @@ class HabitProvider extends ChangeNotifier {
     _clock = clock;
     final resolvedRepository =
         repository ?? KeyValueHabitRepository(SharedPreferencesKeyValueStore());
+    _repository = resolvedRepository;
     _habitsController = HabitsController(
       repository: resolvedRepository,
       ids: ids,
@@ -63,6 +65,7 @@ class HabitProvider extends ChangeNotifier {
   }
 
   late final HabitsController _habitsController;
+  late final HabitRepository _repository;
   late final HistoryController _historyController;
   late final TodayController _todayController;
   late final AnalyticsController _analyticsController;
@@ -294,6 +297,25 @@ class HabitProvider extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  Future<String> exportData() => DataPortabilityService(
+    _repository,
+  ).exportJson(settings: preferences.toMap());
+
+  Future<ImportPreview> previewImport(String input) =>
+      DataPortabilityService(_repository).preview(input);
+
+  Future<String> importData(
+    String input, {
+    ImportCollisionPolicy collisions = ImportCollisionPolicy.keepExisting,
+  }) async {
+    final backup = await DataPortabilityService(
+      _repository,
+    ).importJson(input, collisions: collisions);
+    await _reloadHabitState();
+    notifyListeners();
+    return backup;
   }
 
   Future<void> configureAI({

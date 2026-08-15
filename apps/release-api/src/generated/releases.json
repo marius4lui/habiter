@@ -2,6 +2,79 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.1.0",
+      "buildNumber": 10100,
+      "channel": "stable",
+      "status": "published",
+      "publishedAt": "2026-08-15T18:18:46Z",
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Ein geführter Drei-Schritt-Editor macht das Erstellen und Bearbeiten von Habits klarer.",
+          "App Lock bietet verständliche Berechtigungs-, Zuverlässigkeits- und Wiederherstellungsbereiche mit App-Suche.",
+          "Responsive Ansichten, Dark Mode und große Textskalierung werden durch neue visuelle Regressionstests abgesichert."
+        ],
+        "changed": [
+          "Today priorisiert jetzt das nächste Habit, den Tagesfortschritt und eine direkte Rückgängig-Aktion.",
+          "Analytics, Einstellungen und Habit-Details wurden mit ruhigerer Hierarchie und konsistentem Designsystem neu gestaltet.",
+          "Datenschutz-, Backup- und Import-Abläufe erklären den lokalen Datenansatz deutlicher."
+        ],
+        "fixed": [
+          "App Lock berücksichtigt für die Freigabe nur Habits, die am aktuellen Tag tatsächlich geplant sind.",
+          "Wöchentliche Ziele werden korrekt als Wochenziele angezeigt und auf sieben begrenzt."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.1.0-android-universal.apk",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.1.0/habiter-1.1.0-android-universal.apk",
+          "sha256": "cdc2c0d935bd504fbebb25132f8d21d5ae106d9a5e0bd5c5c591c215878684c2",
+          "size": 60201833
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.1.0-android-playstore.aab",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.1.0/habiter-1.1.0-android-playstore.aab",
+          "sha256": "e9a8045cb369dc459763757fd5641a8b4933d218c6cfebb51046b2842d397973",
+          "size": 58295046
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.1.0-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.1.0/habiter-1.1.0-windows-x64.zip",
+          "sha256": "904cae6f332506671733abe32be0547abce4c9dcfbf3b73ca9b43fc7f0a79655",
+          "size": 14148530
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.1.0-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.1.0/habiter-1.1.0-linux-x64.tar.gz",
+          "sha256": "56fb0e31975e5b112143e32af4488b39ceab0a156c2048705f72a61f9fc822a9",
+          "size": 11437063
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.1.0-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.1.0/habiter-1.1.0-macos-universal.zip",
+          "sha256": "b50cfb8b26855a5cd56577fe539b9914547ad6646f2d8569b4534f75b974f06e",
+          "size": 20022674
+        }
+      ]
+    },
+    {
       "version": "1.0.0",
       "buildNumber": 10000,
       "channel": "stable",

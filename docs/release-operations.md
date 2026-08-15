@@ -65,7 +65,7 @@ After configuring the custom domain, set `RELEASE_API_BASE_URL` so deployment an
 
 ## Manual gates
 
-The following remain blockers for a public `v1.0.0` release:
+The following manual checks remain part of the stable-release checklist:
 
 - Create and verify an encrypted offline Android-keystore backup.
 - Attach and verify `get.habiter.dev` in Cloudflare and set `RELEASE_API_BASE_URL`.

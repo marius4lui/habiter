@@ -35,7 +35,7 @@ export function LandingPage() {
       <div className="nav-cta">
         <ThemeToggle />
         <a href="#download" className="mini-cta">
-          Beta testen
+          Download
         </a>
       </div>
     </nav>
@@ -45,7 +45,7 @@ export function LandingPage() {
     <section className="hero">
       <div className="container hero-content">
         <div className="beta-pill" data-reveal>
-          Habiter Beta · Android
+          Habiter 1.1 · Stable
         </div>
         <h1 data-reveal>
           <span className="quiet">
@@ -67,7 +67,7 @@ export function LandingPage() {
         </p>
         <div className="hero-actions" data-reveal>
           <a className="button-primary" href="#download">
-            Habiter testen
+            Habiter herunterladen
             <span aria-hidden="true">
               →
             </span>
@@ -77,7 +77,7 @@ export function LandingPage() {
           </a>
         </div>
         <div className="hero-note" data-reveal>
-          Kostenlos in der Beta · lokal gedacht · kein kompliziertes Setup
+          Kostenlos verfügbar · lokal gedacht · kein kompliziertes Setup
         </div>
         {/* PRODUCT STAGE */}
         <div className="product-stage" id="productStage">
@@ -839,7 +839,7 @@ export function LandingPage() {
           </p>
           <div className="download-actions">
             <a className="button-primary" href="https://get.habiter.dev/download">
-              Beta-Tester werden
+              Habiter herunterladen
               <span>
                 →
               </span>
@@ -849,7 +849,7 @@ export function LandingPage() {
             </a>
           </div>
           <div className="android-pill">
-            Aktuell als Android Beta verfügbar
+            Für Android, Windows, Linux und macOS verfügbar
           </div>
         </div>
       </div>

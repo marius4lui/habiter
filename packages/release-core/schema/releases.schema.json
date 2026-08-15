@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://get.habiter.dev/schema/releases.schema.json",
+  "title": "Habiter release manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "releases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "releases": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/release" }
+    }
+  },
+  "$defs": {
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "buildNumber",
+        "channel",
+        "status",
+        "publishedAt",
+        "minimumSupportedVersion",
+        "mandatoryAfter",
+        "notes",
+        "artifacts"
+      ],
+      "properties": {
+        "version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+        "buildNumber": { "type": "integer", "minimum": 1 },
+        "channel": { "enum": ["stable", "beta"] },
+        "status": { "enum": ["draft", "published"] },
+        "publishedAt": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "format": "date-time" }
+          ]
+        },
+        "minimumSupportedVersion": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+        "mandatoryAfter": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "format": "date-time" }
+          ]
+        },
+        "notes": { "$ref": "#/$defs/notes" },
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/artifact" }
+        }
+      }
+    },
+    "notes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["added", "changed", "fixed", "security"],
+      "properties": {
+        "added": { "$ref": "#/$defs/noteList" },
+        "changed": { "$ref": "#/$defs/noteList" },
+        "fixed": { "$ref": "#/$defs/noteList" },
+        "security": { "$ref": "#/$defs/noteList" }
+      }
+    },
+    "noteList": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "architecture", "fileName", "signed"],
+      "properties": {
+        "platform": { "enum": ["android", "windows", "linux", "macos", "ios", "web"] },
+        "architecture": { "type": "string", "minLength": 1 },
+        "fileName": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]+$" },
+        "signed": { "type": "boolean" },
+        "url": { "type": "string", "format": "uri" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

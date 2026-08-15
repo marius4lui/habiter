@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "releases": [
+    {
+      "version": "1.0.0",
+      "buildNumber": 10000,
+      "channel": "stable",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Habiter startet mit einer modernisierten, lokalen Habit-Verwaltung neu."
+        ],
+        "changed": [
+          "Erinnerungen, App Lock und Datenmigration wurden für den v1-Neustart überarbeitet."
+        ],
+        "fixed": [],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.0.0-android-universal.apk",
+          "signed": true
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.0.0-android-playstore.aab",
+          "signed": true
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.0.0-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.0.0-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.0.0-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    }
+  ]
+}

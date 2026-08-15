@@ -78,7 +78,7 @@ export function compareVersions(left, right) {
 
 export function renderNotes(release) {
   const labels = { added: "Added", changed: "Changed", fixed: "Fixed", security: "Security" };
-  const sections = [`# Habiter ${release.version}`];
+  const sections = [];
   for (const [key, label] of Object.entries(labels)) {
     if (release.notes[key].length === 0) continue;
     sections.push(`## ${label}\n\n${release.notes[key].map((note) => `- ${note}`).join("\n")}`);

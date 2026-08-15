@@ -27,7 +27,8 @@ test("tag, pubspec version and build number must agree", async () => {
 test("version comparison is numeric and release notes are deterministic", async () => {
   const manifest = await readJson(manifestPath);
   assert.ok(compareVersions("1.10.0", "1.9.9") > 0);
-  assert.match(renderNotes(manifest.releases[0]), /^# Habiter 1\.0\.0/m);
+  assert.doesNotMatch(renderNotes(manifest.releases[0]), /^# Habiter 1\.0\.0/m);
+  assert.match(renderNotes(manifest.releases[0]), /^## Added/m);
   assert.match(renderNotes(manifest.releases[0]), /Desktop signing/);
 });
 

@@ -6,6 +6,9 @@
     "release:validate": "pnpm --filter @habiter/release-core validate",
     "release:test": "pnpm --filter @habiter/release-core test",
     "release:notes": "pnpm --filter @habiter/release-core notes",
-    "website:check": "node scripts/website/validate.mjs"
+    "website:dev": "pnpm --filter @habiter/website dev",
+    "website:build": "pnpm --filter @habiter/website build",
+    "website:typecheck": "pnpm --filter @habiter/website typecheck",
+    "website:check": "node scripts/website/validate.mjs && pnpm website:typecheck"
   }
 }

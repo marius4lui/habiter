@@ -1,11 +1,14 @@
 packages:
+  - apps/website
   - apps/release-api
   - packages/release-core
 
 allowBuilds:
   esbuild: true
+  sharp: true
   workerd: true
 
 onlyBuiltDependencies:
   - esbuild
+  - sharp
   - workerd

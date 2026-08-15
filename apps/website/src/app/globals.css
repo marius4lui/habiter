@@ -23,7 +23,7 @@
 
       --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
       --spring: cubic-bezier(0.16, 1, 0.3, 1);
-    }
+}
 
     * {
       box-sizing: border-box;
@@ -236,6 +236,26 @@
 
       box-shadow:
         -22px 17px 0 -2px #315c39;
+    }
+
+    .app-logo {
+      display: inline-grid;
+      place-items: center;
+      background: transparent;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.26);
+    }
+
+    .app-logo::before,
+    .app-logo::after {
+      content: none;
+    }
+
+    .app-logo img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: inherit;
+      object-fit: cover;
     }
 
     /* -----------------------------
@@ -3157,3 +3177,122 @@
         display: none;
       }
     }
+/* Theme controls and the daylight palette intentionally live at the end so
+   they can translate the original dark art direction without duplicating it. */
+.theme-toggle {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  cursor: pointer;
+  transition: transform 0.25s var(--spring), background 0.25s, border-color 0.25s;
+}
+
+.theme-toggle:hover {
+  transform: rotate(10deg) scale(1.05);
+  border-color: var(--line-strong);
+}
+
+.theme-toggle span {
+  font-size: 16px;
+  line-height: 1;
+}
+
+:root[data-theme="light"] {
+  --bg: #f4f6f1;
+  --bg-soft: #e9eee6;
+  --surface: rgba(255, 255, 255, 0.7);
+  --line: rgba(32, 52, 34, 0.12);
+  --line-strong: rgba(32, 52, 34, 0.22);
+  --text: #172019;
+  --text-soft: #435047;
+  --muted: #6e7a70;
+  --sage: #63875b;
+  --sage-light: #7fa674;
+  --teal: #168b83;
+}
+
+:root[data-theme="light"] body {
+  background: radial-gradient(900px 650px at 50% -10%, rgba(99, 135, 91, 0.16), transparent 67%), var(--bg);
+}
+
+:root[data-theme="light"] .noise {
+  opacity: 0.018;
+  mix-blend-mode: multiply;
+}
+
+:root[data-theme="light"] .cursor-glow {
+  background: radial-gradient(circle, rgba(99, 135, 91, 0.11), transparent 66%);
+}
+
+:root[data-theme="light"] .nav,
+:root[data-theme="light"] .nav.scrolled {
+  color: var(--text);
+  border-color: rgba(44, 67, 46, 0.13);
+  background: rgba(247, 250, 245, 0.8);
+  box-shadow: 0 18px 55px rgba(42, 60, 44, 0.1);
+}
+
+:root[data-theme="light"] .hero .quiet,
+:root[data-theme="light"] .section-title .muted,
+:root[data-theme="light"] .statement-text .low {
+  color: #8a968b;
+}
+
+:root[data-theme="light"] .beta-pill,
+:root[data-theme="light"] .button-secondary,
+:root[data-theme="light"] .principle,
+:root[data-theme="light"] .feature-large,
+:root[data-theme="light"] .growth-card,
+:root[data-theme="light"] .download-card {
+  border-color: rgba(43, 67, 45, 0.13);
+}
+
+:root[data-theme="light"] .button-secondary,
+:root[data-theme="light"] .principle,
+:root[data-theme="light"] .download-card {
+  background-color: rgba(255, 255, 255, 0.48);
+}
+
+:root[data-theme="light"] .phone,
+:root[data-theme="light"] .story-phone {
+  box-shadow: 0 45px 100px rgba(44, 61, 46, 0.23), inset 0 0 0 1px rgba(255,255,255,.7);
+}
+
+:root[data-theme="light"] .float-card {
+  color: #eef4ea;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(34, 43, 35, 0.78);
+  box-shadow: 0 25px 65px rgba(45, 60, 47, 0.22);
+}
+
+:root[data-theme="light"] .signal-bar,
+:root[data-theme="light"] footer {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+:root[data-theme="light"] .section-kicker,
+:root[data-theme="light"] .alive,
+:root[data-theme="light"] .principle-word {
+  color: #55754f;
+}
+
+:root[data-theme="light"] .theme-toggle {
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 24px rgba(42, 60, 44, 0.08);
+}
+
+@media (max-width: 720px) {
+  .nav-cta {
+    gap: 8px;
+  }
+
+  .theme-toggle {
+    width: 36px;
+    height: 36px;
+  }
+}

@@ -1,4 +1,6 @@
 import { SiteInteractions } from "./site-interactions";
+import { BrandLogo } from "./brand-logo";
+import { ThemeToggle } from "./theme-toggle";
 
 export function LandingPage() {
   return (
@@ -11,7 +13,7 @@ export function LandingPage() {
   <div className="nav-wrap">
     <nav className="nav" id="nav" aria-label="Hauptnavigation">
       <a href="#top" className="brand">
-        <span className="app-logo" aria-hidden="true" />
+        <BrandLogo />
         <span>
           Habiter
         </span>
@@ -31,6 +33,7 @@ export function LandingPage() {
         </a>
       </div>
       <div className="nav-cta">
+        <ThemeToggle />
         <a href="#download" className="mini-cta">
           Beta testen
         </a>
@@ -830,7 +833,7 @@ export function LandingPage() {
     <section className="download" id="download">
       <div className="container">
         <div className="download-card" data-reveal>
-          <div className="app-logo big" aria-hidden="true" />
+          <BrandLogo large />
           <h2>
             Werde jemand,
             der zurückkommt.
@@ -864,7 +867,7 @@ export function LandingPage() {
   <footer>
     <div className="container footer-grid">
       <div className="footer-brand">
-        <span className="app-logo" aria-hidden="true" />
+        <BrandLogo />
         Habiter
       </div>
       <div className="footer-links">

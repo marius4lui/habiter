@@ -1,0 +1,96 @@
+name: Monorepo Quality
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  flutter-quality:
+    name: Flutter Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: apps/habiter
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: flutter analyze --fatal-infos
+      - run: flutter test --coverage
+
+  workspace-quality:
+    name: Worker, Release and Website Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.1'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm release:validate
+      - run: pnpm release:test
+      - run: pnpm website:check
+      - run: pnpm --filter @habiter/release-api types
+      - run: pnpm --filter @habiter/release-api check
+      - run: pnpm --filter @habiter/release-api deploy:dry
+
+  docs-quality:
+    name: Docs Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: docs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.1'
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+      - run: npm ci
+      - run: npm run docs:build
+
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  quality-summary:
+    name: Quality Summary
+    if: always()
+    needs: [flutter-quality, workspace-quality, docs-quality, secret-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every quality gate
+        run: |
+          test "${{ needs.flutter-quality.result }}" = success
+          test "${{ needs.workspace-quality.result }}" = success
+          test "${{ needs.docs-quality.result }}" = success
+          test "${{ needs.secret-scan.result }}" = success

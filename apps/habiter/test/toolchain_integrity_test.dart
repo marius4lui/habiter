@@ -11,22 +11,32 @@ void main() {
   const pnpmVersion = '11.21.0';
 
   group('toolchain pins', () {
+    final repositoryRoot = Directory.current.parent.parent;
     test('declare one Flutter, Node, Java and pnpm version', () {
       final fvm =
-          jsonDecode(File('.fvmrc').readAsStringSync()) as Map<String, dynamic>;
+          jsonDecode(File('${repositoryRoot.path}/.fvmrc').readAsStringSync())
+              as Map<String, dynamic>;
       final package =
-          jsonDecode(File('landing_page/package.json').readAsStringSync())
+          jsonDecode(
+                File('${repositoryRoot.path}/package.json').readAsStringSync(),
+              )
               as Map<String, dynamic>;
 
       expect(fvm['flutter'], flutterVersion);
-      expect(File('.node-version').readAsStringSync().trim(), nodeVersion);
-      expect(File('.java-version').readAsStringSync().trim(), javaVersion);
+      expect(
+        File('${repositoryRoot.path}/.node-version').readAsStringSync().trim(),
+        nodeVersion,
+      );
+      expect(
+        File('${repositoryRoot.path}/.java-version').readAsStringSync().trim(),
+        javaVersion,
+      );
       expect(package['packageManager'], 'pnpm@$pnpmVersion');
       expect(File('pubspec.lock').existsSync(), isTrue);
     });
 
     test('all custom workflows use the pinned Flutter and Java versions', () {
-      final workflows = Directory('.github/workflows')
+      final workflows = Directory('${repositoryRoot.path}/.github/workflows')
           .listSync()
           .whereType<File>()
           .where((file) => file.path.endsWith('.yml'));
@@ -48,12 +58,16 @@ void main() {
 
     test('pnpm native build policy is explicit', () {
       final workspace =
-          loadYaml(File('landing_page/pnpm-workspace.yaml').readAsStringSync())
+          loadYaml(
+                File(
+                  '${repositoryRoot.path}/pnpm-workspace.yaml',
+                ).readAsStringSync(),
+              )
               as YamlMap;
       final allowBuilds = workspace['allowBuilds'] as YamlMap;
 
-      expect(allowBuilds['sharp'], isTrue);
-      expect(allowBuilds['unrs-resolver'], isTrue);
+      expect(allowBuilds['esbuild'], isTrue);
+      expect(allowBuilds['workerd'], isTrue);
       expect(workspace.containsKey('ignoredBuiltDependencies'), isFalse);
     });
   });

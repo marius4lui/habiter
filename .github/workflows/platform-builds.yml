@@ -1,0 +1,96 @@
+name: Platform Builds
+
+on:
+  push:
+    paths:
+      - 'apps/habiter/**'
+      - '.github/workflows/platform-builds.yml'
+  pull_request:
+    paths:
+      - 'apps/habiter/**'
+      - '.github/workflows/platform-builds.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-builds-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  portable:
+    name: Build ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [android, web]
+    defaults:
+      run:
+        working-directory: apps/habiter
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+          cache-dependency-path: apps/habiter/android/*.gradle*
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - if: matrix.target == 'android'
+        run: flutter build apk --release
+      - if: matrix.target == 'web'
+        run: flutter build web --release
+
+  desktop:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux
+            runner: ubuntu-latest
+          - target: macos
+            runner: macos-latest
+          - target: windows
+            runner: windows-latest
+    defaults:
+      run:
+        working-directory: apps/habiter
+    steps:
+      - uses: actions/checkout@v4
+      - if: matrix.target == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libwebkit2gtk-4.1-dev libsecret-1-dev
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter build ${{ matrix.target }} --release
+
+  ios:
+    name: Build iOS without signing
+    runs-on: macos-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/habiter
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter build ios --release --no-codesign

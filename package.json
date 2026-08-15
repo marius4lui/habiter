@@ -9,6 +9,7 @@
     "website:dev": "pnpm --filter @habiter/website dev",
     "website:build": "pnpm --filter @habiter/website build",
     "website:typecheck": "pnpm --filter @habiter/website typecheck",
-    "website:check": "node scripts/website/validate.mjs && pnpm website:typecheck && pnpm website:build"
+    "website:deploy:dry": "pnpm --filter @habiter/website deploy:dry",
+    "website:check": "node scripts/website/validate.mjs && pnpm website:typecheck && pnpm website:build && pnpm website:deploy:dry"
   }
 }

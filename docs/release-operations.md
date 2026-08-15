@@ -75,6 +75,26 @@ The following remain blockers for a public `v1.0.0` release:
 
 The current Flutter build reports a future Kotlin Gradle Plugin migration warning. It does not invalidate v1, but it must be resolved before upgrading to a Flutter release that removes KGP compatibility.
 
+## Website deployment on Cloudflare Workers
+
+The website is exported by Next.js as static files and deployed as Cloudflare Worker assets. No OpenNext server bundle is involved. The Cloudflare Workers Build for `habiter` uses:
+
+```text
+Root directory: /apps/website
+Build command: pnpm build
+Deploy command: pnpm exec wrangler deploy
+Production branch: main
+```
+
+`apps/website/wrangler.jsonc` owns the Worker name and points at the generated `out` directory. `pnpm website:check` validates the website contract, creates the static export and performs a Wrangler dry run locally and in CI.
+
+For a manual deployment from the repository root, run:
+
+```bash
+pnpm --filter @habiter/website build
+pnpm --dir apps/website exec wrangler deploy
+```
+
 ## Legacy cleanup
 
 The old `v1.3` and `v1.3.3` tags and the `v1.3.3` GitHub Release belong to the superseded product line. Remove them only after all local checks, the manual dry run and signing verification pass. Commit history is retained even when the public tags and release are deleted.

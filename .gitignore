@@ -33,3 +33,4 @@ analysis.log
 # Next.js
 **/.next/
 **/tsconfig.tsbuildinfo
+apps/website/out/

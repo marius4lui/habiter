@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.SystemClock
+import android.util.Log
 
 /**
  * Watchdog receiver that periodically checks if AppMonitorService is running
@@ -14,6 +15,7 @@ import android.os.SystemClock
  * on devices from Xiaomi, Huawei, Samsung, etc.
  */
 class WatchdogReceiver : BroadcastReceiver() {
+    private val tag = "HabiterAppLock"
     
     companion object {
         private const val WATCHDOG_INTERVAL_MS = 60_000L  // Check every 60 seconds
@@ -71,7 +73,8 @@ class WatchdogReceiver : BroadcastReceiver() {
                     context.startService(serviceIntent)
                 }
             } catch (e: Exception) {
-                // Service might already be running or system restrictions
+                prefs.edit().putBoolean("is_enabled", false).apply()
+                Log.w(tag, "App Lock disabled because watchdog restart failed", e)
             }
         }
     }

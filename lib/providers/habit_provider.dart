@@ -1,26 +1,84 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 
+import '../core/ids/id_generator.dart';
+import '../core/persistence/key_value_store.dart';
+import '../core/persistence/shared_preferences_key_value_store.dart';
+import '../core/time/clock.dart';
+import '../core/time/local_date.dart';
+import '../features/analytics/application/analytics_controller.dart';
+import '../features/analytics/domain/habit_metrics.dart';
+import '../features/habits/application/habit_repository.dart';
+import '../features/habits/application/habits_controller.dart';
+import '../features/habits/data/key_value_habit_repository.dart';
+import '../features/habits/domain/habit_source.dart';
+import '../features/history/application/history_controller.dart';
+import '../features/history/application/habit_lifecycle_reminder_gateway.dart';
+import '../features/reminders/application/reminder_action_inbox.dart';
+import '../features/today/application/today_controller.dart';
+import '../features/today/application/completion_use_case.dart';
 import '../models/habit.dart';
 import '../services/ai_manager.dart';
 import '../services/classly_client.dart';
 import '../services/notification_service.dart';
 import '../services/storage_service.dart';
-import '../utils/habit_utils.dart';
 
 class HabitProvider extends ChangeNotifier {
-  HabitProvider();
+  HabitProvider({
+    HabitRepository? repository,
+    Clock clock = const SystemClock(),
+    IdGenerator ids = const UuidIdGenerator(),
+    HabitLifecycleReminderGateway? lifecycleReminders,
+    KeyValueStore? actionStore,
+  }) {
+    _clock = clock;
+    final resolvedRepository =
+        repository ?? KeyValueHabitRepository(SharedPreferencesKeyValueStore());
+    _habitsController = HabitsController(
+      repository: resolvedRepository,
+      ids: ids,
+      clock: clock,
+    );
+    _historyController = HistoryController(resolvedRepository);
+    _todayController = TodayController(
+      repository: resolvedRepository,
+      ids: ids,
+      clock: clock,
+      onChanged: _reloadHabitState,
+    );
+    _analyticsController = AnalyticsController(clock);
+    _lifecycleReminders =
+        lifecycleReminders ?? const _LegacyLifecycleReminderGateway();
+    _actionInbox = ReminderActionInbox(
+      actionStore ?? SharedPreferencesKeyValueStore(),
+    );
+    _actionProcessor = ReminderActionProcessor(
+      inbox: _actionInbox,
+      clock: clock,
+      complete: (habitId, date) async {
+        await _todayController.complete(habitId, date);
+      },
+    );
+    _habitsController.addListener(notifyListeners);
+    _historyController.addListener(notifyListeners);
+  }
 
-  final _uuid = const Uuid();
+  late final HabitsController _habitsController;
+  late final HistoryController _historyController;
+  late final TodayController _todayController;
+  late final AnalyticsController _analyticsController;
+  late final HabitLifecycleReminderGateway _lifecycleReminders;
+  late final ReminderActionInbox _actionInbox;
+  late final ReminderActionProcessor _actionProcessor;
+  late final Clock _clock;
 
-  List<Habit> habits = [];
-  List<HabitEntry> habitEntries = [];
+  List<Habit> get habits => _habitsController.state.habits;
+  List<HabitEntry> get habitEntries => _historyController.state.entries;
   List<AIInsight> aiInsights = [];
   UserPreferences preferences = UserPreferences(
     theme: ThemePreference.system,
-    notifications: true,
+    notifications: false,
     reminderTime: '20:00',
-    aiInsights: true,
+    aiInsights: false,
     language: 'en',
   );
 
@@ -34,24 +92,11 @@ class HabitProvider extends ChangeNotifier {
 
       debugPrint('HabitProvider: Starting load...');
 
-      debugPrint('HabitProvider: Initializing AIManager...');
-      await AIManager.initialize();
-      debugPrint('HabitProvider: AIManager initialized');
-
-      debugPrint('HabitProvider: Initializing NotificationService...');
-      await NotificationService.instance.initialize();
-      debugPrint('HabitProvider: NotificationService initialized');
-
-      // Set up notification action callback
-      NotificationService.instance.setActionCallback(handleNotificationAction);
-
-      debugPrint('HabitProvider: Loading habits from storage...');
-      habits = await StorageService.getHabits();
+      debugPrint('HabitProvider: Loading habits from repository...');
+      await _reloadHabitState();
       debugPrint('HabitProvider: Loaded ${habits.length} habits');
-
-      debugPrint('HabitProvider: Loading habit entries from storage...');
-      habitEntries = await StorageService.getHabitEntries();
       debugPrint('HabitProvider: Loaded ${habitEntries.length} entries');
+      await _actionProcessor.drain();
 
       debugPrint('HabitProvider: Loading AI insights from storage...');
       aiInsights = await StorageService.getAIInsights();
@@ -61,7 +106,16 @@ class HabitProvider extends ChangeNotifier {
       preferences = await StorageService.getUserPreferences();
       debugPrint('HabitProvider: Loaded preferences');
 
-      // Schedule global notification if enabled
+      final hasHabitNotifications = habits.any(
+        (habit) => habit.notificationEnabled && habit.notificationTime != null,
+      );
+      if (preferences.notifications || hasHabitNotifications) {
+        await NotificationService.instance.initialize();
+        NotificationService.instance.setActionCallback(
+          handleNotificationAction,
+        );
+      }
+
       if (preferences.notifications) {
         debugPrint('HabitProvider: Scheduling global notification...');
         await NotificationService.instance.scheduleGlobalDailyReminder(
@@ -72,32 +126,16 @@ class HabitProvider extends ChangeNotifier {
       }
 
       // Schedule individual habit notifications
-      debugPrint('HabitProvider: Scheduling individual habit notifications...');
-      for (final habit in habits) {
-        if (habit.notificationEnabled && habit.notificationTime != null) {
-          await NotificationService.instance.scheduleHabitNotification(habit);
-        }
-      }
-      debugPrint('HabitProvider: Individual notifications scheduled');
-
-      // Mock Data Initialization
-      if (habits.isEmpty) {
-        debugPrint('HabitProvider: Creating mock habit...');
-        final mockHabit = Habit(
-          id: _uuid.v4(),
-          name: 'Drink Water',
-          description: 'Stay hydrated! 💧',
-          color: '0xFF4ECDC4', // Teal/Cyan accent for visibility
-          icon: '💧',
-          frequency: HabitFrequency.daily,
-          targetCount: 8,
-          category: 'Health',
-          createdAt: DateTime.now(),
-          isActive: true,
+      if (hasHabitNotifications) {
+        debugPrint(
+          'HabitProvider: Scheduling individual habit notifications...',
         );
-        habits = [mockHabit];
-        await StorageService.addHabit(mockHabit);
-        debugPrint('HabitProvider: Mock habit created');
+        for (final habit in habits) {
+          if (habit.notificationEnabled && habit.notificationTime != null) {
+            await NotificationService.instance.scheduleHabitNotification(habit);
+          }
+        }
+        debugPrint('HabitProvider: Individual notifications scheduled');
       }
 
       debugPrint('HabitProvider: Load complete!');
@@ -115,6 +153,10 @@ class HabitProvider extends ChangeNotifier {
 
   Future<void> refresh() => load();
 
+  Future<void> _reloadHabitState() async {
+    await Future.wait([_habitsController.load(), _historyController.load()]);
+  }
+
   Future<void> addHabit({
     required String name,
     String? description,
@@ -124,9 +166,10 @@ class HabitProvider extends ChangeNotifier {
     required String color,
     required String icon,
     List<int>? customDays,
+    bool notificationEnabled = false,
+    String? notificationTime,
   }) async {
-    final habit = Habit(
-      id: _uuid.v4(),
+    await _habitsController.add(
       name: name,
       description: description,
       color: color,
@@ -135,101 +178,78 @@ class HabitProvider extends ChangeNotifier {
       targetCount: targetCount,
       category: category,
       customDays: customDays,
-      createdAt: DateTime.now(),
-      isActive: true,
+      notificationEnabled: notificationEnabled,
+      notificationTime: notificationTime,
     );
-
-    habits = [habit, ...habits];
-    await StorageService.addHabit(habit);
-    notifyListeners();
   }
 
   Future<void> updateHabit(String id, Habit updated) async {
-    final index = habits.indexWhere((h) => h.id == id);
-    if (index == -1) return;
-    habits[index] = updated;
-    await StorageService.updateHabit(id, updated.toMap());
-    notifyListeners();
+    if (!habits.any((habit) => habit.id == id)) return;
+    await _habitsController.update(updated);
   }
 
   Future<void> deleteHabit(String id) async {
-    // Cancel notification before deleting
-    await NotificationService.instance.cancelHabitNotification(id);
-
-    habits = habits.where((h) => h.id != id).toList();
-    habitEntries = habitEntries.where((e) => e.habitId != id).toList();
-    await StorageService.deleteHabit(id);
-    notifyListeners();
+    await _habitsController.delete(id);
+    await _lifecycleReminders.cancelForHabit(id);
+    await _historyController.load();
   }
 
   /// Archive a habit (set isActive = false)
   Future<void> archiveHabit(String id) async {
-    final index = habits.indexWhere((h) => h.id == id);
-    if (index == -1) return;
-    
-    final archivedHabit = habits[index].copyWith(isActive: false);
-    habits[index] = archivedHabit;
-    await StorageService.updateHabit(id, archivedHabit.toMap());
-    
-    // Cancel notification for archived habit
-    await NotificationService.instance.cancelHabitNotification(id);
-    
-    debugPrint('HabitProvider: Archived habit: ${archivedHabit.name}');
-    notifyListeners();
+    final habit = habits.where((item) => item.id == id).firstOrNull;
+    if (habit == null) return;
+    final result = await _habitsController.archive(id);
+    if (!result.changed) return;
+    await _lifecycleReminders.cancelForHabit(id);
+
+    debugPrint('HabitProvider: Archived habit: ${habit.name}');
+  }
+
+  Future<void> pauseHabit(String id) async {
+    final result = await _habitsController.pause(id);
+    if (result.changed) await _lifecycleReminders.cancelForHabit(id);
+  }
+
+  Future<void> resumeHabit(String id) async {
+    final result = await _habitsController.resume(id);
+    if (!result.changed) return;
+    final habit = habits.where((item) => item.id == id).firstOrNull;
+    if (habit != null &&
+        habit.notificationEnabled &&
+        habit.notificationTime != null) {
+      await _lifecycleReminders.scheduleForHabit(habit);
+    }
+  }
+
+  Future<void> restoreHabit(String id) async {
+    final result = await _habitsController.restore(id);
+    if (!result.changed) return;
+    final habit = habits.where((item) => item.id == id).firstOrNull;
+    if (habit != null &&
+        habit.notificationEnabled &&
+        habit.notificationTime != null) {
+      await _lifecycleReminders.scheduleForHabit(habit);
+    }
   }
 
   Future<void> toggleHabitCompletion(String habitId, String date) async {
-    final habitIndex = habits.indexWhere((h) => h.id == habitId);
-    if (habitIndex == -1) return;
-    
-    final habit = habits[habitIndex];
-    final existingIndex = habitEntries.indexWhere(
-      (entry) => entry.habitId == habitId && entry.date == date,
-    );
-    HabitEntry? entry;
-    bool isNowCompleted = false;
-    
-    if (existingIndex != -1) {
-      final current = habitEntries[existingIndex];
-      isNowCompleted = !current.completed;
-      entry = HabitEntry(
-        id: current.id,
-        habitId: habitId,
-        date: date,
-        completed: isNowCompleted,
-        count: isNowCompleted ? 1 : 0,
-        timestamp: DateTime.now(),
-      );
-      habitEntries[existingIndex] = entry;
-    } else {
-      isNowCompleted = true;
-      entry = HabitEntry(
-        id: _uuid.v4(),
-        habitId: habitId,
-        date: date,
-        completed: true,
-        count: 1,
-        timestamp: DateTime.now(),
-      );
-      habitEntries.add(entry);
-    }
-
-    await StorageService.addHabitEntry(entry);
-    
-    // If this is a Classly habit and it's now completed, archive it
-    if (isNowCompleted && habit.description == 'Imported from Classly') {
-      debugPrint('HabitProvider: Archiving completed Classly habit: ${habit.name}');
-      final archivedHabit = habit.copyWith(isActive: false);
-      habits[habitIndex] = archivedHabit;
-      await StorageService.updateHabit(habitId, archivedHabit.toMap());
-    }
-    
-    notifyListeners();
+    await _todayController.toggle(habitId, date);
   }
+
+  Future<CompletionResult> completeHabit(String habitId, String date) =>
+      _todayController.complete(habitId, date);
+
+  Future<CompletionResult> undoCompletion(CompletionUndoToken token) =>
+      _todayController.undo(token);
 
   HabitStats getHabitStats(String habitId) {
     final habit = habits.firstWhere((h) => h.id == habitId);
-    return calculateHabitStats(habit, habitEntries);
+    return _analyticsController.statsFor(habit, habitEntries);
+  }
+
+  HabitMetrics getHabitMetrics(String habitId) {
+    final habit = habits.firstWhere((item) => item.id == habitId);
+    return _analyticsController.metricsFor(habit, habitEntries);
   }
 
   Future<void> addAIInsight(AIInsight insight) async {
@@ -282,11 +302,15 @@ class HabitProvider extends ChangeNotifier {
     String? model,
   }) async {
     await AIManager.saveConfig(
-        provider: provider, apiKey: apiKey, model: model);
+      provider: provider,
+      apiKey: apiKey,
+      model: model,
+    );
     notifyListeners();
   }
 
   Future<void> generateInsights() async {
+    await AIManager.initialize();
     await AIManager.generateInsights(
       habits: habits,
       entries: habitEntries,
@@ -296,28 +320,38 @@ class HabitProvider extends ChangeNotifier {
 
   /// Handle notification action to mark habit complete
   Future<void> handleNotificationAction(String habitId, String date) async {
-    await toggleHabitCompletion(habitId, date);
+    await _actionInbox.enqueue(
+      ReminderActionRecord(
+        id: '$habitId@$date:complete',
+        habitId: habitId,
+        occurrence: LocalDate.parse(date),
+        receivedAt: _clock.now().toUtc(),
+      ),
+    );
+    await _actionProcessor.drain();
   }
 
   /// Import Classly events as daily habits
   Future<int> importFromClasslyEvents(List<ClasslyEvent> events) async {
     int imported = 0;
     // Check ALL habits (including archived) to avoid re-importing completed tasks
-    final existingNames = habits.map((h) => h.name.toLowerCase()).toSet();
-    
+    final existingEventIds = habits
+        .map((habit) => habit.source.externalId)
+        .whereType<String>()
+        .toSet();
+
     for (final event in events) {
       // Skip events without date (not relevant for habit tracking)
       if (event.date == null) continue;
-      
+
       // Skip INFO type events - they are just informational, not actionable tasks
       if (event.type.toLowerCase() == 'info') continue;
-      
+
       // Create habit name from event
       final name = event.title ?? event.subjectName ?? 'Classly Task';
-      
-      // Skip if habit with same name already exists
-      if (existingNames.contains(name.toLowerCase())) continue;
-      
+
+      if (existingEventIds.contains(event.id)) continue;
+
       // Determine icon based on event type
       String icon;
       switch (event.type.toLowerCase()) {
@@ -334,30 +368,50 @@ class HabitProvider extends ChangeNotifier {
         default:
           icon = '📋';
       }
-      
-      final habit = Habit(
-        id: _uuid.v4(),
+
+      await _habitsController.add(
         name: name,
-        description: 'Imported from Classly',
+        description: null,
         color: '#4ECDC4', // Teal
         icon: icon,
         frequency: HabitFrequency.custom, // One-time event
-        customDays: [], // Empty = doesn't repeat on any day
+        customDays: <int>[event.date!.weekday],
         targetCount: 1,
         category: event.subjectName ?? 'Classly',
-        createdAt: DateTime.now(),
-        isActive: true,
+        source: HabitSourceMetadata(
+          kind: HabitSourceKind.classlyCompatible,
+          externalId: event.id,
+          additionalFields: <String, Object?>{
+            'occursOn': LocalDate.fromDateTime(event.date!).toString(),
+          },
+        ),
       );
-      
-      habits = [habit, ...habits];
-      await StorageService.addHabit(habit);
-      existingNames.add(name.toLowerCase());
+      existingEventIds.add(event.id);
       imported++;
     }
-    
-    if (imported > 0) {
-      notifyListeners();
-    }
+
     return imported;
   }
+
+  @override
+  void dispose() {
+    _habitsController.removeListener(notifyListeners);
+    _historyController.removeListener(notifyListeners);
+    _habitsController.dispose();
+    _historyController.dispose();
+    super.dispose();
+  }
+}
+
+final class _LegacyLifecycleReminderGateway
+    implements HabitLifecycleReminderGateway {
+  const _LegacyLifecycleReminderGateway();
+
+  @override
+  Future<void> cancelForHabit(String habitId) =>
+      NotificationService.instance.cancelHabitNotification(habitId);
+
+  @override
+  Future<void> scheduleForHabit(Habit habit) =>
+      NotificationService.instance.scheduleHabitNotification(habit);
 }

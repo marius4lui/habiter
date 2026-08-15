@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/habit.dart';
+import '../features/analytics/domain/habit_metrics.dart';
+import '../features/coaching/presentation/recovery_card.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
-import '../utils/habit_utils.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -21,15 +22,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<HabitProvider>();
     final activeHabits = provider.habits.where((h) => h.isActive).toList();
-    final totalCompletions =
-        provider.habitEntries.where((e) => e.completed).length;
+    final totalCompletions = provider.habitEntries
+        .where((e) => e.completed)
+        .length;
     final double avgCompletionRate = activeHabits.isEmpty
         ? 0.0
         : activeHabits
-                .map((h) => calculateHabitStats(h, provider.habitEntries)
-                    .completionRate)
-                .reduce((a, b) => a + b) /
-            activeHabits.length;
+                  .map(
+                    (habit) =>
+                        provider.getHabitMetrics(habit.id).completionRate,
+                  )
+                  .reduce((a, b) => a + b) /
+              activeHabits.length *
+              100;
 
     Habit? selectedHabit;
     if (selectedHabitId != null) {
@@ -64,19 +69,31 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 avgCompletionRate: avgCompletionRate,
               ),
               const SizedBox(height: AppSpacing.lg),
-            if (activeHabits.isNotEmpty) ...[
-              _WeeklyChartCard(
-                habits: activeHabits,
-                entries: provider.habitEntries,
-                selectedHabit: selectedHabit,
-                onSelectHabit: (id) => setState(() => selectedHabitId = id),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              _HabitStatsGrid(
-                habits: activeHabits,
-                entries: provider.habitEntries,
-              ),
-            ],
+              if (activeHabits.isNotEmpty) ...[
+                _WeeklyChartCard(
+                  habits: activeHabits,
+                  selectedHabit: selectedHabit,
+                  metrics: selectedHabit == null
+                      ? null
+                      : provider.getHabitMetrics(selectedHabit.id),
+                  onSelectHabit: (id) => setState(() => selectedHabitId = id),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                if (provider.preferences.showRecoverySupport &&
+                    selectedHabit != null) ...[
+                  RecoveryCard(
+                    metrics: provider.getHabitMetrics(selectedHabit.id),
+                    onHide: () => provider.updatePreferences(
+                      provider.preferences.copyWith(showRecoverySupport: false),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                ],
+                _HabitStatsGrid(
+                  habits: activeHabits,
+                  metricsFor: provider.getHabitMetrics,
+                ),
+              ],
             ],
           ),
         ),
@@ -145,17 +162,22 @@ class _AnalyticsHero extends StatelessWidget {
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppBorderRadius.full),
                   border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.2)),
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.auto_graph,
-                        size: 18, color: AppColors.primary),
+                    const Icon(
+                      Icons.auto_graph,
+                      size: 18,
+                      color: AppColors.primary,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       'Live overview',
-                      style: AppTextStyles.caption
-                          .copyWith(color: AppColors.primary),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.primary,
+                      ),
                     ),
                   ],
                 ),
@@ -214,10 +236,7 @@ class _HeroNumber extends StatelessWidget {
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: color.withValues(alpha: 0.2),
-            width: 1,
-          ),
+          border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -238,7 +257,9 @@ class _HeroNumber extends StatelessWidget {
                 return Text(
                   label,
                   style: TextStyle(
-                    color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                    color: isDark
+                        ? AppColorsDark.textSecondary
+                        : AppColors.textSecondary,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -253,28 +274,23 @@ class _HeroNumber extends StatelessWidget {
   }
 }
 
-
-
-
-
 class _WeeklyChartCard extends StatelessWidget {
   const _WeeklyChartCard({
     required this.habits,
-    required this.entries,
     required this.selectedHabit,
+    required this.metrics,
     required this.onSelectHabit,
   });
 
   final List<Habit> habits;
-  final List<HabitEntry> entries;
   final Habit? selectedHabit;
+  final HabitMetrics? metrics;
   final ValueChanged<String> onSelectHabit;
 
   @override
   Widget build(BuildContext context) {
     final habit = selectedHabit ?? (habits.isNotEmpty ? habits.first : null);
-    final data =
-        habit == null ? <WeeklyData>[] : getWeeklyData(habit.id, entries);
+    final data = metrics?.weeks ?? const <WeeklyHabitMetric>[];
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
@@ -303,24 +319,33 @@ class _WeeklyChartCard extends StatelessWidget {
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 150),
                   decoration: BoxDecoration(
-                    color: isDark ? AppColorsDark.surfaceMuted : AppColors.surfaceMuted,
+                    color: isDark
+                        ? AppColorsDark.surfaceMuted
+                        : AppColors.surfaceMuted,
                     borderRadius: BorderRadius.circular(AppBorderRadius.full),
                     border: Border.all(
                       color: isDark ? AppColorsDark.border : AppColors.border,
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                    ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: habit?.id,
                         isExpanded: true,
                         borderRadius: BorderRadius.circular(AppBorderRadius.md),
                         items: habits
-                            .map((h) => DropdownMenuItem(
-                                  value: h.id,
-                                  child: Text(h.name, overflow: TextOverflow.ellipsis),
-                                ))
+                            .map(
+                              (h) => DropdownMenuItem(
+                                value: h.id,
+                                child: Text(
+                                  h.name,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
                             .toList(),
                         onChanged: (value) {
                           if (value != null) onSelectHabit(value);
@@ -337,89 +362,104 @@ class _WeeklyChartCard extends StatelessWidget {
             Text(
               'Track a habit to see weekly performance.',
               style: AppTextStyles.bodySecondary.copyWith(
-                color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                color: isDark
+                    ? AppColorsDark.textSecondary
+                    : AppColors.textSecondary,
               ),
             )
           else
-            SizedBox(
-              height: 220,
-              child: LineChart(
-                LineChartData(
-                  gridData: const FlGridData(show: false),
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 36,
-                        interval: 1,
-                        getTitlesWidget: (value, _) => Text(
-                          value.toInt().toString(),
-                          style: AppTextStyles.caption.copyWith(
-                            color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+            Semantics(
+              label: data
+                  .map(
+                    (week) =>
+                        '${week.weekStart}: ${week.completed} of ${week.scheduled}',
+                  )
+                  .join(', '),
+              child: SizedBox(
+                height: 220,
+                child: LineChart(
+                  LineChartData(
+                    gridData: const FlGridData(show: false),
+                    titlesData: FlTitlesData(
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 36,
+                          interval: 1,
+                          getTitlesWidget: (value, _) => Text(
+                            value.toInt().toString(),
+                            style: AppTextStyles.caption.copyWith(
+                              color: isDark
+                                  ? AppColorsDark.textSecondary
+                                  : AppColors.textSecondary,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          final index = value.toInt();
-                          if (index < 0 || index >= data.length) {
-                            return const SizedBox();
-                          }
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              data[index].week,
-                              style: AppTextStyles.caption.copyWith(
-                                color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) {
+                            final index = value.toInt();
+                            if (index < 0 || index >= data.length) {
+                              return const SizedBox();
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Text(
+                                data[index].weekStart.toString().substring(5),
+                                style: AppTextStyles.caption.copyWith(
+                                  color: isDark
+                                      ? AppColorsDark.textSecondary
+                                      : AppColors.textSecondary,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                  ),
-                  borderData: FlBorderData(
-                    show: true,
-                    border: Border.all(
-                      color: isDark ? AppColorsDark.border : AppColors.borderLight,
-                    ),
-                  ),
-                  minY: 0,
-                  lineBarsData: [
-                    LineChartBarData(
-                      isCurved: true,
-                      gradient: LinearGradient(
-                        colors: [
-                          _fromHex(habit!.color),
-                          AppColors.primary,
-                        ],
-                      ),
-                      barWidth: 3,
-                      dotData: const FlDotData(show: true),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        gradient: LinearGradient(
-                          colors: [
-                            _fromHex(habit.color).withValues(alpha: 0.18),
-                            AppColors.primary.withValues(alpha: 0.05),
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
+                            );
+                          },
                         ),
                       ),
-                      spots: [
-                        for (var i = 0; i < data.length; i++)
-                          FlSpot(i.toDouble(), data[i].completions.toDouble()),
-                      ],
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
                     ),
-                  ],
+                    borderData: FlBorderData(
+                      show: true,
+                      border: Border.all(
+                        color: isDark
+                            ? AppColorsDark.border
+                            : AppColors.borderLight,
+                      ),
+                    ),
+                    minY: 0,
+                    lineBarsData: [
+                      LineChartBarData(
+                        isCurved: true,
+                        gradient: LinearGradient(
+                          colors: [_fromHex(habit!.color), AppColors.primary],
+                        ),
+                        barWidth: 3,
+                        dotData: const FlDotData(show: true),
+                        belowBarData: BarAreaData(
+                          show: true,
+                          gradient: LinearGradient(
+                            colors: [
+                              _fromHex(habit.color).withValues(alpha: 0.18),
+                              AppColors.primary.withValues(alpha: 0.05),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                        spots: [
+                          for (var i = 0; i < data.length; i++)
+                            FlSpot(i.toDouble(), data[i].completed.toDouble()),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -430,10 +470,10 @@ class _WeeklyChartCard extends StatelessWidget {
 }
 
 class _HabitStatsGrid extends StatelessWidget {
-  const _HabitStatsGrid({required this.habits, required this.entries});
+  const _HabitStatsGrid({required this.habits, required this.metricsFor});
 
   final List<Habit> habits;
-  final List<HabitEntry> entries;
+  final HabitMetrics Function(String habitId) metricsFor;
 
   @override
   Widget build(BuildContext context) {
@@ -441,68 +481,78 @@ class _HabitStatsGrid extends StatelessWidget {
       spacing: AppSpacing.md,
       runSpacing: AppSpacing.md,
       children: habits.map((habit) {
-        final stats = calculateHabitStats(habit, entries);
+        final stats = metricsFor(habit.id);
         return SizedBox(
           width: MediaQuery.of(context).size.width > 900
               ? (MediaQuery.of(context).size.width -
-                      (AppSpacing.lg * 2) -
-                      (AppSpacing.md * 2)) /
-                  3
+                        (AppSpacing.lg * 2) -
+                        (AppSpacing.md * 2)) /
+                    3
               : MediaQuery.of(context).size.width > 640
-                  ? (MediaQuery.of(context).size.width -
-                          (AppSpacing.lg * 2) -
-                          AppSpacing.md) /
-                      2
-                  : double.infinity,
+              ? (MediaQuery.of(context).size.width -
+                        (AppSpacing.lg * 2) -
+                        AppSpacing.md) /
+                    2
+              : double.infinity,
           child: Builder(
             builder: (ctx) {
               final isDark = Theme.of(ctx).brightness == Brightness.dark;
               return Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  gradient: isDark ? AppGradientsDark.cardSheen : AppGradients.cardSheen,
+                  gradient: isDark
+                      ? AppGradientsDark.cardSheen
+                      : AppGradients.cardSheen,
                   borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                   border: Border.all(
-                    color: isDark ? AppColorsDark.border : AppColors.borderLight,
+                    color: isDark
+                        ? AppColorsDark.border
+                        : AppColors.borderLight,
                   ),
-                  boxShadow: isDark ? AppShadows.neumorphSmDark : AppShadows.soft,
+                  boxShadow: isDark
+                      ? AppShadows.neumorphSmDark
+                      : AppShadows.soft,
                 ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _HabitBadge(colorHex: habit.color, icon: habit.icon),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Text(
-                        habit.name,
-                        style: AppTextStyles.h3.copyWith(
-                          color: isDark ? AppColorsDark.text : AppColors.textMain,
+                    Row(
+                      children: [
+                        _HabitBadge(colorHex: habit.color, icon: habit.icon),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Text(
+                            habit.name,
+                            style: AppTextStyles.h3.copyWith(
+                              color: isDark
+                                  ? AppColorsDark.text
+                                  : AppColors.textMain,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _StatPill(
+                          label: 'Streak',
+                          value: '${stats.currentStreak}',
+                        ),
+                        _StatPill(
+                          label: 'Success',
+                          value:
+                              '${(stats.completionRate * 100).toStringAsFixed(0)}%',
+                        ),
+                        _StatPill(label: 'Total', value: '${stats.completed}'),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _StatPill(
-                        label: 'Streak',
-                        value: '${stats.streakData.currentStreak}'),
-                    _StatPill(
-                        label: 'Success',
-                        value: '${stats.completionRate.toStringAsFixed(0)}%'),
-                    _StatPill(
-                        label: 'Total', value: '${stats.totalCompletions}'),
-                  ],
-                ),
-              ],
-            ),
-          );
+              );
             },
           ),
         );
@@ -551,7 +601,9 @@ class _StatPill extends StatelessWidget {
         Text(
           label,
           style: AppTextStyles.caption.copyWith(
-            color: isDark ? AppColorsDark.textSecondary : AppColors.textSecondary,
+            color: isDark
+                ? AppColorsDark.textSecondary
+                : AppColors.textSecondary,
           ),
         ),
       ],

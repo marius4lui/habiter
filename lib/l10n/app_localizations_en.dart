@@ -192,10 +192,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiFeatures => 'AI Features';
 
   @override
-  String get aiInsights => 'AI Insights';
+  String get aiInsights => 'Local coaching';
 
   @override
-  String get aiInsightsDesc => 'Intelligent analysis of your habits';
+  String get aiInsightsDesc =>
+      'Deterministic suggestions calculated on this device';
 
   @override
   String get language => 'Language';
@@ -306,7 +307,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loadingApps => 'Loading apps...';
 
   @override
-  String get noAppsFound => 'No apps found';
+  String get noAppsFound =>
+      'No visible launcher apps were found. App visibility depends on Android policy.';
 
   @override
   String selectAppsToLock(int count) {
@@ -319,6 +321,28 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get androidOnlyDesc =>
       'App Lock is only available on Android devices.';
+
+  @override
+  String get appLockRecovery => 'App Lock is safely off';
+
+  @override
+  String get appLockReliability => 'Device reliability';
+
+  @override
+  String get appLockReliabilityDescription =>
+      'Android and manufacturer power policies can stop monitoring. Habiter turns App Lock off when required access is missing.';
+
+  @override
+  String get disableAppLock => 'Disable App Lock now';
+
+  @override
+  String get batterySettings => 'Open battery settings';
+
+  @override
+  String get refreshPermissions => 'Check permissions again';
+
+  @override
+  String get grant => 'Grant';
 
   @override
   String get yourDailyFlow => 'Your Daily Flow';
@@ -382,6 +406,94 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get archive => 'Archive';
+
+  @override
+  String get pauseHabit => 'Pause habit';
+
+  @override
+  String get resumeHabit => 'Resume habit';
+
+  @override
+  String get restoreHabit => 'Restore habit';
+
+  @override
+  String get manageHabitLifecycle => 'Paused and archived habits';
+
+  @override
+  String get noPausedOrArchivedHabits => 'No paused or archived habits';
+
+  @override
+  String inactiveHabitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count habits',
+      one: '1 habit',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get habitPaused => 'Paused — planned days do not count against you';
+
+  @override
+  String get habitArchived => 'Archived — available to restore';
+
+  @override
+  String get recoveryTitle => 'Your pace, without pressure';
+
+  @override
+  String get recoveryNewStart =>
+      'Start with the next small opportunity when it suits you.';
+
+  @override
+  String get recoveryGentleReturn =>
+      'A missed day does not erase earlier effort. The next planned day is enough.';
+
+  @override
+  String get recoveryRebuilding =>
+      'You are finding your rhythm again, one planned day at a time.';
+
+  @override
+  String get recoverySteady =>
+      'Your recent rhythm is steady. Pauses remain neutral.';
+
+  @override
+  String get recoveryHide => 'Hide supportive score';
+
+  @override
+  String recoveryFormula(int completed, int scheduled, int score) {
+    return '$completed of $scheduled eligible plans completed = $score%';
+  }
+
+  @override
+  String get reminderDiagnostics => 'Reminder diagnostics';
+
+  @override
+  String get reminderDiagnosticsDescription =>
+      'Review permissions and pending reminders safely';
+
+  @override
+  String get reminderPermissionGranted => 'Notification permission is granted';
+
+  @override
+  String get reminderPermissionMissing =>
+      'Notification permission is not available';
+
+  @override
+  String pendingReminders(int count) {
+    return 'Pending reminders: $count';
+  }
+
+  @override
+  String get noPendingReminders => 'No pending reminders';
+
+  @override
+  String get osManagedReminderTime =>
+      'Delivery time managed by the operating system';
+
+  @override
+  String get rescheduleReminders => 'Reschedule';
 
   @override
   String get goal => 'Goal';

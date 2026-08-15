@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
+import '../core/time/clock.dart';
+import '../core/time/local_date.dart';
 import '../models/habit.dart';
 import '../models/locked_app.dart';
-import '../services/app_lock_service.dart';
+import '../features/app_lock/domain/app_lock_gateway.dart';
+import '../features/app_lock/infrastructure/method_channel_app_lock_gateway.dart';
 import '../services/storage_service.dart';
 
 /// Provider for managing app lock state and logic
 class AppLockProvider extends ChangeNotifier {
-  AppLockProvider();
+  AppLockProvider({AppLockGateway? gateway, Clock clock = const SystemClock()})
+    : _gateway = gateway ?? const MethodChannelAppLockGateway(),
+      _clock = clock;
+
+  final AppLockGateway _gateway;
+  final Clock _clock;
 
   AppLockConfig _config = const AppLockConfig();
   List<LockedApp> _availableApps = [];
@@ -16,6 +22,7 @@ class AppLockProvider extends ChangeNotifier {
   String? _error;
   bool _hasUsageStatsPermission = false;
   bool _hasOverlayPermission = false;
+  bool? _batteryOptimized;
 
   // Cache for habit data to allow sync on config changes
   List<Habit> _lastHabits = [];
@@ -29,8 +36,10 @@ class AppLockProvider extends ChangeNotifier {
   bool get isEnabled => _config.isEnabled;
   bool get hasUsageStatsPermission => _hasUsageStatsPermission;
   bool get hasOverlayPermission => _hasOverlayPermission;
-  bool get hasAllPermissions => _hasUsageStatsPermission && _hasOverlayPermission;
-  bool get isSupported => AppLockService.isSupported;
+  bool get hasAllPermissions =>
+      _hasUsageStatsPermission && _hasOverlayPermission;
+  bool? get batteryOptimized => _batteryOptimized;
+  bool get isSupported => _gateway.isSupported;
 
   /// Load saved config and check permissions
   Future<void> load() async {
@@ -42,6 +51,7 @@ class AppLockProvider extends ChangeNotifier {
     try {
       _config = await StorageService.getAppLockConfig();
       await checkPermissions();
+      await checkBatteryOptimization();
       _error = null;
     } catch (e) {
       _error = 'Failed to load app lock config';
@@ -55,20 +65,39 @@ class AppLockProvider extends ChangeNotifier {
   Future<void> checkPermissions() async {
     if (!isSupported) return;
 
-    _hasUsageStatsPermission = await AppLockService.hasUsageStatsPermission();
-    _hasOverlayPermission = await AppLockService.hasOverlayPermission();
+    final result = await _gateway.permissions();
+    if (result case AppLockSuccess<AppLockPermissionSnapshot>(:final value)) {
+      _hasUsageStatsPermission = value.usageAccess;
+      _hasOverlayPermission = value.overlay;
+      _error = null;
+    } else if (result case AppLockFailure<AppLockPermissionSnapshot>(
+      :final safeMessage,
+    )) {
+      _hasUsageStatsPermission = false;
+      _hasOverlayPermission = false;
+      _error = safeMessage;
+    }
     notifyListeners();
   }
 
   /// Request usage stats permission
   Future<void> requestUsageStatsPermission() async {
-    await AppLockService.requestUsageStatsPermission();
+    await _gateway.requestUsageAccess();
   }
 
   /// Request overlay permission
   Future<void> requestOverlayPermission() async {
-    await AppLockService.requestOverlayPermission();
+    await _gateway.requestOverlay();
   }
+
+  Future<void> checkBatteryOptimization() async {
+    final result = await _gateway.isBatteryOptimized();
+    if (result case AppLockSuccess<bool>(:final value)) {
+      _batteryOptimized = value;
+    }
+  }
+
+  Future<void> openBatterySettings() => _gateway.openBatterySettings();
 
   /// Load list of installed non-system apps
   Future<void> loadInstalledApps() async {
@@ -78,28 +107,32 @@ class AppLockProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final apps = await AppLockService.getInstalledApps();
-      
+      final result = await _gateway.installedApps();
+      if (result is AppLockFailure<List<LockedApp>>) {
+        throw _AppLockSafeException(result.safeMessage);
+      }
+      final apps = (result as AppLockSuccess<List<LockedApp>>).value;
+
       // Merge with saved locked apps to preserve isLocked state
       final lockedPackages = _config.lockedApps
           .where((a) => a.isLocked)
           .map((a) => a.packageName)
           .toSet();
-      
+
       _availableApps = apps.map((app) {
         return app.copyWith(isLocked: lockedPackages.contains(app.packageName));
       }).toList();
-      
+
       // Sort: locked apps first, then alphabetically
       _availableApps.sort((a, b) {
         if (a.isLocked && !b.isLocked) return -1;
         if (!a.isLocked && b.isLocked) return 1;
         return a.appName.toLowerCase().compareTo(b.appName.toLowerCase());
       });
-      
+
       _error = null;
-    } catch (e) {
-      _error = 'Failed to load installed apps';
+    } on _AppLockSafeException catch (error) {
+      _error = error.message;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -108,7 +141,9 @@ class AppLockProvider extends ChangeNotifier {
 
   /// Toggle lock status for an app
   Future<void> toggleAppLock(String packageName) async {
-    final index = _availableApps.indexWhere((a) => a.packageName == packageName);
+    final index = _availableApps.indexWhere(
+      (a) => a.packageName == packageName,
+    );
     if (index == -1) return;
 
     final app = _availableApps[index];
@@ -123,6 +158,11 @@ class AppLockProvider extends ChangeNotifier {
 
   /// Enable or disable app lock feature
   Future<void> setEnabled(bool enabled) async {
+    if (enabled && (!hasAllPermissions || _config.lockedPackageNames.isEmpty)) {
+      _error = 'Choose at least one app and grant both permissions first.';
+      notifyListeners();
+      return;
+    }
     _config = _config.copyWith(isEnabled: enabled);
     await _saveAndSync();
     await _syncHabitCompletionState();
@@ -150,9 +190,20 @@ class AppLockProvider extends ChangeNotifier {
     await StorageService.saveAppLockConfig(_config);
 
     if (_config.isEnabled && _config.lockedPackageNames.isNotEmpty) {
-      await AppLockService.startMonitoring(_config.lockedPackageNames);
+      final result = await _gateway.start(_config.lockedPackageNames);
+      if (result case AppLockFailure<bool>(:final safeMessage)) {
+        _config = _config.copyWith(isEnabled: false);
+        await StorageService.saveAppLockConfig(_config);
+        await _gateway.stop();
+        _error = safeMessage;
+      } else if (result case AppLockSuccess<bool>(value: false)) {
+        _config = _config.copyWith(isEnabled: false);
+        await StorageService.saveAppLockConfig(_config);
+        await _gateway.stop();
+        _error = 'App Lock stopped because required access is unavailable.';
+      }
     } else {
-      await AppLockService.stopMonitoring();
+      await _gateway.stop();
     }
   }
 
@@ -170,7 +221,7 @@ class AppLockProvider extends ChangeNotifier {
   Future<void> _syncHabitCompletionState() async {
     if (!_config.isEnabled) return;
 
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final today = LocalDate.fromDateTime(_clock.now()).toString();
 
     // Get list of incomplete habits
     List<String> incompleteHabitNames = [];
@@ -181,7 +232,8 @@ class AppLockProvider extends ChangeNotifier {
       final activeHabits = _lastHabits.where((h) => h.isActive).toList();
       for (final habit in activeHabits) {
         final isComplete = _lastEntries.any(
-            (e) => e.habitId == habit.id && e.date == today && e.completed);
+          (e) => e.habitId == habit.id && e.date == today && e.completed,
+        );
         if (!isComplete) {
           incompleteHabitNames.add(habit.name);
         }
@@ -197,8 +249,9 @@ class AppLockProvider extends ChangeNotifier {
           final habit = _lastHabits.where((h) => h.id == habitId).firstOrNull;
           if (habit == null) continue;
 
-          final isComplete = _lastEntries.any((e) =>
-              e.habitId == habitId && e.date == today && e.completed);
+          final isComplete = _lastEntries.any(
+            (e) => e.habitId == habitId && e.date == today && e.completed,
+          );
           if (!isComplete) {
             incompleteHabitNames.add(habit.name);
           }
@@ -208,13 +261,21 @@ class AppLockProvider extends ChangeNotifier {
     }
 
     // Update incomplete habits for overlay display
-    await AppLockService.updateIncompleteHabits(incompleteHabitNames);
-
-    // Notify native service
-    if (habitsComplete) {
-      await AppLockService.notifyHabitsComplete();
-    } else {
-      await AppLockService.notifyHabitsIncomplete();
+    final result = await _gateway.syncCompletion(
+      complete: habitsComplete,
+      incompleteHabitNames: incompleteHabitNames,
+    );
+    if (result case AppLockFailure<void>(:final safeMessage)) {
+      _error = safeMessage;
+      _config = _config.copyWith(isEnabled: false);
+      await StorageService.saveAppLockConfig(_config);
+      await _gateway.stop();
+      notifyListeners();
     }
   }
+}
+
+final class _AppLockSafeException implements Exception {
+  const _AppLockSafeException(this.message);
+  final String message;
 }

@@ -90,8 +90,8 @@
   "themeSystem": "System",
   
   "aiFeatures": "AI Features",
-  "aiInsights": "AI Insights",
-  "aiInsightsDesc": "Intelligent analysis of your habits",
+  "aiInsights": "Local coaching",
+  "aiInsightsDesc": "Deterministic suggestions calculated on this device",
   
   "language": "Language",
   "appLanguage": "App Language",
@@ -142,7 +142,7 @@
   "overlayPermission": "Display over other apps",
   "overlayPermissionDesc": "Show lock screen",
   "loadingApps": "Loading apps...",
-  "noAppsFound": "No apps found",
+  "noAppsFound": "No visible launcher apps were found. App visibility depends on Android policy.",
   "selectAppsToLock": "Select apps to lock ({count})",
   "@selectAppsToLock": {
     "placeholders": {
@@ -151,6 +151,13 @@
   },
   "androidOnly": "Android Only",
   "androidOnlyDesc": "App Lock is only available on Android devices.",
+  "appLockRecovery": "App Lock is safely off",
+  "appLockReliability": "Device reliability",
+  "appLockReliabilityDescription": "Android and manufacturer power policies can stop monitoring. Habiter turns App Lock off when required access is missing.",
+  "disableAppLock": "Disable App Lock now",
+  "batterySettings": "Open battery settings",
+  "refreshPermissions": "Check permissions again",
+  "grant": "Grant",
   
   "yourDailyFlow": "Your Daily Flow",
   "keepMomentum": "Keep the momentum going!",
@@ -189,6 +196,42 @@
   "undoComplete": "Undo",
   "edit": "Edit",
   "archive": "Archive",
+  "pauseHabit": "Pause habit",
+  "resumeHabit": "Resume habit",
+  "restoreHabit": "Restore habit",
+  "manageHabitLifecycle": "Paused and archived habits",
+  "noPausedOrArchivedHabits": "No paused or archived habits",
+  "inactiveHabitCount": "{count, plural, =1{1 habit} other{{count} habits}}",
+  "@inactiveHabitCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "habitPaused": "Paused — planned days do not count against you",
+  "habitArchived": "Archived — available to restore",
+  "recoveryTitle": "Your pace, without pressure",
+  "recoveryNewStart": "Start with the next small opportunity when it suits you.",
+  "recoveryGentleReturn": "A missed day does not erase earlier effort. The next planned day is enough.",
+  "recoveryRebuilding": "You are finding your rhythm again, one planned day at a time.",
+  "recoverySteady": "Your recent rhythm is steady. Pauses remain neutral.",
+  "recoveryHide": "Hide supportive score",
+  "recoveryFormula": "{completed} of {scheduled} eligible plans completed = {score}%",
+  "@recoveryFormula": {
+    "placeholders": {
+      "completed": {"type": "int"},
+      "scheduled": {"type": "int"},
+      "score": {"type": "int"}
+    }
+  },
+  "reminderDiagnostics": "Reminder diagnostics",
+  "reminderDiagnosticsDescription": "Review permissions and pending reminders safely",
+  "reminderPermissionGranted": "Notification permission is granted",
+  "reminderPermissionMissing": "Notification permission is not available",
+  "pendingReminders": "Pending reminders: {count}",
+  "@pendingReminders": {"placeholders": {"count": {"type": "int"}}},
+  "noPendingReminders": "No pending reminders",
+  "osManagedReminderTime": "Delivery time managed by the operating system",
+  "rescheduleReminders": "Reschedule",
   "goal": "Goal",
   "createdAt": "Created",
   "todayDone": "Done today ✓",

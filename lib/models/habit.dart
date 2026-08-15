@@ -1,10 +1,47 @@
 import 'dart:convert';
 
+import '../features/habits/domain/habit_source.dart';
+
+const _unsetHabitField = Object();
+
 enum HabitFrequency { daily, weekly, custom }
 
 enum AIInsightType { recommendation, motivation, analysis, prediction }
 
 enum ThemePreference { light, dark, system }
+
+enum HabitLifecycleStatus { active, paused, archived }
+
+final class HabitPause {
+  const HabitPause({required this.startedAt, this.endedAt});
+
+  final DateTime startedAt;
+  final DateTime? endedAt;
+
+  HabitPause end(DateTime value) =>
+      HabitPause(startedAt: startedAt, endedAt: value);
+
+  bool includesDate(String value) {
+    final date = DateTime.parse('${value}T00:00:00Z');
+    final start = DateTime.utc(startedAt.year, startedAt.month, startedAt.day);
+    final end = endedAt == null
+        ? null
+        : DateTime.utc(endedAt!.year, endedAt!.month, endedAt!.day);
+    return !date.isBefore(start) && (end == null || date.isBefore(end));
+  }
+
+  Map<String, Object?> toMap() => <String, Object?>{
+    'startedAt': startedAt.toIso8601String(),
+    'endedAt': endedAt?.toIso8601String(),
+  };
+
+  factory HabitPause.fromMap(Map<String, dynamic> map) => HabitPause(
+    startedAt: DateTime.parse(map['startedAt'] as String),
+    endedAt: map['endedAt'] == null
+        ? null
+        : DateTime.parse(map['endedAt'] as String),
+  );
+}
 
 class Habit {
   Habit({
@@ -21,7 +58,12 @@ class Habit {
     required this.isActive,
     this.notificationEnabled = false,
     this.notificationTime,
-  });
+    Iterable<HabitPause> pauses = const <HabitPause>[],
+    this.archivedAt,
+    this.restoredAt,
+    HabitSourceMetadata? source,
+  }) : pauses = List<HabitPause>.unmodifiable(pauses),
+       source = source ?? HabitSourceMetadata();
 
   final String id;
   final String name;
@@ -36,36 +78,69 @@ class Habit {
   final bool isActive;
   final bool notificationEnabled;
   final String? notificationTime;
+  final List<HabitPause> pauses;
+  final DateTime? archivedAt;
+  final DateTime? restoredAt;
+  final HabitSourceMetadata source;
+
+  HabitLifecycleStatus get lifecycleStatus {
+    if (isActive) return HabitLifecycleStatus.active;
+    if (pauses.isNotEmpty && pauses.last.endedAt == null) {
+      return HabitLifecycleStatus.paused;
+    }
+    return HabitLifecycleStatus.archived;
+  }
+
+  bool isPausedOn(String date) =>
+      pauses.any((pause) => pause.includesDate(date));
 
   Habit copyWith({
     String? id,
     String? name,
-    String? description,
+    Object? description = _unsetHabitField,
     String? color,
     String? icon,
     HabitFrequency? frequency,
     int? targetCount,
     String? category,
-    List<int>? customDays,
+    Object? customDays = _unsetHabitField,
     DateTime? createdAt,
     bool? isActive,
     bool? notificationEnabled,
-    String? notificationTime,
+    Object? notificationTime = _unsetHabitField,
+    Iterable<HabitPause>? pauses,
+    Object? archivedAt = _unsetHabitField,
+    Object? restoredAt = _unsetHabitField,
+    HabitSourceMetadata? source,
   }) {
     return Habit(
       id: id ?? this.id,
       name: name ?? this.name,
-      description: description ?? this.description,
+      description: identical(description, _unsetHabitField)
+          ? this.description
+          : description as String?,
       color: color ?? this.color,
       icon: icon ?? this.icon,
       frequency: frequency ?? this.frequency,
       targetCount: targetCount ?? this.targetCount,
       category: category ?? this.category,
-      customDays: customDays ?? this.customDays,
+      customDays: identical(customDays, _unsetHabitField)
+          ? this.customDays
+          : customDays as List<int>?,
       createdAt: createdAt ?? this.createdAt,
       isActive: isActive ?? this.isActive,
       notificationEnabled: notificationEnabled ?? this.notificationEnabled,
-      notificationTime: notificationTime ?? this.notificationTime,
+      notificationTime: identical(notificationTime, _unsetHabitField)
+          ? this.notificationTime
+          : notificationTime as String?,
+      pauses: pauses ?? this.pauses,
+      archivedAt: identical(archivedAt, _unsetHabitField)
+          ? this.archivedAt
+          : archivedAt as DateTime?,
+      restoredAt: identical(restoredAt, _unsetHabitField)
+          ? this.restoredAt
+          : restoredAt as DateTime?,
+      source: source ?? this.source,
     );
   }
 
@@ -84,6 +159,13 @@ class Habit {
       'isActive': isActive,
       'notificationEnabled': notificationEnabled,
       'notificationTime': notificationTime,
+      if (pauses.isNotEmpty)
+        'pauses': pauses.map((pause) => pause.toMap()).toList(growable: false),
+      if (archivedAt != null) 'archivedAt': archivedAt!.toIso8601String(),
+      if (restoredAt != null) 'restoredAt': restoredAt!.toIso8601String(),
+      if (source.kind != HabitSourceKind.local ||
+          source.additionalFields.isNotEmpty)
+        'source': source.toMap(),
     };
   }
 
@@ -100,13 +182,25 @@ class Habit {
       ),
       targetCount: (map['targetCount'] as num?)?.toInt() ?? 1,
       category: map['category'] as String? ?? 'General',
-      customDays:
-          (map['customDays'] as List<dynamic>?)?.map((e) => e as int).toList(),
-      createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ??
+      customDays: (map['customDays'] as List<dynamic>?)
+          ?.map((e) => e as int)
+          .toList(),
+      createdAt:
+          DateTime.tryParse(map['createdAt'] as String? ?? '') ??
           DateTime.now(),
       isActive: map['isActive'] as bool? ?? true,
       notificationEnabled: map['notificationEnabled'] as bool? ?? false,
       notificationTime: map['notificationTime'] as String?,
+      pauses: ((map['pauses'] as List<dynamic>?) ?? const <dynamic>[]).map(
+        (value) => HabitPause.fromMap(Map<String, dynamic>.from(value as Map)),
+      ),
+      archivedAt: DateTime.tryParse(map['archivedAt'] as String? ?? ''),
+      restoredAt: DateTime.tryParse(map['restoredAt'] as String? ?? ''),
+      source: map['source'] is Map
+          ? HabitSourceMetadata.fromMap(
+              Map<String, Object?>.from(map['source'] as Map),
+            )
+          : HabitSourceMetadata(),
     );
   }
 
@@ -151,7 +245,8 @@ class HabitEntry {
       date: map['date'] as String,
       completed: map['completed'] as bool? ?? false,
       count: (map['count'] as num?)?.toInt() ?? 0,
-      timestamp: DateTime.tryParse(map['timestamp'] as String? ?? '') ??
+      timestamp:
+          DateTime.tryParse(map['timestamp'] as String? ?? '') ??
           DateTime.now(),
     );
   }
@@ -232,7 +327,8 @@ class AIInsight {
       title: map['title'] as String? ?? 'Insight',
       message: map['message'] as String? ?? '',
       confidence: (map['confidence'] as num?)?.toDouble() ?? 0.5,
-      createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ??
+      createdAt:
+          DateTime.tryParse(map['createdAt'] as String? ?? '') ??
           DateTime.now(),
       isRead: map['isRead'] as bool? ?? false,
     );
@@ -246,6 +342,7 @@ class UserPreferences {
     required this.reminderTime,
     required this.aiInsights,
     required this.language,
+    this.showRecoverySupport = true,
   });
 
   final ThemePreference theme;
@@ -253,6 +350,7 @@ class UserPreferences {
   final String reminderTime;
   final bool aiInsights;
   final String language;
+  final bool showRecoverySupport;
 
   Map<String, dynamic> toMap() {
     return {
@@ -261,6 +359,7 @@ class UserPreferences {
       'reminderTime': reminderTime,
       'aiInsights': aiInsights,
       'language': language,
+      if (!showRecoverySupport) 'showRecoverySupport': false,
     };
   }
 
@@ -272,8 +371,25 @@ class UserPreferences {
       ),
       notifications: map['notifications'] as bool? ?? true,
       reminderTime: map['reminderTime'] as String? ?? '20:00',
-      aiInsights: map['aiInsights'] as bool? ?? true,
+      aiInsights: map['aiInsights'] as bool? ?? false,
       language: map['language'] as String? ?? 'en',
+      showRecoverySupport: map['showRecoverySupport'] as bool? ?? true,
     );
   }
+
+  UserPreferences copyWith({
+    ThemePreference? theme,
+    bool? notifications,
+    String? reminderTime,
+    bool? aiInsights,
+    String? language,
+    bool? showRecoverySupport,
+  }) => UserPreferences(
+    theme: theme ?? this.theme,
+    notifications: notifications ?? this.notifications,
+    reminderTime: reminderTime ?? this.reminderTime,
+    aiInsights: aiInsights ?? this.aiInsights,
+    language: language ?? this.language,
+    showRecoverySupport: showRecoverySupport ?? this.showRecoverySupport,
+  );
 }

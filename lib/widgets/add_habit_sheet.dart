@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/habit.dart';
+import '../features/habits/presentation/editor/habit_editor_draft.dart';
+import '../l10n/l10n.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/habit_utils.dart';
@@ -26,6 +28,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
   late String _color;
   late String _icon;
   final Set<int> _selectedWeekdays = {};
+  bool _notificationEnabled = false;
+  String? _notificationTime;
   bool _saving = false;
 
   Map<String, List<String>> get _iconSuggestions => getHabitIconSuggestions();
@@ -43,6 +47,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
       _color = h.color;
       _icon = h.icon;
       if (h.customDays != null) _selectedWeekdays.addAll(h.customDays!);
+      _notificationEnabled = h.notificationEnabled;
+      _notificationTime = h.notificationTime;
     } else {
       _category = _iconSuggestions.keys.first;
       _frequency = HabitFrequency.daily;
@@ -60,24 +66,40 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final draft = HabitEditorDraft(
+      name: _nameController.text,
+      description: _descriptionController.text,
+      category: _category,
+      frequency: _frequency,
+      targetCount: _targetCount,
+      color: _color,
+      icon: _icon,
+      customDays: _selectedWeekdays,
+      notificationEnabled: _notificationEnabled,
+      notificationTime: _notificationTime,
+    );
+    final errors = draft.validate();
+    if (errors.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please complete the schedule and reminder fields.'),
+        ),
+      );
+      return;
+    }
     setState(() => _saving = true);
     final provider = context.read<HabitProvider>();
     if (widget.habit != null) {
       await provider.updateHabit(
         widget.habit!.id,
-        widget.habit!.copyWith(
-          name: _nameController.text.trim(),
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          category: _category,
-          frequency: _frequency,
-          targetCount: _targetCount,
-          color: _color,
-          icon: _icon,
-          customDays: _frequency == HabitFrequency.custom
-              ? _selectedWeekdays.toList()
-              : null,
+        draft.toHabit(
+          id: widget.habit!.id,
+          createdAt: widget.habit!.createdAt,
+          isActive: widget.habit!.isActive,
+          pauses: widget.habit!.pauses,
+          archivedAt: widget.habit!.archivedAt,
+          restoredAt: widget.habit!.restoredAt,
+          source: widget.habit!.source,
         ),
       );
     } else {
@@ -94,6 +116,8 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
         customDays: _frequency == HabitFrequency.custom
             ? _selectedWeekdays.toList()
             : null,
+        notificationEnabled: _notificationEnabled,
+        notificationTime: _notificationTime,
       );
     }
     if (!mounted) return;
@@ -101,18 +125,21 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
   }
 
   Future<void> _deleteHabit() async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Habit?'),
-        content: const Text('This action cannot be undone.'),
+        title: Text(l10n.deleteHabit),
+        content: Text(l10n.deleteHabitConfirm),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Delete', style: TextStyle(color: Colors.red))),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );
@@ -130,6 +157,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
     final colors = generateHabitColors();
     final categories = _iconSuggestions.keys.toList();
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = context.l10n;
 
     return Container(
       decoration: BoxDecoration(
@@ -160,305 +188,373 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(widget.habit != null ? 'Edit Habit' : 'New Habit',
-                      style: AppTextStyles.h2),
-                  if (widget.habit != null)
-                    IconButton(
-                        onPressed: _deleteHabit,
-                        icon: const Icon(Icons.delete_outline,
-                            color: Colors.red)),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Name',
-                        hintText: 'e.g. Read 20 minutes',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Name is required';
-                        }
-                        return null;
-                      },
+                    Text(
+                      widget.habit != null ? l10n.editHabit : l10n.newHabit,
+                      style: AppTextStyles.h2,
                     ),
-                    const SizedBox(height: AppSpacing.md),
-                    TextFormField(
-                      controller: _descriptionController,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Description',
-                        hintText: 'Optional description',
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Text('Category', style: AppTextStyles.h3),
-                    const SizedBox(height: AppSpacing.sm),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: categories
-                          .map(
-                            (c) => ChoiceChip(
-                              label: Text(c),
-                              selected: c == _category,
-                              onSelected: (_) {
-                                setState(() {
-                                  _category = c;
-                                  _icon = _iconSuggestions[c]?.first ?? _icon;
-                                });
-                              },
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Icon', style: AppTextStyles.h3),
-                        Row(
-                          children: [
-                            // Show currently selected icon
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                border: Border.all(color: AppColors.primary),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(_icon, style: const TextStyle(fontSize: 20)),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Text(
-                              'Tap below to change',
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
+                    if (widget.habit != null)
+                      IconButton(
+                        onPressed: _deleteHabit,
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: Colors.red,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    SizedBox(
-                      height: 52,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (_, index) {
-                          final icons = _iconSuggestions[_category] ?? _iconSuggestions.values.first;
-                          if (icons.isEmpty) return const SizedBox();
-                          final icon = icons[index % icons.length];
-                          final selected = icon == _icon;
-                          return GestureDetector(
-                            onTap: () => setState(() => _icon = icon),
-                            child: Container(
-                              width: 52,
-                              decoration: BoxDecoration(
-                                color: selected
-                                    ? AppColors.primary
-                                    : AppColors.surface,
-                                borderRadius:
-                                    BorderRadius.circular(AppBorderRadius.full),
-                                border: Border.all(
-                                  color: selected
-                                      ? AppColors.primary
-                                      : AppColors.borderLight,
-                                  width: selected ? 2 : 1,
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                icon,
-                                style: const TextStyle(fontSize: 22),
-                              ),
-                            ),
-                          );
-                        },
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(width: AppSpacing.sm),
-                        itemCount: (_iconSuggestions[_category] ?? _iconSuggestions.values.first).length,
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text('Color', style: AppTextStyles.h3),
-                    const SizedBox(height: AppSpacing.sm),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: colors
-                          .map(
-                            (color) => GestureDetector(
-                              onTap: () => setState(() => _color = color),
-                              child: Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: _fromHex(color),
-                                  borderRadius: BorderRadius.circular(
-                                      AppBorderRadius.full),
-                                  border: Border.all(
-                                    color: _color == color
-                                        ? AppColors.text
-                                        : Colors.transparent,
-                                    width: 3,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text('Frequency', style: AppTextStyles.h3),
-                    const SizedBox(height: AppSpacing.sm),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      children: HabitFrequency.values
-                          .map(
-                            (f) => ChoiceChip(
-                              label: Text(f.name[0].toUpperCase() +
-                                  f.name.substring(1)),
-                              selected: _frequency == f,
-                              onSelected: (_) => setState(() => _frequency = f),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    if (_frequency == HabitFrequency.custom) ...[
-                      const SizedBox(height: AppSpacing.md),
-                      Text('Select Days', style: AppTextStyles.h3),
-                      const SizedBox(height: AppSpacing.sm),
-                      Wrap(
-                        spacing: AppSpacing.xs,
-                        children: List.generate(7, (index) {
-                          final dayIndex = index + 1; // 1 = Monday
-                          final isSelected =
-                              _selectedWeekdays.contains(dayIndex);
-                          final dayName =
-                              ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index];
-                          return InkWell(
-                            onTap: () {
-                              setState(() {
-                                if (isSelected) {
-                                  _selectedWeekdays.remove(dayIndex);
-                                } else {
-                                  _selectedWeekdays.add(dayIndex);
-                                }
-                              });
-                            },
-                            borderRadius:
-                                BorderRadius.circular(AppBorderRadius.full),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : AppColors.surface,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.borderLight,
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                dayName,
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : AppColors.textSecondary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                    ],
-                    const SizedBox(height: AppSpacing.lg),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Target per day', style: AppTextStyles.h3),
-                        Row(
-                          children: [
-                            IconButton(
-                              onPressed: _targetCount > 1
-                                  ? () => setState(() => _targetCount--)
-                                  : null,
-                              icon: const Icon(Icons.remove_circle_outline),
-                            ),
-                            Text(
-                              '$_targetCount',
-                              style: AppTextStyles.h3,
-                            ),
-                            IconButton(
-                              onPressed: () => setState(() => _targetCount++),
-                              icon: const Icon(Icons.add_circle_outline),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: AppSpacing.md,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(AppBorderRadius.md),
-                          ),
-                        ),
-                        onPressed: _saving ? null : _save,
-                        child: _saving
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : Text(
-                                widget.habit != null
-                                    ? 'Update Habit'
-                                    : 'Create Habit',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                ),
-                              ),
-                      ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close),
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: AppSpacing.md),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          labelText: l10n.name,
+                          hintText: l10n.namePlaceholder,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return l10n.nameRequired;
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      TextFormField(
+                        controller: _descriptionController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          labelText: l10n.description,
+                          hintText: l10n.descriptionPlaceholder,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(l10n.category, style: AppTextStyles.h3),
+                      const SizedBox(height: AppSpacing.sm),
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: categories
+                            .map(
+                              (c) => ChoiceChip(
+                                label: Text(c),
+                                selected: c == _category,
+                                onSelected: (_) {
+                                  setState(() {
+                                    _category = c;
+                                    _icon = _iconSuggestions[c]?.first ?? _icon;
+                                  });
+                                },
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(l10n.icon, style: AppTextStyles.h3),
+                          const SizedBox(height: AppSpacing.sm),
+                          Row(
+                            children: [
+                              // Show currently selected icon
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    AppBorderRadius.md,
+                                  ),
+                                  border: Border.all(color: AppColors.primary),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  _icon,
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              Expanded(
+                                child: Text(
+                                  l10n.tapToSelect,
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      SizedBox(
+                        height: 52,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (_, index) {
+                            final icons =
+                                _iconSuggestions[_category] ??
+                                _iconSuggestions.values.first;
+                            if (icons.isEmpty) return const SizedBox();
+                            final icon = icons[index % icons.length];
+                            final selected = icon == _icon;
+                            return GestureDetector(
+                              onTap: () => setState(() => _icon = icon),
+                              child: Container(
+                                width: 52,
+                                decoration: BoxDecoration(
+                                  color: selected
+                                      ? AppColors.primary
+                                      : AppColors.surface,
+                                  borderRadius: BorderRadius.circular(
+                                    AppBorderRadius.full,
+                                  ),
+                                  border: Border.all(
+                                    color: selected
+                                        ? AppColors.primary
+                                        : AppColors.borderLight,
+                                    width: selected ? 2 : 1,
+                                  ),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  icon,
+                                  style: const TextStyle(fontSize: 22),
+                                ),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(width: AppSpacing.sm),
+                          itemCount:
+                              (_iconSuggestions[_category] ??
+                                      _iconSuggestions.values.first)
+                                  .length,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Text(l10n.color, style: AppTextStyles.h3),
+                      const SizedBox(height: AppSpacing.sm),
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: colors
+                            .map(
+                              (color) => GestureDetector(
+                                onTap: () => setState(() => _color = color),
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: _fromHex(color),
+                                    borderRadius: BorderRadius.circular(
+                                      AppBorderRadius.full,
+                                    ),
+                                    border: Border.all(
+                                      color: _color == color
+                                          ? AppColors.text
+                                          : Colors.transparent,
+                                      width: 3,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Text(l10n.frequency, style: AppTextStyles.h3),
+                      const SizedBox(height: AppSpacing.sm),
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        children: HabitFrequency.values
+                            .map(
+                              (f) => ChoiceChip(
+                                label: Text(switch (f) {
+                                  HabitFrequency.daily => l10n.daily,
+                                  HabitFrequency.weekly => l10n.weekly,
+                                  HabitFrequency.custom => l10n.custom,
+                                }),
+                                selected: _frequency == f,
+                                onSelected: (_) =>
+                                    setState(() => _frequency = f),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      if (_frequency == HabitFrequency.custom) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        Text(l10n.selectDays, style: AppTextStyles.h3),
+                        const SizedBox(height: AppSpacing.sm),
+                        Wrap(
+                          spacing: AppSpacing.xs,
+                          children: List.generate(7, (index) {
+                            final dayIndex = index + 1; // 1 = Monday
+                            final isSelected = _selectedWeekdays.contains(
+                              dayIndex,
+                            );
+                            final dayName = [
+                              'M',
+                              'T',
+                              'W',
+                              'T',
+                              'F',
+                              'S',
+                              'S',
+                            ][index];
+                            return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  if (isSelected) {
+                                    _selectedWeekdays.remove(dayIndex);
+                                  } else {
+                                    _selectedWeekdays.add(dayIndex);
+                                  }
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(
+                                AppBorderRadius.full,
+                              ),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.surface,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? AppColors.primary
+                                        : AppColors.borderLight,
+                                  ),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  dayName,
+                                  style: TextStyle(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : AppColors.textSecondary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ],
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        '${l10n.frequency}: ${_schedulePreview(context)}',
+                        key: const ValueKey('schedule-preview'),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(l10n.targetPerDay, style: AppTextStyles.h3),
+                          const SizedBox(height: AppSpacing.xs),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                onPressed: _targetCount > 1
+                                    ? () => setState(() => _targetCount--)
+                                    : null,
+                                icon: const Icon(Icons.remove_circle_outline),
+                              ),
+                              Text('$_targetCount', style: AppTextStyles.h3),
+                              IconButton(
+                                onPressed: () => setState(() => _targetCount++),
+                                icon: const Icon(Icons.add_circle_outline),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        child: SwitchListTile.adaptive(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.dailyReminder),
+                          subtitle: Text(
+                            _notificationEnabled
+                                ? (_notificationTime ?? l10n.reminderTime)
+                                : l10n.dailyReminderDesc,
+                          ),
+                          value: _notificationEnabled,
+                          onChanged: (value) => setState(() {
+                            _notificationEnabled = value;
+                            if (value) _notificationTime ??= '20:00';
+                          }),
+                        ),
+                      ),
+                      if (_notificationEnabled)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: OutlinedButton.icon(
+                            onPressed: _pickReminderTime,
+                            icon: const Icon(Icons.schedule_outlined),
+                            label: Text(_notificationTime ?? l10n.reminderTime),
+                          ),
+                        ),
+                      const SizedBox(height: AppSpacing.xl),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: AppSpacing.md,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppBorderRadius.md,
+                              ),
+                            ),
+                          ),
+                          onPressed: _saving ? null : _save,
+                          child: _saving
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  widget.habit != null
+                                      ? l10n.updateHabit
+                                      : l10n.createHabit,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );
@@ -466,5 +562,34 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
 
   Color _fromHex(String hex) {
     return Color(int.parse(hex.replaceFirst('#', '0xff')));
+  }
+
+  Future<void> _pickReminderTime() async {
+    final parts = (_notificationTime ?? '20:00').split(':');
+    final selected = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(
+        hour: int.parse(parts.first),
+        minute: int.parse(parts.last),
+      ),
+    );
+    if (selected == null || !mounted) return;
+    setState(() {
+      _notificationTime =
+          '${selected.hour.toString().padLeft(2, '0')}:'
+          '${selected.minute.toString().padLeft(2, '0')}';
+    });
+  }
+
+  String _schedulePreview(BuildContext context) {
+    final l10n = context.l10n;
+    return switch (_frequency) {
+      HabitFrequency.daily => l10n.daily,
+      HabitFrequency.weekly => l10n.perWeek(_targetCount),
+      HabitFrequency.custom => l10n.onDays(
+        _targetCount,
+        _selectedWeekdays.length,
+      ),
+    };
   }
 }

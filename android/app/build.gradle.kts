@@ -8,6 +8,11 @@ plugins {
 import java.util.Properties
 import java.io.FileInputStream
 
+val releaseKeystoreFile = rootProject.file("upload-keystore.jks")
+val releaseKeyPropertiesFile = rootProject.file("key.properties")
+val releaseSigningAvailable =
+    releaseKeystoreFile.exists() && releaseKeyPropertiesFile.exists()
+
 android {
     namespace = "com.habiter.app"
     compileSdk = flutter.compileSdkVersion
@@ -39,13 +44,11 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            val keystoreFile = project.rootProject.file("upload-keystore.jks")
-            val keyPropertiesFile = project.rootProject.file("key.properties")
-            if (keystoreFile.exists() && keyPropertiesFile.exists()) {
+        if (releaseSigningAvailable) {
+            create("release") {
                 val props = Properties()
-                props.load(FileInputStream(keyPropertiesFile))
-                storeFile = keystoreFile
+                props.load(FileInputStream(releaseKeyPropertiesFile))
+                storeFile = releaseKeystoreFile
                 storePassword = props.getProperty("storePassword")
                 keyAlias = props.getProperty("keyAlias")
                 keyPassword = props.getProperty("keyPassword")
@@ -55,7 +58,11 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = if (releaseSigningAvailable) {
+                signingConfigs.getByName("release")
+            } else {
+                null
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -70,6 +77,7 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core-ktx:1.12.0")
+    testImplementation("junit:junit:4.13.2")
 }
 
 flutter {

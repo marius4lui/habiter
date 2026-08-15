@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../core/design_system/habiter_theme.dart';
+
 class AppColors {
   // Primary
   static const primary = Color(0xFF90B280); // Muted Green
@@ -33,7 +35,9 @@ class AppColors {
   // Surface aliases
   static const surface = cardLight;
   static const surfaceDark = cardDark;
-  static const surfaceMuted = Color(0xFFF6F5F3); // Use background color as muted surface alias
+  static const surfaceMuted = Color(
+    0xFFF6F5F3,
+  ); // Use background color as muted surface alias
 
   // Backward compatibility
   static const text = textMain;
@@ -43,8 +47,9 @@ class AppColors {
 
 /// Dark theme colors - warm and cozy dark mode
 class AppColorsDark {
-  static const primary =
-      Color(0xFFE5B896); // Lighter tan for visibility on dark
+  static const primary = Color(
+    0xFFE5B896,
+  ); // Lighter tan for visibility on dark
   static const primaryDark = Color(0xFFD4A373); // Same as light primary
   static const primaryLight = Color(0xFF3D3530); // Dark cream
   static const secondary = Color(0xFF9CAF88); // Lighter sage for dark
@@ -83,77 +88,38 @@ class AppBorderRadius {
 
 class AppShadows {
   static const neumorph = [
-    BoxShadow(
-      color: Color(0xFFD1D0CE),
-      offset: Offset(8, 8),
-      blurRadius: 16,
-    ),
-    BoxShadow(
-      color: Colors.white,
-      offset: Offset(-8, -8),
-      blurRadius: 16,
-    ),
+    BoxShadow(color: Color(0xFFD1D0CE), offset: Offset(8, 8), blurRadius: 16),
+    BoxShadow(color: Colors.white, offset: Offset(-8, -8), blurRadius: 16),
   ];
 
   static const neumorphDark = [
-    BoxShadow(
-      color: Color(0xFF1B1E22),
-      offset: Offset(8, 8),
-      blurRadius: 16,
-    ),
-    BoxShadow(
-      color: Color(0xFF292E32),
-      offset: Offset(-8, -8),
-      blurRadius: 16,
-    ),
+    BoxShadow(color: Color(0xFF1B1E22), offset: Offset(8, 8), blurRadius: 16),
+    BoxShadow(color: Color(0xFF292E32), offset: Offset(-8, -8), blurRadius: 16),
   ];
 
   static const neumorphSm = [
-    BoxShadow(
-      color: Color(0xFFD1D0CE),
-      offset: Offset(4, 4),
-      blurRadius: 8,
-    ),
-    BoxShadow(
-      color: Colors.white,
-      offset: Offset(-4, -4),
-      blurRadius: 8,
-    ),
+    BoxShadow(color: Color(0xFFD1D0CE), offset: Offset(4, 4), blurRadius: 8),
+    BoxShadow(color: Colors.white, offset: Offset(-4, -4), blurRadius: 8),
   ];
 
   static const neumorphSmDark = [
-    BoxShadow(
-      color: Color(0xFF1B1E22),
-      offset: Offset(4, 4),
-      blurRadius: 8,
-    ),
-    BoxShadow(
-      color: Color(0xFF292E32),
-      offset: Offset(-4, -4),
-      blurRadius: 8,
-    ),
+    BoxShadow(color: Color(0xFF1B1E22), offset: Offset(4, 4), blurRadius: 8),
+    BoxShadow(color: Color(0xFF292E32), offset: Offset(-4, -4), blurRadius: 8),
   ];
 
   static const neumorphInset = [
-    BoxShadow(
-      color: Color(0xFFD1D0CE),
-      offset: Offset(4, 4),
-      blurRadius: 8,
-    ),
-    BoxShadow(
-      color: Colors.white,
-      offset: Offset(-4, -4),
-      blurRadius: 8,
-    ),
+    BoxShadow(color: Color(0xFFD1D0CE), offset: Offset(4, 4), blurRadius: 8),
+    BoxShadow(color: Colors.white, offset: Offset(-4, -4), blurRadius: 8),
   ];
 
   // Helper to stick to standard Material shadows where inset isn't supported easily
   // or use a specific customized container for inset
   static const soft = [
     BoxShadow(
-        color: Color.fromRGBO(0, 0, 0, 0.05),
-        blurRadius: 10,
-        offset: Offset(0, 4))
+      color: Color.fromRGBO(0, 0, 0, 0.05),
+      blurRadius: 10,
+      offset: Offset(0, 4),
+    ),
   ];
 
   static const glow = [
@@ -167,47 +133,31 @@ class AppShadows {
 
 class AppGradients {
   static const primary = LinearGradient(
-    colors: [
-      Color(0xFFD4A373),
-      Color(0xFFE9C46A),
-    ],
+    colors: [Color(0xFFD4A373), Color(0xFFE9C46A)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const hero = LinearGradient(
-    colors: [
-      Color(0xFFD4A373),
-      Color(0xFFE76F51),
-    ],
+    colors: [Color(0xFFD4A373), Color(0xFFE76F51)],
     begin: Alignment(-1, -1),
     end: Alignment(1, 1),
   );
 
   static const halo = RadialGradient(
-    colors: [
-      Color(0x55E9C46A),
-      Color(0x33E76F51),
-      Colors.transparent,
-    ],
+    colors: [Color(0x55E9C46A), Color(0x33E76F51), Colors.transparent],
     radius: 1.1,
     center: Alignment.topRight,
   );
 
   static const appShell = LinearGradient(
-    colors: [
-      Color(0xFFFAFAF5),
-      Color(0xFFF2EFE9),
-    ],
+    colors: [Color(0xFFFAFAF5), Color(0xFFF2EFE9)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const cardSheen = LinearGradient(
-    colors: [
-      Colors.white,
-      Color(0xFFFDFBF7),
-    ],
+    colors: [Colors.white, Color(0xFFFDFBF7)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -216,10 +166,7 @@ class AppGradients {
 /// Dark theme gradients
 class AppGradientsDark {
   static const primary = LinearGradient(
-    colors: [
-      Color(0xFFE5B896),
-      Color(0xFFD4A373),
-    ],
+    colors: [Color(0xFFE5B896), Color(0xFFD4A373)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -234,29 +181,19 @@ class AppGradientsDark {
   );
 
   static const halo = RadialGradient(
-    colors: [
-      Color(0x33E9C46A),
-      Color(0x22E76F51),
-      Colors.transparent,
-    ],
+    colors: [Color(0x33E9C46A), Color(0x22E76F51), Colors.transparent],
     radius: 1.1,
     center: Alignment.topRight,
   );
 
   static const appShell = LinearGradient(
-    colors: [
-      Color(0xFF1A1918),
-      Color(0xFF141312),
-    ],
+    colors: [Color(0xFF1A1918), Color(0xFF141312)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const cardSheen = LinearGradient(
-    colors: [
-      Color(0xFF2A2826),
-      Color(0xFF232120),
-    ],
+    colors: [Color(0xFF2A2826), Color(0xFF232120)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -272,15 +209,9 @@ class AppTextStyles {
     letterSpacing: -0.5,
   );
 
-  static final h2 = _base.copyWith(
-    fontSize: 20,
-    fontWeight: FontWeight.bold,
-  );
+  static final h2 = _base.copyWith(fontSize: 20, fontWeight: FontWeight.bold);
 
-  static final h3 = _base.copyWith(
-    fontSize: 18,
-    fontWeight: FontWeight.bold,
-  );
+  static final h3 = _base.copyWith(fontSize: 18, fontWeight: FontWeight.bold);
 
   static final body = _base.copyWith(
     fontSize: 16,
@@ -324,85 +255,18 @@ class AppStyles {
 }
 
 ThemeData buildAppTheme() {
-  final base = ThemeData(
-    useMaterial3: true,
-    fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
-    brightness: Brightness.light,
-    scaffoldBackgroundColor: AppColors.background,
-  );
-
-  return base.copyWith(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      surface: AppColors.cardLight,
-      onSurface: AppColors.textMain,
-      brightness: Brightness.light,
-
-    ),
-    scaffoldBackgroundColor: AppColors.background,
-    cardTheme: CardThemeData(
-      color: AppColors.cardLight,
-      elevation: 0, // Using manual shadows for neumorph
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-      ),
-    ),
-    textTheme: GoogleFonts.plusJakartaSansTextTheme(base.textTheme).copyWith(
-      displayLarge: AppTextStyles.h1.copyWith(color: AppColors.textMain),
-      displayMedium: AppTextStyles.h2.copyWith(color: AppColors.textMain),
-      bodyLarge: AppTextStyles.body.copyWith(color: AppColors.textMain),
-      bodyMedium: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
-    ),
-    iconTheme: const IconThemeData(
-      color: AppColors.textMain,
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
-      shape: CircleBorder(),
-      iconSize: 28,
-      elevation: 8,
-    ),
-  );
+  return HabiterTheme.light();
 }
 
 /// Build dark theme for the app
 ThemeData buildDarkTheme() {
-  final base = ThemeData(
-    useMaterial3: true,
-    fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
-    brightness: Brightness.dark,
-    scaffoldBackgroundColor: AppColors.backgroundDark,
-  );
+  return HabiterTheme.dark();
+}
 
-  return base.copyWith(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      surface: AppColors.cardDark,
-      onSurface: Colors.white,
-      brightness: Brightness.dark,
+ThemeData buildHighContrastAppTheme() {
+  return HabiterTheme.light(highContrast: true);
+}
 
-    ),
-    scaffoldBackgroundColor: AppColors.backgroundDark,
-    cardTheme: CardThemeData(
-      color: AppColors.cardDark,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppBorderRadius.xl),
-      ),
-    ),
-    textTheme: GoogleFonts.plusJakartaSansTextTheme(base.textTheme).apply(
-      bodyColor: Colors.white,
-      displayColor: Colors.white,
-    ),
-    iconTheme: const IconThemeData(
-      color: Colors.white,
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
-      shape: CircleBorder(),
-      elevation: 8,
-    ),
-  );
+ThemeData buildHighContrastDarkTheme() {
+  return HabiterTheme.dark(highContrast: true);
 }

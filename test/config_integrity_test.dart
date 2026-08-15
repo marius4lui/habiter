@@ -3,51 +3,78 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Android Configuration Integrity Tests', () {
-    test('AndroidManifest.xml should contain SCHEDULE_EXACT_ALARM permission', () {
+    test('release signing is optional for local and pull-request builds', () {
+      final buildFile = File('android/app/build.gradle.kts').readAsStringSync();
+
+      expect(buildFile, contains('releaseSigningAvailable'));
+      expect(
+        buildFile,
+        contains('if (releaseSigningAvailable)'),
+        reason:
+            'Release builds must not require an unavailable local keystore.',
+      );
+    });
+
+    test('AndroidManifest.xml should not request exact-alarm permission', () {
       final manifestFile = File('android/app/src/main/AndroidManifest.xml');
-      expect(manifestFile.existsSync(), isTrue, reason: 'AndroidManifest.xml not found');
+      expect(
+        manifestFile.existsSync(),
+        isTrue,
+        reason: 'AndroidManifest.xml not found',
+      );
 
       final content = manifestFile.readAsStringSync();
       expect(
         content.contains('android.permission.SCHEDULE_EXACT_ALARM'),
-        isTrue,
-        reason: 'Missing SCHEDULE_EXACT_ALARM permission in AndroidManifest.xml. '
-            'This is required for exact alarms on Android 12+.',
+        isFalse,
+        reason:
+            'Reminders use inexact scheduling by default and must not request '
+            'the restricted exact-alarm permission.',
       );
     });
 
-    test('proguard-rules.pro should exist and contain Gson and Local Notifications rules', () {
-      final proguardFile = File('android/app/proguard-rules.pro');
-      expect(proguardFile.existsSync(), isTrue, reason: 'proguard-rules.pro not found');
+    test(
+      'proguard-rules.pro should exist and contain Gson and Local Notifications rules',
+      () {
+        final proguardFile = File('android/app/proguard-rules.pro');
+        expect(
+          proguardFile.existsSync(),
+          isTrue,
+          reason: 'proguard-rules.pro not found',
+        );
 
-      final content = proguardFile.readAsStringSync();
+        final content = proguardFile.readAsStringSync();
 
-      expect(
-        content.contains('-keepattributes Signature'),
-        isTrue,
-        reason: 'Missing -keepattributes Signature in proguard-rules.pro. '
-            'Required for Gson generics to work with R8/ProGuard.',
-      );
+        expect(
+          content.contains('-keepattributes Signature'),
+          isTrue,
+          reason:
+              'Missing -keepattributes Signature in proguard-rules.pro. '
+              'Required for Gson generics to work with R8/ProGuard.',
+        );
 
-      expect(
-        content.contains('-keepattributes *Annotation*'),
-        isTrue,
-        reason: 'Missing -keepattributes *Annotation* in proguard-rules.pro.',
-      );
+        expect(
+          content.contains('-keepattributes *Annotation*'),
+          isTrue,
+          reason: 'Missing -keepattributes *Annotation* in proguard-rules.pro.',
+        );
 
-      expect(
-        content.contains('com.google.gson.**'),
-        isTrue,
-        reason: 'Missing keep rule for com.google.gson.** in proguard-rules.pro.',
-      );
+        expect(
+          content.contains('com.google.gson.**'),
+          isTrue,
+          reason:
+              'Missing keep rule for com.google.gson.** in proguard-rules.pro.',
+        );
 
-      // This one is specific to the plugin likely causing issues, though generic Gson rules might cover it.
-      // But adding it explicitly is safer.
-      expect(
-        content.contains('com.dexterous.flutterlocalnotifications.**'),
-        isTrue,
-        reason: 'Missing keep rule for com.dexterous.flutterlocalnotifications.** in proguard-rules.pro.',
-      );
-    });
+        // This one is specific to the plugin likely causing issues, though generic Gson rules might cover it.
+        // But adding it explicitly is safer.
+        expect(
+          content.contains('com.dexterous.flutterlocalnotifications.**'),
+          isTrue,
+          reason:
+              'Missing keep rule for com.dexterous.flutterlocalnotifications.** in proguard-rules.pro.',
+        );
+      },
+    );
   });
 }

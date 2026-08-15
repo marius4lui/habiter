@@ -90,8 +90,8 @@
   "themeSystem": "System",
   
   "aiFeatures": "KI-Features",
-  "aiInsights": "AI Insights",
-  "aiInsightsDesc": "Intelligente Analyse deiner Habits",
+  "aiInsights": "Lokales Coaching",
+  "aiInsightsDesc": "Deterministische Vorschläge, die auf diesem Gerät berechnet werden",
   
   "language": "Sprache",
   "appLanguage": "App-Sprache",
@@ -142,7 +142,7 @@
   "overlayPermission": "Über anderen Apps anzeigen",
   "overlayPermissionDesc": "Sperrbildschirm anzeigen",
   "loadingApps": "Apps werden geladen...",
-  "noAppsFound": "Keine Apps gefunden",
+  "noAppsFound": "Keine sichtbaren Launcher-Apps gefunden. Die Sichtbarkeit hängt von Android-Regeln ab.",
   "selectAppsToLock": "Apps zum Sperren auswählen ({count})",
   "@selectAppsToLock": {
     "placeholders": {
@@ -151,6 +151,13 @@
   },
   "androidOnly": "Nur für Android",
   "androidOnlyDesc": "App Lock ist nur auf Android Geräten verfügbar.",
+  "appLockRecovery": "App Lock ist sicher ausgeschaltet",
+  "appLockReliability": "Gerätezuverlässigkeit",
+  "appLockReliabilityDescription": "Android- und Hersteller-Energiesparregeln können die Überwachung stoppen. Habiter schaltet App Lock aus, wenn erforderliche Zugriffe fehlen.",
+  "disableAppLock": "App Lock jetzt ausschalten",
+  "batterySettings": "Akku-Einstellungen öffnen",
+  "refreshPermissions": "Berechtigungen erneut prüfen",
+  "grant": "Erlauben",
   
   "yourDailyFlow": "Dein Tages-Flow",
   "keepMomentum": "Bleib am Ball!",
@@ -189,6 +196,42 @@
   "undoComplete": "Rückgängig machen",
   "edit": "Bearbeiten",
   "archive": "Archivieren",
+  "pauseHabit": "Habit pausieren",
+  "resumeHabit": "Habit fortsetzen",
+  "restoreHabit": "Habit wiederherstellen",
+  "manageHabitLifecycle": "Pausierte und archivierte Habits",
+  "noPausedOrArchivedHabits": "Keine pausierten oder archivierten Habits",
+  "inactiveHabitCount": "{count, plural, =1{1 Habit} other{{count} Habits}}",
+  "@inactiveHabitCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "habitPaused": "Pausiert – geplante Tage zählen nicht gegen dich",
+  "habitArchived": "Archiviert – kann wiederhergestellt werden",
+  "recoveryTitle": "Dein Tempo, ohne Druck",
+  "recoveryNewStart": "Beginne bei der nächsten kleinen Gelegenheit, wenn es für dich passt.",
+  "recoveryGentleReturn": "Ein ausgelassener Tag löscht frühere Schritte nicht. Der nächste geplante Tag genügt.",
+  "recoveryRebuilding": "Du findest deinen Rhythmus wieder – einen geplanten Tag nach dem anderen.",
+  "recoverySteady": "Dein aktueller Rhythmus ist stabil. Pausen bleiben neutral.",
+  "recoveryHide": "Unterstützenden Wert ausblenden",
+  "recoveryFormula": "{completed} von {scheduled} berücksichtigten Plänen erledigt = {score}%",
+  "@recoveryFormula": {
+    "placeholders": {
+      "completed": {"type": "int"},
+      "scheduled": {"type": "int"},
+      "score": {"type": "int"}
+    }
+  },
+  "reminderDiagnostics": "Reminder-Diagnose",
+  "reminderDiagnosticsDescription": "Berechtigung und ausstehende Reminder sicher prüfen",
+  "reminderPermissionGranted": "Benachrichtigungen sind erlaubt",
+  "reminderPermissionMissing": "Benachrichtigungen sind nicht verfügbar",
+  "pendingReminders": "Ausstehende Reminder: {count}",
+  "@pendingReminders": {"placeholders": {"count": {"type": "int"}}},
+  "noPendingReminders": "Keine ausstehenden Reminder",
+  "osManagedReminderTime": "Zustellzeit wird vom Betriebssystem verwaltet",
+  "rescheduleReminders": "Neu planen",
   "goal": "Ziel",
   "createdAt": "Erstellt am",
   "todayDone": "Heute erledigt ✓",

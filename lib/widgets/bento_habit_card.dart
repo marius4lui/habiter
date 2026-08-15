@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../models/habit.dart';
 
@@ -8,11 +9,13 @@ class BentoHabitCard extends StatelessWidget {
     required this.habit,
     this.completed = false,
     this.onEdit,
+    this.onComplete,
   });
 
   final Habit habit;
   final bool completed;
   final VoidCallback? onEdit;
+  final VoidCallback? onComplete;
 
   Color _parseColor(String colorStr) {
     try {
@@ -85,7 +88,7 @@ class BentoHabitCard extends StatelessWidget {
                 Text(
                   habit.name,
                   style: AppTextStyles.h3.copyWith(
-                     color: Theme.of(context).colorScheme.onSurface,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -100,31 +103,39 @@ class BentoHabitCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const Spacer(),
-                
+
                 // Simple Progress Bar
                 ClipRRect(
-                    borderRadius: BorderRadius.circular(AppBorderRadius.full),
-                    child: LinearProgressIndicator(
-                      value: completed ? 1.0 : 0.0, 
-                      backgroundColor: isDark ? Colors.grey[700] : Colors.grey[200],
-                      valueColor: AlwaysStoppedAnimation<Color>(habitColor),
-                      minHeight: 6,
+                  borderRadius: BorderRadius.circular(AppBorderRadius.full),
+                  child: LinearProgressIndicator(
+                    value: completed ? 1.0 : 0.0,
+                    backgroundColor: isDark
+                        ? Colors.grey[700]
+                        : Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(habitColor),
+                    minHeight: 6,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${habit.targetCount}x', // Mock target display
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${habit.targetCount}x', // Mock target display
-                        style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+                    if (completed)
+                      const Icon(Icons.check_circle, color: AppColors.success)
+                    else
+                      IconButton.filledTonal(
+                        tooltip: context.l10n.completed,
+                        onPressed: onComplete,
+                        icon: const Icon(Icons.check_rounded),
                       ),
-                      Text(
-                        completed ? 'Done' : 'Pending',
-                        style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
-                      ),
-                    ],
-                  ),
+                  ],
+                ),
               ],
             ),
           ),

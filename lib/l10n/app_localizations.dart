@@ -63,7 +63,7 @@ import 'app_localizations_en.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -86,16 +86,16 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
-    Locale('en')
+    Locale('en'),
   ];
 
   /// No description provided for @appTitle.
@@ -449,13 +449,13 @@ abstract class AppLocalizations {
   /// No description provided for @aiInsights.
   ///
   /// In de, this message translates to:
-  /// **'AI Insights'**
+  /// **'Lokales Coaching'**
   String get aiInsights;
 
   /// No description provided for @aiInsightsDesc.
   ///
   /// In de, this message translates to:
-  /// **'Intelligente Analyse deiner Habits'**
+  /// **'Deterministische Vorschläge, die auf diesem Gerät berechnet werden'**
   String get aiInsightsDesc;
 
   /// No description provided for @language.
@@ -665,7 +665,7 @@ abstract class AppLocalizations {
   /// No description provided for @noAppsFound.
   ///
   /// In de, this message translates to:
-  /// **'Keine Apps gefunden'**
+  /// **'Keine sichtbaren Launcher-Apps gefunden. Die Sichtbarkeit hängt von Android-Regeln ab.'**
   String get noAppsFound;
 
   /// No description provided for @selectAppsToLock.
@@ -685,6 +685,48 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'App Lock ist nur auf Android Geräten verfügbar.'**
   String get androidOnlyDesc;
+
+  /// No description provided for @appLockRecovery.
+  ///
+  /// In de, this message translates to:
+  /// **'App Lock ist sicher ausgeschaltet'**
+  String get appLockRecovery;
+
+  /// No description provided for @appLockReliability.
+  ///
+  /// In de, this message translates to:
+  /// **'Gerätezuverlässigkeit'**
+  String get appLockReliability;
+
+  /// No description provided for @appLockReliabilityDescription.
+  ///
+  /// In de, this message translates to:
+  /// **'Android- und Hersteller-Energiesparregeln können die Überwachung stoppen. Habiter schaltet App Lock aus, wenn erforderliche Zugriffe fehlen.'**
+  String get appLockReliabilityDescription;
+
+  /// No description provided for @disableAppLock.
+  ///
+  /// In de, this message translates to:
+  /// **'App Lock jetzt ausschalten'**
+  String get disableAppLock;
+
+  /// No description provided for @batterySettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Akku-Einstellungen öffnen'**
+  String get batterySettings;
+
+  /// No description provided for @refreshPermissions.
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigungen erneut prüfen'**
+  String get refreshPermissions;
+
+  /// No description provided for @grant.
+  ///
+  /// In de, this message translates to:
+  /// **'Erlauben'**
+  String get grant;
 
   /// No description provided for @yourDailyFlow.
   ///
@@ -800,6 +842,144 @@ abstract class AppLocalizations {
   /// **'Archivieren'**
   String get archive;
 
+  /// No description provided for @pauseHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit pausieren'**
+  String get pauseHabit;
+
+  /// No description provided for @resumeHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit fortsetzen'**
+  String get resumeHabit;
+
+  /// No description provided for @restoreHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit wiederherstellen'**
+  String get restoreHabit;
+
+  /// No description provided for @manageHabitLifecycle.
+  ///
+  /// In de, this message translates to:
+  /// **'Pausierte und archivierte Habits'**
+  String get manageHabitLifecycle;
+
+  /// No description provided for @noPausedOrArchivedHabits.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine pausierten oder archivierten Habits'**
+  String get noPausedOrArchivedHabits;
+
+  /// No description provided for @inactiveHabitCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Habit} other{{count} Habits}}'**
+  String inactiveHabitCount(int count);
+
+  /// No description provided for @habitPaused.
+  ///
+  /// In de, this message translates to:
+  /// **'Pausiert – geplante Tage zählen nicht gegen dich'**
+  String get habitPaused;
+
+  /// No description provided for @habitArchived.
+  ///
+  /// In de, this message translates to:
+  /// **'Archiviert – kann wiederhergestellt werden'**
+  String get habitArchived;
+
+  /// No description provided for @recoveryTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Tempo, ohne Druck'**
+  String get recoveryTitle;
+
+  /// No description provided for @recoveryNewStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Beginne bei der nächsten kleinen Gelegenheit, wenn es für dich passt.'**
+  String get recoveryNewStart;
+
+  /// No description provided for @recoveryGentleReturn.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein ausgelassener Tag löscht frühere Schritte nicht. Der nächste geplante Tag genügt.'**
+  String get recoveryGentleReturn;
+
+  /// No description provided for @recoveryRebuilding.
+  ///
+  /// In de, this message translates to:
+  /// **'Du findest deinen Rhythmus wieder – einen geplanten Tag nach dem anderen.'**
+  String get recoveryRebuilding;
+
+  /// No description provided for @recoverySteady.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein aktueller Rhythmus ist stabil. Pausen bleiben neutral.'**
+  String get recoverySteady;
+
+  /// No description provided for @recoveryHide.
+  ///
+  /// In de, this message translates to:
+  /// **'Unterstützenden Wert ausblenden'**
+  String get recoveryHide;
+
+  /// No description provided for @recoveryFormula.
+  ///
+  /// In de, this message translates to:
+  /// **'{completed} von {scheduled} berücksichtigten Plänen erledigt = {score}%'**
+  String recoveryFormula(int completed, int scheduled, int score);
+
+  /// No description provided for @reminderDiagnostics.
+  ///
+  /// In de, this message translates to:
+  /// **'Reminder-Diagnose'**
+  String get reminderDiagnostics;
+
+  /// No description provided for @reminderDiagnosticsDescription.
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigung und ausstehende Reminder sicher prüfen'**
+  String get reminderDiagnosticsDescription;
+
+  /// No description provided for @reminderPermissionGranted.
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungen sind erlaubt'**
+  String get reminderPermissionGranted;
+
+  /// No description provided for @reminderPermissionMissing.
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungen sind nicht verfügbar'**
+  String get reminderPermissionMissing;
+
+  /// No description provided for @pendingReminders.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausstehende Reminder: {count}'**
+  String pendingReminders(int count);
+
+  /// No description provided for @noPendingReminders.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine ausstehenden Reminder'**
+  String get noPendingReminders;
+
+  /// No description provided for @osManagedReminderTime.
+  ///
+  /// In de, this message translates to:
+  /// **'Zustellzeit wird vom Betriebssystem verwaltet'**
+  String get osManagedReminderTime;
+
+  /// No description provided for @rescheduleReminders.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu planen'**
+  String get rescheduleReminders;
+
   /// No description provided for @goal.
   ///
   /// In de, this message translates to:
@@ -864,8 +1044,9 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

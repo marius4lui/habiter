@@ -194,10 +194,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get aiFeatures => 'KI-Features';
 
   @override
-  String get aiInsights => 'AI Insights';
+  String get aiInsights => 'Lokales Coaching';
 
   @override
-  String get aiInsightsDesc => 'Intelligente Analyse deiner Habits';
+  String get aiInsightsDesc =>
+      'Deterministische Vorschläge, die auf diesem Gerät berechnet werden';
 
   @override
   String get language => 'Sprache';
@@ -309,7 +310,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get loadingApps => 'Apps werden geladen...';
 
   @override
-  String get noAppsFound => 'Keine Apps gefunden';
+  String get noAppsFound =>
+      'Keine sichtbaren Launcher-Apps gefunden. Die Sichtbarkeit hängt von Android-Regeln ab.';
 
   @override
   String selectAppsToLock(int count) {
@@ -322,6 +324,28 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get androidOnlyDesc =>
       'App Lock ist nur auf Android Geräten verfügbar.';
+
+  @override
+  String get appLockRecovery => 'App Lock ist sicher ausgeschaltet';
+
+  @override
+  String get appLockReliability => 'Gerätezuverlässigkeit';
+
+  @override
+  String get appLockReliabilityDescription =>
+      'Android- und Hersteller-Energiesparregeln können die Überwachung stoppen. Habiter schaltet App Lock aus, wenn erforderliche Zugriffe fehlen.';
+
+  @override
+  String get disableAppLock => 'App Lock jetzt ausschalten';
+
+  @override
+  String get batterySettings => 'Akku-Einstellungen öffnen';
+
+  @override
+  String get refreshPermissions => 'Berechtigungen erneut prüfen';
+
+  @override
+  String get grant => 'Erlauben';
 
   @override
   String get yourDailyFlow => 'Dein Tages-Flow';
@@ -385,6 +409,95 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get archive => 'Archivieren';
+
+  @override
+  String get pauseHabit => 'Habit pausieren';
+
+  @override
+  String get resumeHabit => 'Habit fortsetzen';
+
+  @override
+  String get restoreHabit => 'Habit wiederherstellen';
+
+  @override
+  String get manageHabitLifecycle => 'Pausierte und archivierte Habits';
+
+  @override
+  String get noPausedOrArchivedHabits =>
+      'Keine pausierten oder archivierten Habits';
+
+  @override
+  String inactiveHabitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Habits',
+      one: '1 Habit',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get habitPaused => 'Pausiert – geplante Tage zählen nicht gegen dich';
+
+  @override
+  String get habitArchived => 'Archiviert – kann wiederhergestellt werden';
+
+  @override
+  String get recoveryTitle => 'Dein Tempo, ohne Druck';
+
+  @override
+  String get recoveryNewStart =>
+      'Beginne bei der nächsten kleinen Gelegenheit, wenn es für dich passt.';
+
+  @override
+  String get recoveryGentleReturn =>
+      'Ein ausgelassener Tag löscht frühere Schritte nicht. Der nächste geplante Tag genügt.';
+
+  @override
+  String get recoveryRebuilding =>
+      'Du findest deinen Rhythmus wieder – einen geplanten Tag nach dem anderen.';
+
+  @override
+  String get recoverySteady =>
+      'Dein aktueller Rhythmus ist stabil. Pausen bleiben neutral.';
+
+  @override
+  String get recoveryHide => 'Unterstützenden Wert ausblenden';
+
+  @override
+  String recoveryFormula(int completed, int scheduled, int score) {
+    return '$completed von $scheduled berücksichtigten Plänen erledigt = $score%';
+  }
+
+  @override
+  String get reminderDiagnostics => 'Reminder-Diagnose';
+
+  @override
+  String get reminderDiagnosticsDescription =>
+      'Berechtigung und ausstehende Reminder sicher prüfen';
+
+  @override
+  String get reminderPermissionGranted => 'Benachrichtigungen sind erlaubt';
+
+  @override
+  String get reminderPermissionMissing =>
+      'Benachrichtigungen sind nicht verfügbar';
+
+  @override
+  String pendingReminders(int count) {
+    return 'Ausstehende Reminder: $count';
+  }
+
+  @override
+  String get noPendingReminders => 'Keine ausstehenden Reminder';
+
+  @override
+  String get osManagedReminderTime =>
+      'Zustellzeit wird vom Betriebssystem verwaltet';
+
+  @override
+  String get rescheduleReminders => 'Neu planen';
 
   @override
   String get goal => 'Ziel';

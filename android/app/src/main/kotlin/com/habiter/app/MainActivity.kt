@@ -16,9 +16,14 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.ByteArrayOutputStream
+import java.util.TimeZone
+import android.util.Log
 
 class MainActivity: FlutterActivity() {
+    private val TAG = "HabiterAppLock"
     private val CHANNEL = "com.habiter.app/applock"
+    private val TIME_ZONE_CHANNEL = "com.habiter.app/timezone"
+    private val SETTINGS_CHANNEL = "com.habiter.app/settings"
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -82,6 +87,24 @@ class MainActivity: FlutterActivity() {
                 }
             }
         }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, TIME_ZONE_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getTimeZoneId" -> result.success(TimeZone.getDefault().id)
+                else -> result.notImplemented()
+            }
+        }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SETTINGS_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "openNotificationSettings" -> {
+                    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                        putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                    }
+                    startActivity(intent)
+                    result.success(null)
+                }
+                else -> result.notImplemented()
+            }
+        }
     }
 
     private fun getInstalledNonSystemApps(): List<Map<String, Any?>> {
@@ -112,7 +135,7 @@ class MainActivity: FlutterActivity() {
                     "iconBytes" to iconBytes
                 ))
             } catch (e: Exception) {
-                // Skip apps we can't get info for
+                Log.w(TAG, "Skipping an app that could not be inspected", e)
             }
         }
         
@@ -143,6 +166,7 @@ class MainActivity: FlutterActivity() {
             scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream)
             stream.toByteArray()
         } catch (e: Exception) {
+            Log.w(TAG, "Unable to render an installed-app icon", e)
             null
         }
     }
@@ -197,8 +221,7 @@ class MainActivity: FlutterActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
             if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                intent.data = Uri.parse("package:$packageName")
+                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
             }

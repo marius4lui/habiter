@@ -1,15 +1,23 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../models/habit.dart';
+import '../core/time/local_date.dart';
+import '../features/reminders/application/reminder_action_inbox.dart';
+import '../features/reminders/application/reminder_diagnostics.dart';
+import '../features/reminders/domain/reminder_payload.dart';
+import '../features/reminders/infrastructure/device_time_zone_service.dart';
 
 /// Callback for handling notification actions (marking habits complete)
-typedef NotificationActionCallback = Future<void> Function(
-    String habitId, String date);
+typedef NotificationActionCallback =
+    Future<void> Function(String habitId, String date);
 
 /// Singleton service for managing local notifications
 class NotificationService {
@@ -37,6 +45,9 @@ class NotificationService {
   static const int _globalNotificationId = 0;
 
   bool _initialized = false;
+  final DeviceTimeZoneService _timeZones = DeviceTimeZoneService(
+    const MethodChannelDeviceTimeZoneGateway(),
+  );
 
   /// Initialize the notification plugin and timezone data
   Future<void> initialize() async {
@@ -45,18 +56,20 @@ class NotificationService {
     // Don't initialize on desktop platforms
     if (!Platform.isAndroid && !Platform.isIOS) {
       debugPrint(
-          'NotificationService: Skipping initialization on non-mobile platform');
+        'NotificationService: Skipping initialization on non-mobile platform',
+      );
       _initialized = true;
       return;
     }
 
     // Initialize timezone
     tz.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('Europe/Berlin'));
+    await _timeZones.initialize();
 
     // Android settings
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
 
     // iOS settings
     final iosSettings = DarwinInitializationSettings(
@@ -103,22 +116,23 @@ class NotificationService {
     if (!Platform.isAndroid && !Platform.isIOS) return false;
 
     if (Platform.isAndroid) {
-      final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
-      
+      final androidPlugin = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+
       // Request notification permission (Android 13+)
-      final notificationsGranted = await androidPlugin?.requestNotificationsPermission();
-      
-      // Request exact alarm permission (Android 12+)
-      // This might open system settings if not auto-granted
-      final exactAlarmsGranted = await androidPlugin?.requestExactAlarmsPermission();
-      
-      return (notificationsGranted ?? false) && (exactAlarmsGranted ?? false);
+      final notificationsGranted = await androidPlugin
+          ?.requestNotificationsPermission();
+
+      return notificationsGranted ?? false;
     }
 
     if (Platform.isIOS) {
-      final iosPlugin = _plugin.resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin>();
+      final iosPlugin = _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >();
       final granted = await iosPlugin?.requestPermissions(
         alert: true,
         badge: true,
@@ -135,8 +149,10 @@ class NotificationService {
     if (!Platform.isAndroid && !Platform.isIOS) return false;
 
     if (Platform.isAndroid) {
-      final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final androidPlugin = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       return await androidPlugin?.areNotificationsEnabled() ?? false;
     }
 
@@ -145,54 +161,7 @@ class NotificationService {
   }
 
   Future<AndroidScheduleMode> _getAndroidScheduleMode() async {
-    if (!Platform.isAndroid) return AndroidScheduleMode.exactAllowWhileIdle;
-
-    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-
-    // On Android 12+ (API 31+), check if we have permission
-    // Provide a fallback for older versions where it's implicitly granted
-    // or if the check method isn't supported on the device.
-    // Note: checkExactAlarmsPermission might return null on older Android versions
-    // where the permission concept doesn't exist (implicit grant).
-    // Note: checkExactAlarmsPermission might return null on older Android versions
-    // where the permission concept doesn't exist (implicit grant).
-    await androidPlugin?.requestExactAlarmsPermission(); 
-    // Using request here as a check because checkExactAlarmsPermission was added later/might differ.
-    // Actually, requestExactAlarmsPermission returns current status or requests it.
-    // Wait, let's use check logic if available or just assume if we fail the request, we fallback.
-    // A safer bet is:
-    // If we haven't asked yet, we might want to ask? But we do that on startup.
-    // Here we just want to know if we CAN schedule.
-    
-    // Better logic: use inexact if we suspect issues, but ideally we check.
-    // Since we called requestPermissions() at app start, we can check again or just use safe mode.
-    
-    // Let's rely on the method existing.
-    // return (await androidPlugin?.checkExactAlarmsPermission() ?? true) 
-    //    ? AndroidScheduleMode.exactAllowWhileIdle 
-    //    : AndroidScheduleMode.inexactAllowWhileIdle;
-
-    // To be safe with the API surface, I'll stick to what I know works:
-    // We already requested in requestPermissions.
-    // If requestExactAlarmsPermission returns false, we don't have it.
-    // But calling request again might be spammy?
-    // The plugin doc says: "If the permission is already granted, the future completes with true."
-    
-    // Let's just use inexact if exact fails? No, we can't try-catch the schedule method easily because it's a platform exception.
-    
-    bool hasPermission = false;
-    try {
-        hasPermission = await androidPlugin?.requestExactAlarmsPermission() ?? false;
-    } catch (e) {
-        // If the method doesn't exist or fails, assume we might have it (older android) or not.
-        // But on older android requestExactAlarmsPermission might not exist or verify differently.
-        hasPermission = true; // Default to true for older androids
-    }
-    
-    return hasPermission
-        ? AndroidScheduleMode.exactAllowWhileIdle
-        : AndroidScheduleMode.inexactAllowWhileIdle;
+    return AndroidScheduleMode.inexactAllowWhileIdle;
   }
 
   /// Schedule the global daily reminder at the specified time
@@ -214,8 +183,14 @@ class NotificationService {
 
     // Calculate next occurrence
     final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    var scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
 
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
@@ -237,8 +212,10 @@ class NotificationService {
       categoryIdentifier: 'habiter_actions',
     );
 
-    const details =
-        NotificationDetails(android: androidDetails, iOS: iosDetails);
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
 
     await _plugin.zonedSchedule(
       _globalNotificationId,
@@ -278,8 +255,14 @@ class NotificationService {
 
     // Calculate next occurrence
     final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    var scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
 
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
@@ -309,8 +292,10 @@ class NotificationService {
       categoryIdentifier: 'habiter_actions',
     );
 
-    const details =
-        NotificationDetails(android: androidDetails, iOS: iosDetails);
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
 
     // Payload format: habitId|date
     final today = DateTime.now();
@@ -331,7 +316,8 @@ class NotificationService {
     );
 
     debugPrint(
-        'NotificationService: Scheduled habit notification for ${habit.name} at ${habit.notificationTime}');
+      'NotificationService: Scheduled habit notification for ${habit.name} at ${habit.notificationTime}',
+    );
   }
 
   /// Cancel notification for a specific habit
@@ -339,7 +325,8 @@ class NotificationService {
     final notificationId = habitId.hashCode.abs() % 100000 + 1;
     await _plugin.cancel(notificationId);
     debugPrint(
-        'NotificationService: Cancelled notification for habit $habitId');
+      'NotificationService: Cancelled notification for habit $habitId',
+    );
   }
 
   /// Cancel all notifications
@@ -370,34 +357,85 @@ class NotificationService {
     );
   }
 
+  Future<List<ReminderDiagnosticItem>> pendingDiagnostics() async {
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      return const <ReminderDiagnosticItem>[];
+    }
+    final pending = await _plugin.pendingNotificationRequests();
+    return List<ReminderDiagnosticItem>.unmodifiable(
+      pending.map(
+        (request) => ReminderDiagnosticItem(
+          id: request.id,
+          title: request.title ?? 'Habiter reminder',
+        ),
+      ),
+    );
+  }
+
   // Handle notification tap/action
   void _onNotificationResponse(NotificationResponse response) {
-    debugPrint(
-        'NotificationService: Response received: ${response.actionId}, payload: ${response.payload}');
-
     if (response.actionId == 'mark_complete' && response.payload != null) {
       _handleMarkComplete(response.payload!);
     }
   }
 
   void _handleMarkComplete(String payload) {
-    // Payload format: habitId|date
-    final parts = payload.split('|');
-    if (parts.length != 2) return;
-
-    final habitId = parts[0];
-    final date = parts[1];
+    final decoded = _decodeActionPayload(payload);
+    if (decoded == null) return;
 
     if (_onMarkComplete != null) {
-      _onMarkComplete!(habitId, date);
+      _onMarkComplete!(decoded.$1, decoded.$2);
     }
   }
 }
 
 // Background handler must be top-level
 @pragma('vm:entry-point')
-void _onBackgroundNotificationResponse(NotificationResponse response) {
-  debugPrint('NotificationService: Background response: ${response.actionId}');
-  // Background handling would require isolate communication
-  // For now, we rely on foreground handling
+void _onBackgroundNotificationResponse(NotificationResponse response) async {
+  if (response.actionId != 'mark_complete' || response.payload == null) return;
+  DartPluginRegistrant.ensureInitialized();
+  final decoded = _decodeActionPayload(response.payload!);
+  if (decoded == null) return;
+  final preferences = await SharedPreferences.getInstance();
+  final raw = preferences.getString(ReminderActionInbox.storageKey);
+  final records = raw == null
+      ? <dynamic>[]
+      : (jsonDecode(raw) as List<dynamic>);
+  final id = '${response.id ?? 0}:${decoded.$1}@${decoded.$2}:complete';
+  if (records.any((value) => (value as Map<dynamic, dynamic>)['id'] == id)) {
+    return;
+  }
+  records.add(
+    ReminderActionRecord(
+      id: id,
+      habitId: decoded.$1,
+      occurrence: LocalDate.parse(decoded.$2),
+      receivedAt: DateTime.now().toUtc(),
+    ).toMap(),
+  );
+  await preferences.setString(
+    ReminderActionInbox.storageKey,
+    jsonEncode(records),
+  );
+}
+
+(String, String)? _decodeActionPayload(String payload) {
+  if (payload.startsWith('{')) {
+    try {
+      final typed = ReminderPayload.fromMap(
+        Map<String, Object?>.from(jsonDecode(payload) as Map<dynamic, dynamic>),
+      );
+      return (typed.habitId, typed.occurrence.toString());
+    } on FormatException {
+      return null;
+    }
+  }
+  final parts = payload.split('|');
+  if (parts.length != 2) return null;
+  try {
+    LocalDate.parse(parts[1]);
+  } on FormatException {
+    return null;
+  }
+  return (parts[0], parts[1]);
 }

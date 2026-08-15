@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../providers/habit_provider.dart';
 import '../services/ai_manager.dart';
-import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 
 class AISetupDialog extends StatefulWidget {
@@ -27,13 +26,8 @@ class _AISetupDialogState extends State<AISetupDialog> {
 
   Future<void> _loadExisting() async {
     await AIManager.initialize();
-    final config = await StorageService.getAIConfig();
-    if (config != null) {
-      setState(() {
-        _provider = config['provider'] ?? 'openai';
-        _apiKeyController.text = config['apiKey'] ?? '';
-      });
-    }
+    if (!mounted) return;
+    setState(() => _provider = AIManager.provider ?? 'openai');
   }
 
   @override
@@ -47,7 +41,9 @@ class _AISetupDialogState extends State<AISetupDialog> {
     setState(() => _saving = true);
     final provider = context.read<HabitProvider>();
     await provider.configureAI(
-        provider: _provider, apiKey: _apiKeyController.text.trim());
+      provider: _provider,
+      apiKey: _apiKeyController.text.trim(),
+    );
     setState(() => _saving = false);
     if (!mounted) return;
     Navigator.of(context).pop(true);
@@ -56,7 +52,7 @@ class _AISetupDialogState extends State<AISetupDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('AI Setup'),
+      title: const Text('Experimental remote AI'),
       content: Form(
         key: _formKey,
         child: Column(
@@ -64,7 +60,7 @@ class _AISetupDialogState extends State<AISetupDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Store your API key locally to enable AI-generated insights.',
+              'Optional and off by default. The key stays in secure device storage. Provider requests may cost money and share habit data.',
               style: AppTextStyles.bodySecondary,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -73,10 +69,14 @@ class _AISetupDialogState extends State<AISetupDialog> {
               decoration: const InputDecoration(labelText: 'Provider'),
               items: const [
                 DropdownMenuItem(
-                    value: 'openai', child: Text('OpenAI compatible')),
+                  value: 'openai',
+                  child: Text('OpenAI compatible'),
+                ),
                 DropdownMenuItem(value: 'glm', child: Text('GLM / ZhipuAI')),
                 DropdownMenuItem(
-                    value: 'openrouter', child: Text('OpenRouter')),
+                  value: 'openrouter',
+                  child: Text('OpenRouter'),
+                ),
               ],
               onChanged: (val) {
                 if (val != null) setState(() => _provider = val);

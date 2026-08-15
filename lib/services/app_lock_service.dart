@@ -17,8 +17,9 @@ class AppLockService {
     if (!isSupported) return [];
 
     try {
-      final result =
-          await _channel.invokeMethod<List<dynamic>>('getInstalledApps');
+      final result = await _channel.invokeMethod<List<dynamic>>(
+        'getInstalledApps',
+      );
       if (result == null) return [];
 
       return result.map((app) {
@@ -43,8 +44,9 @@ class AppLockService {
     if (!isSupported) return false;
 
     try {
-      final result =
-          await _channel.invokeMethod<bool>('hasUsageStatsPermission');
+      final result = await _channel.invokeMethod<bool>(
+        'hasUsageStatsPermission',
+      );
       return result ?? false;
     } on PlatformException catch (e) {
       debugPrint('Error checking usage stats permission: ${e.message}');
@@ -92,10 +94,9 @@ class AppLockService {
     if (!isSupported) return false;
 
     try {
-      final result = await _channel.invokeMethod<bool>(
-        'startMonitoring',
-        {'lockedPackages': lockedPackageNames},
-      );
+      final result = await _channel.invokeMethod<bool>('startMonitoring', {
+        'lockedPackages': lockedPackageNames,
+      });
       return result ?? false;
     } on PlatformException catch (e) {
       debugPrint('Error starting monitoring: ${e.message}');
@@ -119,10 +120,9 @@ class AppLockService {
     if (!isSupported) return;
 
     try {
-      await _channel.invokeMethod<void>(
-        'updateLockedApps',
-        {'lockedPackages': lockedPackageNames},
-      );
+      await _channel.invokeMethod<void>('updateLockedApps', {
+        'lockedPackages': lockedPackageNames,
+      });
     } on PlatformException catch (e) {
       debugPrint('Error updating locked apps: ${e.message}');
     }
@@ -179,10 +179,9 @@ class AppLockService {
     if (!isSupported) return;
 
     try {
-      await _channel.invokeMethod<void>(
-        'updateIncompleteHabits',
-        {'habitNames': habitNames},
-      );
+      await _channel.invokeMethod<void>('updateIncompleteHabits', {
+        'habitNames': habitNames,
+      });
     } on PlatformException catch (e) {
       debugPrint('Error updating incomplete habits: ${e.message}');
     }

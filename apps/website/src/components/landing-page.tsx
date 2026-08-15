@@ -1,6 +1,9 @@
+import { SiteInteractions } from "./site-interactions";
+
 export function LandingPage() {
   return (
 <div>
+  <SiteInteractions />
   <canvas id="ambientCanvas" aria-hidden="true" />
   <div className="cursor-glow" id="cursorGlow" aria-hidden="true" />
   <div className="noise" aria-hidden="true" />

@@ -29,3 +29,7 @@ apps/release-api/worker-configuration.d.ts
 analysis.txt
 analysis.log
 **/node_modules/
+
+# Next.js
+**/.next/
+**/tsconfig.tsbuildinfo

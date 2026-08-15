@@ -141,6 +141,16 @@ pnpm --filter @habiter/release-api check
 pnpm --filter @habiter/release-api deploy:dry
 ```
 
+### Run the website
+
+The marketing website is a Next.js App Router application written in TypeScript.
+
+```bash
+pnpm website:dev
+```
+
+Open `http://localhost:3000`. Use `pnpm website:check` for the complete website contract, type, and production-build checks.
+
 ## Release API
 
 | Endpoint | Purpose |

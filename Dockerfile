@@ -1,16 +1,16 @@
 # Use a newer Flutter image with Dart 3.3+
 FROM ghcr.io/cirruslabs/flutter:stable AS build
 
-WORKDIR /app
+WORKDIR /workspace/apps/habiter
 
 # Copy pubspec files first for better caching
-COPY pubspec.yaml pubspec.lock ./
+COPY apps/habiter/pubspec.yaml apps/habiter/pubspec.lock ./
 
 # Get dependencies
 RUN flutter pub get
 
 # Copy the rest of the application
-COPY . .
+COPY apps/habiter/ .
 
 # Build the web application
 RUN flutter build web --release
@@ -19,7 +19,7 @@ RUN flutter build web --release
 FROM nginx:alpine
 
 # Copy the built web app to nginx
-COPY --from=build /app/build/web /usr/share/nginx/html
+COPY --from=build /workspace/apps/habiter/build/web /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80

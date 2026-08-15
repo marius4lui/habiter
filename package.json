@@ -5,6 +5,7 @@
   "scripts": {
     "release:validate": "pnpm --filter @habiter/release-core validate",
     "release:test": "pnpm --filter @habiter/release-core test",
-    "release:notes": "pnpm --filter @habiter/release-core notes"
+    "release:notes": "pnpm --filter @habiter/release-core notes",
+    "website:check": "node scripts/website/validate.mjs"
   }
 }

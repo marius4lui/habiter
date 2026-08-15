@@ -318,7 +318,7 @@ export function LandingPage() {
           </p>
         </div>
         <div className="philosophy-side">
-          <article className="principle active" data-principle>
+          <article className="principle active" data-principle data-symbol="✓">
             <div className="principle-number">
               01
             </div>
@@ -336,7 +336,7 @@ export function LandingPage() {
               </div>
             </div>
           </article>
-          <article className="principle" data-principle>
+          <article className="principle principle-recovery" data-principle data-symbol="↗">
             <div className="principle-number">
               02
             </div>
@@ -353,9 +353,18 @@ export function LandingPage() {
               <div className="principle-word">
                 Compassionate consistency
               </div>
+              <div className="recovery-visual" aria-hidden="true">
+                <span className="recovery-day complete" />
+                <span className="recovery-day complete" />
+                <span className="recovery-day pause" />
+                <span className="recovery-day return" />
+                <span className="recovery-day complete" />
+                <span className="recovery-day complete" />
+                <strong>Rückkehr &gt; Perfektion</strong>
+              </div>
             </div>
           </article>
-          <article className="principle" data-principle>
+          <article className="principle" data-principle data-symbol="→">
             <div className="principle-number">
               03
             </div>
@@ -374,7 +383,7 @@ export function LandingPage() {
               </div>
             </div>
           </article>
-          <article className="principle" data-principle>
+          <article className="principle" data-principle data-symbol="◌">
             <div className="principle-number">
               04
             </div>
@@ -748,16 +757,15 @@ export function LandingPage() {
             <div className="shield-ui">
               <div className="shield-rings" aria-hidden="true" />
               <div className="shield-center">
-                🛡
+                <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5 39 11v11c0 10-6.4 17.5-15 21-8.6-3.5-15-11-15-21V11l15-6Z" /><path d="M24 11v25c5.5-3 9-8 9-14.5v-6.3L24 11Z" /></svg>
               </div>
-              <div className="shield-chip a">
-                Social · locked
+              <div className="shield-apps">
+                <div className="shield-chip a"><span>◎</span><strong>Social</strong><em>wartet</em></div>
+                <div className="shield-chip b"><span>◇</span><strong>Games</strong><em>wartet</em></div>
               </div>
-              <div className="shield-chip b">
-                Games · locked
-              </div>
-              <div className="shield-chip c">
-                Habit complete → unlock
+              <div className="shield-unlock">
+                <span className="unlock-check">✓</span>
+                <div><small>Kerngewohnheit</small><strong>Erledigen → entsperren</strong></div>
               </div>
             </div>
           </div>
@@ -778,34 +786,18 @@ export function LandingPage() {
           <div className="feature-visual">
             <div className="privacy-visual">
               <div className="privacy-console">
-                <div className="console-head">
-                  <span className="console-dot" />
-                  <span className="console-dot" />
-                  <span className="console-dot" />
+                <div className="privacy-head">
+                  <div className="privacy-seal">✓</div>
+                  <div><small>Private by design</small><strong>Nur auf deinem Gerät</strong></div>
+                  <span className="privacy-status">GESCHÜTZT</span>
                 </div>
-                <div className="console-line">
-                  habits.storage
-                  <span className="good">
-                    → local
-                  </span>
+                <div className="privacy-flow">
+                  <div className="privacy-node"><span>01</span><strong>Gewohnheiten</strong><small>lokal gespeichert</small></div>
+                  <div className="privacy-connector"><span /></div>
+                  <div className="privacy-node"><span>02</span><strong>Fortschritt</strong><small>bleibt bei dir</small></div>
                 </div>
-                <div className="console-line">
-                  habit.entries
-                  <span className="good">
-                    → local
-                  </span>
-                </div>
-                <div className="console-line">
-                  personal.progress
-                  <span className="good">
-                    → yours
-                  </span>
-                </div>
-                <div className="console-line">
-                  unnecessary.tracking
-                  <span className="good">
-                    → none
-                  </span>
+                <div className="privacy-foot">
+                  <span>Kein Tracking-Profil</span><span>Kein Datenverkauf</span>
                 </div>
               </div>
             </div>

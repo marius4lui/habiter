@@ -9,7 +9,13 @@ export const metadata: Metadata = {
   description:
     "Habiter – Gewohnheiten, die bleiben. Ein Habit Tracker für Fokus, Routinen und langfristige Veränderung.",
   alternates: { canonical: "/" },
-  icons: { icon: "/favicon.ico" },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "32x32" },
+    ],
+    apple: "/apple-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -18,7 +24,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: dark)", color: "#090a09" },
-    { media: "(prefers-color-scheme: light)", color: "#f4f6f1" },
+    { media: "(prefers-color-scheme: light)", color: "#f1f1e9" },
   ],
 };
 

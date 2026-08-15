@@ -1,0 +1,277 @@
+name: Publish Habiter Release
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and validate without publishing or deploying
+        required: true
+        type: boolean
+        default: true
+      version:
+        description: SemVer to validate during a dry run
+        required: true
+        default: '1.0.0'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref_name }}-${{ inputs.version || 'tag' }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate Release Contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.1'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ "$EVENT_NAME" = push ]; then VERSION="${GITHUB_REF_NAME#v}"; else VERSION="$INPUT_VERSION"; fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+      - env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: pnpm release:validate --tag="$TAG"
+      - name: Require release commit on main
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+      - name: Refuse an existing release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists" >&2
+            exit 1
+          fi
+
+  android:
+    name: Build Signed Android
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/habiter
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+          cache-dependency-path: apps/habiter/android/*.gradle*
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: stable
+          cache: true
+      - name: Restore signing material
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_BASE64" && test -n "$STORE_PASSWORD" && test -n "$KEY_ALIAS" && test -n "$KEY_PASSWORD"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/upload-keystore.jks
+          chmod 600 android/upload-keystore.jks
+          {
+            printf 'storePassword=%s\n' "$STORE_PASSWORD"
+            printf 'keyAlias=%s\n' "$KEY_ALIAS"
+            printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+          } > android/key.properties
+          chmod 600 android/key.properties
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter build apk --release
+      - run: flutter build appbundle --release
+      - name: Name and verify signed artifacts
+        env:
+          VERSION: ${{ needs.validate.outputs.version }}
+          EXPECTED_SHA256: ${{ vars.ANDROID_CERT_SHA256 }}
+        run: |
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk "dist/habiter-$VERSION-android-universal.apk"
+          cp build/app/outputs/bundle/release/app-release.aab "dist/habiter-$VERSION-android-playstore.aab"
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)
+          test -x "$APKSIGNER"
+          test -n "$EXPECTED_SHA256"
+          CERT_OUTPUT=$("$APKSIGNER" verify --verbose --print-certs "dist/habiter-$VERSION-android-universal.apk")
+          printf '%s\n' "$CERT_OUTPUT"
+          NORMALIZED_EXPECTED=$(printf '%s' "$EXPECTED_SHA256" | tr -d ': ' | tr '[:upper:]' '[:lower:]')
+          NORMALIZED_OUTPUT=$(printf '%s' "$CERT_OUTPUT" | tr -d ': ' | tr '[:upper:]' '[:lower:]')
+          printf '%s' "$NORMALIZED_OUTPUT" | grep -F "$NORMALIZED_EXPECTED"
+          jarsigner -verify -strict "dist/habiter-$VERSION-android-playstore.aab"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-android
+          path: apps/habiter/dist/*
+          if-no-files-found: error
+      - name: Remove signing material
+        if: always()
+        run: rm -f android/upload-keystore.jks android/key.properties
+
+  linux:
+    name: Build Linux x64
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/habiter
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libwebkit2gtk-4.1-dev libsecret-1-dev
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter build linux --release
+      - env:
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: tar -C build/linux/x64/release/bundle -czf "habiter-$VERSION-linux-x64.tar.gz" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-linux
+          path: apps/habiter/habiter-*-linux-x64.tar.gz
+          if-no-files-found: error
+
+  windows:
+    name: Build Windows x64
+    needs: validate
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/habiter
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter build windows --release
+      - shell: pwsh
+        env:
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath "habiter-$env:VERSION-windows-x64.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
+          path: apps/habiter/habiter-*-windows-x64.zip
+          if-no-files-found: error
+
+  macos:
+    name: Build macOS universal
+    needs: validate
+    runs-on: macos-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/habiter
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter build macos --release
+      - env:
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/habiter.app "habiter-$VERSION-macos-universal.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-macos
+          path: apps/habiter/habiter-*-macos-universal.zip
+          if-no-files-found: error
+
+  publish:
+    name: Publish Atomic Release
+    needs: [validate, android, linux, windows, macos]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.1'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: artifacts
+          merge-multiple: true
+      - name: Generate release metadata
+        env:
+          VERSION: ${{ needs.validate.outputs.version }}
+          PUBLISHED_AT: ${{ github.event.head_commit.timestamp }}
+        run: |
+          node scripts/release/render-notes.mjs "$VERSION" > release-notes.md
+          node scripts/release/enrich-artifacts.mjs "$VERSION" artifacts runtime-releases.json
+          (cd artifacts && sha256sum * > "habiter-$VERSION-checksums.txt")
+          cp runtime-releases.json artifacts/releases.json
+      - name: Create draft release with every asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.validate.outputs.tag }}
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: gh release create "$TAG" artifacts/* --draft --title "Habiter $VERSION" --notes-file release-notes.md --verify-tag
+      - name: Deploy release metadata
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          cp runtime-releases.json apps/release-api/src/generated/releases.json
+          pnpm --filter @habiter/release-api types
+          pnpm --filter @habiter/release-api check
+          pnpm --dir apps/release-api exec wrangler deploy --env production
+      - name: Smoke test release API
+        if: ${{ vars.RELEASE_API_BASE_URL != '' }}
+        env:
+          RELEASE_API_BASE_URL: ${{ vars.RELEASE_API_BASE_URL }}
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/health"
+          curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/api/v1/releases/$VERSION"
+      - name: Publish the verified draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.validate.outputs.tag }}
+        run: gh release edit "$TAG" --draft=false --latest

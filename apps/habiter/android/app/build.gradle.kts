@@ -12,6 +12,13 @@ val releaseKeystoreFile = rootProject.file("upload-keystore.jks")
 val releaseKeyPropertiesFile = rootProject.file("key.properties")
 val releaseSigningAvailable =
     releaseKeystoreFile.exists() && releaseKeyPropertiesFile.exists()
+val releaseRequested = gradle.startParameter.taskNames.any {
+    it.contains("release", ignoreCase = true)
+}
+
+if (releaseRequested && !releaseSigningAvailable) {
+    throw GradleException("Release signing files are required for every Android release build")
+}
 
 android {
     namespace = "com.habiter.app"
@@ -48,6 +55,11 @@ android {
             create("release") {
                 val props = Properties()
                 props.load(FileInputStream(releaseKeyPropertiesFile))
+                listOf("storePassword", "keyAlias", "keyPassword").forEach { key ->
+                    if (props.getProperty(key).isNullOrBlank()) {
+                        throw GradleException("Missing Android signing property: $key")
+                    }
+                }
                 storeFile = releaseKeystoreFile
                 storePassword = props.getProperty("storePassword")
                 keyAlias = props.getProperty("keyAlias")

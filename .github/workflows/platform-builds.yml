@@ -45,7 +45,7 @@ jobs:
           cache: true
       - run: flutter pub get --enforce-lockfile
       - if: matrix.target == 'android'
-        run: flutter build apk --release
+        run: flutter build apk --debug
       - if: matrix.target == 'web'
         run: flutter build web --release
 

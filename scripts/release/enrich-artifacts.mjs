@@ -15,4 +15,5 @@ const enriched = await enrichRelease({
   repository: process.env.GITHUB_REPOSITORY ?? "marius4lui/habiter",
   publishedAt: process.env.PUBLISHED_AT ?? new Date().toISOString()
 });
-await writeFile(output, `${JSON.stringify({ schemaVersion: 1, releases: [enriched] }, null, 2)}\n`);
+const previouslyPublished = manifest.releases.filter((item) => item.status === "published" && item.version !== version);
+await writeFile(output, `${JSON.stringify({ schemaVersion: 1, releases: [enriched, ...previouslyPublished] }, null, 2)}\n`);

@@ -3,16 +3,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Android Configuration Integrity Tests', () {
-    test('release signing is optional for local and pull-request builds', () {
+    test('release builds fail closed without signing material', () {
       final buildFile = File('android/app/build.gradle.kts').readAsStringSync();
 
       expect(buildFile, contains('releaseSigningAvailable'));
       expect(
         buildFile,
-        contains('if (releaseSigningAvailable)'),
-        reason:
-            'Release builds must not require an unavailable local keystore.',
+        contains('if (releaseRequested && !releaseSigningAvailable)'),
+        reason: 'Every Android release build must require signing material.',
       );
+      expect(buildFile, contains('Release signing files are required'));
     });
 
     test('AndroidManifest.xml should not request exact-alarm permission', () {

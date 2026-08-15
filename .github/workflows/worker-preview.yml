@@ -1,0 +1,109 @@
+name: Release API Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    paths:
+      - 'apps/release-api/**'
+      - 'packages/release-core/**'
+      - 'scripts/release/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/worker-preview.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: release-api-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: Deploy Preview Worker
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.1'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm release:validate
+      - run: pnpm --filter @habiter/release-api types
+      - run: pnpm --filter @habiter/release-api check
+      - run: node scripts/release/sync-worker-data.mjs --preview
+      - name: Deploy preview
+        id: deploy
+        working-directory: apps/release-api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WORKER_NAME: habiter-release-api-pr-${{ github.event.pull_request.number }}
+        run: |
+          pnpm exec wrangler deploy --env preview --name "$WORKER_NAME" | tee deploy.log
+          PREVIEW_URL=$(grep -Eo 'https://[^ ]+\.workers\.dev' deploy.log | tail -1)
+          test -n "$PREVIEW_URL"
+          echo "url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
+          curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$PREVIEW_URL/health"
+          curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$PREVIEW_URL/api/v1/releases/latest"
+      - name: Create or update preview comment
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+        with:
+          script: |
+            const marker = '<!-- habiter-release-api-preview -->';
+            const body = `${marker}\n✅ Release API preview: ${process.env.PREVIEW_URL}`;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((comment) => comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+  cleanup:
+    name: Delete Preview Worker
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.1'
+      - run: pnpm install --frozen-lockfile
+      - name: Delete preview
+        working-directory: apps/release-api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WORKER_NAME: habiter-release-api-pr-${{ github.event.pull_request.number }}
+        run: pnpm exec wrangler delete --name "$WORKER_NAME" --force

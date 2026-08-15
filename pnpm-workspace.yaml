@@ -1,0 +1,5 @@
+packages:
+  - apps/release-api
+  - packages/release-core
+
+onlyBuiltDependencies: []

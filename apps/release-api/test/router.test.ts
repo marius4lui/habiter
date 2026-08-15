@@ -1,0 +1,57 @@
+import { describe, expect, it } from "vitest";
+import { createHandler } from "../src/router";
+import type { ReleaseManifest } from "../src/types/releases";
+
+const manifest: ReleaseManifest = {
+  schemaVersion: 1,
+  releases: [{
+    version: "1.0.0",
+    buildNumber: 10000,
+    channel: "stable",
+    status: "published",
+    publishedAt: "2026-08-15T12:00:00Z",
+    minimumSupportedVersion: "1.0.0",
+    mandatoryAfter: null,
+    notes: { added: ["v1"], changed: [], fixed: [], security: [] },
+    artifacts: [
+      { platform: "android", architecture: "universal", fileName: "habiter.apk", signed: true, url: "https://example.com/habiter.apk", sha256: "a".repeat(64), size: 10 },
+      { platform: "windows", architecture: "x64", fileName: "habiter.zip", signed: false, url: "https://example.com/habiter.zip", sha256: "b".repeat(64), size: 10 }
+    ]
+  }]
+};
+
+const env = { ENVIRONMENT: "development", WEBSITE_URL: "https://habiter.dev/#download" } as Env;
+const handler = createHandler(manifest);
+const call = (path: string, headers?: HeadersInit) => handler(new Request(`https://get.habiter.dev${path}`, { headers }), env);
+
+describe("release API", () => {
+  it("serves health and paginated release summaries", async () => {
+    expect(await (await call("/health")).json()).toMatchObject({ status: "ok", environment: "development" });
+    const response = await call("/api/v1/releases?page=1&limit=1");
+    expect(await response.json()).toMatchObject({ page: 1, limit: 1, total: 1 });
+  });
+
+  it("serves latest, version details and downloads", async () => {
+    expect(await (await call("/api/v1/releases/latest")).json()).toMatchObject({ version: "1.0.0" });
+    expect((await call("/api/v1/releases/1.0.0")).headers.get("cache-control")).toContain("immutable");
+    expect((await call("/api/v1/releases/1.0.0/downloads")).status).toBe(200);
+  });
+
+  it("computes update availability", async () => {
+    const response = await call("/api/v1/update/android?version=0.9.0&build=9000");
+    expect(await response.json()).toMatchObject({ updateAvailable: true, target: { version: "1.0.0", buildNumber: 10000 } });
+  });
+
+  it("detects platforms and accepts deterministic overrides", async () => {
+    expect((await call("/download", { "user-agent": "Mozilla Android" })).headers.get("location")).toContain("/api/v1/download/android/universal");
+    expect((await call("/download?platform=windows&arch=x64")).headers.get("location")).toContain("/api/v1/download/windows/x64");
+    expect((await call("/api/v1/download/windows/x64")).headers.get("location")).toBe("https://example.com/habiter.zip");
+  });
+
+  it("redirects unknown clients and returns consistent API errors", async () => {
+    expect((await call("/download", { "user-agent": "curl" })).headers.get("location")).toBe("https://habiter.dev/#download");
+    const response = await call("/api/v1/releases/9.9.9");
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({ error: { code: "release_not_found" } });
+  });
+});

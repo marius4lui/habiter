@@ -1,0 +1,18 @@
+{
+  "name": "@habiter/release-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "pnpm types:check && tsc --noEmit && vitest run",
+    "test": "vitest run",
+    "types": "wrangler types worker-configuration.d.ts",
+    "types:check": "wrangler types worker-configuration.d.ts --check",
+    "deploy:dry": "wrangler deploy --env production --dry-run"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10",
+    "wrangler": "4.123.0"
+  }
+}

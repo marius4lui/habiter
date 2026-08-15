@@ -2,4 +2,10 @@ packages:
   - apps/release-api
   - packages/release-core
 
-onlyBuiltDependencies: []
+allowBuilds:
+  esbuild: true
+  workerd: true
+
+onlyBuiltDependencies:
+  - esbuild
+  - workerd

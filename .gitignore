@@ -22,6 +22,7 @@ generated_plugin_registrant.*
 .flutter-plugins
 .flutter-plugins-dependencies
 .metadata
+apps/release-api/worker-configuration.d.ts
 
 # Local diagnostics and dependency trees
 **error**

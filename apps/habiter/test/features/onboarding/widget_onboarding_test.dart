@@ -9,6 +9,7 @@ import 'package:habiter/features/widgets/domain/widget_bridge.dart';
 import 'package:habiter/features/widgets/domain/widget_snapshot.dart';
 import 'package:habiter/l10n/app_localizations.dart';
 import 'package:habiter/models/habit.dart';
+import 'package:habiter/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 
 import '../../support/fakes/fake_clock.dart';
@@ -69,6 +70,34 @@ void main() {
     expect(find.text('Später'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('widget intro light visual contract', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(430, 932));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final controller = await _controllerAtWidgetIntro();
+    await tester.pumpWidget(_app(controller, const _FakeWidgetBridge()));
+    await tester.pump(const Duration(milliseconds: 800));
+
+    await expectLater(
+      find.byType(OnboardingFlow),
+      matchesGoldenFile('goldens/widget_intro_de_light.png'),
+    );
+  });
+
+  testWidgets('widget intro dark visual contract', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(430, 932));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final controller = await _controllerAtWidgetIntro();
+    await tester.pumpWidget(
+      _app(controller, const _FakeWidgetBridge(), themeMode: ThemeMode.dark),
+    );
+    await tester.pump(const Duration(milliseconds: 800));
+
+    await expectLater(
+      find.byType(OnboardingFlow),
+      matchesGoldenFile('goldens/widget_intro_de_dark.png'),
+    );
+  });
 }
 
 Future<OnboardingController> _controllerAtWidgetIntro() async {
@@ -100,6 +129,7 @@ Widget _app(
   OnboardingController controller,
   WidgetBridge bridge, {
   double textScale = 1,
+  ThemeMode themeMode = ThemeMode.light,
 }) => MultiProvider(
   providers: [
     ChangeNotifierProvider<OnboardingController>.value(value: controller),
@@ -113,6 +143,9 @@ Widget _app(
       ).copyWith(textScaler: TextScaler.linear(textScale)),
       child: child!,
     ),
+    theme: buildAppTheme(),
+    darkTheme: buildDarkTheme(),
+    themeMode: themeMode,
     supportedLocales: AppLocalizations.supportedLocales,
     localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
       AppLocalizations.delegate,

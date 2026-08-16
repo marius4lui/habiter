@@ -53,6 +53,11 @@ class HabiterWidgetStateTest {
         assertEquals(HabiterWidgetLayout.MEDIUM_HERO, HabiterWidgetLayout.forSize(250, 120))
         assertEquals(HabiterWidgetLayout.LARGE, HabiterWidgetLayout.forSize(250, 250))
         assertEquals(HabiterWidgetLayout.EXTRA_LARGE, HabiterWidgetLayout.forSize(320, 300))
+        assertEquals(HabiterWidgetLayout.COMPACT, HabiterWidgetLayout.forSize(179, 72))
+        assertEquals(HabiterWidgetLayout.COMPACT_SQUARE, HabiterWidgetLayout.forSize(180, 199))
+        assertEquals(HabiterWidgetLayout.WIDE, HabiterWidgetLayout.forSize(319, 99))
+        assertEquals(HabiterWidgetLayout.MEDIUM_HERO, HabiterWidgetLayout.forSize(319, 189))
+        assertEquals(HabiterWidgetLayout.LARGE, HabiterWidgetLayout.forSize(299, 259))
     }
 
     @Test
@@ -76,5 +81,25 @@ class HabiterWidgetStateTest {
         val state = HabiterWidgetState.parse(source, Instant.parse("2026-08-17T10:00:00Z"))
 
         assertTrue(state.stale)
+    }
+
+    @Test
+    fun `content projection covers just completed and settled all complete states`() {
+        val source = """
+            {"schemaVersion":1,"generatedAt":"2026-08-16T10:00:00Z","localDate":"2026-08-16","locale":"de","completedCount":1,"scheduledCount":1,"allComplete":true,"hasAnyHabits":true,"habits":[{"id":"read","name":"Lesen","icon":"📚","isCompleted":true,"scheduleLabel":"Täglich"}],"lastCompletion":{"habitId":"read","habitName":"Lesen","actionId":"tap-1","completedAt":"2026-08-16T10:00:00Z"}}
+        """.trimIndent()
+        val parsed = HabiterWidgetState.parse(source, Instant.parse("2026-08-16T10:01:00Z"))
+
+        val immediate = HabiterWidgetStateRepository.project(
+            parsed,
+            Instant.parse("2026-08-16T10:04:59Z"),
+        )
+        val settled = HabiterWidgetStateRepository.project(
+            parsed,
+            Instant.parse("2026-08-16T10:05:01Z"),
+        )
+
+        assertTrue(immediate is HabiterWidgetContentState.JustCompleted)
+        assertTrue(settled is HabiterWidgetContentState.AllComplete)
     }
 }

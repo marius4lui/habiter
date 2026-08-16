@@ -75,8 +75,15 @@ class _WidgetPreviewState extends State<WidgetPreview>
                     height: 112 + (t * 82),
                     padding: const EdgeInsets.all(HabiterSpace.md),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
+                      color: theme.brightness == Brightness.dark
+                          ? theme.colorScheme.surfaceContainerHighest
+                          : theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(HabiterRadius.card),
+                      border: Border.all(
+                        color: theme.colorScheme.outlineVariant.withValues(
+                          alpha: .65,
+                        ),
+                      ),
                       boxShadow: <BoxShadow>[
                         BoxShadow(
                           color: theme.colorScheme.shadow.withValues(

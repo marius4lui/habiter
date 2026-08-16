@@ -229,14 +229,18 @@ class HabitProvider extends ChangeNotifier {
         habit.notificationTime == null) {
       return;
     }
-    await _reminders.applyLegacyHabitPolicy(habit);
+    await _reminders.applyLegacyHabitPolicy(habit, replaceNonFixed: true);
     await reconcileReminders();
   }
 
   Future<void> updateHabit(String id, Habit updated) async {
-    if (!habits.any((habit) => habit.id == id)) return;
+    final previous = habits.where((habit) => habit.id == id).firstOrNull;
+    if (previous == null) return;
     await _habitsController.update(updated);
-    await _reminders.applyLegacyHabitPolicy(updated);
+    if (previous.notificationEnabled != updated.notificationEnabled ||
+        previous.notificationTime != updated.notificationTime) {
+      await _reminders.applyLegacyHabitPolicy(updated, replaceNonFixed: true);
+    }
     await reconcileReminders();
     await syncWidget();
   }
@@ -427,12 +431,17 @@ class HabitProvider extends ChangeNotifier {
     );
   }
 
-  Future<void> reconcileReminders({bool processActions = false}) =>
-      _reminders.synchronize(
-        habits: habits,
-        entries: habitEntries,
-        processActions: processActions,
-      );
+  Future<void> reconcileReminders({
+    bool processActions = false,
+    bool refreshTimeZone = false,
+  }) async {
+    if (refreshTimeZone) await NotificationService.instance.refreshTimeZone();
+    await _reminders.synchronize(
+      habits: habits,
+      entries: habitEntries,
+      processActions: processActions,
+    );
+  }
 
   Future<void> updateReminderPolicy(HabitReminderPolicy policy) async {
     await _reminders.updatePolicy(policy);

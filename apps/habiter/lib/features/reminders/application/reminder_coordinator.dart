@@ -133,19 +133,26 @@ final class ReminderCoordinator {
     }
     final desiredKeys = result.reminders.map((item) => item.logicalKey).toSet();
     await _repository.transact((draft) {
+      final recentCutoff = now.subtract(const Duration(minutes: 90));
+      final recentDelivered = draft.plannedReminders.where(
+        (item) =>
+            !item.scheduledFor.isAfter(now) &&
+            !item.scheduledFor.isBefore(recentCutoff),
+      );
       draft.profiles = profiles;
-      draft.plannedReminders = result.reminders
-          .map(
-            (item) => PersistedPlannedReminder(
-              logicalKey: item.logicalKey,
-              habitId: item.habit.id,
-              occurrence: item.occurrence,
-              scheduledFor: item.scheduledFor,
-              kind: item.kind,
-              reason: item.reason,
-            ),
-          )
-          .toList(growable: false);
+      draft.plannedReminders = <PersistedPlannedReminder>[
+        ...recentDelivered,
+        ...result.reminders.map(
+          (item) => PersistedPlannedReminder(
+            logicalKey: item.logicalKey,
+            habitId: item.habit.id,
+            occurrence: item.occurrence,
+            scheduledFor: item.scheduledFor,
+            kind: item.kind,
+            reason: item.reason,
+          ),
+        ),
+      ];
       draft.pendingSnoozes.removeWhere(
         (snooze) =>
             snooze.scheduledFor.isBefore(now) ||
@@ -175,10 +182,17 @@ final class ReminderCoordinator {
     _snapshot = await _repository.load();
   }
 
-  Future<void> applyLegacyHabitPolicy(Habit habit) async {
+  Future<void> applyLegacyHabitPolicy(
+    Habit habit, {
+    bool replaceNonFixed = false,
+  }) async {
     await _repository.transact((draft) {
       final existing = draft.policies[habit.id];
-      if (existing != null && existing.mode != ReminderMode.fixedTimes) return;
+      if (existing != null &&
+          existing.mode != ReminderMode.fixedTimes &&
+          !replaceNonFixed) {
+        return;
+      }
       LocalTime time;
       try {
         time = LocalTime.parse(

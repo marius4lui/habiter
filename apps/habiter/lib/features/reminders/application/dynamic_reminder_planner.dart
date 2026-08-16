@@ -467,6 +467,9 @@ final class DynamicReminderPlanner {
         attemptIndex: attemptIndex,
         utility: utility,
         reason: reason,
+        snoozeDuration:
+            input.policies[habit.id]?.snoozeDuration ??
+            input.preferences.defaultSnooze,
       ),
     );
   }

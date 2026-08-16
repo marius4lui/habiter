@@ -91,6 +91,46 @@ void main() {
     expect(signal.sourceWeight, 0.65);
   });
 
+  test(
+    'recent delivered plan survives resume for 90-minute attribution',
+    () async {
+      final store = InMemoryKeyValueStore();
+      final clock = FakeClock(now);
+      final coordinator = _coordinator(
+        store,
+        RecordingNotificationGateway(),
+        clock,
+      );
+      final habit = _habit(
+        notificationEnabled: true,
+        notificationTime: '09:00',
+      );
+      await coordinator.initialize(
+        habits: <Habit>[habit],
+        entries: const <HabitEntry>[],
+        legacySettings: const LegacyReminderSettings(
+          notificationsEnabled: false,
+          reminderTime: '20:00',
+        ),
+      );
+      clock.set(DateTime.utc(2026, 8, 17, 9, 30));
+
+      await coordinator.synchronize(
+        habits: <Habit>[habit],
+        entries: const <HabitEntry>[],
+      );
+      await coordinator.recordCompletion(
+        habitId: habit.id,
+        occurredAt: clock.now(),
+        signalId: 'after-resume',
+      );
+
+      final signal = (await ReminderRepository(store).load()).signals.single;
+      expect(signal.originatingNotificationKey, isNotNull);
+      expect(signal.sourceWeight, 0.65);
+    },
+  );
+
   test('calibration feedback is durable, covered and idempotent', () async {
     final store = InMemoryKeyValueStore();
     final clock = FakeClock(now);
@@ -190,6 +230,47 @@ void main() {
       );
     },
   );
+
+  test('snooze action uses its policy-derived duration', () async {
+    final store = InMemoryKeyValueStore();
+    final habit = _habit();
+    final coordinator = _coordinator(
+      store,
+      RecordingNotificationGateway(),
+      FakeClock(now),
+    );
+    await coordinator.initialize(
+      habits: <Habit>[habit],
+      entries: const <HabitEntry>[],
+      legacySettings: const LegacyReminderSettings(
+        notificationsEnabled: false,
+        reminderTime: '20:00',
+      ),
+    );
+    await coordinator.enableSmartForNewUser(sessionId: 'calibration');
+    await ReminderActionInbox(store).enqueue(
+      ReminderActionRecord(
+        id: 'custom-snooze',
+        habitId: habit.id,
+        occurrence: LocalDate(2026, 8, 17),
+        receivedAt: now,
+        notificationKey: 'smart-reminder',
+        kind: ReminderActionKind.snooze,
+        snoozeDuration: const Duration(minutes: 60),
+      ),
+    );
+
+    await coordinator.synchronize(
+      habits: <Habit>[habit],
+      entries: const <HabitEntry>[],
+      processActions: true,
+    );
+
+    final pending = (await ReminderRepository(
+      store,
+    ).load()).pendingSnoozes.single;
+    expect(pending.scheduledFor, now.add(const Duration(minutes: 60)));
+  });
 
   test('expired active calibration completes during reconciliation', () async {
     final store = InMemoryKeyValueStore();

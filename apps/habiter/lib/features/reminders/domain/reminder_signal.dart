@@ -47,6 +47,7 @@ final class ReminderSignal {
     this.feasibility,
     this.originatingNotificationKey,
     this.calibrationSessionId,
+    this.algorithmVersion = currentAlgorithmVersion,
     required this.createdAt,
   }) : assert(localWeekday >= 1 && localWeekday <= 7),
        assert(localMinuteOfDay >= 0 && localMinuteOfDay < 1440);
@@ -64,8 +65,11 @@ final class ReminderSignal {
         : FeasibilityRating.values.byName(map['feasibility']! as String),
     originatingNotificationKey: map['originatingNotificationKey'] as String?,
     calibrationSessionId: map['calibrationSessionId'] as String?,
+    algorithmVersion: (map['algorithmVersion'] as num?)?.toInt() ?? 1,
     createdAt: DateTime.parse(map['createdAt']! as String),
   );
+
+  static const currentAlgorithmVersion = 1;
 
   final String id;
   final String habitId;
@@ -77,6 +81,7 @@ final class ReminderSignal {
   final FeasibilityRating? feasibility;
   final String? originatingNotificationKey;
   final String? calibrationSessionId;
+  final int algorithmVersion;
   final DateTime createdAt;
 
   double get targetValue {
@@ -107,6 +112,7 @@ final class ReminderSignal {
       localWeekday: localWeekday,
       localMinuteOfDay: localMinuteOfDay,
       originatingNotificationKey: notificationKey,
+      algorithmVersion: algorithmVersion,
       createdAt: createdAt,
     );
   }
@@ -124,6 +130,7 @@ final class ReminderSignal {
       'originatingNotificationKey': originatingNotificationKey,
     if (calibrationSessionId != null)
       'calibrationSessionId': calibrationSessionId,
+    'algorithmVersion': algorithmVersion,
     'createdAt': createdAt.toUtc().toIso8601String(),
   };
 }

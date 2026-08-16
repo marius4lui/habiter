@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/core/platform/notification_gateway.dart';
 import 'package:habiter/core/time/local_date.dart';
@@ -27,11 +29,12 @@ void main() {
       occurrence: LocalDate(2026, 8, 14),
       notificationKey: 'habit@2026-08-14:normal:0',
       kind: PlannedReminderKind.normal,
-      reason: ReminderReason(
+      reason: const ReminderReason(
         code: ReminderReasonCode.habitLearnedPeak,
         sourceProfileId: 'habit:habit',
-        factors: const <String, double>{'availability': 0.8},
+        factors: <String, double>{'availability': 0.8},
       ),
+      snoozeDuration: const Duration(minutes: 45),
       action: 'complete',
     );
 
@@ -42,6 +45,20 @@ void main() {
     expect(
       ReminderPayload.fromMap(payload.toMap()).reason.code,
       ReminderReasonCode.habitLearnedPeak,
+    );
+    expect(
+      ReminderPayload.fromMap(payload.toMap()).snoozeDuration,
+      const Duration(minutes: 45),
+    );
+    final legacyV2 =
+        Map<String, Object?>.from(
+            jsonDecode(jsonEncode(payload.toMap())) as Map,
+          )
+          ..['v'] = 2
+          ..remove('snoozeDurationMinutes');
+    expect(
+      ReminderPayload.fromMap(legacyV2).snoozeDuration,
+      const Duration(minutes: 30),
     );
     expect(
       () => ReminderPayload.fromMap(<String, Object?>{

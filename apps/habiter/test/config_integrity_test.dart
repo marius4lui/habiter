@@ -33,6 +33,27 @@ void main() {
       );
     });
 
+    test('scheduled notifications declare delivery and action receivers', () {
+      final content = File(
+        'android/app/src/main/AndroidManifest.xml',
+      ).readAsStringSync();
+
+      expect(content, contains('ScheduledNotificationReceiver'));
+      expect(content, contains('ScheduledNotificationBootReceiver'));
+      expect(content, contains('ActionBroadcastReceiver'));
+      expect(content, contains('android.intent.action.MY_PACKAGE_REPLACED'));
+    });
+
+    test('iOS delegates foreground notification presentation', () {
+      final content = File('ios/Runner/AppDelegate.swift').readAsStringSync();
+
+      expect(content, contains('import UserNotifications'));
+      expect(
+        content,
+        contains('UNUserNotificationCenter.current().delegate = self'),
+      );
+    });
+
     test(
       'proguard-rules.pro should exist and contain Gson and Local Notifications rules',
       () {

@@ -21,6 +21,7 @@ final class PlannedReminder {
     this.attemptIndex = 0,
     this.utility = 1,
     this.reason = const ReminderReason(code: ReminderReasonCode.fixedTime),
+    this.snoozeDuration = const Duration(minutes: 30),
   });
 
   final String logicalKey;
@@ -31,6 +32,7 @@ final class PlannedReminder {
   final int attemptIndex;
   final double utility;
   final ReminderReason reason;
+  final Duration snoozeDuration;
 
   PlannedReminder copyWith({
     String? logicalKey,
@@ -38,6 +40,7 @@ final class PlannedReminder {
     PlannedReminderKind? kind,
     double? utility,
     ReminderReason? reason,
+    Duration? snoozeDuration,
   }) => PlannedReminder(
     logicalKey: logicalKey ?? this.logicalKey,
     habit: habit,
@@ -47,6 +50,7 @@ final class PlannedReminder {
     attemptIndex: attemptIndex,
     utility: utility ?? this.utility,
     reason: reason ?? this.reason,
+    snoozeDuration: snoozeDuration ?? this.snoozeDuration,
   );
 }
 
@@ -138,19 +142,25 @@ final class ReminderScheduler {
       await _gateway.cancel(registered[stale]!);
       await _registry.release(stale);
     }
-    final pendingIds = (await _gateway.pending())
-        .map((item) => item.id)
-        .toSet();
+    final pendingById = <int, NotificationRequest>{
+      for (final request in await _gateway.pending()) request.id: request,
+    };
     for (final entry in desired.entries) {
       final id = await _registry.idFor(entry.key);
-      if (pendingIds.contains(id)) continue;
       final reminder = entry.value;
+      final pending = pendingById[id];
+      if (pending != null &&
+          pending.scheduledFor.toUtc() == reminder.scheduledFor.toUtc()) {
+        continue;
+      }
+      if (pending != null) await _gateway.cancel(id);
       final payload = ReminderPayload(
         habitId: reminder.habit.id,
         occurrence: reminder.occurrence,
         notificationKey: reminder.logicalKey,
         kind: reminder.kind,
         reason: reminder.reason,
+        snoozeDuration: reminder.snoozeDuration,
       );
       final isQuestion =
           reminder.kind == PlannedReminderKind.calibrationPulse ||

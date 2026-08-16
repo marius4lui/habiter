@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/core/time/local_date.dart';
 import 'package:habiter/features/reminders/application/reminder_action_inbox.dart';
 import 'package:habiter/features/reminders/domain/reminder_action.dart';
-import 'package:habiter/features/reminders/domain/reminder_signal.dart';
 
 import '../../support/fakes/fake_clock.dart';
 import '../../support/fakes/in_memory_key_value_store.dart';

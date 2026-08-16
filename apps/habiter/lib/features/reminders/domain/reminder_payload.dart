@@ -8,15 +8,17 @@ final class ReminderPayload {
     this.notificationKey,
     this.kind = PlannedReminderKind.normal,
     this.reason = const ReminderReason(code: ReminderReasonCode.fixedTime),
+    this.snoozeDuration = const Duration(minutes: 30),
     this.action = 'open',
   });
 
-  static const int schemaVersion = 2;
+  static const int schemaVersion = 3;
   final String habitId;
   final LocalDate occurrence;
   final String? notificationKey;
   final PlannedReminderKind kind;
   final ReminderReason reason;
+  final Duration snoozeDuration;
   final String action;
 
   String get stableNotificationKey =>
@@ -29,12 +31,13 @@ final class ReminderPayload {
     'notificationKey': stableNotificationKey,
     'kind': kind.name,
     'reason': reason.toMap(),
+    'snoozeDurationMinutes': snoozeDuration.inMinutes,
     'action': action,
   };
 
   factory ReminderPayload.fromMap(Map<String, Object?> map) {
     final version = (map['v'] as num?)?.toInt();
-    if ((version != 1 && version != schemaVersion) ||
+    if ((version != 1 && version != 2 && version != schemaVersion) ||
         map['habitId'] is! String ||
         map['occurrence'] is! String) {
       throw const FormatException('Unsupported reminder payload.');
@@ -58,6 +61,9 @@ final class ReminderPayload {
               Map<String, Object?>.from(map['reason']! as Map),
             )
           : const ReminderReason(code: ReminderReasonCode.fixedTime),
+      snoozeDuration: Duration(
+        minutes: (map['snoozeDurationMinutes'] as num?)?.toInt() ?? 30,
+      ),
       action: map['action'] as String? ?? 'open',
     );
   }

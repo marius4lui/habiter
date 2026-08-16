@@ -378,7 +378,10 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _habitProvider?.syncWidget();
-      _habitProvider?.reconcileReminders(processActions: true);
+      _habitProvider?.reconcileReminders(
+        processActions: true,
+        refreshTimeZone: true,
+      );
     }
   }
 

@@ -140,6 +140,14 @@ void main() {
     expect(completion.targetValue, 1);
     expect(completion.source.baseWeight, 0.35);
     expect(completion.withReminderAttribution('reminder').sourceWeight, 0.65);
+    final versioned = ReminderSignal.fromMap(<String, Object?>{
+      ...explicit.toMap(),
+      'algorithmVersion': 7,
+    });
+    expect(versioned.algorithmVersion, 7);
+    final legacy = Map<String, Object?>.from(explicit.toMap())
+      ..remove('algorithmVersion');
+    expect(ReminderSignal.fromMap(legacy).algorithmVersion, 1);
   });
 
   test('availability profiles roundtrip and expose confidence labels', () {

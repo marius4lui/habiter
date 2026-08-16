@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/core/platform/notification_gateway.dart';
 import 'package:habiter/core/time/local_date.dart';
 import 'package:habiter/features/reminders/application/notification_id_registry.dart';
 import 'package:habiter/features/reminders/application/reminder_scheduler.dart';
 import 'package:habiter/features/reminders/domain/reminder_plan.dart';
+import 'package:habiter/features/reminders/domain/reminder_payload.dart';
 import 'package:habiter/models/habit.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
@@ -115,6 +118,58 @@ void main() {
       expect(request.payload['schema'], contains('calibrationUncertainty'));
     },
   );
+
+  test('same logical key is rescheduled when its instant changes', () async {
+    final gateway = RecordingNotificationGateway();
+    final scheduler = ReminderScheduler(
+      registry: NotificationIdRegistry(InMemoryKeyValueStore()),
+      gateway: gateway,
+    );
+    final first = PlannedReminder(
+      logicalKey: 'stable-key',
+      habit: _habit('habit', HabitFrequency.daily),
+      occurrence: LocalDate(2026, 8, 17),
+      scheduledFor: DateTime.utc(2026, 8, 17, 9),
+    );
+
+    await scheduler.replaceWith(<PlannedReminder>[first]);
+    await scheduler.replaceWith(<PlannedReminder>[
+      first.copyWith(scheduledFor: DateTime.utc(2026, 8, 17, 10)),
+    ]);
+
+    expect((await gateway.pending()).single.scheduledFor.hour, 10);
+    expect(
+      gateway.calls.where((call) => call.operation == 'schedule'),
+      hasLength(2),
+    );
+    expect(
+      gateway.calls.where((call) => call.operation == 'cancel'),
+      hasLength(1),
+    );
+  });
+
+  test('habit snooze duration is carried in the durable payload', () async {
+    final gateway = RecordingNotificationGateway();
+    final scheduler = ReminderScheduler(
+      registry: NotificationIdRegistry(InMemoryKeyValueStore()),
+      gateway: gateway,
+    );
+    final planned = PlannedReminder(
+      logicalKey: 'habit@2026-08-17',
+      habit: _habit('habit', HabitFrequency.daily),
+      occurrence: LocalDate(2026, 8, 17),
+      scheduledFor: DateTime.utc(2026, 8, 17, 9),
+      snoozeDuration: const Duration(minutes: 60),
+    );
+
+    await scheduler.replaceWith(<PlannedReminder>[planned]);
+    final raw = (await gateway.pending()).single.payload['schema']!;
+    final payload = ReminderPayload.fromMap(
+      Map<String, Object?>.from(jsonDecode(raw) as Map),
+    );
+
+    expect(payload.snoozeDuration, const Duration(minutes: 60));
+  });
 }
 
 Habit _habit(

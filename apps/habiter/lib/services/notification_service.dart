@@ -156,6 +156,13 @@ class NotificationService implements NotificationGateway {
     return false;
   }
 
+  /// Refreshes the process-wide local timezone before reconciliation.
+  Future<bool> refreshTimeZone() async {
+    if (!Platform.isAndroid && !Platform.isIOS) return false;
+    await initialize();
+    return _timeZones.refreshIfChanged();
+  }
+
   /// Check if notifications are permitted
   Future<bool> areNotificationsEnabled() async {
     if (!Platform.isAndroid && !Platform.isIOS) return false;
@@ -410,6 +417,7 @@ Future<ReminderActionRecord?> _persistNotificationResponse(
     notificationKey: payload.stableNotificationKey,
     kind: kind,
     notificationKind: payload.kind,
+    snoozeDuration: payload.snoozeDuration,
   );
   records.add(record.toMap());
   await preferences.setString(

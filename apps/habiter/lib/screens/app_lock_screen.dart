@@ -49,7 +49,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
         .toList(growable: false);
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.appLock)),
+      appBar: AppBar(),
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: ListView(
@@ -61,7 +61,6 @@ class _AppLockScreenState extends State<AppLockScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   HabiterPageIntro(
-                    eyebrow: context.l10n.focusAndAppLock,
                     title: context.l10n.appLockTitle,
                     subtitle: context.l10n.appLockBody,
                   ),

@@ -86,6 +86,23 @@ void main() {
     expect(metrics.scheduled, 2);
     expect(metrics.completed, 2);
   });
+
+  test('period metrics use the requested honest thirty-day denominator', () {
+    final metrics = HabitMetricCalculator.calculatePeriod(
+      habit: _habit(createdAt: DateTime.utc(2026, 6, 1)),
+      entries: <HabitEntry>[
+        _entry('2026-07-17'),
+        _entry('2026-08-01'),
+        _entry('2026-08-15'),
+      ],
+      from: LocalDate(2026, 7, 18),
+      through: LocalDate(2026, 8, 16),
+    );
+
+    expect(metrics.scheduled, 30);
+    expect(metrics.completed, 2);
+    expect(metrics.completionRate, closeTo(2 / 30, 0.0001));
+  });
 }
 
 Habit _habit({

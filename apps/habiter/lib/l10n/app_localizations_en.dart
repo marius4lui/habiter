@@ -33,10 +33,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editHabit => 'Edit Habit';
 
   @override
-  String get createHabit => 'Create Habit';
+  String get createHabit => 'Create habit';
 
   @override
-  String get updateHabit => 'Update Habit';
+  String get updateHabit => 'Update habit';
 
   @override
   String get deleteHabit => 'Delete Habit?';
@@ -51,11 +51,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get delete => 'Delete';
 
   @override
-  String get startMomentum => 'Start your momentum';
+  String get startMomentum => 'Start small.';
 
   @override
   String get startMomentumDescription =>
-      'Create your first habit and watch your routine grow.';
+      'Choose one habit that fits into your day right now.';
 
   @override
   String get completion => 'Completion';
@@ -127,7 +127,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String perWeek(int count) {
-    return '$count/week';
+    return '$count× per week';
   }
 
   @override
@@ -858,4 +858,207 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get nothingScheduledBody =>
       'Your next habit will appear here when its rhythm comes around.';
+
+  @override
+  String get categoryHealth => 'Health';
+
+  @override
+  String get categoryLearning => 'Learning';
+
+  @override
+  String get categoryProductivity => 'Productivity';
+
+  @override
+  String get categorySocial => 'Social';
+
+  @override
+  String get categoryCreative => 'Creative';
+
+  @override
+  String get categoryFitness => 'Fitness';
+
+  @override
+  String get categoryMindfulness => 'Mindfulness';
+
+  @override
+  String get categoryFinance => 'Finance';
+
+  @override
+  String get categoryHome => 'Home';
+
+  @override
+  String get templateGroupPopular => 'Popular';
+
+  @override
+  String get templateWater => 'Drink water';
+
+  @override
+  String get templateWorkout => 'Workout';
+
+  @override
+  String get templateRead => 'Read';
+
+  @override
+  String get templateMeditate => 'Meditate';
+
+  @override
+  String get templateWalk => 'Take a walk';
+
+  @override
+  String get templateSleep => 'Sleep routine';
+
+  @override
+  String get templateWrite => 'Write';
+
+  @override
+  String get templateTidy => 'Tidy up';
+
+  @override
+  String get templateHealthyMeal => 'Healthy meal';
+
+  @override
+  String get templateMedicine => 'Take medicine';
+
+  @override
+  String get templateFloss => 'Floss';
+
+  @override
+  String get templateScreenFree => 'Screen-free time';
+
+  @override
+  String get templateFinances => 'Review finances';
+
+  @override
+  String get templateInstrument => 'Practice an instrument';
+
+  @override
+  String get templateLanguage => 'Learn a language';
+
+  @override
+  String get templateRun => 'Go running';
+
+  @override
+  String get creationQuestion => 'What would you like to do regularly?';
+
+  @override
+  String get starterTemplates => 'A few good places to start';
+
+  @override
+  String get searchTemplates => 'Search habits';
+
+  @override
+  String get customHabitAction => 'Create your own habit';
+
+  @override
+  String customHabitFromSearch(String name) {
+    return 'Create your own habit \"$name\"';
+  }
+
+  @override
+  String get habitIdentityQuestion => 'What would you like to do?';
+
+  @override
+  String get habitIdentityHint =>
+      'A short name is easier to recognize in your day.';
+
+  @override
+  String get chooseAnotherTemplate => 'Choose another template';
+
+  @override
+  String get rhythmQuestion => 'How often?';
+
+  @override
+  String get rhythmHint => 'Choose a rhythm that genuinely fits your week.';
+
+  @override
+  String get dailyOptionBody => 'Once every day';
+
+  @override
+  String get weeklyOptionBody => 'For example, three times a week';
+
+  @override
+  String get customOptionBody => 'Choose the days that fit';
+
+  @override
+  String get reminderQuestion => 'Would you like a reminder?';
+
+  @override
+  String get habitReminderToggle => 'Reminder';
+
+  @override
+  String get reminderSupportBody =>
+      'Habiter can give you a gentle nudge at a time you choose.';
+
+  @override
+  String get reviewHabit => 'Your habit';
+
+  @override
+  String get ready => 'Ready.';
+
+  @override
+  String get detailsOptional => 'Add a note';
+
+  @override
+  String weeklyUnits(int completed, int scheduled) {
+    return '$completed of $scheduled planned this week';
+  }
+
+  @override
+  String get thisWeek => 'This week';
+
+  @override
+  String get lastThirtyDays => 'Last 30 days';
+
+  @override
+  String consistencyValue(int percent) {
+    return '$percent% consistency';
+  }
+
+  @override
+  String get historyTitle => 'History';
+
+  @override
+  String get notEnoughHistory => 'Not enough history yet';
+
+  @override
+  String get notEnoughHistoryBody =>
+      'After a few planned sessions, your rhythm will become visible here.';
+
+  @override
+  String get trendImproving => 'Your recent rhythm is improving.';
+
+  @override
+  String get trendDeclining => 'Your recent rhythm has become quieter.';
+
+  @override
+  String get trendSteady => 'Your recent rhythm is steady.';
+
+  @override
+  String get dayCompleted => 'completed';
+
+  @override
+  String get dayMissed => 'scheduled, not completed';
+
+  @override
+  String get dayFuture => 'upcoming';
+
+  @override
+  String get dayNotScheduled => 'not scheduled';
+
+  @override
+  String pausedArchivedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count paused or archived habits',
+      one: '1 paused or archived habit',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chooseHabit => 'Choose a habit';
+
+  @override
+  String get emptyStarterExamples => 'Water · Read · Walk · Meditate';
 }

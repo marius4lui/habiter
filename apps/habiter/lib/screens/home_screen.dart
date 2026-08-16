@@ -8,6 +8,7 @@ import '../core/design_system/motion.dart';
 import '../core/design_system/tokens.dart';
 import '../core/time/local_date.dart';
 import '../features/history/presentation/habit_lifecycle_panel.dart';
+import '../features/habits/presentation/templates/habit_template.dart';
 import '../features/onboarding/presentation/onboarding_empty_state.dart';
 import '../features/today/application/today_query.dart';
 import '../l10n/l10n.dart';
@@ -25,6 +26,28 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _showCompleted = false;
+  final ScrollController _scrollController = ScrollController();
+  bool _fabExtended = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_updateFab);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_updateFab)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _updateFab() {
+    final extended =
+        !_scrollController.hasClients || _scrollController.offset < 28;
+    if (extended != _fabExtended) setState(() => _fabExtended = extended);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,15 +66,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: KeyedSubtree(
         key: const Key('add-habit-fab'),
-        onPressed: () => _openEditor(context),
-        icon: const Icon(Icons.add_rounded),
-        label: Text(context.l10n.addHabit),
+        child: AnimatedSwitcher(
+          duration: HabiterMotion.standard.duration(
+            reduced: context.reduceMotion,
+          ),
+          child: _fabExtended
+              ? FloatingActionButton.extended(
+                  key: const ValueKey('extended-add-fab'),
+                  heroTag: 'add-habit',
+                  onPressed: () => _openEditor(context),
+                  icon: const Icon(Icons.add_rounded),
+                  label: Text(context.l10n.addHabit),
+                )
+              : FloatingActionButton.small(
+                  key: const ValueKey('compact-add-fab'),
+                  heroTag: 'add-habit',
+                  tooltip: context.l10n.addHabit,
+                  onPressed: () => _openEditor(context),
+                  child: const Icon(Icons.add_rounded),
+                ),
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: provider.refresh,
         child: CustomScrollView(
+          controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(
@@ -92,7 +133,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ? null
             : SnackBarAction(
                 label: context.l10n.undoComplete,
-                onPressed: () => provider.undoCompletion(result.undoToken!),
+                onPressed: () async {
+                  final undo = await provider.undoCompletion(result.undoToken!);
+                  if (undo.changed && mounted) {
+                    await context.read<HapticGateway>().selection();
+                  }
+                },
               ),
       ),
     );
@@ -645,5 +691,5 @@ String _habitMeta(BuildContext context, Habit habit) {
     HabitFrequency.weekly => context.l10n.perWeek(habit.targetCount),
     HabitFrequency.custom => context.l10n.onDays,
   };
-  return '${habit.category} · $schedule';
+  return '${localizedHabitCategory(context.l10n, habit.category)} · $schedule';
 }

@@ -73,6 +73,46 @@ abstract final class HabitMetricCalculator {
           );
   }
 
+  static HabitMetrics calculatePeriod({
+    required Habit habit,
+    required Iterable<HabitEntry> entries,
+    required LocalDate from,
+    required LocalDate through,
+  }) {
+    final created = LocalDate.fromDateTime(habit.createdAt);
+    final start = created.compareTo(from) > 0 ? created : from;
+    if (through.compareTo(start) < 0) {
+      return HabitMetrics(
+        scheduled: 0,
+        completed: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        weeks: const <WeeklyHabitMetric>[],
+      );
+    }
+    final schedule = LegacyHabitScheduleMapper.fromHabit(habit);
+    final completedDates = <LocalDate>{
+      for (final entry in entries)
+        if (entry.habitId == habit.id && entry.completed)
+          LocalDate.parse(entry.date),
+    };
+    return schedule is TimesPerWeekSchedule
+        ? _weeklyTargetMetrics(
+            habit: habit,
+            schedule: schedule,
+            completedDates: completedDates,
+            start: start,
+            through: through,
+          )
+        : _scheduledDateMetrics(
+            habit: habit,
+            schedule: schedule,
+            completedDates: completedDates,
+            start: start,
+            through: through,
+          );
+  }
+
   static HabitMetrics _scheduledDateMetrics({
     required Habit habit,
     required HabitSchedule schedule,

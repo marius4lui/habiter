@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../core/design_system/components.dart';
 import '../core/design_system/tokens.dart';
 import '../features/habits/domain/habit_source.dart';
+import '../features/habits/presentation/templates/habit_template.dart';
 import '../l10n/l10n.dart';
 import '../models/habit.dart';
 
@@ -76,7 +77,12 @@ class HabitDetailDialog extends StatelessWidget {
                           runSpacing: 6,
                           children: [
                             Chip(
-                              label: Text(habit.category),
+                              label: Text(
+                                localizedHabitCategory(
+                                  context.l10n,
+                                  habit.category,
+                                ),
+                              ),
                               visualDensity: VisualDensity.compact,
                             ),
                             if (habit.source.kind ==

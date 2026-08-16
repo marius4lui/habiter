@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../models/habit.dart';
+import '../../../core/design_system/components.dart';
 
 class HabitLifecyclePanel extends StatelessWidget {
   const HabitLifecyclePanel({
@@ -23,39 +24,31 @@ class HabitLifecyclePanel extends StatelessWidget {
         .where((habit) => habit.lifecycleStatus != HabitLifecycleStatus.active)
         .toList(growable: false);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
+    if (managed.isEmpty) return const SizedBox.shrink();
+
+    return HabiterSurface(
+      padding: EdgeInsets.zero,
       child: ExpansionTile(
         key: const Key('habit-lifecycle-panel'),
         leading: const Icon(Icons.inventory_2_outlined),
-        title: Text(context.l10n.manageHabitLifecycle),
-        subtitle: Text(
-          managed.isEmpty
-              ? context.l10n.noPausedOrArchivedHabits
-              : context.l10n.inactiveHabitCount(managed.length),
-        ),
+        title: Text(context.l10n.pausedArchivedCount(managed.length)),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        shape: const Border(),
+        collapsedShape: const Border(),
         children: [
-          if (managed.isEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Text(context.l10n.noPausedOrArchivedHabits),
-              ),
-            )
-          else
-            for (final habit in managed)
-              _LifecycleHabitTile(
-                habit: habit,
-                onActivate: () async {
-                  if (habit.lifecycleStatus == HabitLifecycleStatus.paused) {
-                    await onResume(habit.id);
-                  } else {
-                    await onRestore(habit.id);
-                  }
-                },
-                onDelete: () => _confirmDelete(context, habit),
-              ),
+          const Divider(height: 1),
+          for (final habit in managed)
+            _LifecycleHabitTile(
+              habit: habit,
+              onActivate: () async {
+                if (habit.lifecycleStatus == HabitLifecycleStatus.paused) {
+                  await onResume(habit.id);
+                } else {
+                  await onRestore(habit.id);
+                }
+              },
+              onDelete: () => _confirmDelete(context, habit),
+            ),
         ],
       ),
     );

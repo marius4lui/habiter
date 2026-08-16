@@ -60,7 +60,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final preferences = habits.preferences;
     final settings = context.watch<SettingsProvider>();
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.settings)),
+      appBar: Navigator.of(context).canPop() ? AppBar() : null,
       body: ListView(
         key: const Key('progressive-settings'),
         children: [
@@ -70,7 +70,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 HabiterPageIntro(
-                  eyebrow: context.l10n.settings,
                   title: context.l10n.settingsTitle,
                   subtitle: context.l10n.settingsBody,
                 ),
@@ -384,27 +383,31 @@ class _SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: HabiterSpace.sm2),
-    child: HabiterSurface(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+    padding: const EdgeInsets.only(bottom: HabiterSpace.lg),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 21, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: HabiterSpace.sm),
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium,
               ),
-            ],
+            ),
+          ],
+        ),
+        const SizedBox(height: HabiterSpace.sm2),
+        Padding(
+          padding: const EdgeInsetsDirectional.only(start: HabiterSpace.sm),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: children,
           ),
-          const SizedBox(height: HabiterSpace.sm),
-          ...children,
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }

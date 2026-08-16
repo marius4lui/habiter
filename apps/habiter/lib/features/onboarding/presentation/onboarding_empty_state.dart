@@ -20,38 +20,62 @@ class OnboardingEmptyState extends StatelessWidget {
           child: Semantics(
             container: true,
             header: true,
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(HabiterSpace.xl),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Icon(
-                      Icons.eco_outlined,
-                      size: 56,
-                      color: theme.colorScheme.primary,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                  width: 68,
+                  height: 68,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(
+                      HabiterRadius.prominent,
                     ),
-                    const SizedBox(height: HabiterSpace.lg),
-                    Text(
-                      l10n.startMomentum,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: HabiterSpace.sm),
-                    Text(
-                      l10n.startMomentumDescription,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyLarge,
-                    ),
-                    const SizedBox(height: HabiterSpace.lg),
-                    FilledButton.icon(
-                      onPressed: onCreateHabit,
-                      icon: const Icon(Icons.add),
-                      label: Text(l10n.createHabit),
-                    ),
-                  ],
+                  ),
+                  child: Icon(
+                    Icons.eco_outlined,
+                    size: 36,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
-              ),
+                const SizedBox(height: HabiterSpace.lg),
+                Text(
+                  l10n.startMomentum,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.headlineMedium,
+                ),
+                const SizedBox(height: HabiterSpace.sm),
+                Text(
+                  l10n.startMomentumDescription,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: HabiterSpace.lg),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: HabiterSpace.md,
+                    vertical: HabiterSpace.sm2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(HabiterRadius.pill),
+                  ),
+                  child: Text(
+                    l10n.emptyStarterExamples,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.labelLarge,
+                  ),
+                ),
+                const SizedBox(height: HabiterSpace.lg),
+                FilledButton.icon(
+                  onPressed: onCreateHabit,
+                  icon: const Icon(Icons.grid_view_rounded),
+                  label: Text(l10n.chooseHabit),
+                ),
+              ],
             ),
           ),
         ),

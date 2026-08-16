@@ -220,6 +220,34 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('lifecycle panel takes no space when every habit is active', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('de'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: Scaffold(
+          body: HabitLifecyclePanel(
+            habits: <Habit>[_habit()],
+            onResume: (_) async {},
+            onRestore: (_) async {},
+            onDelete: (_) async {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('habit-lifecycle-panel')), findsNothing);
+    expect(find.text('Pausierte und archivierte Habits'), findsNothing);
+  });
 }
 
 Habit _habit() => Habit(

@@ -183,8 +183,10 @@ abstract final class HabiterTheme {
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        elevation: 1,
-        highlightElevation: 2,
+        backgroundColor: scheme.secondaryContainer,
+        foregroundColor: scheme.onSecondaryContainer,
+        elevation: 0,
+        highlightElevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(HabiterRadius.control),
         ),

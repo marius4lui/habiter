@@ -113,7 +113,7 @@ abstract class AppLocalizations {
   /// No description provided for @navAnalytics.
   ///
   /// In de, this message translates to:
-  /// **'Analytics'**
+  /// **'Analyse'**
   String get navAnalytics;
 
   /// No description provided for @goodMorning.
@@ -185,13 +185,13 @@ abstract class AppLocalizations {
   /// No description provided for @startMomentum.
   ///
   /// In de, this message translates to:
-  /// **'Starte dein Momentum'**
+  /// **'Starte klein.'**
   String get startMomentum;
 
   /// No description provided for @startMomentumDescription.
   ///
   /// In de, this message translates to:
-  /// **'Lege dein erstes Habit an und schau zu, wie die Routine wachsen kann.'**
+  /// **'Wähle eine Gewohnheit, die heute in deinen Alltag passt.'**
   String get startMomentumDescription;
 
   /// No description provided for @completion.
@@ -263,7 +263,7 @@ abstract class AppLocalizations {
   /// No description provided for @icon.
   ///
   /// In de, this message translates to:
-  /// **'Icon'**
+  /// **'Symbol'**
   String get icon;
 
   /// No description provided for @tapToSelect.
@@ -329,7 +329,7 @@ abstract class AppLocalizations {
   /// No description provided for @perWeek.
   ///
   /// In de, this message translates to:
-  /// **'{count}/Woche'**
+  /// **'{count}× pro Woche'**
   String perWeek(int count);
 
   /// No description provided for @onDays.
@@ -401,19 +401,19 @@ abstract class AppLocalizations {
   /// No description provided for @testNotification.
   ///
   /// In de, this message translates to:
-  /// **'Test-Benachrichtigung'**
+  /// **'Testbenachrichtigung'**
   String get testNotification;
 
   /// No description provided for @testNotificationDesc.
   ///
   /// In de, this message translates to:
-  /// **'Sendet eine Test-Notification'**
+  /// **'Sendet eine Testbenachrichtigung'**
   String get testNotificationDesc;
 
   /// No description provided for @testNotificationSent.
   ///
   /// In de, this message translates to:
-  /// **'Test-Benachrichtigung gesendet!'**
+  /// **'Testbenachrichtigung gesendet!'**
   String get testNotificationSent;
 
   /// No description provided for @appearance.
@@ -425,7 +425,7 @@ abstract class AppLocalizations {
   /// No description provided for @theme.
   ///
   /// In de, this message translates to:
-  /// **'Theme'**
+  /// **'Darstellung'**
   String get theme;
 
   /// No description provided for @themeLight.
@@ -449,7 +449,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiFeatures.
   ///
   /// In de, this message translates to:
-  /// **'KI-Features'**
+  /// **'KI-Funktionen'**
   String get aiFeatures;
 
   /// No description provided for @aiInsights.
@@ -485,7 +485,7 @@ abstract class AppLocalizations {
   /// No description provided for @english.
   ///
   /// In de, this message translates to:
-  /// **'English'**
+  /// **'Englisch'**
   String get english;
 
   /// No description provided for @advanced.
@@ -503,19 +503,19 @@ abstract class AppLocalizations {
   /// No description provided for @analytics.
   ///
   /// In de, this message translates to:
-  /// **'Analytics'**
+  /// **'Analyse'**
   String get analytics;
 
   /// No description provided for @analyticsSubtitle.
   ///
   /// In de, this message translates to:
-  /// **'Trends live verfolgen, Peaks feiern, früh korrigieren.'**
+  /// **'Entwicklungen erkennen, ohne daraus Druck zu machen.'**
   String get analyticsSubtitle;
 
   /// No description provided for @liveOverview.
   ///
   /// In de, this message translates to:
-  /// **'Live-Übersicht'**
+  /// **'Übersicht'**
   String get liveOverview;
 
   /// No description provided for @activeHabits.
@@ -545,7 +545,7 @@ abstract class AppLocalizations {
   /// No description provided for @trackToSeeProgress.
   ///
   /// In de, this message translates to:
-  /// **'Tracke ein Habit, um den Wochenfortschritt zu sehen.'**
+  /// **'Erfasse ein Habit, um den Wochenfortschritt zu sehen.'**
   String get trackToSeeProgress;
 
   /// No description provided for @streak.
@@ -569,13 +569,13 @@ abstract class AppLocalizations {
   /// No description provided for @aiInsightsTitle.
   ///
   /// In de, this message translates to:
-  /// **'AI Insights'**
+  /// **'KI-Einblicke'**
   String get aiInsightsTitle;
 
   /// No description provided for @insightsAppearHere.
   ///
   /// In de, this message translates to:
-  /// **'Insights erscheinen hier, nachdem du einige Tage getrackt und AI-Vorschläge generiert hast.'**
+  /// **'Einblicke erscheinen hier, nachdem du einige Tage erfasst hast.'**
   String get insightsAppearHere;
 
   /// No description provided for @confidence.
@@ -941,13 +941,13 @@ abstract class AppLocalizations {
   /// No description provided for @reminderDiagnostics.
   ///
   /// In de, this message translates to:
-  /// **'Reminder-Diagnose'**
+  /// **'Erinnerungsdiagnose'**
   String get reminderDiagnostics;
 
   /// No description provided for @reminderDiagnosticsDescription.
   ///
   /// In de, this message translates to:
-  /// **'Berechtigung und ausstehende Reminder sicher prüfen'**
+  /// **'Berechtigung und ausstehende Erinnerungen sicher prüfen'**
   String get reminderDiagnosticsDescription;
 
   /// No description provided for @reminderPermissionGranted.
@@ -965,13 +965,13 @@ abstract class AppLocalizations {
   /// No description provided for @pendingReminders.
   ///
   /// In de, this message translates to:
-  /// **'Ausstehende Reminder: {count}'**
+  /// **'Ausstehende Erinnerungen: {count}'**
   String pendingReminders(int count);
 
   /// No description provided for @noPendingReminders.
   ///
   /// In de, this message translates to:
-  /// **'Keine ausstehenden Reminder'**
+  /// **'Keine ausstehenden Erinnerungen'**
   String get noPendingReminders;
 
   /// No description provided for @osManagedReminderTime.
@@ -1621,6 +1621,378 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Dein nächster Habit erscheint hier, sobald sein Rhythmus wieder dran ist.'**
   String get nothingScheduledBody;
+
+  /// No description provided for @categoryHealth.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesundheit'**
+  String get categoryHealth;
+
+  /// No description provided for @categoryLearning.
+  ///
+  /// In de, this message translates to:
+  /// **'Lernen'**
+  String get categoryLearning;
+
+  /// No description provided for @categoryProductivity.
+  ///
+  /// In de, this message translates to:
+  /// **'Produktivität'**
+  String get categoryProductivity;
+
+  /// No description provided for @categorySocial.
+  ///
+  /// In de, this message translates to:
+  /// **'Soziales'**
+  String get categorySocial;
+
+  /// No description provided for @categoryCreative.
+  ///
+  /// In de, this message translates to:
+  /// **'Kreativität'**
+  String get categoryCreative;
+
+  /// No description provided for @categoryFitness.
+  ///
+  /// In de, this message translates to:
+  /// **'Fitness'**
+  String get categoryFitness;
+
+  /// No description provided for @categoryMindfulness.
+  ///
+  /// In de, this message translates to:
+  /// **'Achtsamkeit'**
+  String get categoryMindfulness;
+
+  /// No description provided for @categoryFinance.
+  ///
+  /// In de, this message translates to:
+  /// **'Finanzen'**
+  String get categoryFinance;
+
+  /// No description provided for @categoryHome.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuhause'**
+  String get categoryHome;
+
+  /// No description provided for @templateGroupPopular.
+  ///
+  /// In de, this message translates to:
+  /// **'Beliebt'**
+  String get templateGroupPopular;
+
+  /// No description provided for @templateWater.
+  ///
+  /// In de, this message translates to:
+  /// **'Wasser trinken'**
+  String get templateWater;
+
+  /// No description provided for @templateWorkout.
+  ///
+  /// In de, this message translates to:
+  /// **'Training'**
+  String get templateWorkout;
+
+  /// No description provided for @templateRead.
+  ///
+  /// In de, this message translates to:
+  /// **'Lesen'**
+  String get templateRead;
+
+  /// No description provided for @templateMeditate.
+  ///
+  /// In de, this message translates to:
+  /// **'Meditieren'**
+  String get templateMeditate;
+
+  /// No description provided for @templateWalk.
+  ///
+  /// In de, this message translates to:
+  /// **'Spazieren'**
+  String get templateWalk;
+
+  /// No description provided for @templateSleep.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlafroutine'**
+  String get templateSleep;
+
+  /// No description provided for @templateWrite.
+  ///
+  /// In de, this message translates to:
+  /// **'Schreiben'**
+  String get templateWrite;
+
+  /// No description provided for @templateTidy.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufräumen'**
+  String get templateTidy;
+
+  /// No description provided for @templateHealthyMeal.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesund essen'**
+  String get templateHealthyMeal;
+
+  /// No description provided for @templateMedicine.
+  ///
+  /// In de, this message translates to:
+  /// **'Medikamente nehmen'**
+  String get templateMedicine;
+
+  /// No description provided for @templateFloss.
+  ///
+  /// In de, this message translates to:
+  /// **'Zahnseide'**
+  String get templateFloss;
+
+  /// No description provided for @templateScreenFree.
+  ///
+  /// In de, this message translates to:
+  /// **'Bildschirmfreie Zeit'**
+  String get templateScreenFree;
+
+  /// No description provided for @templateFinances.
+  ///
+  /// In de, this message translates to:
+  /// **'Finanzen prüfen'**
+  String get templateFinances;
+
+  /// No description provided for @templateInstrument.
+  ///
+  /// In de, this message translates to:
+  /// **'Instrument üben'**
+  String get templateInstrument;
+
+  /// No description provided for @templateLanguage.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache lernen'**
+  String get templateLanguage;
+
+  /// No description provided for @templateRun.
+  ///
+  /// In de, this message translates to:
+  /// **'Laufen'**
+  String get templateRun;
+
+  /// No description provided for @creationQuestion.
+  ///
+  /// In de, this message translates to:
+  /// **'Was möchtest du regelmäßig tun?'**
+  String get creationQuestion;
+
+  /// No description provided for @starterTemplates.
+  ///
+  /// In de, this message translates to:
+  /// **'Für dich als Start'**
+  String get starterTemplates;
+
+  /// No description provided for @searchTemplates.
+  ///
+  /// In de, this message translates to:
+  /// **'Gewohnheiten durchsuchen'**
+  String get searchTemplates;
+
+  /// No description provided for @customHabitAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Eigenes Habit erstellen'**
+  String get customHabitAction;
+
+  /// No description provided for @customHabitFromSearch.
+  ///
+  /// In de, this message translates to:
+  /// **'Eigenes Habit \"{name}\" erstellen'**
+  String customHabitFromSearch(String name);
+
+  /// No description provided for @habitIdentityQuestion.
+  ///
+  /// In de, this message translates to:
+  /// **'Was möchtest du tun?'**
+  String get habitIdentityQuestion;
+
+  /// No description provided for @habitIdentityHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein kurzer Name lässt sich im Alltag leichter erkennen.'**
+  String get habitIdentityHint;
+
+  /// No description provided for @chooseAnotherTemplate.
+  ///
+  /// In de, this message translates to:
+  /// **'Andere Vorlage wählen'**
+  String get chooseAnotherTemplate;
+
+  /// No description provided for @rhythmQuestion.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie oft?'**
+  String get rhythmQuestion;
+
+  /// No description provided for @rhythmHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle einen Rhythmus, der wirklich in deine Woche passt.'**
+  String get rhythmHint;
+
+  /// No description provided for @dailyOptionBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Einmal täglich'**
+  String get dailyOptionBody;
+
+  /// No description provided for @weeklyOptionBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Beispiel dreimal pro Woche'**
+  String get weeklyOptionBody;
+
+  /// No description provided for @customOptionBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle passende Wochentage'**
+  String get customOptionBody;
+
+  /// No description provided for @reminderQuestion.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchtest du erinnert werden?'**
+  String get reminderQuestion;
+
+  /// No description provided for @habitReminderToggle.
+  ///
+  /// In de, this message translates to:
+  /// **'Erinnerung'**
+  String get habitReminderToggle;
+
+  /// No description provided for @reminderSupportBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter kann dich zu einer Zeit deiner Wahl sanft erinnern.'**
+  String get reminderSupportBody;
+
+  /// No description provided for @reviewHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Habit'**
+  String get reviewHabit;
+
+  /// No description provided for @ready.
+  ///
+  /// In de, this message translates to:
+  /// **'Bereit.'**
+  String get ready;
+
+  /// No description provided for @detailsOptional.
+  ///
+  /// In de, this message translates to:
+  /// **'Notiz hinzufügen'**
+  String get detailsOptional;
+
+  /// No description provided for @weeklyUnits.
+  ///
+  /// In de, this message translates to:
+  /// **'{completed} von {scheduled} geplanten Einheiten'**
+  String weeklyUnits(int completed, int scheduled);
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Woche'**
+  String get thisWeek;
+
+  /// No description provided for @lastThirtyDays.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte 30 Tage'**
+  String get lastThirtyDays;
+
+  /// No description provided for @consistencyValue.
+  ///
+  /// In de, this message translates to:
+  /// **'{percent} % Konsistenz'**
+  String consistencyValue(int percent);
+
+  /// No description provided for @historyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Verlauf'**
+  String get historyTitle;
+
+  /// No description provided for @notEnoughHistory.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nicht genug Verlauf'**
+  String get notEnoughHistory;
+
+  /// No description provided for @notEnoughHistoryBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Nach ein paar geplanten Einheiten wird hier dein Rhythmus sichtbar.'**
+  String get notEnoughHistoryBody;
+
+  /// No description provided for @trendImproving.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein jüngster Rhythmus entwickelt sich positiv.'**
+  String get trendImproving;
+
+  /// No description provided for @trendDeclining.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein jüngster Rhythmus ist etwas ruhiger geworden.'**
+  String get trendDeclining;
+
+  /// No description provided for @trendSteady.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein jüngster Rhythmus bleibt stabil.'**
+  String get trendSteady;
+
+  /// No description provided for @dayCompleted.
+  ///
+  /// In de, this message translates to:
+  /// **'erledigt'**
+  String get dayCompleted;
+
+  /// No description provided for @dayMissed.
+  ///
+  /// In de, this message translates to:
+  /// **'geplant, nicht erledigt'**
+  String get dayMissed;
+
+  /// No description provided for @dayFuture.
+  ///
+  /// In de, this message translates to:
+  /// **'steht noch an'**
+  String get dayFuture;
+
+  /// No description provided for @dayNotScheduled.
+  ///
+  /// In de, this message translates to:
+  /// **'nicht geplant'**
+  String get dayNotScheduled;
+
+  /// No description provided for @pausedArchivedCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 pausiertes oder archiviertes Habit} other{{count} pausierte oder archivierte Habits}}'**
+  String pausedArchivedCount(int count);
+
+  /// No description provided for @chooseHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit auswählen'**
+  String get chooseHabit;
+
+  /// No description provided for @emptyStarterExamples.
+  ///
+  /// In de, this message translates to:
+  /// **'Wasser · Lesen · Spazieren · Meditieren'**
+  String get emptyStarterExamples;
 }
 
 class _AppLocalizationsDelegate

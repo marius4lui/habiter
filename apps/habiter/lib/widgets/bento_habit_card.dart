@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
+import '../features/habits/presentation/templates/habit_template.dart';
 import '../theme/app_theme.dart';
 import '../models/habit.dart';
 
@@ -95,7 +96,7 @@ class BentoHabitCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  habit.category,
+                  localizedHabitCategory(context.l10n, habit.category),
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.textTertiary,
                   ),

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/core/design_system/habiter_theme.dart';
 import 'package:habiter/core/design_system/haptics.dart';
 import 'package:habiter/features/habits/data/key_value_habit_repository.dart';
+import 'package:habiter/features/history/application/habit_lifecycle_reminder_gateway.dart';
 import 'package:habiter/l10n/app_localizations.dart';
 import 'package:habiter/models/habit.dart';
 import 'package:habiter/providers/habit_provider.dart';
@@ -36,10 +37,32 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('NEXT UP'), findsOneWidget);
       expect(find.byKey(const Key('add-habit-fab')), findsOneWidget);
+      expect(find.byKey(const Key('habit-lifecycle-panel')), findsNothing);
       expect(tester.takeException(), isNull, reason: 'width $width');
     }
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+  });
+
+  testWidgets('Today reveals inactive habits compactly and collapses the FAB', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 520);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final provider = await _providerWithHabits();
+    addTearDown(provider.dispose);
+    await provider.pauseHabit(provider.habits.last.id);
+
+    await tester.pumpWidget(_app(provider: provider, home: const HomeScreen()));
+    await tester.pumpAndSettle();
+    expect(find.text('1 paused or archived habit'), findsOneWidget);
+    expect(find.byKey(const ValueKey('extended-add-fab')), findsOneWidget);
+
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -360));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('compact-add-fab')), findsOneWidget);
   });
 
   testWidgets('Today completion stays one tap with an undo affordance', (
@@ -114,8 +137,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Step 1 of 3'), findsOneWidget);
-    expect(find.text('Continue'), findsOneWidget);
-    expect(find.byIcon(Icons.close), findsOneWidget);
+    expect(find.byKey(const Key('template-search')), findsOneWidget);
+    expect(find.byIcon(Icons.close_rounded), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -163,11 +186,86 @@ void main() {
       matchesGoldenFile('goldens/habit_editor_light.png'),
     );
   });
+
+  testWidgets('creation rhythm and review visual contracts', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final provider = await _providerWithHabits();
+    addTearDown(provider.dispose);
+    await tester.pumpWidget(
+      _app(
+        provider: provider,
+        home: const Scaffold(body: AddHabitSheet()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('template-workout')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('create-habit-action')));
+    await tester.pumpAndSettle();
+    await expectLater(
+      find.byType(AddHabitSheet),
+      matchesGoldenFile('goldens/habit_editor_rhythm_light.png'),
+    );
+
+    await tester.tap(find.byKey(const Key('create-habit-action')));
+    await tester.pumpAndSettle();
+    await expectLater(
+      find.byType(AddHabitSheet),
+      matchesGoldenFile('goldens/habit_editor_review_light.png'),
+    );
+  });
+
+  testWidgets('analytics light visual contract', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final provider = await _providerWithHabits();
+    addTearDown(provider.dispose);
+    await tester.pumpWidget(
+      _app(provider: provider, home: const AnalyticsScreen()),
+    );
+    await tester.pumpAndSettle();
+
+    await expectLater(
+      find.byType(AnalyticsScreen),
+      matchesGoldenFile('goldens/analytics_light.png'),
+    );
+  });
+
+  testWidgets('creation template dark visual contract', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final provider = await _providerWithHabits();
+    addTearDown(provider.dispose);
+    await tester.pumpWidget(
+      _app(
+        provider: provider,
+        dark: true,
+        home: const Scaffold(body: AddHabitSheet()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await expectLater(
+      find.byType(AddHabitSheet),
+      matchesGoldenFile('goldens/habit_editor_dark.png'),
+    );
+  });
 }
 
 Future<HabitProvider> _providerWithHabits() async {
   final repository = KeyValueHabitRepository(InMemoryKeyValueStore());
-  final provider = HabitProvider(repository: repository);
+  final provider = HabitProvider(
+    repository: repository,
+    lifecycleReminders: const _NoLifecycleReminders(),
+  );
   await provider.load();
   await provider.addHabit(
     name: 'Drink water',
@@ -233,4 +331,14 @@ class _NoHaptics implements HapticGateway {
 
   @override
   Future<void> success() async {}
+}
+
+class _NoLifecycleReminders implements HabitLifecycleReminderGateway {
+  const _NoLifecycleReminders();
+
+  @override
+  Future<void> cancelForHabit(String habitId) async {}
+
+  @override
+  Future<void> scheduleForHabit(Habit habit) async {}
 }

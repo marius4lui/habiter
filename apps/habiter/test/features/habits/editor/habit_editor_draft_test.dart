@@ -117,15 +117,16 @@ void main() {
     await tester.tap(find.text('Editor öffnen'));
     await tester.pumpAndSettle();
     expect(find.text('Neues Habit'), findsOneWidget);
-    expect(find.byKey(const ValueKey('schedule-preview')), findsOneWidget);
+    expect(find.byKey(const Key('template-search')), findsOneWidget);
+    expect(find.text('Für dich als Start'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    await tester.tap(find.byType(TextFormField).first);
+    await tester.tap(find.byType(TextField).first);
     final firstFocus = FocusManager.instance.primaryFocus;
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     expect(FocusManager.instance.primaryFocus, isNot(same(firstFocus)));
 
-    await tester.tap(find.byIcon(Icons.close));
+    await tester.tap(find.byIcon(Icons.close_rounded));
     await tester.pumpAndSettle();
     expect((await repository.load()).habits, isEmpty);
   });

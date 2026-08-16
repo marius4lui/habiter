@@ -15,7 +15,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get navHabits => 'Habits';
 
   @override
-  String get navAnalytics => 'Analytics';
+  String get navAnalytics => 'Analyse';
 
   @override
   String get goodMorning => 'Guten Morgen';
@@ -52,11 +52,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get delete => 'Löschen';
 
   @override
-  String get startMomentum => 'Starte dein Momentum';
+  String get startMomentum => 'Starte klein.';
 
   @override
   String get startMomentumDescription =>
-      'Lege dein erstes Habit an und schau zu, wie die Routine wachsen kann.';
+      'Wähle eine Gewohnheit, die heute in deinen Alltag passt.';
 
   @override
   String get completion => 'Abschluss';
@@ -92,7 +92,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get category => 'Kategorie';
 
   @override
-  String get icon => 'Icon';
+  String get icon => 'Symbol';
 
   @override
   String get tapToSelect => 'Tippen zum Auswählen';
@@ -128,7 +128,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String perWeek(int count) {
-    return '$count/Woche';
+    return '$count× pro Woche';
   }
 
   @override
@@ -170,19 +170,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get notificationsEnabled => 'Benachrichtigungen aktiviert! 🔔';
 
   @override
-  String get testNotification => 'Test-Benachrichtigung';
+  String get testNotification => 'Testbenachrichtigung';
 
   @override
-  String get testNotificationDesc => 'Sendet eine Test-Notification';
+  String get testNotificationDesc => 'Sendet eine Testbenachrichtigung';
 
   @override
-  String get testNotificationSent => 'Test-Benachrichtigung gesendet!';
+  String get testNotificationSent => 'Testbenachrichtigung gesendet!';
 
   @override
   String get appearance => 'Erscheinungsbild';
 
   @override
-  String get theme => 'Theme';
+  String get theme => 'Darstellung';
 
   @override
   String get themeLight => 'Hell';
@@ -194,7 +194,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get themeSystem => 'System';
 
   @override
-  String get aiFeatures => 'KI-Features';
+  String get aiFeatures => 'KI-Funktionen';
 
   @override
   String get aiInsights => 'Lokales Coaching';
@@ -213,7 +213,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get german => 'Deutsch';
 
   @override
-  String get english => 'English';
+  String get english => 'Englisch';
 
   @override
   String get advanced => 'Erweitert';
@@ -224,14 +224,14 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get analytics => 'Analytics';
+  String get analytics => 'Analyse';
 
   @override
   String get analyticsSubtitle =>
-      'Trends live verfolgen, Peaks feiern, früh korrigieren.';
+      'Entwicklungen erkennen, ohne daraus Druck zu machen.';
 
   @override
-  String get liveOverview => 'Live-Übersicht';
+  String get liveOverview => 'Übersicht';
 
   @override
   String get activeHabits => 'Aktive Habits';
@@ -247,7 +247,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get trackToSeeProgress =>
-      'Tracke ein Habit, um den Wochenfortschritt zu sehen.';
+      'Erfasse ein Habit, um den Wochenfortschritt zu sehen.';
 
   @override
   String get streak => 'Serie';
@@ -259,11 +259,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get total => 'Gesamt';
 
   @override
-  String get aiInsightsTitle => 'AI Insights';
+  String get aiInsightsTitle => 'KI-Einblicke';
 
   @override
   String get insightsAppearHere =>
-      'Insights erscheinen hier, nachdem du einige Tage getrackt und AI-Vorschläge generiert hast.';
+      'Einblicke erscheinen hier, nachdem du einige Tage erfasst hast.';
 
   @override
   String confidence(int percent) {
@@ -474,11 +474,11 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get reminderDiagnostics => 'Reminder-Diagnose';
+  String get reminderDiagnostics => 'Erinnerungsdiagnose';
 
   @override
   String get reminderDiagnosticsDescription =>
-      'Berechtigung und ausstehende Reminder sicher prüfen';
+      'Berechtigung und ausstehende Erinnerungen sicher prüfen';
 
   @override
   String get reminderPermissionGranted => 'Benachrichtigungen sind erlaubt';
@@ -489,11 +489,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String pendingReminders(int count) {
-    return 'Ausstehende Reminder: $count';
+    return 'Ausstehende Erinnerungen: $count';
   }
 
   @override
-  String get noPendingReminders => 'Keine ausstehenden Reminder';
+  String get noPendingReminders => 'Keine ausstehenden Erinnerungen';
 
   @override
   String get osManagedReminderTime =>
@@ -866,4 +866,210 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get nothingScheduledBody =>
       'Dein nächster Habit erscheint hier, sobald sein Rhythmus wieder dran ist.';
+
+  @override
+  String get categoryHealth => 'Gesundheit';
+
+  @override
+  String get categoryLearning => 'Lernen';
+
+  @override
+  String get categoryProductivity => 'Produktivität';
+
+  @override
+  String get categorySocial => 'Soziales';
+
+  @override
+  String get categoryCreative => 'Kreativität';
+
+  @override
+  String get categoryFitness => 'Fitness';
+
+  @override
+  String get categoryMindfulness => 'Achtsamkeit';
+
+  @override
+  String get categoryFinance => 'Finanzen';
+
+  @override
+  String get categoryHome => 'Zuhause';
+
+  @override
+  String get templateGroupPopular => 'Beliebt';
+
+  @override
+  String get templateWater => 'Wasser trinken';
+
+  @override
+  String get templateWorkout => 'Training';
+
+  @override
+  String get templateRead => 'Lesen';
+
+  @override
+  String get templateMeditate => 'Meditieren';
+
+  @override
+  String get templateWalk => 'Spazieren';
+
+  @override
+  String get templateSleep => 'Schlafroutine';
+
+  @override
+  String get templateWrite => 'Schreiben';
+
+  @override
+  String get templateTidy => 'Aufräumen';
+
+  @override
+  String get templateHealthyMeal => 'Gesund essen';
+
+  @override
+  String get templateMedicine => 'Medikamente nehmen';
+
+  @override
+  String get templateFloss => 'Zahnseide';
+
+  @override
+  String get templateScreenFree => 'Bildschirmfreie Zeit';
+
+  @override
+  String get templateFinances => 'Finanzen prüfen';
+
+  @override
+  String get templateInstrument => 'Instrument üben';
+
+  @override
+  String get templateLanguage => 'Sprache lernen';
+
+  @override
+  String get templateRun => 'Laufen';
+
+  @override
+  String get creationQuestion => 'Was möchtest du regelmäßig tun?';
+
+  @override
+  String get starterTemplates => 'Für dich als Start';
+
+  @override
+  String get searchTemplates => 'Gewohnheiten durchsuchen';
+
+  @override
+  String get customHabitAction => 'Eigenes Habit erstellen';
+
+  @override
+  String customHabitFromSearch(String name) {
+    return 'Eigenes Habit \"$name\" erstellen';
+  }
+
+  @override
+  String get habitIdentityQuestion => 'Was möchtest du tun?';
+
+  @override
+  String get habitIdentityHint =>
+      'Ein kurzer Name lässt sich im Alltag leichter erkennen.';
+
+  @override
+  String get chooseAnotherTemplate => 'Andere Vorlage wählen';
+
+  @override
+  String get rhythmQuestion => 'Wie oft?';
+
+  @override
+  String get rhythmHint =>
+      'Wähle einen Rhythmus, der wirklich in deine Woche passt.';
+
+  @override
+  String get dailyOptionBody => 'Einmal täglich';
+
+  @override
+  String get weeklyOptionBody => 'Zum Beispiel dreimal pro Woche';
+
+  @override
+  String get customOptionBody => 'Wähle passende Wochentage';
+
+  @override
+  String get reminderQuestion => 'Möchtest du erinnert werden?';
+
+  @override
+  String get habitReminderToggle => 'Erinnerung';
+
+  @override
+  String get reminderSupportBody =>
+      'Habiter kann dich zu einer Zeit deiner Wahl sanft erinnern.';
+
+  @override
+  String get reviewHabit => 'Dein Habit';
+
+  @override
+  String get ready => 'Bereit.';
+
+  @override
+  String get detailsOptional => 'Notiz hinzufügen';
+
+  @override
+  String weeklyUnits(int completed, int scheduled) {
+    return '$completed von $scheduled geplanten Einheiten';
+  }
+
+  @override
+  String get thisWeek => 'Diese Woche';
+
+  @override
+  String get lastThirtyDays => 'Letzte 30 Tage';
+
+  @override
+  String consistencyValue(int percent) {
+    return '$percent % Konsistenz';
+  }
+
+  @override
+  String get historyTitle => 'Verlauf';
+
+  @override
+  String get notEnoughHistory => 'Noch nicht genug Verlauf';
+
+  @override
+  String get notEnoughHistoryBody =>
+      'Nach ein paar geplanten Einheiten wird hier dein Rhythmus sichtbar.';
+
+  @override
+  String get trendImproving =>
+      'Dein jüngster Rhythmus entwickelt sich positiv.';
+
+  @override
+  String get trendDeclining =>
+      'Dein jüngster Rhythmus ist etwas ruhiger geworden.';
+
+  @override
+  String get trendSteady => 'Dein jüngster Rhythmus bleibt stabil.';
+
+  @override
+  String get dayCompleted => 'erledigt';
+
+  @override
+  String get dayMissed => 'geplant, nicht erledigt';
+
+  @override
+  String get dayFuture => 'steht noch an';
+
+  @override
+  String get dayNotScheduled => 'nicht geplant';
+
+  @override
+  String pausedArchivedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pausierte oder archivierte Habits',
+      one: '1 pausiertes oder archiviertes Habit',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chooseHabit => 'Habit auswählen';
+
+  @override
+  String get emptyStarterExamples => 'Wasser · Lesen · Spazieren · Meditieren';
 }

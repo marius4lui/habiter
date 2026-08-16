@@ -105,13 +105,13 @@ class HabiterSurface extends StatelessWidget {
 class HabiterPageIntro extends StatelessWidget {
   const HabiterPageIntro({
     super.key,
-    required this.eyebrow,
+    this.eyebrow,
     required this.title,
     required this.subtitle,
     this.trailing,
   });
 
-  final String eyebrow;
+  final String? eyebrow;
   final String title;
   final String subtitle;
   final Widget? trailing;
@@ -126,15 +126,17 @@ class HabiterPageIntro extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                eyebrow.toUpperCase(),
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: theme.colorScheme.primary,
-                  letterSpacing: 1.1,
-                  fontWeight: FontWeight.w700,
+              if (eyebrow != null) ...[
+                Text(
+                  eyebrow!.toUpperCase(),
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                    letterSpacing: 1.1,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              const SizedBox(height: HabiterSpace.sm),
+                const SizedBox(height: HabiterSpace.sm),
+              ],
               Text(title, style: theme.textTheme.headlineLarge),
               const SizedBox(height: HabiterSpace.sm),
               Text(

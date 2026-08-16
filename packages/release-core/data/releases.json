@@ -2,6 +2,64 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.2.0",
+      "buildNumber": 10200,
+      "channel": "stable",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Eine lokale Vorlagengalerie mit Suche, Kategorien und 16 sofort nutzbaren Routinen beschleunigt den Einstieg.",
+          "Die Habit-Erstellung führt mit Live-Vorschau durch Identität, Rhythmus, Erinnerung und Abschlussprüfung.",
+          "Dein Rhythmus zeigt geplante Wochentage, 30-Tage-Konsistenz, Trends und zugängliche Statuszusammenfassungen."
+        ],
+        "changed": [
+          "Today blendet leere Lifecycle-Bereiche aus, fasst pausierte oder archivierte Habits kompakt zusammen und reduziert den Aktionsbutton beim Scrollen.",
+          "Einstellungen und App Lock verwenden eine ruhigere Hierarchie ohne doppelte Überschriften oder unnötige Karten.",
+          "Kategorien, Vorlagen und neue Oberflächen sind vollständig auf Deutsch und Englisch verfügbar; der Wochenstart folgt der Spracheinstellung."
+        ],
+        "fixed": [
+          "Tage vor der Habit-Erstellung werden in Analytics nicht mehr fälschlich als verpasst bewertet.",
+          "Die Erstellung bleibt bei geöffneter Bildschirmtastatur, großer Schrift und reduzierten Animationen vollständig bedienbar."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.2.0-android-universal.apk",
+          "signed": true
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.2.0-android-playstore.aab",
+          "signed": true
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.2.0-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.2.0-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.2.0-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.1.0",
       "buildNumber": 10100,
       "channel": "stable",

@@ -1,12 +1,14 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../core/design_system/components.dart';
+import '../core/design_system/motion.dart';
 import '../core/design_system/tokens.dart';
+import '../core/time/local_date.dart';
 import '../features/analytics/domain/habit_metrics.dart';
 import '../features/coaching/presentation/recovery_card.dart';
+import '../features/habits/domain/habit_schedule.dart';
 import '../l10n/l10n.dart';
 import '../models/habit.dart';
 import '../providers/habit_provider.dart';
@@ -51,12 +53,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 HabiterPageIntro(
-                  eyebrow: context.l10n.analytics,
                   title: context.l10n.analyticsTitle,
                   subtitle: context.l10n.analyticsBody,
                 ),
                 const SizedBox(height: HabiterSpace.lg),
-                _Overview(
+                _OverviewStrip(
                   active: habits.length,
                   completed: completed,
                   average: average,
@@ -76,9 +77,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         setState(() => _selectedHabitId = habitId),
                   ),
                   const SizedBox(height: HabiterSpace.md),
-                  _WeeklyChart(
-                    habit: selected,
-                    metrics: provider.getHabitMetrics(selected.id),
+                  AnimatedSwitcher(
+                    duration: HabiterMotion.standard.duration(
+                      reduced: context.reduceMotion,
+                    ),
+                    child: _RhythmPanel(
+                      key: ValueKey(selected.id),
+                      habit: selected,
+                      entries: provider.habitEntries,
+                      metrics: provider.getHabitMetrics(selected.id),
+                    ),
                   ),
                   if (provider.preferences.showRecoverySupport) ...[
                     const SizedBox(height: HabiterSpace.md),
@@ -91,34 +99,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       ),
                     ),
                   ],
-                  const SizedBox(height: HabiterSpace.xl),
-                  HabiterSectionHeader(
-                    title: context.l10n.activeHabitsLabel,
-                    subtitle: context.l10n.analyticsSubtitle,
-                  ),
-                  const SizedBox(height: HabiterSpace.sm2),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final twoColumns = constraints.maxWidth >= 620;
-                      final width = twoColumns
-                          ? (constraints.maxWidth - HabiterSpace.sm2) / 2
-                          : constraints.maxWidth;
-                      return Wrap(
-                        spacing: HabiterSpace.sm2,
-                        runSpacing: HabiterSpace.sm2,
-                        children: [
-                          for (final habit in habits)
-                            SizedBox(
-                              width: width,
-                              child: _HabitMetricCard(
-                                habit: habit,
-                                metrics: provider.getHabitMetrics(habit.id),
-                              ),
-                            ),
-                        ],
-                      );
-                    },
-                  ),
                 ],
               ],
             ),
@@ -129,86 +109,94 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 }
 
-class _Overview extends StatelessWidget {
-  const _Overview({
+class _OverviewStrip extends StatelessWidget {
+  const _OverviewStrip({
     required this.active,
     required this.completed,
     required this.average,
   });
+
   final int active;
   final int completed;
   final double average;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final compact =
-          constraints.maxWidth < 430 ||
-          MediaQuery.textScalerOf(context).scale(1) > 1.35;
-      final items = [
-        _Metric(
-          icon: Icons.eco_outlined,
-          value: '$active',
-          label: context.l10n.activeHabitsLabel,
-        ),
-        _Metric(
-          icon: Icons.check_circle_outline,
-          value: '$completed',
-          label: context.l10n.totalWinsLabel,
-        ),
-        _Metric(
-          icon: Icons.trending_up_rounded,
-          value: '${(average * 100).round()}%',
-          label: context.l10n.averageSuccessLabel,
-        ),
-      ];
-      return HabiterSurface(
-        padding: const EdgeInsets.all(HabiterSpace.sm),
-        child: compact
-            ? Column(children: items)
-            : Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [for (final item in items) Expanded(child: item)],
-              ),
-      );
-    },
-  );
-}
-
-class _Metric extends StatelessWidget {
-  const _Metric({required this.icon, required this.value, required this.label});
-  final IconData icon;
-  final String value;
-  final String label;
-
-  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.all(HabiterSpace.sm),
-      child: Row(
-        children: [
-          Icon(icon, color: theme.colorScheme.primary, size: 22),
-          const SizedBox(width: HabiterSpace.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(value, style: theme.textTheme.titleLarge),
-                Text(
-                  label,
-                  maxLines: 2,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+    final items = <({IconData icon, String value, String label})>[
+      (
+        icon: Icons.eco_outlined,
+        value: '$active',
+        label: context.l10n.activeHabitsLabel,
       ),
+      (
+        icon: Icons.check_circle_outline,
+        value: '$completed',
+        label: context.l10n.totalWinsLabel,
+      ),
+      (
+        icon: Icons.insights_rounded,
+        value: '${(average * 100).round()}%',
+        label: context.l10n.averageSuccessLabel,
+      ),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final vertical =
+            constraints.maxWidth < 380 ||
+            MediaQuery.textScalerOf(context).scale(1) > 1.4;
+        return HabiterSurface(
+          padding: const EdgeInsets.symmetric(
+            horizontal: HabiterSpace.sm,
+            vertical: HabiterSpace.xs,
+          ),
+          child: vertical
+              ? Column(
+                  children: [
+                    for (final item in items) _OverviewItem(item: item),
+                  ],
+                )
+              : Row(
+                  children: [
+                    for (final item in items)
+                      Expanded(child: _OverviewItem(item: item)),
+                  ],
+                ),
+        );
+      },
     );
   }
+}
+
+class _OverviewItem extends StatelessWidget {
+  const _OverviewItem({required this.item});
+
+  final ({IconData icon, String value, String label}) item;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(HabiterSpace.sm),
+    child: Row(
+      children: [
+        Icon(item.icon, size: 20, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(width: HabiterSpace.sm),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(item.value, style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                item.label,
+                maxLines: 2,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _HabitSelector extends StatelessWidget {
@@ -217,6 +205,7 @@ class _HabitSelector extends StatelessWidget {
     required this.selected,
     required this.onChanged,
   });
+
   final List<Habit> habits;
   final Habit selected;
   final ValueChanged<String> onChanged;
@@ -245,196 +234,441 @@ class _HabitSelector extends StatelessWidget {
   );
 }
 
-class _WeeklyChart extends StatelessWidget {
-  const _WeeklyChart({required this.habit, required this.metrics});
+class _RhythmPanel extends StatelessWidget {
+  const _RhythmPanel({
+    super.key,
+    required this.habit,
+    required this.entries,
+    required this.metrics,
+  });
+
   final Habit habit;
+  final List<HabitEntry> entries;
   final HabitMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final weeks = metrics.weeks.length > 8
-        ? metrics.weeks.sublist(metrics.weeks.length - 8)
-        : metrics.weeks;
-    return HabiterSurface(
-      padding: const EdgeInsets.all(HabiterSpace.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(context.l10n.weeklyProgress, style: theme.textTheme.titleLarge),
-          const SizedBox(height: HabiterSpace.xs),
-          Text(
-            context.l10n.trackToSeeProgress,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+    final today = LocalDate.fromDateTime(DateTime.now());
+    final recent = HabitMetricCalculator.calculatePeriod(
+      habit: habit,
+      entries: entries,
+      from: today.addDays(-29),
+      through: today,
+    );
+    final recentHalf = HabitMetricCalculator.calculatePeriod(
+      habit: habit,
+      entries: entries,
+      from: today.addDays(-14),
+      through: today,
+    );
+    final priorHalf = HabitMetricCalculator.calculatePeriod(
+      habit: habit,
+      entries: entries,
+      from: today.addDays(-29),
+      through: today.addDays(-15),
+    );
+    final enoughHistory = metrics.scheduled >= 3;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _WeekCard(habit: habit, entries: entries, today: today),
+        const SizedBox(height: HabiterSpace.md),
+        if (!enoughHistory)
+          _InsufficientHistory()
+        else ...[
+          _ConsistencyCard(
+            metrics: recent,
+            prior: priorHalf,
+            recent: recentHalf,
           ),
-          const SizedBox(height: HabiterSpace.lg),
-          if (weeks.isEmpty)
-            SizedBox(
-              height: 160,
-              child: Center(child: Text(context.l10n.insightsAppearHere)),
-            )
-          else
-            Semantics(
-              label: weeks
-                  .map(
-                    (week) =>
-                        '${week.weekStart}: ${week.completed}/${week.scheduled}',
-                  )
-                  .join(', '),
-              child: ExcludeSemantics(
-                child: SizedBox(
-                  height: 220,
-                  child: LineChart(
-                    LineChartData(
-                      minY: 0,
-                      maxY: weeks
-                          .map((week) => week.scheduled.toDouble())
-                          .fold<double>(
-                            1,
-                            (max, value) => value > max ? value : max,
-                          ),
-                      gridData: FlGridData(
-                        drawVerticalLine: false,
-                        getDrawingHorizontalLine: (_) => FlLine(
-                          color: theme.colorScheme.outlineVariant,
-                          strokeWidth: 1,
-                        ),
-                      ),
-                      borderData: FlBorderData(show: false),
-                      titlesData: FlTitlesData(
-                        topTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        rightTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        leftTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 28,
-                            getTitlesWidget: (value, _) => Text(
-                              '${value.round()}',
-                              style: theme.textTheme.labelSmall,
-                            ),
-                          ),
-                        ),
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 32,
-                            interval: 1,
-                            getTitlesWidget: (value, _) {
-                              final index = value.round();
-                              if (index < 0 || index >= weeks.length) {
-                                return const SizedBox();
-                              }
-                              final date = DateTime.parse(
-                                '${weeks[index].weekStart}T00:00:00',
-                              );
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Text(
-                                  DateFormat.Md(
-                                    Localizations.localeOf(
-                                      context,
-                                    ).toLanguageTag(),
-                                  ).format(date),
-                                  style: theme.textTheme.labelSmall,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      lineBarsData: [
-                        LineChartBarData(
-                          spots: [
-                            for (var index = 0; index < weeks.length; index++)
-                              FlSpot(
-                                index.toDouble(),
-                                weeks[index].completed.toDouble(),
-                              ),
-                          ],
-                          isCurved: true,
-                          barWidth: 3,
-                          color: habit.color.asHabiterColor,
-                          dotData: const FlDotData(show: true),
-                          belowBarData: BarAreaData(
-                            show: true,
-                            color: habit.color.asHabiterColor.withValues(
-                              alpha: .1,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+          if (metrics.weeks.length >= 3) ...[
+            const SizedBox(height: HabiterSpace.xl),
+            HabiterSectionHeader(title: context.l10n.historyTitle),
+            const SizedBox(height: HabiterSpace.sm2),
+            _HistoryBars(habit: habit, metrics: metrics),
+          ],
+        ],
+      ],
+    );
+  }
+}
+
+enum _DayState { completed, missed, future, notScheduled }
+
+class _WeekCard extends StatelessWidget {
+  const _WeekCard({
+    required this.habit,
+    required this.entries,
+    required this.today,
+  });
+
+  final Habit habit;
+  final List<HabitEntry> entries;
+  final LocalDate today;
+
+  @override
+  Widget build(BuildContext context) {
+    final schedule = LegacyHabitScheduleMapper.fromHabit(habit);
+    final weekStart = today.addDays(1 - today.weekday);
+    final completedDates = <String>{
+      for (final entry in entries)
+        if (entry.habitId == habit.id && entry.completed) entry.date,
+    };
+    final days = List<LocalDate>.generate(7, weekStart.addDays);
+    final states = <LocalDate, _DayState>{
+      for (final day in days)
+        day: _stateFor(
+          day: day,
+          today: today,
+          schedule: schedule,
+          completedDates: completedDates,
+        ),
+    };
+    final availableDays = days.where((day) => _isAvailable(day, schedule));
+    final scheduled = schedule is TimesPerWeekSchedule
+        ? schedule.target.clamp(0, availableDays.length)
+        : availableDays.length;
+    final completed = states.values
+        .where((state) => state == _DayState.completed)
+        .length;
+    final visibleCompleted = completed.clamp(0, scheduled);
+    final locale = Localizations.localeOf(context).toLanguageTag();
+
+    return Semantics(
+      container: true,
+      label:
+          '${context.l10n.thisWeek}: ${context.l10n.weeklyUnits(visibleCompleted, scheduled)}',
+      child: HabiterSurface(
+        padding: const EdgeInsets.all(HabiterSpace.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              context.l10n.thisWeek,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: HabiterSpace.xs),
+            Text(
+              context.l10n.weeklyUnits(visibleCompleted, scheduled),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
+            const SizedBox(height: HabiterSpace.md),
+            LinearProgressIndicator(
+              value: scheduled == 0 ? 0 : visibleCompleted / scheduled,
+              minHeight: 7,
+              borderRadius: BorderRadius.circular(HabiterRadius.pill),
+            ),
+            const SizedBox(height: HabiterSpace.lg),
+            ExcludeSemantics(
+              child: Row(
+                children: [
+                  for (final day in days)
+                    Expanded(
+                      child: _DayMarker(
+                        label: DateFormat.E(
+                          locale,
+                        ).format(DateTime.utc(day.year, day.month, day.day)),
+                        state: states[day]!,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: HabiterSpace.sm),
+            for (final day in days)
+              Semantics(
+                label:
+                    '${DateFormat.EEEE(locale).format(DateTime.utc(day.year, day.month, day.day))}: ${_stateLabel(context, states[day]!)}',
+                child: const SizedBox.shrink(),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  _DayState _stateFor({
+    required LocalDate day,
+    required LocalDate today,
+    required HabitSchedule schedule,
+    required Set<String> completedDates,
+  }) {
+    if (!_isAvailable(day, schedule)) return _DayState.notScheduled;
+    if (completedDates.contains(day.toString())) return _DayState.completed;
+    if (day.compareTo(today) > 0) return _DayState.future;
+    if (schedule is TimesPerWeekSchedule) return _DayState.notScheduled;
+    return _DayState.missed;
+  }
+
+  bool _isAvailable(LocalDate day, HabitSchedule schedule) {
+    if (day.compareTo(LocalDate.fromDateTime(habit.createdAt)) < 0) {
+      return false;
+    }
+    if (habit.isPausedOn(day.toString())) return false;
+    final archivedAt = habit.archivedAt;
+    if (archivedAt != null &&
+        day.compareTo(LocalDate.fromDateTime(archivedAt)) >= 0) {
+      final restoredAt = habit.restoredAt;
+      if (restoredAt == null ||
+          day.compareTo(LocalDate.fromDateTime(restoredAt)) < 0) {
+        return false;
+      }
+    }
+    return schedule is TimesPerWeekSchedule || schedule.isAvailableOn(day);
+  }
+
+  String _stateLabel(BuildContext context, _DayState state) => switch (state) {
+    _DayState.completed => context.l10n.dayCompleted,
+    _DayState.missed => context.l10n.dayMissed,
+    _DayState.future => context.l10n.dayFuture,
+    _DayState.notScheduled => context.l10n.dayNotScheduled,
+  };
+}
+
+class _DayMarker extends StatelessWidget {
+  const _DayMarker({required this.label, required this.state});
+
+  final String label;
+  final _DayState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final completed = state == _DayState.completed;
+    final missed = state == _DayState.missed;
+    return Column(
+      children: [
+        Text(label, style: Theme.of(context).textTheme.labelSmall),
+        const SizedBox(height: HabiterSpace.sm),
+        Container(
+          width: 34,
+          height: 34,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: completed
+                ? scheme.primary
+                : missed
+                ? scheme.errorContainer
+                : scheme.surfaceContainerHighest,
+            shape: completed ? BoxShape.circle : BoxShape.rectangle,
+            borderRadius: completed ? null : BorderRadius.circular(11),
+            border: Border.all(
+              color: state == _DayState.future
+                  ? scheme.outline
+                  : Colors.transparent,
+            ),
+          ),
+          child: Icon(
+            completed
+                ? Icons.check_rounded
+                : missed
+                ? Icons.remove_rounded
+                : state == _DayState.future
+                ? Icons.more_horiz_rounded
+                : Icons.circle_outlined,
+            size: 18,
+            color: completed ? scheme.onPrimary : scheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ConsistencyCard extends StatelessWidget {
+  const _ConsistencyCard({
+    required this.metrics,
+    required this.prior,
+    required this.recent,
+  });
+
+  final HabitMetrics metrics;
+  final HabitMetrics prior;
+  final HabitMetrics recent;
+
+  @override
+  Widget build(BuildContext context) {
+    final percent = (metrics.completionRate * 100).round();
+    final difference = recent.completionRate - prior.completionRate;
+    final trend = difference > .05
+        ? context.l10n.trendImproving
+        : difference < -.05
+        ? context.l10n.trendDeclining
+        : context.l10n.trendSteady;
+    final icon = difference > .05
+        ? Icons.trending_up_rounded
+        : difference < -.05
+        ? Icons.trending_down_rounded
+        : Icons.trending_flat_rounded;
+    return HabiterSurface(
+      child: Row(
+        children: [
+          SizedBox.square(
+            dimension: 68,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CircularProgressIndicator(
+                  value: metrics.completionRate,
+                  strokeWidth: 7,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest,
+                ),
+                Center(
+                  child: Text(
+                    '$percent%',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: HabiterSpace.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.lastThirtyDays,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: HabiterSpace.xs),
+                Text(context.l10n.consistencyValue(percent)),
+                const SizedBox(height: HabiterSpace.sm),
+                Row(
+                  children: [
+                    Icon(
+                      icon,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: HabiterSpace.xs),
+                    Expanded(
+                      child: Text(
+                        trend,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _HabitMetricCard extends StatelessWidget {
-  const _HabitMetricCard({required this.habit, required this.metrics});
+class _InsufficientHistory extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: HabiterSpace.lg),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          Icons.auto_graph_rounded,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        const SizedBox(width: HabiterSpace.sm2),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                context.l10n.notEnoughHistory,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: HabiterSpace.xs),
+              Text(
+                context.l10n.notEnoughHistoryBody,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _HistoryBars extends StatelessWidget {
+  const _HistoryBars({required this.habit, required this.metrics});
+
   final Habit habit;
   final HabitMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final values = [
-      (context.l10n.streakLabel, '${metrics.currentStreak}'),
-      (context.l10n.bestStreakLabel, '${metrics.longestStreak}'),
-      (context.l10n.successLabel, '${(metrics.completionRate * 100).round()}%'),
-    ];
-    return HabiterSurface(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    final weeks = metrics.weeks.length > 8
+        ? metrics.weeks.sublist(metrics.weeks.length - 8)
+        : metrics.weeks;
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    return Semantics(
+      label: weeks
+          .map(
+            (week) => '${week.weekStart}: ${week.completed}/${week.scheduled}',
+          )
+          .join(', '),
+      child: ExcludeSemantics(
+        child: SizedBox(
+          height: 150,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(habit.icon, style: const TextStyle(fontSize: 24)),
-              const SizedBox(width: HabiterSpace.sm),
-              Expanded(
-                child: Text(habit.name, style: theme.textTheme.titleMedium),
-              ),
-            ],
-          ),
-          const SizedBox(height: HabiterSpace.md),
-          Wrap(
-            spacing: HabiterSpace.md,
-            runSpacing: HabiterSpace.sm,
-            children: [
-              for (final value in values)
-                ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: 84),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        value.$2,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          color: habit.color.asHabiterColor,
+              for (final week in weeks)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${(week.rate * 100).round()}%',
+                          style: Theme.of(context).textTheme.labelSmall,
                         ),
-                      ),
-                      Text(
-                        value.$1,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                        const SizedBox(height: HabiterSpace.xs),
+                        Flexible(
+                          child: FractionallySizedBox(
+                            heightFactor: week.rate.clamp(.08, 1),
+                            alignment: Alignment.bottomCenter,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: habit.color.asHabiterColor,
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(HabiterRadius.compact),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: HabiterSpace.sm),
+                        Text(
+                          DateFormat.Md(locale).format(
+                            DateTime.utc(
+                              week.weekStart.year,
+                              week.weekStart.month,
+                              week.weekStart.day,
+                            ),
+                          ),
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

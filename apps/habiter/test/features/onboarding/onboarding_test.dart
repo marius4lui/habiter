@@ -59,8 +59,8 @@ void main() {
       await tester.pumpAndSettle();
 
       final expected = locale.languageCode == 'de'
-          ? 'Starte dein Momentum'
-          : 'Start your momentum';
+          ? 'Starte klein.'
+          : 'Start small.';
       expect(find.text(expected), findsOneWidget);
       expect(find.byType(FilledButton), findsOneWidget);
       expect(find.textContaining('Drink Water'), findsNothing);

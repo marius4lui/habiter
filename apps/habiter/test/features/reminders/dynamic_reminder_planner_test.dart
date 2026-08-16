@@ -282,7 +282,7 @@ void main() {
       coveredBuckets: <CalibrationBucketKey>[
         for (var index = 0; index < 20; index++)
           CalibrationBucketKey(
-            localDate: date.addDays(index ~/ 7),
+            localDate: date.addDays(-1 - index ~/ 7),
             twoHourStartMinute: (index % 7) * 120 + 480,
             habitId: 'previous-$index',
             timeZoneId: 'UTC',
@@ -341,6 +341,206 @@ void main() {
     },
   );
 
+  test('calibration pulses stay inside the seven-day session', () {
+    final habit = _habit('smart');
+    final session = CalibrationSession(
+      id: 'calibration',
+      status: CalibrationStatus.active,
+      startedAt: now,
+      plannedEndAt: now.add(const Duration(days: 2)),
+    );
+    final result = planner.plan(
+      _input(
+        now: now,
+        date: date,
+        habits: <Habit>[habit],
+        policies: <HabitReminderPolicy>[
+          HabitReminderPolicy.smart(habitId: habit.id, now: now),
+        ],
+        calibration: session,
+        horizonDays: 7,
+      ),
+    );
+
+    expect(
+      result.reminders
+          .where((item) => item.kind == PlannedReminderKind.calibrationPulse)
+          .every((item) => item.scheduledFor.isBefore(session.plannedEndAt)),
+      isTrue,
+    );
+  });
+
+  test('answered calibration window is covered across all habits', () {
+    final habits = <Habit>[_habit('one'), _habit('two')];
+    final base = planner.plan(
+      _input(
+        now: now,
+        date: date,
+        habits: habits,
+        policies: <HabitReminderPolicy>[
+          for (final habit in habits)
+            HabitReminderPolicy.smart(habitId: habit.id, now: now),
+        ],
+        calibration: CalibrationSession.start(id: 'first', now: now),
+      ),
+    );
+    final firstPulse = base.reminders.firstWhere(
+      (item) => item.kind == PlannedReminderKind.calibrationPulse,
+    );
+    final coveredWindow =
+        (firstPulse.scheduledFor.hour * 60 + firstPulse.scheduledFor.minute) ~/
+        120 *
+        120;
+    final session = CalibrationSession(
+      id: 'second',
+      status: CalibrationStatus.active,
+      startedAt: now,
+      plannedEndAt: now.add(const Duration(days: 7)),
+      coveredBuckets: <CalibrationBucketKey>[
+        CalibrationBucketKey(
+          localDate: date,
+          twoHourStartMinute: coveredWindow,
+          habitId: firstPulse.habit.id,
+          timeZoneId: 'UTC',
+        ),
+      ],
+    );
+    final replanned = planner.plan(
+      _input(
+        now: now,
+        date: date,
+        habits: habits,
+        policies: <HabitReminderPolicy>[
+          for (final habit in habits)
+            HabitReminderPolicy.smart(habitId: habit.id, now: now),
+        ],
+        calibration: session,
+      ),
+    );
+
+    expect(
+      replanned.reminders.where(
+        (item) =>
+            item.kind == PlannedReminderKind.calibrationPulse &&
+            (item.scheduledFor.hour * 60 + item.scheduledFor.minute) ~/
+                    120 *
+                    120 ==
+                coveredWindow,
+      ),
+      isEmpty,
+    );
+  });
+
+  test('fine-tuning quota is applied independently to each week', () {
+    final habit = _habit('smart');
+    final session = CalibrationSession(
+      id: 'done',
+      status: CalibrationStatus.completed,
+      startedAt: now.subtract(const Duration(days: 8)),
+      plannedEndAt: now.subtract(const Duration(days: 1)),
+      completedAt: now.subtract(const Duration(days: 1)),
+    );
+    final result = planner.plan(
+      _input(
+        now: now,
+        date: date,
+        habits: <Habit>[habit],
+        policies: <HabitReminderPolicy>[
+          HabitReminderPolicy.smart(habitId: habit.id, now: now),
+        ],
+        calibration: session,
+        horizonDays: 14,
+      ),
+    );
+
+    expect(
+      result.reminders.where(
+        (item) => item.kind == PlannedReminderKind.fineTuningQuestion,
+      ),
+      hasLength(12),
+    );
+  });
+
+  test('global conflicts fall back to the next Smart candidate', () {
+    final habits = <Habit>[_habit('one'), _habit('two')];
+    final result = planner.plan(
+      _input(
+        now: now,
+        date: date,
+        habits: habits,
+        policies: <HabitReminderPolicy>[
+          for (final habit in habits)
+            HabitReminderPolicy.smart(
+              habitId: habit.id,
+              now: now,
+              intensity: ReminderIntensity.gentle,
+              config: SmartReminderConfig(
+                windowSource: PeakWindowSource.userDefined,
+                userPeakWindows: const <LocalTimeRange>[
+                  LocalTimeRange(start: LocalTime(9, 0), end: LocalTime(13, 0)),
+                ],
+              ),
+            ),
+        ],
+        preferences: ReminderPreferences(
+          enabled: true,
+          globalMinimumSpacing: const Duration(minutes: 90),
+        ),
+      ),
+    );
+
+    expect(result.reminders.map((item) => item.habit.id).toSet(), {
+      'one',
+      'two',
+    });
+  });
+
+  test('daily limits use the actual scheduled calendar day', () {
+    final habits = <Habit>[_habit('snoozed'), _habit('fixed')];
+    final result = planner.plan(
+      _input(
+        now: now,
+        date: date,
+        habits: habits,
+        policies: <HabitReminderPolicy>[
+          HabitReminderPolicy.fixedTimes(
+            habitId: 'snoozed',
+            times: const <LocalTime>[LocalTime(12, 0)],
+            now: now,
+          ),
+          HabitReminderPolicy.fixedTimes(
+            habitId: 'fixed',
+            times: const <LocalTime>[LocalTime(0, 30)],
+            now: now,
+          ),
+        ],
+        preferences: ReminderPreferences(
+          enabled: true,
+          activeDayStart: const LocalTime(0, 0),
+          activeDayEnd: const LocalTime(23, 59),
+          globalDailyLimit: 1,
+          globalMinimumSpacing: const Duration(minutes: 30),
+        ),
+        pendingSnoozes: <PendingReminderSnooze>[
+          PendingReminderSnooze(
+            id: 'snooze',
+            habitId: 'snoozed',
+            occurrence: date,
+            scheduledFor: DateTime.utc(2026, 8, 18),
+            createdAt: now,
+          ),
+        ],
+        horizonDays: 2,
+      ),
+    );
+    final onTuesday = result.reminders.where(
+      (item) => LocalDate.fromDateTime(item.scheduledFor) == date.addDays(1),
+    );
+
+    expect(onTuesday, hasLength(1));
+    expect(onTuesday.single.kind, PlannedReminderKind.snooze);
+  });
+
   test('capacity is a chronological cross-platform limit of 64', () {
     final policy = HabitReminderPolicy.fixedTimes(
       habitId: 'fixed',
@@ -371,6 +571,7 @@ DynamicReminderPlanInput _input({
   ReminderPreferences? preferences,
   CalibrationSession? calibration,
   Set<String> completed = const <String>{},
+  List<PendingReminderSnooze> pendingSnoozes = const <PendingReminderSnooze>[],
   int horizonDays = 1,
 }) => DynamicReminderPlanInput(
   habits: habits,
@@ -381,6 +582,7 @@ DynamicReminderPlanInput _input({
   signals: const <ReminderSignal>[],
   calibration: calibration,
   completedOccurrences: completed,
+  pendingSnoozes: pendingSnoozes,
   start: date,
   now: now,
   location: tz.UTC,

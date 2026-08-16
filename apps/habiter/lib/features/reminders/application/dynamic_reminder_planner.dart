@@ -190,11 +190,7 @@ final class DynamicReminderPlanner {
     final config = policy.random!;
     final slots =
         <int>[
-          for (
-            var minute = config.window.start.minuteOfDay;
-            minute <= config.window.end.minuteOfDay;
-            minute += 15
-          )
+          for (final minute in _quarterHourMinutes(config.window))
             if (_allowed(LocalTime.fromMinuteOfDay(minute), input.preferences))
               minute,
         ]..sort(
@@ -248,11 +244,7 @@ final class DynamicReminderPlanner {
     );
     final scored = <_SmartCandidate>[];
     for (final window in windows) {
-      for (
-        var minute = window.range.start.minuteOfDay;
-        minute <= window.range.end.minuteOfDay;
-        minute += 15
-      ) {
+      for (final minute in _quarterHourMinutes(window.range)) {
         final time = LocalTime.fromMinuteOfDay(minute);
         if (!_allowed(time, input.preferences)) continue;
         final bucket = profiles.habitProfile.bucketFor(date.weekday, minute);
@@ -286,53 +278,35 @@ final class DynamicReminderPlanner {
       final utility = right.utility.compareTo(left.utility);
       return utility != 0 ? utility : left.minute.compareTo(right.minute);
     });
-    final selected = <_SmartCandidate>[];
-    for (final item in scored) {
-      if (selected.every(
-        (other) =>
-            (other.minute - item.minute).abs() >=
-            policy.smart!.minimumAttemptSpacing.inMinutes,
-      )) {
-        selected.add(item);
-      }
-      if (selected.length == policy.intensity.maximumAttempts) break;
-    }
-    final positive = signals
-        .where(
-          (signal) =>
-              signal.habitId == habit.id &&
-              signal.source.isExplicit &&
-              signal.targetValue >= 0.5,
-        )
-        .length;
-    final negative = signals
-        .where(
-          (signal) =>
-              signal.habitId == habit.id &&
-              signal.source.isExplicit &&
-              signal.targetValue == 0,
-        )
-        .length;
     final result = <_Candidate>[];
-    for (var index = 0; index < selected.length; index++) {
+    final scheduledInstants = <DateTime>{};
+    for (var index = 0; index < scored.length; index++) {
+      final item = scored[index];
+      final relevantSignals = signals.where(
+        (signal) =>
+            signal.habitId == habit.id &&
+            signal.feasibility != null &&
+            _dayType(signal.localWeekday) == dayType &&
+            item.window.range.contains(
+              LocalTime.fromMinuteOfDay(signal.localMinuteOfDay),
+            ),
+      );
       final candidate = _smartCandidate(
         habit: habit,
         policy: policy,
         date: date,
-        item: selected[index],
+        item: item,
         attemptIndex: index,
         input: input,
         profiles: profiles,
-        positive: positive,
-        negative: negative,
+        positive: relevantSignals
+            .where((signal) => signal.feasibility == FeasibilityRating.good)
+            .length,
+        negative: relevantSignals
+            .where((signal) => signal.feasibility == FeasibilityRating.bad)
+            .length,
       );
-      if (result.every(
-        (other) =>
-            other.reminder.scheduledFor
-                .difference(candidate.reminder.scheduledFor)
-                .abs() >=
-            policy.smart!.minimumAttemptSpacing,
-      )) {
+      if (scheduledInstants.add(candidate.reminder.scheduledFor)) {
         result.add(candidate);
       }
     }
@@ -351,14 +325,15 @@ final class DynamicReminderPlanner {
     required int negative,
   }) {
     final jitter = deterministicJitterMinutes(habit.id, date);
-    var actualMinute = (item.minute + jitter).clamp(
-      item.window.range.start.minuteOfDay,
-      item.window.range.end.minuteOfDay,
-    );
-    while (actualMinute != item.minute &&
-        !_allowed(LocalTime.fromMinuteOfDay(actualMinute), input.preferences)) {
-      actualMinute += actualMinute > item.minute ? -1 : 1;
-    }
+    final jitteredMinute =
+        (item.minute + jitter + LocalTime.minutesPerDay) %
+        LocalTime.minutesPerDay;
+    final jitteredTime = LocalTime.fromMinuteOfDay(jitteredMinute);
+    final actualMinute =
+        item.window.range.contains(jitteredTime) &&
+            _allowed(jitteredTime, input.preferences)
+        ? jitteredMinute
+        : item.minute;
     final origin = item.window.origin;
     final code = switch (origin) {
       PeakWindowOrigin.habitLearned => ReminderReasonCode.habitLearnedPeak,
@@ -442,11 +417,13 @@ final class DynamicReminderPlanner {
       }
       final local = tz.TZDateTime.from(snooze.scheduledFor, input.location);
       final time = LocalTime(local.hour, local.minute);
+      final scheduledDate = LocalDate(local.year, local.month, local.day);
       if (!_allowed(time, input.preferences)) continue;
       result.add(
         _candidate(
           habit: habit,
           date: snooze.occurrence,
+          scheduledDate: scheduledDate,
           time: time,
           attemptIndex: 0,
           utility: 3,
@@ -468,15 +445,18 @@ final class DynamicReminderPlanner {
     required ReminderReason reason,
     required DynamicReminderPlanInput input,
     PlannedReminderKind kind = PlannedReminderKind.normal,
+    LocalDate? scheduledDate,
   }) {
+    final effectiveScheduledDate = scheduledDate ?? date;
     final scheduledFor = DeviceTimeZoneService.resolveWallClock(
       location: input.location,
-      date: date,
+      date: effectiveScheduledDate,
       hour: time.hour,
       minute: time.minute,
     );
     final logicalKey =
-        '${habit.id}@${date.toString()}:${kind.name}:$attemptIndex:${time.toString()}';
+        '${habit.id}@${date.toString()}:${kind.name}:$attemptIndex:'
+        '${effectiveScheduledDate.toString()}:${time.toString()}';
     return _Candidate(
       PlannedReminder(
         logicalKey: logicalKey,
@@ -502,9 +482,12 @@ final class DynamicReminderPlanner {
         .toList();
     final byDate = <LocalDate, List<_Candidate>>{};
     for (final candidate in future) {
-      byDate
-          .putIfAbsent(candidate.reminder.occurrence, () => <_Candidate>[])
-          .add(candidate);
+      final local = tz.TZDateTime.from(
+        candidate.reminder.scheduledFor,
+        input.location,
+      );
+      final scheduledDate = LocalDate(local.year, local.month, local.day);
+      byDate.putIfAbsent(scheduledDate, () => <_Candidate>[]).add(candidate);
     }
     final selected = <PlannedReminder>[];
     for (final day in byDate.values) {
@@ -522,6 +505,24 @@ final class DynamicReminderPlanner {
       for (final candidate in day) {
         if (accepted.length >= input.preferences.globalDailyLimit) break;
         final reminder = candidate.reminder;
+        final policy = input.policies[reminder.habit.id];
+        if (policy?.mode == ReminderMode.smart &&
+            reminder.kind == PlannedReminderKind.normal) {
+          final acceptedForHabit = accepted.where(
+            (other) =>
+                other.habit.id == reminder.habit.id &&
+                other.occurrence == reminder.occurrence &&
+                other.kind == PlannedReminderKind.normal,
+          );
+          if (acceptedForHabit.length >= policy!.intensity.maximumAttempts ||
+              acceptedForHabit.any(
+                (other) =>
+                    other.scheduledFor.difference(reminder.scheduledFor).abs() <
+                    policy.smart!.minimumAttemptSpacing,
+              )) {
+            continue;
+          }
+        }
         if (accepted.any(
           (other) =>
               other.scheduledFor.difference(reminder.scheduledFor).abs() <
@@ -603,6 +604,7 @@ final class DynamicReminderPlanner {
       });
       final index = indices.first;
       final reminder = output[index];
+      if (!reminder.scheduledFor.isBefore(session.plannedEndAt)) continue;
       if ((dailyCounts[reminder.occurrence] ?? 0) >= dailyPulseLimit) continue;
       final local = tz.TZDateTime.from(reminder.scheduledFor, input.location);
       final bucket = CalibrationBucketKey(
@@ -611,7 +613,14 @@ final class DynamicReminderPlanner {
         habitId: reminder.habit.id,
         timeZoneId: input.location.name,
       );
-      if (session.coveredBuckets.contains(bucket)) continue;
+      if (session.coveredBuckets.any(
+        (covered) =>
+            covered.localDate == bucket.localDate &&
+            covered.twoHourStartMinute == bucket.twoHourStartMinute &&
+            covered.timeZoneId == bucket.timeZoneId,
+      )) {
+        continue;
+      }
       output[index] = reminder.copyWith(
         logicalKey: '${reminder.logicalKey}:calibration',
         kind: PlannedReminderKind.calibrationPulse,
@@ -639,57 +648,96 @@ final class DynamicReminderPlanner {
           (sum, item) => sum + item.habitProfile.confidence,
         ) /
         profiles.length;
-    final quota = FineTuningQuestionPolicy.questionsPerWeek(confidence);
-    final weekStart = input.start.addDays(1 - input.start.weekday);
-    final existing = signals
-        .where(
-          (signal) =>
-              signal.source == SignalSource.fineTuningNotification &&
-              !signal.occurredAtUtc.isBefore(
-                DateTime.utc(weekStart.year, weekStart.month, weekStart.day),
-              ),
-        )
-        .length;
-    var remaining = math.max(0, quota - existing);
-    if (remaining == 0) return reminders;
     final output = List<PlannedReminder>.from(reminders);
-    final eligible =
-        <int>[
-          for (var index = 0; index < output.length; index++)
-            if (input.policies[output[index].habit.id]?.mode ==
-                    ReminderMode.smart &&
-                output[index].kind == PlannedReminderKind.normal &&
-                input
-                    .policies[output[index].habit.id]!
-                    .smart!
-                    .allowFineTuningQuestions)
-              index,
-        ]..sort((left, right) {
-          final leftConfidence = _bucketConfidence(output[left], profiles);
-          final rightConfidence = _bucketConfidence(output[right], profiles);
-          final confidenceOrder = leftConfidence.compareTo(rightConfidence);
-          return confidenceOrder != 0
-              ? confidenceOrder
+    final eligibleByWeek = <LocalDate, List<int>>{};
+    for (var index = 0; index < output.length; index++) {
+      final reminder = output[index];
+      if (input.policies[reminder.habit.id]?.mode != ReminderMode.smart ||
+          reminder.kind != PlannedReminderKind.normal ||
+          !input.policies[reminder.habit.id]!.smart!.allowFineTuningQuestions) {
+        continue;
+      }
+      final local = tz.TZDateTime.from(reminder.scheduledFor, input.location);
+      final date = LocalDate(local.year, local.month, local.day);
+      final week = date.addDays(1 - date.weekday);
+      eligibleByWeek.putIfAbsent(week, () => <int>[]).add(index);
+    }
+    final quota = FineTuningQuestionPolicy.questionsPerWeek(confidence);
+    for (final entry in eligibleByWeek.entries) {
+      final weekStart = entry.key;
+      final weekEnd = weekStart.addDays(7);
+      final existing = signals.where((signal) {
+        if (signal.source != SignalSource.fineTuningNotification) return false;
+        final local = tz.TZDateTime.from(signal.occurredAtUtc, input.location);
+        final date = LocalDate(local.year, local.month, local.day);
+        return date.compareTo(weekStart) >= 0 && date.compareTo(weekEnd) < 0;
+      }).length;
+      var remaining = math.max(0, quota - existing);
+      if (remaining == 0) continue;
+      final eligible = entry.value
+        ..sort((left, right) {
+          final priority =
+              _fineTuningPriority(
+                output[right],
+                profiles,
+                signals,
+                input,
+              ).compareTo(
+                _fineTuningPriority(output[left], profiles, signals, input),
+              );
+          return priority != 0
+              ? priority
               : output[left].scheduledFor.compareTo(output[right].scheduledFor);
         });
-    final usedWindows = <String>{};
-    for (final index in eligible) {
-      if (remaining == 0) break;
-      final reminder = output[index];
-      final local = tz.TZDateTime.from(reminder.scheduledFor, input.location);
-      final key =
-          '${reminder.habit.id}:${reminder.occurrence}:${(local.hour * 60 + local.minute) ~/ 120}';
-      if (!usedWindows.add(key)) continue;
-      output[index] = reminder.copyWith(
-        logicalKey: '${reminder.logicalKey}:fine-tuning',
-        kind: PlannedReminderKind.fineTuningQuestion,
-        reason: reminder.reason.copyWith(
-          code: ReminderReasonCode.fineTuningUncertainty,
-        ),
-      );
-      remaining--;
+      final usedWindows = <String>{};
+      for (final index in eligible) {
+        if (remaining == 0) break;
+        final reminder = output[index];
+        final local = tz.TZDateTime.from(reminder.scheduledFor, input.location);
+        final key =
+            '${reminder.habit.id}:${reminder.occurrence}:${(local.hour * 60 + local.minute) ~/ 120}';
+        if (!usedWindows.add(key)) continue;
+        output[index] = reminder.copyWith(
+          logicalKey: '${reminder.logicalKey}:fine-tuning',
+          kind: PlannedReminderKind.fineTuningQuestion,
+          reason: reminder.reason.copyWith(
+            code: ReminderReasonCode.fineTuningUncertainty,
+          ),
+        );
+        remaining--;
+      }
     }
     return output;
+  }
+
+  double _fineTuningPriority(
+    PlannedReminder reminder,
+    Map<String, HabitProfileComputation> profiles,
+    List<ReminderSignal> signals,
+    DynamicReminderPlanInput input,
+  ) {
+    final computation = profiles[reminder.habit.id];
+    final uncertainty = 1 - _bucketConfidence(reminder, profiles);
+    final local = tz.TZDateTime.from(reminder.scheduledFor, input.location);
+    final dayType = _dayType(local.weekday);
+    final window = (local.hour * 60 + local.minute) ~/ 120;
+    final relevant = signals
+        .where(
+          (signal) =>
+              signal.habitId == reminder.habit.id &&
+              signal.feasibility != null &&
+              _dayType(signal.localWeekday) == dayType &&
+              signal.localMinuteOfDay ~/ 120 == window,
+        )
+        .map((signal) => signal.targetValue)
+        .toList(growable: false);
+    final contradiction = _variance(relevant);
+    final samples = computation?.habitProfile.effectiveSamples ?? 0;
+    final lowSampleOrNew = math.max(
+      1 - math.min(1, samples / 12),
+      input.now.difference(reminder.habit.createdAt).inDays < 14 ? 1 : 0,
+    );
+    return 0.50 * uncertainty + 0.30 * contradiction + 0.20 * lowSampleOrNew;
   }
 
   double _calibrationPriority(
@@ -785,6 +833,30 @@ final class DynamicReminderPlanner {
       hash = (hash * 0x01000193) & 0xffffffff;
     }
     return hash & 0x7fffffff;
+  }
+
+  static Iterable<int> _quarterHourMinutes(LocalTimeRange range) sync* {
+    var minute = range.start.minuteOfDay;
+    while (true) {
+      yield minute;
+      if (minute == range.end.minuteOfDay) break;
+      final next = (minute + 15) % LocalTime.minutesPerDay;
+      if (!range.contains(LocalTime.fromMinuteOfDay(next))) break;
+      minute = next;
+    }
+  }
+
+  static ProfileDayType _dayType(int weekday) => weekday >= DateTime.saturday
+      ? ProfileDayType.weekend
+      : ProfileDayType.weekday;
+
+  static double _variance(List<double> values) {
+    if (values.length < 2) return 0;
+    final mean = values.reduce((left, right) => left + right) / values.length;
+    return values
+            .map((value) => math.pow(value - mean, 2).toDouble())
+            .reduce((left, right) => left + right) /
+        values.length;
   }
 }
 

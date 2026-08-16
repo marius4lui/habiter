@@ -39,6 +39,7 @@ class HabitProvider extends ChangeNotifier {
     KeyValueStore? actionStore,
     NotificationGateway? notificationGateway,
     ReminderCoordinator? reminderCoordinator,
+    Future<bool> Function()? requestReminderPermission,
     Future<void> Function()? synchronizeWidget,
   }) {
     _clock = clock;
@@ -75,6 +76,8 @@ class HabitProvider extends ChangeNotifier {
       await reconcileReminders(processActions: true);
       notifyListeners();
     });
+    _requestReminderPermission =
+        requestReminderPermission ?? _requestNativeReminderPermission;
     _synchronizeWidget = synchronizeWidget;
     _habitsController.addListener(notifyListeners);
     _historyController.addListener(notifyListeners);
@@ -89,6 +92,7 @@ class HabitProvider extends ChangeNotifier {
   late final ReminderCoordinator _reminders;
   late final Clock _clock;
   late final IdGenerator _ids;
+  late final Future<bool> Function() _requestReminderPermission;
   Future<void> Function()? _synchronizeWidget;
 
   List<Habit> get habits => _habitsController.state.habits;
@@ -211,10 +215,12 @@ class HabitProvider extends ChangeNotifier {
     return result;
   }
 
-  Future<bool> requestHabitReminderPermission() async {
+  static Future<bool> _requestNativeReminderPermission() async {
     await NotificationService.instance.initialize();
     return NotificationService.instance.requestPermissions();
   }
+
+  Future<bool> requestHabitReminderPermission() => _requestReminderPermission();
 
   Future<void> scheduleHabitReminder(String habitId) async {
     final habit = habits.where((item) => item.id == habitId).firstOrNull;
@@ -438,9 +444,10 @@ class HabitProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> enableSmartReminders() async {
-    final granted = await requestHabitReminderPermission();
-    if (!granted) return false;
+  Future<bool> enableSmartReminders({bool requestPermission = true}) async {
+    if (requestPermission && !await requestHabitReminderPermission()) {
+      return false;
+    }
     await _reminders.enableSmartForNewUser(sessionId: _ids.next());
     notifyListeners();
     return true;

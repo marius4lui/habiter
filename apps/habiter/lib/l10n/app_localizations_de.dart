@@ -1130,17 +1130,45 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get onboardingReminderTitle => 'Möchtest du erinnert werden?';
+  String get onboardingReminderTitle => 'Wann soll Habiter helfen?';
 
   @override
   String get onboardingReminderBody =>
-      'Optional. Dein Habit funktioniert auch ohne Erinnerung.';
+      'Smart-Reminder sind optional. Wir erklären alles, bevor wir nach der Notification-Berechtigung fragen.';
 
   @override
   String get onboardingNoReminder => 'Ohne Erinnerung';
 
   @override
-  String get onboardingAddReminder => 'Erinnerung hinzufügen';
+  String get onboardingAddReminder => 'Smart-Reminder verwenden';
+
+  @override
+  String get onboardingSmartCalibrationTitle => 'Siebentägige Kalibrierung';
+
+  @override
+  String get onboardingSmartCalibrationBody =>
+      'Ein paar kurze Fragen zeigen Habiter, welche Momente wirklich passen. Ignorierte Hinweise bleiben neutral.';
+
+  @override
+  String get onboardingSmartFrequencyTitle => 'Hartnäckig, aber begrenzt';
+
+  @override
+  String get onboardingSmartFrequencyBody =>
+      'Bis zu drei Versuche pro Habit-Tag, aber insgesamt nie mehr als acht Hinweise und mindestens 90 Minuten Abstand.';
+
+  @override
+  String get onboardingSmartPrivacyTitle => 'Nur auf diesem Gerät';
+
+  @override
+  String get onboardingSmartPrivacyBody =>
+      'Keine Cloudübertragung, Standort-, Kontakt-, Kalender-, Sensor- oder App-Nutzungsdaten.';
+
+  @override
+  String get onboardingSmartControlTitle => 'Du behältst die Kontrolle';
+
+  @override
+  String get onboardingSmartControlBody =>
+      'Die Wachzeit ist zunächst 08:00–22:00 Uhr. Du kannst jederzeit pausieren, jeden Plan ändern oder alle Lerndaten löschen.';
 
   @override
   String get onboardingHabitReadyTitle => 'Dein erstes Habit steht.';

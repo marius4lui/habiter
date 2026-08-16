@@ -1119,17 +1119,45 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get onboardingReminderTitle => 'Would you like a reminder?';
+  String get onboardingReminderTitle => 'When should Habiter help?';
 
   @override
   String get onboardingReminderBody =>
-      'Optional. Your habit works without a reminder.';
+      'Smart reminders are optional. We explain everything before asking for notification permission.';
 
   @override
   String get onboardingNoReminder => 'Without a reminder';
 
   @override
-  String get onboardingAddReminder => 'Add a reminder';
+  String get onboardingAddReminder => 'Use Smart reminders';
+
+  @override
+  String get onboardingSmartCalibrationTitle => 'Seven-day calibration';
+
+  @override
+  String get onboardingSmartCalibrationBody =>
+      'A few short questions teach Habiter which moments actually fit. Ignored alerts stay neutral.';
+
+  @override
+  String get onboardingSmartFrequencyTitle => 'Persistent, within limits';
+
+  @override
+  String get onboardingSmartFrequencyBody =>
+      'Up to three attempts per habit day, but never more than eight alerts in total and at least 90 minutes apart.';
+
+  @override
+  String get onboardingSmartPrivacyTitle => 'Only on this device';
+
+  @override
+  String get onboardingSmartPrivacyBody =>
+      'No cloud transfer, location, contacts, calendar, sensors, or app-usage monitoring.';
+
+  @override
+  String get onboardingSmartControlTitle => 'You stay in control';
+
+  @override
+  String get onboardingSmartControlBody =>
+      'Active hours default to 08:00–22:00. You can pause, change every plan, or delete all learning data anytime.';
 
   @override
   String get onboardingHabitReadyTitle => 'Your first habit is ready.';

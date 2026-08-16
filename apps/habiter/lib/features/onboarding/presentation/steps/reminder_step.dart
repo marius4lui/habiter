@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/design_system/components.dart';
 import '../../../../core/design_system/haptics.dart';
 import '../../../../core/design_system/tokens.dart';
 import '../../../../l10n/l10n.dart';
@@ -19,7 +20,6 @@ class ReminderStep extends StatefulWidget {
 
 class _ReminderStepState extends State<ReminderStep> {
   late bool _enabled;
-  late TimeOfDay _time;
   bool _saving = false;
 
   @override
@@ -27,8 +27,6 @@ class _ReminderStepState extends State<ReminderStep> {
     super.initState();
     final draft = widget.controller.state.habitDraft!;
     _enabled = draft.reminderEnabled;
-    _time =
-        _parseTime(draft.reminderTime) ?? const TimeOfDay(hour: 20, minute: 0);
   }
 
   @override
@@ -54,10 +52,33 @@ class _ReminderStepState extends State<ReminderStep> {
         ),
         if (_enabled) ...<Widget>[
           const SizedBox(height: HabiterSpace.md),
-          OutlinedButton.icon(
-            onPressed: _pickTime,
-            icon: const Icon(Icons.schedule_rounded),
-            label: Text(_time.format(context)),
+          HabiterSurface(
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
+            child: Column(
+              children: <Widget>[
+                _ReminderFact(
+                  icon: Icons.calendar_view_week_outlined,
+                  title: context.l10n.onboardingSmartCalibrationTitle,
+                  body: context.l10n.onboardingSmartCalibrationBody,
+                ),
+                _ReminderFact(
+                  icon: Icons.notifications_active_outlined,
+                  title: context.l10n.onboardingSmartFrequencyTitle,
+                  body: context.l10n.onboardingSmartFrequencyBody,
+                ),
+                _ReminderFact(
+                  icon: Icons.offline_bolt_outlined,
+                  title: context.l10n.onboardingSmartPrivacyTitle,
+                  body: context.l10n.onboardingSmartPrivacyBody,
+                ),
+                _ReminderFact(
+                  icon: Icons.tune_rounded,
+                  title: context.l10n.onboardingSmartControlTitle,
+                  body: context.l10n.onboardingSmartControlBody,
+                  showDivider: false,
+                ),
+              ],
+            ),
           ),
         ],
         if (_saving) ...<Widget>[
@@ -79,11 +100,6 @@ class _ReminderStepState extends State<ReminderStep> {
     setState(() => _enabled = value);
   }
 
-  Future<void> _pickTime() async {
-    final selected = await showTimePicker(context: context, initialTime: _time);
-    if (selected != null && mounted) setState(() => _time = selected);
-  }
-
   Future<void> _createHabit() async {
     setState(() => _saving = true);
     final provider = context.read<HabitProvider>();
@@ -95,8 +111,8 @@ class _ReminderStepState extends State<ReminderStep> {
     if (!mounted) return;
     final draft = widget.controller.state.habitDraft!.copyWith(
       reminderEnabled: reminderEnabled,
-      reminderTime: reminderEnabled ? _serializedTime : null,
-      clearReminderTime: !reminderEnabled,
+      reminderTime: null,
+      clearReminderTime: true,
     );
     await widget.controller.configureReminder(draft);
     final id = await widget.controller.reserveFirstHabitId();
@@ -112,19 +128,56 @@ class _ReminderStepState extends State<ReminderStep> {
       notificationEnabled: draft.reminderEnabled,
       notificationTime: draft.reminderTime,
     );
-    if (draft.reminderEnabled) await provider.scheduleHabitReminder(id);
+    if (draft.reminderEnabled) {
+      await provider.enableSmartReminders(requestPermission: false);
+      await provider.markReminderIntroductionSeen();
+    }
     await haptics.success();
     await widget.controller.markHabitReady();
   }
+}
 
-  String get _serializedTime =>
-      '${_time.hour.toString().padLeft(2, '0')}:${_time.minute.toString().padLeft(2, '0')}';
+class _ReminderFact extends StatelessWidget {
+  const _ReminderFact({
+    required this.icon,
+    required this.title,
+    required this.body,
+    this.showDivider = true,
+  });
 
-  TimeOfDay? _parseTime(String? value) {
-    final parts = value?.split(':');
-    if (parts == null || parts.length != 2) return null;
-    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-  }
+  final IconData icon;
+  final String title;
+  final String body;
+  final bool showDivider;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: <Widget>[
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Icon(icon, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: HabiterSpace.sm2),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(title, style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: HabiterSpace.xs),
+                Text(
+                  body,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      if (showDivider) const Divider(height: HabiterSpace.lg),
+    ],
+  );
 }
 
 class _ReminderChoice extends StatelessWidget {

@@ -2099,13 +2099,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingReminderTitle.
   ///
   /// In de, this message translates to:
-  /// **'Möchtest du erinnert werden?'**
+  /// **'Wann soll Habiter helfen?'**
   String get onboardingReminderTitle;
 
   /// No description provided for @onboardingReminderBody.
   ///
   /// In de, this message translates to:
-  /// **'Optional. Dein Habit funktioniert auch ohne Erinnerung.'**
+  /// **'Smart-Reminder sind optional. Wir erklären alles, bevor wir nach der Notification-Berechtigung fragen.'**
   String get onboardingReminderBody;
 
   /// No description provided for @onboardingNoReminder.
@@ -2117,8 +2117,56 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingAddReminder.
   ///
   /// In de, this message translates to:
-  /// **'Erinnerung hinzufügen'**
+  /// **'Smart-Reminder verwenden'**
   String get onboardingAddReminder;
+
+  /// No description provided for @onboardingSmartCalibrationTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Siebentägige Kalibrierung'**
+  String get onboardingSmartCalibrationTitle;
+
+  /// No description provided for @onboardingSmartCalibrationBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein paar kurze Fragen zeigen Habiter, welche Momente wirklich passen. Ignorierte Hinweise bleiben neutral.'**
+  String get onboardingSmartCalibrationBody;
+
+  /// No description provided for @onboardingSmartFrequencyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Hartnäckig, aber begrenzt'**
+  String get onboardingSmartFrequencyTitle;
+
+  /// No description provided for @onboardingSmartFrequencyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Bis zu drei Versuche pro Habit-Tag, aber insgesamt nie mehr als acht Hinweise und mindestens 90 Minuten Abstand.'**
+  String get onboardingSmartFrequencyBody;
+
+  /// No description provided for @onboardingSmartPrivacyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur auf diesem Gerät'**
+  String get onboardingSmartPrivacyTitle;
+
+  /// No description provided for @onboardingSmartPrivacyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Cloudübertragung, Standort-, Kontakt-, Kalender-, Sensor- oder App-Nutzungsdaten.'**
+  String get onboardingSmartPrivacyBody;
+
+  /// No description provided for @onboardingSmartControlTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Du behältst die Kontrolle'**
+  String get onboardingSmartControlTitle;
+
+  /// No description provided for @onboardingSmartControlBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Wachzeit ist zunächst 08:00–22:00 Uhr. Du kannst jederzeit pausieren, jeden Plan ändern oder alle Lerndaten löschen.'**
+  String get onboardingSmartControlBody;
 
   /// No description provided for @onboardingHabitReadyTitle.
   ///

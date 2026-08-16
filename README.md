@@ -201,7 +201,9 @@ The [mobile UX system](docs/mobile-ux-system.md) documents the product hierarchy
 
 Issues and focused pull requests are welcome. Before opening a change, run the relevant local checks above and keep application, Worker, release-core, website, and documentation changes logically separated.
 
-For larger changes, describe the user problem and migration impact first so behavior and data compatibility can be reviewed alongside the implementation.
+Create branches using the purpose-based `<type>/<short-description>` convention described in the [branch workflow](docs/dev/branches.md). Tool or agent prefixes such as `codex/` and `claude/` are not allowed.
+
+For larger changes, describe the user problem and migration impact first so behavior and data compatibility can be reviewed alongside the implementation. Documentation changes should follow the [documentation guide](docs/dev/documentation.md).
 
 ---
 

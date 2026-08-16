@@ -3,15 +3,15 @@ layout: home
 
 hero:
   name: "Habiter"
-  text: "Small steps. A calmer rhythm."
-  tagline: A local-first habit tracker with forgiving recovery and user-controlled data.
+  text: "Build routines that stay yours."
+  tagline: A private, local-first habit tracker for mobile, desktop, and web—with clear progress, flexible schedules, and optional focus tools.
   image:
     src: /icon.png
     alt: Habiter Logo
   actions:
     - theme: brand
       text: Download
-      link: https://github.com/marius4lui/habiter/releases
+      link: https://get.habiter.dev/download
     - theme: alt
       text: Getting Started
       link: /guide/getting-started
@@ -27,8 +27,8 @@ features:
     title: App Lock
     details: Optionally lock selected apps on Android, with explicit permissions and recovery controls.
   - icon: 📊
-    title: Analytics
-    details: Visualize your progress with detailed charts and streak tracking.
+    title: Understandable progress
+    details: Review streaks, completion rates, weekly patterns, and gentle local recovery guidance.
   - icon: 🛡️
     title: Privacy First
     details: Your data stays on your device. No cloud account required.
@@ -36,6 +36,15 @@ features:
     title: Optional imports
     details: Import events from a trusted Classly-compatible HTTPS server after explicit OAuth setup.
   - icon: 🚀
-    title: Cross-Platform
-    details: Flutter shells target Android, iOS, Windows, macOS, Linux, and web; native capabilities vary by platform.
+    title: Cross-platform
+    details: One Flutter application targets Android, iOS, Windows, macOS, Linux, and web; native capabilities vary by platform.
 ---
+
+## Start here
+
+- [Install Habiter and create your first habit](/guide/getting-started)
+- [Explore schedules, analytics, reminders, backup, and integrations](/guide/features)
+- [Understand the Android-only App Lock safety model](/guide/app-lock)
+- [Build, test, and contribute to the repository](/dev/architecture)
+
+Habiter requires no account for core tracking. Habits, completion history, settings, analytics, and coaching remain on the device unless you deliberately export data or configure an optional integration.

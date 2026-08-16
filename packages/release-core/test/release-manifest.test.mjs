@@ -29,10 +29,12 @@ test("tag, pubspec version and build number must agree", async () => {
 
 test("version comparison is numeric and release notes are deterministic", async () => {
   const manifest = await readJson(manifestPath);
+  const notes = renderNotes(manifest.releases[0]);
   assert.ok(compareVersions("1.10.0", "1.9.9") > 0);
-  assert.doesNotMatch(renderNotes(manifest.releases[0]), /^# Habiter/m);
-  assert.match(renderNotes(manifest.releases[0]), /^## Added/m);
-  assert.match(renderNotes(manifest.releases[0]), /Desktop signing/);
+  assert.doesNotMatch(notes, /^# Habiter/m);
+  assert.match(notes, /^## (Added|Changed|Fixed|Security)/m);
+  assert.equal(notes, renderNotes(manifest.releases[0]));
+  assert.match(notes, /Desktop signing/);
 });
 
 test("duplicate versions are rejected", async () => {

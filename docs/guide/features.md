@@ -1,31 +1,45 @@
-# Features
+# Features and platform support
 
-## Habit Tracking
+## Habit tracking
 
-- **Daily, Weekly, Custom** - Track habits on your schedule
-- **Progress visualization** - See your completion percentage
-- **Streak counting** - Stay motivated with streak tracking
+- Daily, selected-weekday, and times-per-week schedules
+- One-tap completion and immediate undo
+- Pause, resume, archive, restore, and lifecycle-aware history
+- Emoji icons, colors, templates, light/dark appearance, and responsive layouts
 
 ## Analytics
 
-- **Weekly progress charts** - Visualize your performance
-- **Success rates** - Track your completion rates
-- **Local coaching** - Get deterministic, on-device restart suggestions
-- **Experimental remote AI** - Explicitly configured, disabled by default, and subject to the selected provider's data and cost terms
+- Weekly progress charts, streaks, and completion rates
+- Per-habit metrics and accessible chart descriptions
+- Deterministic, on-device recovery suggestions
+- Optional experimental remote AI, disabled until explicitly configured and governed by the selected provider's privacy and pricing terms
+
+## Reminders
+
+- Device-time-zone scheduling with daylight-saving handling
+- Stable notification identifiers and duplicate reconciliation
+- Permission-aware behavior without repeated prompts
+- Durable completion actions from foreground, background, or terminated states
+
+Delivery is controlled by the operating system. Battery policy and manufacturer customizations can delay reminders; Habiter does not promise exact delivery.
 
 ## Data control
 
-- **Local by default** - No account is required
-- **Export and import** - Versioned JSON with preview, collision handling, and rollback
-- **Optional integrations** - Classly-compatible import and remote AI remain off until configured
+- No account is required for core tracking.
+- Versioned JSON export/import includes preview, collision handling, and recovery backup.
+- Classly-compatible OAuth and remote AI remain disabled until configured.
+- Sensitive integration credentials use platform-secure storage where available.
 
 ## Platform-specific features
 
-- **App Lock** - Android only, with usage/overlay permissions and a fail-open recovery path
-- **Reminders** - Delivery timing and background actions still depend on operating-system and device-vendor policies
+- **App Lock:** Android only; requires Usage Access, overlay access, and a foreground service. It fails open if access is missing.
+- **Home-screen widgets:** native availability and interaction behavior depend on the platform.
+- **Reminders:** supported through platform notification APIs, subject to OS delivery policy.
+- **Desktop/web:** core tracking works; mobile-only integrations may be unavailable.
 
-## Customization
+## Accessibility and localization
 
-- **Custom icons** - Choose from emoji icons
-- **Color themes** - Pick your favorite colors
-- **Dark mode** - Easy on the eyes
+- English and German interface text
+- At least 48 dp interaction targets in the mobile design system
+- Responsive layouts and large-text coverage
+- Semantic chart descriptions and reduced-motion-aware transitions

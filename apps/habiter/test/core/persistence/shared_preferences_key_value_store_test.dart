@@ -15,7 +15,9 @@ void main() {
   test(
     'adapts supported SharedPreferences values without aliasing lists',
     () async {
-      final store = SharedPreferencesKeyValueStore();
+      final store = SharedPreferencesKeyValueStore(
+        legacyPreferences: SharedPreferences.getInstance,
+      );
 
       final snapshot = await store.snapshot();
       (snapshot['items']! as List<String>).add('mutated');
@@ -30,7 +32,9 @@ void main() {
   );
 
   test('rejects values SharedPreferences cannot persist', () async {
-    final store = SharedPreferencesKeyValueStore();
+    final store = SharedPreferencesKeyValueStore(
+      legacyPreferences: SharedPreferences.getInstance,
+    );
 
     await expectLater(
       store.write('map', <String, Object?>{'unsupported': true}),

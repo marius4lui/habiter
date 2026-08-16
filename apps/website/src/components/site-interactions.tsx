@@ -4,29 +4,81 @@ import { useEffect } from "react";
 
 type Cleanup = () => void;
 
-function observe(
-  selector: string,
-  onVisible: (element: HTMLElement) => void,
-  threshold = 0.12,
-): Cleanup {
-  const elements = Array.from(document.querySelectorAll<HTMLElement>(selector));
+function clamp(value: number, minimum: number, maximum: number) {
+  return Math.min(Math.max(value, minimum), maximum);
+}
 
-  if (!("IntersectionObserver" in window)) {
-    elements.forEach(onVisible);
-    return () => undefined;
-  }
+function setupCenteredScrollFocus(reducedMotion: boolean): Cleanup {
+  const reveals = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
+  const principles = Array.from(document.querySelectorAll<HTMLElement>("[data-principle]"));
+  const steps = Array.from(document.querySelectorAll<HTMLElement>("[data-step]"));
+  const scenes = Array.from(document.querySelectorAll<HTMLElement>("[data-scene]"));
+  const animated = [...reveals, ...principles, ...steps];
+  let frame = 0;
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) onVisible(entry.target as HTMLElement);
-      });
-    },
-    { threshold },
-  );
+  const updateElement = (element: HTMLElement, viewportCenter: number, viewportHeight: number) => {
+    const rect = element.getBoundingClientRect();
+    const elementCenter = rect.top + rect.height / 2;
+    const distance = Math.abs(elementCenter - viewportCenter);
+    const fullFocusRadius = Math.max(56, viewportHeight * 0.09);
+    const fadeRadius = Math.max(fullFocusRadius + 1, viewportHeight * 0.48);
+    const linearPresence = clamp(
+      1 - (distance - fullFocusRadius) / (fadeRadius - fullFocusRadius),
+      0,
+      1,
+    );
+    const presence = linearPresence * linearPresence * (3 - 2 * linearPresence);
+    const direction = clamp((elementCenter - viewportCenter) / fadeRadius, -1, 1);
 
-  elements.forEach((element) => observer.observe(element));
-  return () => observer.disconnect();
+    element.style.setProperty("--scroll-presence", presence.toFixed(3));
+    element.style.setProperty("--scroll-shift", `${reducedMotion ? 0 : direction * 34}px`);
+    element.style.setProperty("--scroll-scale", (0.975 + presence * 0.025).toFixed(4));
+    element.classList.toggle("visible", presence > 0.01);
+
+    return { element, distance, presence };
+  };
+
+  const update = () => {
+    frame = 0;
+    const viewportHeight = Math.max(window.innerHeight, 1);
+    const viewportCenter = viewportHeight / 2;
+    const states = new Map(
+      animated.map((element) => [
+        element,
+        updateElement(element, viewportCenter, viewportHeight),
+      ]),
+    );
+
+    const activateNearest = (elements: HTMLElement[]) => {
+      const nearest = elements
+        .map((element) => states.get(element))
+        .filter((state): state is NonNullable<typeof state> => Boolean(state))
+        .sort((left, right) => left.distance - right.distance)[0];
+      const active = nearest && nearest.presence >= 0.5 ? nearest.element : null;
+      elements.forEach((element) => element.classList.toggle("active", element === active));
+      return active;
+    };
+
+    activateNearest(principles);
+    const activeStep = activateNearest(steps);
+    scenes.forEach((scene) => {
+      scene.classList.toggle("active", scene.dataset.scene === activeStep?.dataset.step);
+    });
+  };
+
+  const scheduleUpdate = () => {
+    if (!frame) frame = requestAnimationFrame(update);
+  };
+
+  update();
+  window.addEventListener("scroll", scheduleUpdate, { passive: true });
+  window.addEventListener("resize", scheduleUpdate, { passive: true });
+
+  return () => {
+    cancelAnimationFrame(frame);
+    window.removeEventListener("scroll", scheduleUpdate);
+    window.removeEventListener("resize", scheduleUpdate);
+  };
 }
 
 function setupAmbientCanvas(canvas: HTMLCanvasElement, reducedMotion: boolean): Cleanup {
@@ -174,19 +226,7 @@ export function SiteInteractions() {
     updateNav();
     window.addEventListener("scroll", updateNav, { passive: true });
     cleanups.push(() => window.removeEventListener("scroll", updateNav));
-    cleanups.push(observe("[data-reveal]", (element) => element.classList.add("visible")));
-
-    const principles = Array.from(document.querySelectorAll<HTMLElement>("[data-principle]"));
-    cleanups.push(observe("[data-principle]", (active) => {
-      principles.forEach((principle) => principle.classList.toggle("active", principle === active));
-    }, 0.55));
-
-    const steps = Array.from(document.querySelectorAll<HTMLElement>("[data-step]"));
-    const scenes = Array.from(document.querySelectorAll<HTMLElement>("[data-scene]"));
-    cleanups.push(observe("[data-step]", (active) => {
-      steps.forEach((step) => step.classList.toggle("active", step === active));
-      scenes.forEach((scene) => scene.classList.toggle("active", scene.dataset.scene === active.dataset.step));
-    }, 0.6));
+    cleanups.push(setupCenteredScrollFocus(reducedMotion));
 
     const habits = Array.from(document.querySelectorAll<HTMLElement>("[data-demo-habit]"));
     const updateProgress = () => {

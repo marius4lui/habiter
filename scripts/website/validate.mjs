@@ -5,6 +5,11 @@ import { access, readFile } from "node:fs/promises";
 const root = new URL("../../", import.meta.url);
 const website = new URL("apps/website/", root);
 const page = await readFile(new URL("src/components/landing-page.tsx", website), "utf8");
+const interactions = await readFile(
+  new URL("src/components/site-interactions.tsx", website),
+  "utf8",
+);
+const styles = await readFile(new URL("src/app/globals.css", website), "utf8");
 const layout = await readFile(new URL("src/app/layout.tsx", website), "utf8");
 const nextConfig = await readFile(new URL("next.config.ts", website), "utf8");
 const wrangler = JSON.parse(
@@ -23,6 +28,12 @@ assert.doesNotMatch(page, />\s*Beta testen\s*</);
 assert.doesNotMatch(page, />\s*Beta-Tester werden\s*</);
 assert.match(page, /<ThemeToggle \/>/);
 assert.match(page, /<BrandLogo/);
+assert.match(interactions, /setupCenteredScrollFocus/);
+assert.match(interactions, /--scroll-presence/);
+assert.match(interactions, /viewportHeight \* 0\.48/);
+assert.doesNotMatch(interactions, /IntersectionObserver/);
+assert.match(styles, /var\(--scroll-presence/);
+assert.match(styles, /var\(--scroll-shift/);
 assert.match(layout, /alternates: \{ canonical: "\/" \}/);
 assert.match(layout, /lang="de"/);
 assert.match(nextConfig, /output: "export"/);

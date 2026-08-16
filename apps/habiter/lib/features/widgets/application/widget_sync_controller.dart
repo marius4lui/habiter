@@ -4,12 +4,14 @@ import '../../habits/application/habit_repository.dart';
 import '../data/widget_snapshot_mapper.dart';
 import '../domain/widget_bridge.dart';
 import '../domain/widget_snapshot.dart';
+import 'widget_app_lock_state_resolver.dart';
 
 final class WidgetSyncController {
   const WidgetSyncController({
     required HabitRepository repository,
     required WidgetBridge bridge,
     required Clock clock,
+    this.appLockResolver,
     this.mapper = const WidgetSnapshotMapper(),
   }) : _repository = repository,
        _bridge = bridge,
@@ -18,6 +20,7 @@ final class WidgetSyncController {
   final HabitRepository _repository;
   final WidgetBridge _bridge;
   final Clock _clock;
+  final WidgetAppLockStateResolver? appLockResolver;
   final WidgetSnapshotMapper mapper;
 
   Future<WidgetSnapshot> synchronize({
@@ -26,13 +29,20 @@ final class WidgetSyncController {
   }) async {
     final now = _clock.now();
     final snapshot = await _repository.load();
+    final date = LocalDate.fromDateTime(now);
+    final appLock = await appLockResolver?.resolve(
+      date: date,
+      habits: snapshot.habits,
+      entries: snapshot.entries,
+    );
     final widgetSnapshot = mapper.map(
       generatedAt: now,
-      date: LocalDate.fromDateTime(now),
+      date: date,
       locale: locale,
       habits: snapshot.habits,
       entries: snapshot.entries,
       lastCompletion: lastCompletion,
+      appLock: appLock,
     );
     await _bridge.publish(widgetSnapshot);
     return widgetSnapshot;

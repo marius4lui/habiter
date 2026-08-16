@@ -3,6 +3,30 @@ import 'dart:convert';
 
 import 'widget_habit_item.dart';
 
+final class WidgetAppLockState {
+  const WidgetAppLockState({
+    required this.complete,
+    required this.incompleteHabitNames,
+  });
+
+  factory WidgetAppLockState.fromMap(Map<String, Object?> map) =>
+      WidgetAppLockState(
+        complete: map['complete']! as bool,
+        incompleteHabitNames:
+            ((map['incompleteHabitNames'] as List?) ?? const [])
+                .cast<String>()
+                .toList(growable: false),
+      );
+
+  final bool complete;
+  final List<String> incompleteHabitNames;
+
+  Map<String, Object?> toMap() => <String, Object?>{
+    'complete': complete,
+    'incompleteHabitNames': incompleteHabitNames,
+  };
+}
+
 final class WidgetLastCompletion {
   const WidgetLastCompletion({
     required this.habitId,
@@ -45,6 +69,7 @@ final class WidgetSnapshot {
     required Iterable<WidgetHabitItem> habits,
     this.nextHabit,
     this.lastCompletion,
+    this.appLock,
   }) : habits = UnmodifiableListView<WidgetHabitItem>(habits.toList());
 
   static const currentSchemaVersion = 1;
@@ -63,6 +88,7 @@ final class WidgetSnapshot {
         .toList(growable: false);
     final next = map['nextHabit'];
     final completion = map['lastCompletion'];
+    final appLock = map['appLock'];
     return WidgetSnapshot(
       schemaVersion: (map['schemaVersion'] as num?)?.toInt() ?? 1,
       generatedAt: DateTime.parse(map['generatedAt']! as String),
@@ -79,6 +105,9 @@ final class WidgetSnapshot {
       lastCompletion: completion is Map
           ? WidgetLastCompletion.fromMap(Map<String, Object?>.from(completion))
           : null,
+      appLock: appLock is Map
+          ? WidgetAppLockState.fromMap(Map<String, Object?>.from(appLock))
+          : null,
     );
   }
 
@@ -93,6 +122,7 @@ final class WidgetSnapshot {
   final WidgetHabitItem? nextHabit;
   final List<WidgetHabitItem> habits;
   final WidgetLastCompletion? lastCompletion;
+  final WidgetAppLockState? appLock;
 
   String toJson() => jsonEncode(<String, Object?>{
     'schemaVersion': schemaVersion,
@@ -106,5 +136,6 @@ final class WidgetSnapshot {
     'nextHabit': nextHabit?.toMap(),
     'habits': habits.map((habit) => habit.toMap()).toList(growable: false),
     'lastCompletion': lastCompletion?.toMap(),
+    'appLock': appLock?.toMap(),
   });
 }

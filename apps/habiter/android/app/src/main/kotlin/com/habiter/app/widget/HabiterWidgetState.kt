@@ -19,6 +19,11 @@ data class HabiterWidgetCompletion(
     val completedAt: Instant,
 )
 
+data class HabiterWidgetAppLockState(
+    val complete: Boolean,
+    val incompleteHabitNames: Set<String>,
+)
+
 data class HabiterWidgetState(
     val schemaVersion: Int,
     val generatedAt: Instant,
@@ -30,6 +35,7 @@ data class HabiterWidgetState(
     val hasAnyHabits: Boolean,
     val habits: List<HabiterWidgetHabit>,
     val lastCompletion: HabiterWidgetCompletion?,
+    val appLock: HabiterWidgetAppLockState?,
     val stale: Boolean,
 ) {
     val nextHabit: HabiterWidgetHabit?
@@ -69,6 +75,18 @@ data class HabiterWidgetState(
                 )
             }
             val schemaVersion = root.optInt("schemaVersion", 0)
+            val appLockJson = root.optJSONObject("appLock")
+            val appLock = appLockJson?.let {
+                val names = it.optJSONArray("incompleteHabitNames")
+                HabiterWidgetAppLockState(
+                    complete = it.optBoolean("complete", false),
+                    incompleteHabitNames = buildSet {
+                        if (names != null) {
+                            for (index in 0 until names.length()) add(names.getString(index))
+                        }
+                    },
+                )
+            }
             return HabiterWidgetState(
                 schemaVersion = schemaVersion,
                 generatedAt = generatedAt,
@@ -80,6 +98,7 @@ data class HabiterWidgetState(
                 hasAnyHabits = root.optBoolean("hasAnyHabits", habits.isNotEmpty()),
                 habits = habits,
                 lastCompletion = completion,
+                appLock = appLock,
                 stale = schemaVersion != CURRENT_SCHEMA_VERSION ||
                     Duration.between(generatedAt, now) > maximumAge,
             )
@@ -93,5 +112,6 @@ sealed interface HabiterWidgetContentState {
     data object NoHabits : HabiterWidgetContentState
     data object FreeToday : HabiterWidgetContentState
     data object AllComplete : HabiterWidgetContentState
+    data class JustCompleted(val state: HabiterWidgetState) : HabiterWidgetContentState
     data class Active(val state: HabiterWidgetState) : HabiterWidgetContentState
 }

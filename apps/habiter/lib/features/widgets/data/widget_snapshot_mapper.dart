@@ -14,6 +14,7 @@ final class WidgetSnapshotMapper {
     required Iterable<Habit> habits,
     required Iterable<HabitEntry> entries,
     WidgetLastCompletion? lastCompletion,
+    WidgetAppLockState? appLock,
   }) {
     final today = TodayQuery.forDate(
       date: date,
@@ -43,6 +44,7 @@ final class WidgetSnapshotMapper {
       nextHabit: items.where((item) => !item.isCompleted).firstOrNull,
       habits: items,
       lastCompletion: lastCompletion,
+      appLock: appLock,
     );
   }
 

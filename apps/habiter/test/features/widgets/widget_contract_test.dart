@@ -22,6 +22,10 @@ void main() {
       hasAnyHabits: true,
       nextHabit: habit,
       habits: const <WidgetHabitItem>[habit],
+      appLock: const WidgetAppLockState(
+        complete: false,
+        incompleteHabitNames: <String>['Training'],
+      ),
     );
 
     final restored = WidgetSnapshot.fromJson(snapshot.toJson());
@@ -29,6 +33,7 @@ void main() {
     expect(restored.schemaVersion, WidgetSnapshot.currentSchemaVersion);
     expect(restored.nextHabit?.id, 'habit-1');
     expect(restored.habits.single.scheduleLabel, '3× per week');
+    expect(restored.appLock?.incompleteHabitNames, <String>['Training']);
   });
 
   test('completion action preserves its idempotency key', () {
@@ -44,5 +49,19 @@ void main() {
     expect(restored.habitId, 'habit-1');
     expect(restored.localDate, '2026-08-16');
     expect(restored.actionId, 'action-123');
+  });
+
+  test('undo action preserves the originating completion action', () {
+    final action = WidgetAction.undoCompletion(
+      habitId: 'habit-1',
+      localDate: '2026-08-16',
+      actionId: 'undo-1',
+      sourceActionId: 'action-123',
+    );
+
+    final restored = WidgetAction.fromUri(action.toUri());
+
+    expect(restored.type, WidgetActionType.undoCompletion);
+    expect(restored.sourceActionId, 'action-123');
   });
 }

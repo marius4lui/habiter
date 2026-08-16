@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 
 object HabiterWidgetStateRepository {
     const val SNAPSHOT_KEY = "habiter_widget_snapshot"
+    private val undoWindow = java.time.Duration.ofMinutes(5)
 
     fun read(preferences: SharedPreferences): HabiterWidgetContentState {
         val source = preferences.getString(SNAPSHOT_KEY, null)
@@ -13,6 +14,9 @@ object HabiterWidgetStateRepository {
         if (state.stale) return HabiterWidgetContentState.Stale
         if (!state.hasAnyHabits) return HabiterWidgetContentState.NoHabits
         if (state.scheduledCount == 0) return HabiterWidgetContentState.FreeToday
+        if (state.lastCompletion != null &&
+            java.time.Duration.between(state.lastCompletion.completedAt, java.time.Instant.now()) <= undoWindow
+        ) return HabiterWidgetContentState.JustCompleted(state)
         if (state.allComplete) return HabiterWidgetContentState.AllComplete
         return HabiterWidgetContentState.Active(state)
     }

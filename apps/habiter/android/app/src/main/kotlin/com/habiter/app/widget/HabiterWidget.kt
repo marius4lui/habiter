@@ -81,7 +81,43 @@ private fun WidgetSurface(
             HabiterWidgetContentState.NoHabits -> EmptyState(layout, "Your first habit is waiting.", "Dein erstes Habit wartet.")
             HabiterWidgetContentState.FreeToday -> EmptyState(layout, "🍃 Today is free.", "🍃 Heute ist frei.")
             HabiterWidgetContentState.AllComplete -> CompletedState(layout)
+            is HabiterWidgetContentState.JustCompleted -> JustCompletedState(content.state, layout)
             is HabiterWidgetContentState.Active -> ActiveState(content.state, layout)
+        }
+    }
+}
+
+@Composable
+private fun JustCompletedState(state: HabiterWidgetState, layout: HabiterWidgetLayout) {
+    val completion = state.lastCompletion ?: return
+    val action = actionRunCallback<HabiterWidgetUndoActionCallback>(
+        actionParametersOf(
+            HabiterWidgetAction.habitIdKey to completion.habitId,
+            HabiterWidgetAction.localDateKey to state.localDate,
+            HabiterWidgetAction.sourceActionIdKey to completion.actionId,
+        ),
+    )
+    Row(
+        modifier = GlanceModifier.fillMaxSize().padding(if (layout == HabiterWidgetLayout.COMPACT) 12.dp else 20.dp),
+        verticalAlignment = Alignment.Vertical.CenterVertically,
+    ) {
+        Text("✓", style = TextStyle(color = HabiterWidgetTheme.success, fontSize = 24.sp, fontWeight = FontWeight.Bold))
+        Spacer(GlanceModifier.width(10.dp))
+        Column(modifier = GlanceModifier.defaultWeight()) {
+            Text(completion.habitName, maxLines = 1, style = titleStyle(16))
+            if (layout != HabiterWidgetLayout.COMPACT) {
+                Text(if (state.locale.startsWith("de")) "Erledigt" else "Completed", style = mutedStyle(13))
+            }
+        }
+        Box(
+            modifier = GlanceModifier
+                .background(HabiterWidgetTheme.surfaceAccent)
+                .cornerRadius(14.dp)
+                .clickable(onClick = action)
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(if (layout == HabiterWidgetLayout.COMPACT) "↶" else if (state.locale.startsWith("de")) "Rückgängig" else "Undo", style = titleStyle(13))
         }
     }
 }

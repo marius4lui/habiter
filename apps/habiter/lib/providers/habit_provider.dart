@@ -30,6 +30,7 @@ class HabitProvider extends ChangeNotifier {
     IdGenerator ids = const UuidIdGenerator(),
     HabitLifecycleReminderGateway? lifecycleReminders,
     KeyValueStore? actionStore,
+    Future<void> Function()? synchronizeWidget,
   }) {
     _clock = clock;
     final resolvedRepository =
@@ -60,6 +61,7 @@ class HabitProvider extends ChangeNotifier {
         await _todayController.complete(habitId, date);
       },
     );
+    _synchronizeWidget = synchronizeWidget;
     _habitsController.addListener(notifyListeners);
     _historyController.addListener(notifyListeners);
   }
@@ -73,6 +75,7 @@ class HabitProvider extends ChangeNotifier {
   late final ReminderActionInbox _actionInbox;
   late final ReminderActionProcessor _actionProcessor;
   late final Clock _clock;
+  Future<void> Function()? _synchronizeWidget;
 
   List<Habit> get habits => _habitsController.state.habits;
   List<HabitEntry> get habitEntries => _historyController.state.entries;
@@ -158,6 +161,15 @@ class HabitProvider extends ChangeNotifier {
 
   Future<void> _reloadHabitState() async {
     await Future.wait([_habitsController.load(), _historyController.load()]);
+    await syncWidget();
+  }
+
+  Future<void> syncWidget() async {
+    try {
+      await _synchronizeWidget?.call();
+    } catch (error) {
+      debugPrint('HabitProvider: Widget sync failed safely: $error');
+    }
   }
 
   Future<String> addHabit({
@@ -173,7 +185,7 @@ class HabitProvider extends ChangeNotifier {
     bool notificationEnabled = false,
     String? notificationTime,
   }) async {
-    return _habitsController.add(
+    final result = await _habitsController.add(
       id: id,
       name: name,
       description: description,
@@ -186,6 +198,8 @@ class HabitProvider extends ChangeNotifier {
       notificationEnabled: notificationEnabled,
       notificationTime: notificationTime,
     );
+    await syncWidget();
+    return result;
   }
 
   Future<bool> requestHabitReminderPermission() async {
@@ -207,12 +221,14 @@ class HabitProvider extends ChangeNotifier {
   Future<void> updateHabit(String id, Habit updated) async {
     if (!habits.any((habit) => habit.id == id)) return;
     await _habitsController.update(updated);
+    await syncWidget();
   }
 
   Future<void> deleteHabit(String id) async {
     await _habitsController.delete(id);
     await _lifecycleReminders.cancelForHabit(id);
     await _historyController.load();
+    await syncWidget();
   }
 
   /// Archive a habit (set isActive = false)
@@ -222,6 +238,7 @@ class HabitProvider extends ChangeNotifier {
     final result = await _habitsController.archive(id);
     if (!result.changed) return;
     await _lifecycleReminders.cancelForHabit(id);
+    await syncWidget();
 
     debugPrint('HabitProvider: Archived habit: ${habit.name}');
   }
@@ -229,6 +246,7 @@ class HabitProvider extends ChangeNotifier {
   Future<void> pauseHabit(String id) async {
     final result = await _habitsController.pause(id);
     if (result.changed) await _lifecycleReminders.cancelForHabit(id);
+    if (result.changed) await syncWidget();
   }
 
   Future<void> resumeHabit(String id) async {
@@ -240,6 +258,7 @@ class HabitProvider extends ChangeNotifier {
         habit.notificationTime != null) {
       await _lifecycleReminders.scheduleForHabit(habit);
     }
+    await syncWidget();
   }
 
   Future<void> restoreHabit(String id) async {
@@ -251,6 +270,7 @@ class HabitProvider extends ChangeNotifier {
         habit.notificationTime != null) {
       await _lifecycleReminders.scheduleForHabit(habit);
     }
+    await syncWidget();
   }
 
   Future<void> toggleHabitCompletion(String habitId, String date) async {
@@ -312,6 +332,10 @@ class HabitProvider extends ChangeNotifier {
       } else {
         await NotificationService.instance.cancelGlobalDailyReminder();
       }
+    }
+
+    if (prefs.language != oldPrefs.language || prefs.theme != oldPrefs.theme) {
+      await syncWidget();
     }
 
     notifyListeners();

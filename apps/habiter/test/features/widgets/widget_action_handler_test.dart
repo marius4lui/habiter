@@ -63,6 +63,21 @@ void main() {
       expect(bridge.published, hasLength(1));
       expect(bridge.published.single.allComplete, isTrue);
       expect(bridge.published.single.lastCompletion?.actionId, 'tap-1');
+      final undo = WidgetAction.undoCompletion(
+        habitId: 'habit-1',
+        localDate: '2026-08-16',
+        actionId: 'undo-tap-1',
+        sourceActionId: 'tap-1',
+      );
+      final undone = await handler.handle(undo, locale: 'en');
+      final undoReplay = await handler.handle(undo, locale: 'en');
+      final afterUndo = await repository.load();
+
+      expect(undone.status, WidgetActionStatus.completed);
+      expect(undoReplay.status, WidgetActionStatus.alreadyProcessed);
+      expect(afterUndo.entries, isEmpty);
+      expect(bridge.published, hasLength(2));
+      expect(bridge.published.last.lastCompletion, isNull);
     },
   );
 }

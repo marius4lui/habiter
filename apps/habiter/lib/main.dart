@@ -15,6 +15,9 @@ import 'features/onboarding/application/onboarding_controller.dart';
 import 'features/onboarding/application/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_flow.dart';
 import 'features/widgets/application/widget_background_entry_point.dart';
+import 'features/widgets/application/widget_app_lock_state_resolver.dart';
+import 'features/widgets/application/widget_sync_controller.dart';
+import 'features/widgets/data/android_widget_bridge.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n.dart';
 import 'providers/app_lock_provider.dart';
@@ -128,6 +131,12 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
 
   Widget _buildApplication() {
     final dependencies = _resultDependencies;
+    final widgetSync = WidgetSyncController(
+      repository: dependencies.habitRepository,
+      bridge: const AndroidWidgetBridge(),
+      clock: dependencies.clock,
+      appLockResolver: WidgetAppLockStateResolver(dependencies.store),
+    );
     return MultiProvider(
       providers: [
         Provider<HapticGateway>.value(value: dependencies.haptics),
@@ -136,6 +145,13 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
             repository: dependencies.habitRepository,
             clock: dependencies.clock,
             ids: dependencies.ids,
+            synchronizeWidget: () => widgetSync.synchronize(
+              locale: WidgetsBinding
+                  .instance
+                  .platformDispatcher
+                  .locale
+                  .languageCode,
+            ),
           )..load(),
         ),
         ChangeNotifierProvider(
@@ -256,7 +272,7 @@ class _RootShell extends StatefulWidget {
   State<_RootShell> createState() => _RootShellState();
 }
 
-class _RootShellState extends State<_RootShell> {
+class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   late int _index;
   late final PageController _pageController;
   HabitProvider? _habitProvider;
@@ -267,6 +283,7 @@ class _RootShellState extends State<_RootShell> {
     super.initState();
     _index = widget.initialRoute == AppRoute.analytics ? 1 : 0;
     _pageController = PageController(initialPage: _index);
+    WidgetsBinding.instance.addObserver(this);
 
     // Listen to habit changes to update app lock status
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -292,9 +309,17 @@ class _RootShellState extends State<_RootShell> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _habitProvider?.removeListener(_updateAppLock);
     _pageController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _habitProvider?.syncWidget();
+    }
   }
 
   void _onNavChange(int index) {

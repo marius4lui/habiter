@@ -54,4 +54,16 @@ class HabiterWidgetStateTest {
         assertEquals(HabiterWidgetLayout.LARGE, HabiterWidgetLayout.forSize(250, 250))
         assertEquals(HabiterWidgetLayout.EXTRA_LARGE, HabiterWidgetLayout.forSize(320, 300))
     }
+
+    @Test
+    fun `snapshot exposes native app lock projection`() {
+        val source = """
+            {"schemaVersion":1,"generatedAt":"2026-08-16T10:00:00Z","localDate":"2026-08-16","locale":"en","completedCount":1,"scheduledCount":1,"allComplete":true,"hasAnyHabits":true,"habits":[],"appLock":{"complete":true,"incompleteHabitNames":[]}}
+        """.trimIndent()
+
+        val state = HabiterWidgetState.parse(source, Instant.parse("2026-08-16T10:01:00Z"))
+
+        assertEquals(true, state.appLock?.complete)
+        assertTrue(state.appLock?.incompleteHabitNames?.isEmpty() == true)
+    }
 }

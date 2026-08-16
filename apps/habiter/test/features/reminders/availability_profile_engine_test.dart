@@ -85,6 +85,49 @@ void main() {
     },
   );
 
+  test('signals from other habits influence the global backoff layer', () {
+    final empty = engine.computeForHabit(
+      habit: habit,
+      allSignals: const <ReminderSignal>[],
+      now: now,
+    );
+    final learned = engine.computeForHabit(
+      habit: habit,
+      allSignals: <ReminderSignal>[
+        for (var index = 0; index < 6; index++)
+          _signal(
+            'other-$index',
+            habitId: 'other-habit',
+            now: now.subtract(Duration(days: index)),
+            minute: 600,
+          ),
+      ],
+      now: now,
+    );
+
+    expect(
+      learned.globalUserProfile
+          .bucketFor(DateTime.monday, 600)!
+          .explicitAvailability,
+      greaterThan(
+        empty.globalUserProfile
+            .bucketFor(DateTime.monday, 600)!
+            .explicitAvailability,
+      ),
+    );
+    expect(
+      learned.habitProfile
+          .bucketFor(DateTime.monday, 600)!
+          .explicitAvailability,
+      greaterThan(
+        empty.habitProfile
+            .bucketFor(DateTime.monday, 600)!
+            .explicitAvailability,
+      ),
+    );
+    expect(learned.habitProfile.effectiveSamples, 0);
+  });
+
   test('calibration makes explicit feasibility the dominant score', () {
     final signals = <ReminderSignal>[
       _signal('bad', now: now, minute: 600, rating: FeasibilityRating.bad),
@@ -180,6 +223,61 @@ void main() {
     expect(custom.single.range.start, const LocalTime(15, 0));
   });
 
+  test('a learned peak requires two adjacent qualifying buckets', () {
+    AvailabilityProfile profile(Map<int, ProfileBucket> buckets) =>
+        AvailabilityProfile(
+          profileId: 'test',
+          buckets: <ProfileBucketKey, ProfileBucket>{
+            for (final entry in buckets.entries)
+              ProfileBucketKey(
+                dayType: ProfileDayType.weekday,
+                minuteOfDay: entry.key,
+              ): entry.value,
+          },
+          confidence: 0.8,
+          effectiveSamples: 12,
+          computedAt: now,
+          algorithmVersion: 1,
+        );
+    const qualifying = ProfileBucket(
+      explicitAvailability: 0.7,
+      completionLikelihood: 0.6,
+      combinedScore: 0.65,
+      confidence: 0.45,
+      effectiveWeight: 4,
+    );
+    final oneBucket = profile(<int, ProfileBucket>{600: qualifying});
+    final fallback = PeakWindowDetector.detect(
+      profiles: HabitProfileComputation(
+        categoryProfile: oneBucket,
+        globalUserProfile: oneBucket,
+        habitProfile: oneBucket,
+      ),
+      dayType: ProfileDayType.weekday,
+      config: SmartReminderConfig(),
+      preferences: ReminderPreferences(),
+    );
+    expect(fallback.single.origin, PeakWindowOrigin.generalDefault);
+
+    final adjacent = profile(<int, ProfileBucket>{
+      600: qualifying,
+      630: qualifying,
+    });
+    final learned = PeakWindowDetector.detect(
+      profiles: HabitProfileComputation(
+        categoryProfile: oneBucket,
+        globalUserProfile: oneBucket,
+        habitProfile: adjacent,
+      ),
+      dayType: ProfileDayType.weekday,
+      config: SmartReminderConfig(),
+      preferences: ReminderPreferences(),
+    );
+    expect(learned.single.origin, PeakWindowOrigin.habitLearned);
+    expect(learned.single.range.start, const LocalTime(10, 0));
+    expect(learned.single.range.end, const LocalTime(11, 0));
+  });
+
   test('fine tuning questions adapt exactly from six down to three', () {
     expect(FineTuningQuestionPolicy.questionsPerWeek(0.44), 6);
     expect(FineTuningQuestionPolicy.questionsPerWeek(0.45), 5);
@@ -248,13 +346,14 @@ Habit _habit({required String category}) => Habit(
 
 ReminderSignal _signal(
   String id, {
+  String habitId = 'habit',
   required DateTime now,
   required int minute,
   FeasibilityRating rating = FeasibilityRating.good,
   SignalSource source = SignalSource.calibrationNotification,
 }) => ReminderSignal(
   id: id,
-  habitId: 'habit',
+  habitId: habitId,
   source: source,
   occurredAtUtc: now,
   timeZoneId: 'UTC',

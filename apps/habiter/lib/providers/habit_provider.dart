@@ -22,6 +22,7 @@ import '../features/reminders/domain/calibration_session.dart';
 import '../features/reminders/domain/reminder_plan.dart';
 import '../features/reminders/domain/reminder_policy.dart';
 import '../features/reminders/domain/reminder_preferences.dart';
+import '../features/reminders/domain/reminder_signal.dart';
 import '../features/today/application/today_controller.dart';
 import '../features/today/application/completion_use_case.dart';
 import '../models/habit.dart';
@@ -486,6 +487,19 @@ class HabitProvider extends ChangeNotifier {
 
   Future<void> resetReminderLearning() async {
     await _reminders.resetLearning();
+    notifyListeners();
+  }
+
+  Future<void> recordReminderFeasibility(
+    String habitId,
+    FeasibilityRating rating,
+  ) async {
+    await _reminders.recordInAppFeedback(
+      habitId: habitId,
+      rating: rating,
+      occurredAt: _clock.now(),
+      signalId: 'in-app:${_ids.next()}',
+    );
     notifyListeners();
   }
 

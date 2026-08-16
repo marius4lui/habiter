@@ -181,6 +181,43 @@ void main() {
     expect(snapshot.processedActionIds, contains(action.id));
   });
 
+  test('in-app feasibility is persisted as explicit feedback', () async {
+    final store = InMemoryKeyValueStore();
+    final coordinator = _coordinator(
+      store,
+      RecordingNotificationGateway(),
+      FakeClock(now),
+    );
+    final habit = _habit();
+    await coordinator.initialize(
+      habits: <Habit>[habit],
+      entries: const <HabitEntry>[],
+      legacySettings: const LegacyReminderSettings(
+        notificationsEnabled: false,
+        reminderTime: '20:00',
+      ),
+    );
+
+    await coordinator.recordInAppFeedback(
+      habitId: habit.id,
+      rating: FeasibilityRating.maybe,
+      occurredAt: now,
+      signalId: 'in-app-feedback',
+    );
+    await coordinator.recordInAppFeedback(
+      habitId: habit.id,
+      rating: FeasibilityRating.maybe,
+      occurredAt: now,
+      signalId: 'in-app-feedback',
+    );
+
+    final signals = (await ReminderRepository(store).load()).signals;
+    expect(signals, hasLength(1));
+    expect(signals.single.source, SignalSource.inAppFeedback);
+    expect(signals.single.feasibility, FeasibilityRating.maybe);
+    expect(signals.single.sourceWeight, 1);
+  });
+
   test(
     'snooze is a weak signal and remains subject to planner guardrails',
     () async {

@@ -75,4 +75,42 @@ void main() {
     expect(policy.mode, ReminderMode.fixedTimes);
     expect(policy.fixed!.times.single.toString(), '11:15');
   });
+
+  test('denied permission leaves Smart learning disabled', () async {
+    final store = InMemoryKeyValueStore();
+    final provider = HabitProvider(
+      repository: KeyValueHabitRepository(store),
+      actionStore: store,
+      notificationGateway: RecordingNotificationGateway(),
+      requestReminderPermission: () async => false,
+    );
+    await provider.load();
+    addTearDown(provider.dispose);
+    await provider.addHabit(
+      name: 'Walk',
+      category: 'Health',
+      frequency: HabitFrequency.daily,
+      targetCount: 1,
+      color: '#467B68',
+      icon: '🚶',
+    );
+    final preferencesBeforeRequest = provider.reminderPreferences;
+
+    expect(await provider.enableSmartReminders(), isFalse);
+    expect(provider.calibrationSession, isNull);
+    expect(
+      provider.reminderPreferences.toMap(),
+      preferencesBeforeRequest.toMap(),
+    );
+    expect(
+      provider.reminderPolicies.values,
+      everyElement(
+        isA<HabitReminderPolicy>().having(
+          (policy) => policy.enabled,
+          'enabled',
+          isFalse,
+        ),
+      ),
+    );
+  });
 }

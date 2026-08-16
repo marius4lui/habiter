@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/features/reminders/application/reminder_repository.dart';
 import 'package:habiter/features/reminders/application/reminder_setup_service.dart';
+import 'package:habiter/core/time/local_date.dart';
 import 'package:habiter/features/reminders/domain/local_time.dart';
 import 'package:habiter/features/reminders/domain/reminder_policy.dart';
+import 'package:habiter/features/reminders/domain/reminder_plan.dart';
 import 'package:habiter/features/reminders/domain/reminder_signal.dart';
 import 'package:habiter/models/habit.dart';
 
@@ -59,6 +61,31 @@ void main() {
         );
         draft.signals.add(_signal('signal', now));
         draft.processedActionIds.add('action');
+        draft.policies['fixed'] = HabitReminderPolicy.fixedTimes(
+          habitId: 'fixed',
+          times: const <LocalTime>[LocalTime(9, 0)],
+          now: now,
+        );
+        draft.plannedReminders.addAll(<PersistedPlannedReminder>[
+          PersistedPlannedReminder(
+            logicalKey: 'smart',
+            habitId: 'habit',
+            occurrence: LocalDate(2026, 8, 17),
+            scheduledFor: now.add(const Duration(hours: 1)),
+            kind: PlannedReminderKind.normal,
+            reason: const ReminderReason(
+              code: ReminderReasonCode.categoryPreset,
+            ),
+          ),
+          PersistedPlannedReminder(
+            logicalKey: 'fixed',
+            habitId: 'fixed',
+            occurrence: LocalDate(2026, 8, 17),
+            scheduledFor: now.add(const Duration(hours: 2)),
+            kind: PlannedReminderKind.normal,
+            reason: const ReminderReason(code: ReminderReasonCode.fixedTime),
+          ),
+        ]);
       });
 
       await repository.resetLearning();
@@ -67,7 +94,8 @@ void main() {
       expect(snapshot.preferences.enabled, isTrue);
       expect(snapshot.signals, isEmpty);
       expect(snapshot.profiles, isEmpty);
-      expect(snapshot.processedActionIds, isEmpty);
+      expect(snapshot.processedActionIds, contains('action'));
+      expect(snapshot.plannedReminders.single.habitId, 'fixed');
     },
   );
 

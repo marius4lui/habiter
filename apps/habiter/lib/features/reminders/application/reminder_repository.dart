@@ -232,10 +232,12 @@ final class ReminderRepository {
     draft.profiles.clear();
     draft.calibration = null;
     draft.plannedReminders.removeWhere(
-      (reminder) => reminder.kind != PlannedReminderKind.dailyOverview,
+      (reminder) =>
+          draft.policies[reminder.habitId]?.mode == ReminderMode.smart ||
+          reminder.kind == PlannedReminderKind.calibrationPulse ||
+          reminder.kind == PlannedReminderKind.fineTuningQuestion,
     );
     draft.pendingSnoozes.clear();
-    draft.processedActionIds.clear();
   });
 
   Future<ReminderRepositorySnapshot> _loadUnlocked() async {

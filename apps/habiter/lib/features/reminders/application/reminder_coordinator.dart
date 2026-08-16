@@ -354,6 +354,30 @@ final class ReminderCoordinator {
     );
   }
 
+  Future<void> recordInAppFeedback({
+    required String habitId,
+    required FeasibilityRating rating,
+    required DateTime occurredAt,
+    String? signalId,
+  }) async {
+    final location = _location();
+    final local = tz.TZDateTime.from(occurredAt, location);
+    await _repository.appendSignal(
+      ReminderSignal(
+        id: signalId ?? _ids.next(),
+        habitId: habitId,
+        source: SignalSource.inAppFeedback,
+        occurredAtUtc: occurredAt.toUtc(),
+        timeZoneId: location.name,
+        localWeekday: local.weekday,
+        localMinuteOfDay: local.hour * 60 + local.minute,
+        feasibility: rating,
+        createdAt: _clock.now(),
+      ),
+    );
+    await synchronize(habits: _habits, entries: _entries);
+  }
+
   Future<void> removeCompletionSignal(
     CompletionUndoToken token,
   ) => _repository.transact((draft) {
@@ -419,6 +443,7 @@ final class ReminderCoordinator {
     final location = _location();
     final local = tz.TZDateTime.from(action.receivedAt, location);
     await _repository.transact((draft) {
+      var added = false;
       if (!draft.signals.any((signal) => signal.id == 'signal:${action.id}')) {
         draft.signals.add(
           ReminderSignal(
@@ -438,10 +463,12 @@ final class ReminderCoordinator {
             createdAt: _clock.now(),
           ),
         );
+        added = true;
       }
       final session = draft.calibration;
       if (action.notificationKind == PlannedReminderKind.calibrationPulse &&
-          session != null) {
+          session != null &&
+          added) {
         final bucket = CalibrationBucketKey(
           localDate: action.occurrence,
           twoHourStartMinute: (local.hour * 60 + local.minute) ~/ 120 * 120,

@@ -150,6 +150,68 @@ void main() {
     expect(ReminderSignal.fromMap(legacy).algorithmVersion, 1);
   });
 
+  test('all specified signal weights and targets remain exact', () {
+    final now = DateTime.utc(2026, 8, 16, 8);
+    ReminderSignal signal(
+      SignalSource source, {
+      FeasibilityRating? feasibility,
+      String? reminderKey,
+    }) => ReminderSignal(
+      id: source.name,
+      habitId: 'habit',
+      source: source,
+      occurredAtUtc: now,
+      timeZoneId: 'UTC',
+      localWeekday: DateTime.sunday,
+      localMinuteOfDay: 480,
+      feasibility: feasibility,
+      originatingNotificationKey: reminderKey,
+      createdAt: now,
+    );
+
+    for (final source in <SignalSource>[
+      SignalSource.calibrationNotification,
+      SignalSource.fineTuningNotification,
+      SignalSource.inAppFeedback,
+    ]) {
+      expect(
+        signal(source, feasibility: FeasibilityRating.good).sourceWeight,
+        1,
+      );
+    }
+    expect(
+      signal(
+        SignalSource.calibrationNotification,
+        feasibility: FeasibilityRating.maybe,
+      ).targetValue,
+      0.5,
+    );
+    expect(
+      signal(
+        SignalSource.calibrationNotification,
+        feasibility: FeasibilityRating.bad,
+      ).targetValue,
+      0,
+    );
+    expect(signal(SignalSource.habitCompletion).sourceWeight, 0.35);
+    expect(
+      signal(
+        SignalSource.habitCompletion,
+        reminderKey: 'delivered',
+      ).sourceWeight,
+      0.65,
+    );
+    expect(signal(SignalSource.notificationCompletion).sourceWeight, 0.8);
+    expect(signal(SignalSource.snooze).sourceWeight, 0.5);
+    expect(signal(SignalSource.snooze).targetValue, 0.25);
+
+    expect(
+      SignalSource.values.map((source) => source.name),
+      isNot(anyOf(contains('ignored'), contains('dismissed'))),
+      reason: 'Ignoring or dismissing a notification must create no signal.',
+    );
+  });
+
   test('availability profiles roundtrip and expose confidence labels', () {
     const key = ProfileBucketKey(
       dayType: ProfileDayType.weekday,
@@ -179,6 +241,11 @@ void main() {
       ProfileConfidenceLabel.fromScore(0.44),
       ProfileConfidenceLabel.learning,
     );
+    expect(
+      ProfileConfidenceLabel.fromScore(0.45),
+      ProfileConfidenceLabel.earlyTrend,
+    );
+    expect(ProfileConfidenceLabel.fromScore(0.65), ProfileConfidenceLabel.good);
     expect(
       ProfileConfidenceLabel.fromScore(0.8),
       ProfileConfidenceLabel.stable,

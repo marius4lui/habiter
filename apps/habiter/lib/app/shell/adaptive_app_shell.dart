@@ -69,6 +69,7 @@ class AdaptiveAppShell extends StatelessWidget {
     final settingsLabel = l10n?.settings ?? 'Settings';
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

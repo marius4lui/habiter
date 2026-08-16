@@ -1,6 +1,7 @@
 package com.habiter.app.widget
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -13,6 +14,7 @@ import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
@@ -37,7 +39,7 @@ import androidx.glance.semantics.semantics
 import com.habiter.app.MainActivity
 import es.antonborri.home_widget.HomeWidgetGlanceState
 import es.antonborri.home_widget.HomeWidgetGlanceStateDefinition
-import es.antonborri.home_widget.actionStartActivity
+import es.antonborri.home_widget.HomeWidgetLaunchIntent
 
 class HabiterWidget : GlanceAppWidget() {
     override val stateDefinition = HomeWidgetGlanceStateDefinition()
@@ -78,7 +80,7 @@ private fun WidgetSurface(
             .fillMaxSize()
             .background(HabiterWidgetTheme.surface)
             .cornerRadius(24.dp)
-            .clickable(onClick = actionStartActivity<MainActivity>(context)),
+            .clickable(onClick = launchHabiter(context)),
     ) {
         when (content) {
             HabiterWidgetContentState.Missing -> EmptyState(layout, java.util.Locale.getDefault().language == "de", "Open Habiter to get started.", "Habiter öffnen, um zu starten.")
@@ -90,6 +92,14 @@ private fun WidgetSurface(
             is HabiterWidgetContentState.Active -> ActiveState(content.state, layout)
         }
     }
+}
+
+private fun launchHabiter(context: Context): Action {
+    val intent = Intent(context, MainActivity::class.java).apply {
+        action = HomeWidgetLaunchIntent.HOME_WIDGET_LAUNCH_ACTION
+        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+    }
+    return actionStartActivity(intent)
 }
 
 @Composable

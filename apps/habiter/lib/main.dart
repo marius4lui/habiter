@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -181,8 +183,52 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
   }
 }
 
-class HabiterApp extends StatelessWidget {
+class HabiterApp extends StatefulWidget {
   const HabiterApp({super.key});
+
+  @override
+  State<HabiterApp> createState() => _HabiterAppState();
+}
+
+class _HabiterAppState extends State<HabiterApp> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  StreamSubscription<Uri?>? _widgetLaunchSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    if (kIsWeb) return;
+    _widgetLaunchSubscription = HomeWidget.widgetClicked.listen(
+      (_) => _openTodayFromWidget(),
+    );
+    unawaited(_handleInitialWidgetLaunch());
+  }
+
+  Future<void> _handleInitialWidgetLaunch() async {
+    final launch = await HomeWidget.initiallyLaunchedFromHomeWidget();
+    if (launch != null) _openTodayFromWidget();
+  }
+
+  void _openTodayFromWidget() {
+    if (!mounted) return;
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _openTodayFromWidget(),
+      );
+      return;
+    }
+    navigator.pushNamedAndRemoveUntil<void>(
+      AppRouteCodec.encode(AppRoute.today),
+      (_) => false,
+    );
+  }
+
+  @override
+  void dispose() {
+    _widgetLaunchSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -195,6 +241,7 @@ class HabiterApp extends StatelessWidget {
           appLockBuilder: (_) => const AppLockScreen(),
         );
         return MaterialApp(
+          navigatorKey: _navigatorKey,
           title: 'Habiter',
           debugShowCheckedModeBanner: false,
           theme: buildAppTheme(),

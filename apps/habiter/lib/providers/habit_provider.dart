@@ -438,6 +438,21 @@ class HabitProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> enableSmartReminders() async {
+    final granted = await requestHabitReminderPermission();
+    if (!granted) return false;
+    await _reminders.enableSmartForNewUser(sessionId: _ids.next());
+    notifyListeners();
+    return true;
+  }
+
+  Future<void> markReminderIntroductionSeen() async {
+    await _reminders.updatePreferences(
+      reminderPreferences.copyWith(existingUserIntroductionSeen: true),
+    );
+    notifyListeners();
+  }
+
   Future<void> pauseCalibration() async {
     await _reminders.pauseCalibration();
     notifyListeners();

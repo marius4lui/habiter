@@ -10,9 +10,11 @@ void main() {
   test('route codec handles deep links and canonical restoration', () {
     expect(AppRouteCodec.decode('/'), AppRoute.today);
     expect(AppRouteCodec.decode('/analytics?range=week'), AppRoute.analytics);
+    expect(AppRouteCodec.decode('/rhythm'), AppRoute.rhythm);
     expect(AppRouteCodec.decode('/settings'), AppRoute.settings);
     expect(AppRouteCodec.decode('/unknown'), AppRoute.today);
     expect(AppRouteCodec.encode(AppRoute.appLock), '/app-lock');
+    expect(AppRouteCodec.encode(AppRoute.rhythm), '/rhythm');
   });
 
   testWidgets('shell stays adaptive from 320px through desktop', (
@@ -47,6 +49,12 @@ void main() {
     await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
 
     expect(selected, AppRoute.analytics);
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+
+    expect(selected, AppRoute.rhythm);
   });
 
   testWidgets('compact pill navigation selects a different page on tap', (
@@ -75,6 +83,11 @@ void main() {
     await tester.pump();
 
     expect(selected, AppRoute.analytics);
+
+    await tester.tap(find.text('Rhythm'));
+    await tester.pump();
+
+    expect(selected, AppRoute.rhythm);
   });
 
   testWidgets('primary shell never implies a back button', (tester) async {

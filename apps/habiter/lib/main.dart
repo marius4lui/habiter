@@ -30,6 +30,7 @@ import 'providers/settings_provider.dart';
 import 'screens/analytics_screen.dart';
 import 'screens/app_lock_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/rhythm_screen.dart';
 import 'screens/settings_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -330,12 +331,16 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   late int _index;
   late final PageController _pageController;
   HabitProvider? _habitProvider;
-  final _pages = const [HomeScreen(), AnalyticsScreen()];
+  final _pages = const [HomeScreen(), AnalyticsScreen(), RhythmScreen()];
 
   @override
   void initState() {
     super.initState();
-    _index = widget.initialRoute == AppRoute.analytics ? 1 : 0;
+    _index = switch (widget.initialRoute) {
+      AppRoute.analytics => 1,
+      AppRoute.rhythm => 2,
+      _ => 0,
+    };
     _pageController = PageController(initialPage: _index);
     WidgetsBinding.instance.addObserver(this);
 
@@ -401,7 +406,11 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   }
 
   void _onRouteSelected(AppRoute route) {
-    _onNavChange(route == AppRoute.analytics ? 1 : 0);
+    _onNavChange(switch (route) {
+      AppRoute.analytics => 1,
+      AppRoute.rhythm => 2,
+      _ => 0,
+    });
   }
 
   void _onPageChanged(int index) {
@@ -412,7 +421,11 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   void _restoreRoute(int index) {
     SystemNavigator.routeInformationUpdated(
       uri: Uri.parse(
-        AppRouteCodec.encode(index == 0 ? AppRoute.today : AppRoute.analytics),
+        AppRouteCodec.encode(switch (index) {
+          1 => AppRoute.analytics,
+          2 => AppRoute.rhythm,
+          _ => AppRoute.today,
+        }),
       ),
     );
   }
@@ -428,7 +441,11 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return AdaptiveAppShell(
-      selected: _index == 0 ? AppRoute.today : AppRoute.analytics,
+      selected: switch (_index) {
+        1 => AppRoute.analytics,
+        2 => AppRoute.rhythm,
+        _ => AppRoute.today,
+      },
       onSelected: _onRouteSelected,
       onOpenSettings: _openSettings,
       onOpenAppLock: _openAppLock,

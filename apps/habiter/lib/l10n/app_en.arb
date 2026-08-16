@@ -464,5 +464,8 @@
   "widgetPromotionBody": "Check off habits without opening the app.",
   "widgetSettingsTitle": "Home screen / Widget",
   "widgetStatusAdded": "Widget added",
-  "widgetStatusNotAdded": "Not added yet"
+  "widgetStatusNotAdded": "Not added yet",
+  "widgetPreviewSemantics": "Preview of the responsive Habiter home screen widget",
+  "widgetPreviewNext": "Next: {name}",
+  "@widgetPreviewNext": {"placeholders": {"name": {"type": "String"}}}
 }

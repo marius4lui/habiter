@@ -51,9 +51,11 @@ class _FirstHabitStepState extends State<FirstHabitStep> {
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
               maxCrossAxisExtent: 260,
-              mainAxisExtent: 132,
+              mainAxisExtent: MediaQuery.textScalerOf(context).scale(1) > 1.3
+                  ? 176
+                  : 132,
               crossAxisSpacing: HabiterSpace.sm,
               mainAxisSpacing: HabiterSpace.sm,
             ),

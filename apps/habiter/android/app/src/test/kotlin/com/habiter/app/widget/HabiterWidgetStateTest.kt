@@ -66,4 +66,15 @@ class HabiterWidgetStateTest {
         assertEquals(true, state.appLock?.complete)
         assertTrue(state.appLock?.incompleteHabitNames?.isEmpty() == true)
     }
+
+    @Test
+    fun `snapshot from the prior local day is stale after midnight`() {
+        val source = """
+            {"schemaVersion":1,"generatedAt":"2026-08-16T21:59:00Z","localDate":"2026-08-16","locale":"en","completedCount":0,"scheduledCount":1,"allComplete":false,"hasAnyHabits":true,"habits":[]}
+        """.trimIndent()
+
+        val state = HabiterWidgetState.parse(source, Instant.parse("2026-08-17T10:00:00Z"))
+
+        assertTrue(state.stale)
+    }
 }

@@ -15,4 +15,9 @@ class HabiterWidgetReceiver : HomeWidgetGlanceWidgetReceiver<HabiterWidget>() {
         HabiterWidgetAppLockSynchronizer.synchronize(context)
         super.onUpdate(context, appWidgetManager, appWidgetIds)
     }
+
+    override fun onEnabled(context: Context) {
+        super.onEnabled(context)
+        HabiterWidgetLifecycleReceiver.requestRefresh(context, "enabled")
+    }
 }

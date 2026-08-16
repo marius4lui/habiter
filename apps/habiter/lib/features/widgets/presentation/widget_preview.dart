@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/design_system/tokens.dart';
+import '../../../l10n/l10n.dart';
 
 class WidgetPreview extends StatefulWidget {
   const WidgetPreview({super.key, this.animate = true});
@@ -32,11 +33,24 @@ class _WidgetPreviewState extends State<WidgetPreview>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _controller
+        ..stop()
+        ..value = .6;
+    } else if (widget.animate && !_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Semantics(
-      label: 'Habiter home screen widget preview',
+      label: context.l10n.widgetPreviewSemantics,
       image: true,
+      excludeSemantics: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainerLow,
@@ -49,67 +63,82 @@ class _WidgetPreviewState extends State<WidgetPreview>
               animation: _controller,
               builder: (context, _) {
                 final t = Curves.easeInOutCubic.transform(_controller.value);
-                return Container(
-                  width: 180 + (t * 110),
-                  height: 112 + (t * 82),
-                  padding: const EdgeInsets.all(HabiterSpace.md),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(HabiterRadius.card),
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                        color: theme.colorScheme.shadow.withValues(alpha: 0.14),
-                        blurRadius: 24,
-                        offset: const Offset(0, 12),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Text('Today', style: theme.textTheme.labelLarge),
-                          const Spacer(),
-                          Text('1 / 3', style: theme.textTheme.labelLarge),
-                        ],
-                      ),
-                      const SizedBox(height: HabiterSpace.sm),
-                      LinearProgressIndicator(
-                        value: 1 / 3,
-                        minHeight: 5,
-                        borderRadius: BorderRadius.circular(99),
-                      ),
-                      const Spacer(),
-                      Row(
-                        children: <Widget>[
-                          const Text('🏋️', style: TextStyle(fontSize: 24)),
-                          const SizedBox(width: HabiterSpace.sm),
-                          Expanded(
-                            child: Text(
-                              'Training',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.titleMedium,
-                            ),
+                return MediaQuery(
+                  // This is an illustrative image of an Android widget. Keep
+                  // its simulated launcher typography at a realistic scale;
+                  // the surrounding copy and controls still honor large text.
+                  data: MediaQuery.of(
+                    context,
+                  ).copyWith(textScaler: TextScaler.noScaling),
+                  child: Container(
+                    width: 180 + (t * 110),
+                    height: 112 + (t * 82),
+                    padding: const EdgeInsets.all(HabiterSpace.md),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(HabiterRadius.card),
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: theme.colorScheme.shadow.withValues(
+                            alpha: 0.14,
                           ),
-                          if (t > .35)
-                            const FilledButton.tonal(
-                              onPressed: null,
-                              child: Icon(Icons.check_rounded),
-                            ),
-                        ],
-                      ),
-                      if (t > .65) ...<Widget>[
-                        const SizedBox(height: HabiterSpace.sm),
-                        Text(
-                          'Next: Read',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
+                          blurRadius: 24,
+                          offset: const Offset(0, 12),
                         ),
                       ],
-                    ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            Text(
+                              context.l10n.today,
+                              style: theme.textTheme.labelLarge,
+                            ),
+                            const Spacer(),
+                            Text('1 / 3', style: theme.textTheme.labelLarge),
+                          ],
+                        ),
+                        const SizedBox(height: HabiterSpace.sm),
+                        LinearProgressIndicator(
+                          value: 1 / 3,
+                          minHeight: 5,
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                        const Spacer(),
+                        Row(
+                          children: <Widget>[
+                            const Text('🏋️', style: TextStyle(fontSize: 24)),
+                            const SizedBox(width: HabiterSpace.sm),
+                            Expanded(
+                              child: Text(
+                                context.l10n.templateWorkout,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleMedium,
+                              ),
+                            ),
+                            if (t > .35)
+                              const FilledButton.tonal(
+                                onPressed: null,
+                                child: Icon(Icons.check_rounded),
+                              ),
+                          ],
+                        ),
+                        if (t > .65) ...<Widget>[
+                          const SizedBox(height: HabiterSpace.sm),
+                          Text(
+                            context.l10n.widgetPreviewNext(
+                              context.l10n.templateRead,
+                            ),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 );
               },

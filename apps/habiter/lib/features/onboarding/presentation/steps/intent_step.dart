@@ -23,9 +23,11 @@ class IntentStep extends StatelessWidget {
     body: GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 240,
-        mainAxisExtent: 104,
+        mainAxisExtent: MediaQuery.textScalerOf(context).scale(1) > 1.3
+            ? 148
+            : 104,
         crossAxisSpacing: HabiterSpace.sm,
         mainAxisSpacing: HabiterSpace.sm,
       ),

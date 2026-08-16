@@ -464,5 +464,8 @@
   "widgetPromotionBody": "Habits abhaken, ohne die App zu öffnen.",
   "widgetSettingsTitle": "Homescreen / Widget",
   "widgetStatusAdded": "Widget hinzugefügt",
-  "widgetStatusNotAdded": "Noch nicht hinzugefügt"
+  "widgetStatusNotAdded": "Noch nicht hinzugefügt",
+  "widgetPreviewSemantics": "Vorschau des responsiven Habiter-Homescreen-Widgets",
+  "widgetPreviewNext": "Als Nächstes: {name}",
+  "@widgetPreviewNext": {"placeholders": {"name": {"type": "String"}}}
 }

@@ -1217,4 +1217,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetStatusNotAdded => 'Not added yet';
+
+  @override
+  String get widgetPreviewSemantics =>
+      'Preview of the responsive Habiter home screen widget';
+
+  @override
+  String widgetPreviewNext(String name) {
+    return 'Next: $name';
+  }
 }

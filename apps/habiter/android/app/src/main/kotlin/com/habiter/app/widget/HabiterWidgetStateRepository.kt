@@ -10,14 +10,14 @@ object HabiterWidgetStateRepository {
         val source = preferences.getString(SNAPSHOT_KEY, null)
             ?: return HabiterWidgetContentState.Missing
         val state = runCatching { HabiterWidgetState.parse(source) }.getOrNull()
-            ?: return HabiterWidgetContentState.Stale
-        if (state.stale) return HabiterWidgetContentState.Stale
-        if (!state.hasAnyHabits) return HabiterWidgetContentState.NoHabits
-        if (state.scheduledCount == 0) return HabiterWidgetContentState.FreeToday
+            ?: return HabiterWidgetContentState.Stale()
+        if (state.stale) return HabiterWidgetContentState.Stale(state)
+        if (!state.hasAnyHabits) return HabiterWidgetContentState.NoHabits(state)
+        if (state.scheduledCount == 0) return HabiterWidgetContentState.FreeToday(state)
         if (state.lastCompletion != null &&
             java.time.Duration.between(state.lastCompletion.completedAt, java.time.Instant.now()) <= undoWindow
         ) return HabiterWidgetContentState.JustCompleted(state)
-        if (state.allComplete) return HabiterWidgetContentState.AllComplete
+        if (state.allComplete) return HabiterWidgetContentState.AllComplete(state)
         return HabiterWidgetContentState.Active(state)
     }
 }

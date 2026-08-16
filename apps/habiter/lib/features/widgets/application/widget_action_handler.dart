@@ -53,6 +53,13 @@ final class WidgetActionHandler {
       return const WidgetActionResult(WidgetActionStatus.alreadyProcessed);
     }
     try {
+      if (action.type == WidgetActionType.refresh) {
+        final snapshot = await _sync.synchronize(locale: locale);
+        return WidgetActionResult(
+          WidgetActionStatus.completed,
+          snapshot: snapshot,
+        );
+      }
       if (action.type == WidgetActionType.undoCompletion) {
         return _undo(action, locale: locale);
       }

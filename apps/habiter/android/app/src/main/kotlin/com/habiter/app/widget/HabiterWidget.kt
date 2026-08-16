@@ -32,6 +32,8 @@ import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import androidx.glance.semantics.contentDescription
+import androidx.glance.semantics.semantics
 import com.habiter.app.MainActivity
 import es.antonborri.home_widget.HomeWidgetGlanceState
 import es.antonborri.home_widget.HomeWidgetGlanceStateDefinition
@@ -76,11 +78,11 @@ private fun WidgetSurface(
             .clickable(onClick = actionStartActivity<MainActivity>(context)),
     ) {
         when (content) {
-            HabiterWidgetContentState.Missing -> EmptyState(layout, "Open Habiter to get started.", "Habiter öffnen, um zu starten.")
-            HabiterWidgetContentState.Stale -> EmptyState(layout, "Open Habiter to sync.", "Öffne Habiter zum Synchronisieren.")
-            HabiterWidgetContentState.NoHabits -> EmptyState(layout, "Your first habit is waiting.", "Dein erstes Habit wartet.")
-            HabiterWidgetContentState.FreeToday -> EmptyState(layout, "🍃 Today is free.", "🍃 Heute ist frei.")
-            HabiterWidgetContentState.AllComplete -> CompletedState(layout)
+            HabiterWidgetContentState.Missing -> EmptyState(layout, java.util.Locale.getDefault().language == "de", "Open Habiter to get started.", "Habiter öffnen, um zu starten.")
+            is HabiterWidgetContentState.Stale -> EmptyState(layout, content.state?.isGerman ?: (java.util.Locale.getDefault().language == "de"), "Open Habiter to sync.", "Öffne Habiter zum Synchronisieren.")
+            is HabiterWidgetContentState.NoHabits -> EmptyState(layout, content.state.isGerman, "Your first habit is waiting.", "Dein erstes Habit wartet.")
+            is HabiterWidgetContentState.FreeToday -> EmptyState(layout, content.state.isGerman, "🍃 Today is free.", "🍃 Heute ist frei.")
+            is HabiterWidgetContentState.AllComplete -> CompletedState(content.state, layout)
             is HabiterWidgetContentState.JustCompleted -> JustCompletedState(content.state, layout)
             is HabiterWidgetContentState.Active -> ActiveState(content.state, layout)
         }
@@ -114,6 +116,7 @@ private fun JustCompletedState(state: HabiterWidgetState, layout: HabiterWidgetL
                 .background(HabiterWidgetTheme.surfaceAccent)
                 .cornerRadius(14.dp)
                 .clickable(onClick = action)
+                .semantics { contentDescription = if (state.isGerman) "${completion.habitName} rückgängig machen" else "Undo ${completion.habitName}" }
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             contentAlignment = Alignment.Center,
         ) {
@@ -249,6 +252,7 @@ private fun CompleteControl(state: HabiterWidgetState, habit: HabiterWidgetHabit
             .background(HabiterWidgetTheme.primary)
             .cornerRadius(14.dp)
             .clickable(onClick = action)
+            .semantics { contentDescription = if (state.isGerman) "${habit.name} erledigen" else "Complete ${habit.name}" }
             .padding(horizontal = if (compact) 12.dp else 14.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -284,7 +288,7 @@ private fun ProgressSegments(state: HabiterWidgetState) {
 }
 
 @Composable
-private fun CompletedState(layout: HabiterWidgetLayout) {
+private fun CompletedState(state: HabiterWidgetState, layout: HabiterWidgetLayout) {
     Column(
         modifier = GlanceModifier.fillMaxSize().padding(if (layout == HabiterWidgetLayout.COMPACT) 10.dp else 20.dp),
         verticalAlignment = Alignment.Vertical.CenterVertically,
@@ -293,19 +297,19 @@ private fun CompletedState(layout: HabiterWidgetLayout) {
         Text("✓", style = TextStyle(color = HabiterWidgetTheme.success, fontSize = if (layout == HabiterWidgetLayout.COMPACT) 22.sp else 38.sp, fontWeight = FontWeight.Bold))
         if (layout != HabiterWidgetLayout.COMPACT) {
             Spacer(GlanceModifier.height(8.dp))
-            Text("Everything for today is done.", maxLines = 2, style = titleStyle(17))
+            Text(if (state.isGerman) "Alles für heute erledigt." else "Everything for today is done.", maxLines = 2, style = titleStyle(17))
         }
     }
 }
 
 @Composable
-private fun EmptyState(layout: HabiterWidgetLayout, english: String, german: String) {
+private fun EmptyState(layout: HabiterWidgetLayout, isGerman: Boolean, english: String, german: String) {
     Column(
         modifier = GlanceModifier.fillMaxSize().padding(if (layout == HabiterWidgetLayout.COMPACT) 12.dp else 20.dp),
         verticalAlignment = Alignment.Vertical.CenterVertically,
         horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
     ) {
-        Text(if (java.util.Locale.getDefault().language == "de") german else english, maxLines = if (layout == HabiterWidgetLayout.COMPACT) 1 else 3, style = titleStyle(if (layout == HabiterWidgetLayout.COMPACT) 14 else 17))
+        Text(if (isGerman) german else english, maxLines = if (layout == HabiterWidgetLayout.COMPACT) 1 else 3, style = titleStyle(if (layout == HabiterWidgetLayout.COMPACT) 14 else 17))
     }
 }
 
@@ -315,6 +319,9 @@ private fun progressLabel(state: HabiterWidgetState): String =
 private fun todayLabel(state: HabiterWidgetState): String = if (state.locale.startsWith("de")) "Heute" else "Today"
 
 private fun completeLabel(state: HabiterWidgetState): String = if (state.locale.startsWith("de")) "Erledigen" else "Complete"
+
+private val HabiterWidgetState.isGerman: Boolean
+    get() = locale.startsWith("de", ignoreCase = true)
 
 private fun titleStyle(size: Int) = TextStyle(color = HabiterWidgetTheme.onSurface, fontSize = size.sp, fontWeight = FontWeight.Medium)
 

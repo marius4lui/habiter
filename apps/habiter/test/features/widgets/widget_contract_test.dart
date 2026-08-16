@@ -64,4 +64,16 @@ void main() {
     expect(restored.type, WidgetActionType.undoCompletion);
     expect(restored.sourceActionId, 'action-123');
   });
+
+  test('lifecycle refresh action survives URI transport', () {
+    final action = WidgetAction.refresh(
+      localDate: '2026-08-17',
+      actionId: 'refresh:date-change:1',
+    );
+
+    final restored = WidgetAction.fromUri(action.toUri());
+
+    expect(restored.type, WidgetActionType.refresh);
+    expect(restored.localDate, '2026-08-17');
+  });
 }

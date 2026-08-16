@@ -1228,4 +1228,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get widgetStatusNotAdded => 'Noch nicht hinzugefügt';
+
+  @override
+  String get widgetPreviewSemantics =>
+      'Vorschau des responsiven Habiter-Homescreen-Widgets';
+
+  @override
+  String widgetPreviewNext(String name) {
+    return 'Als Nächstes: $name';
+  }
 }

@@ -55,6 +55,20 @@ void main() {
     expect(controller.state.widgetPinned, isTrue);
     expect(controller.state.currentStep, OnboardingStep.completed);
   });
+
+  testWidgets('widget onboarding remains usable at 200 percent text', (
+    tester,
+  ) async {
+    final controller = await _controllerAtWidgetIntro();
+    await tester.pumpWidget(
+      _app(controller, const _FakeWidgetBridge(), textScale: 2),
+    );
+    await tester.pump(const Duration(milliseconds: 800));
+
+    expect(find.text('Widget hinzufügen'), findsOneWidget);
+    expect(find.text('Später'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Future<OnboardingController> _controllerAtWidgetIntro() async {
@@ -82,24 +96,33 @@ Future<OnboardingController> _controllerAtWidgetIntro() async {
   return controller;
 }
 
-Widget _app(OnboardingController controller, WidgetBridge bridge) =>
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider<OnboardingController>.value(value: controller),
-        Provider<WidgetBridge>.value(value: bridge),
-      ],
-      child: const MaterialApp(
-        locale: Locale('de'),
-        supportedLocales: AppLocalizations.supportedLocales,
-        localizationsDelegates: <LocalizationsDelegate<dynamic>>[
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        home: OnboardingFlow(),
-      ),
-    );
+Widget _app(
+  OnboardingController controller,
+  WidgetBridge bridge, {
+  double textScale = 1,
+}) => MultiProvider(
+  providers: [
+    ChangeNotifierProvider<OnboardingController>.value(value: controller),
+    Provider<WidgetBridge>.value(value: bridge),
+  ],
+  child: MaterialApp(
+    locale: const Locale('de'),
+    builder: (context, child) => MediaQuery(
+      data: MediaQuery.of(
+        context,
+      ).copyWith(textScaler: TextScaler.linear(textScale)),
+      child: child!,
+    ),
+    supportedLocales: AppLocalizations.supportedLocales,
+    localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    home: const OnboardingFlow(),
+  ),
+);
 
 final class _FakeWidgetBridge implements WidgetBridge {
   const _FakeWidgetBridge({this.result = WidgetPinResult.pinned});

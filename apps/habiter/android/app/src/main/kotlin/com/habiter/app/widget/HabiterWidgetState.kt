@@ -3,6 +3,8 @@ package com.habiter.app.widget
 import org.json.JSONObject
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 data class HabiterWidgetHabit(
     val id: String,
@@ -75,6 +77,7 @@ data class HabiterWidgetState(
                 )
             }
             val schemaVersion = root.optInt("schemaVersion", 0)
+            val localDate = root.getString("localDate")
             val appLockJson = root.optJSONObject("appLock")
             val appLock = appLockJson?.let {
                 val names = it.optJSONArray("incompleteHabitNames")
@@ -90,7 +93,7 @@ data class HabiterWidgetState(
             return HabiterWidgetState(
                 schemaVersion = schemaVersion,
                 generatedAt = generatedAt,
-                localDate = root.getString("localDate"),
+                localDate = localDate,
                 locale = root.optString("locale", "en"),
                 completedCount = root.optInt("completedCount", 0),
                 scheduledCount = root.optInt("scheduledCount", habits.size),
@@ -100,7 +103,8 @@ data class HabiterWidgetState(
                 lastCompletion = completion,
                 appLock = appLock,
                 stale = schemaVersion != CURRENT_SCHEMA_VERSION ||
-                    Duration.between(generatedAt, now) > maximumAge,
+                    Duration.between(generatedAt, now) > maximumAge ||
+                    LocalDate.parse(localDate) != now.atZone(ZoneId.systemDefault()).toLocalDate(),
             )
         }
     }
@@ -108,10 +112,10 @@ data class HabiterWidgetState(
 
 sealed interface HabiterWidgetContentState {
     data object Missing : HabiterWidgetContentState
-    data object Stale : HabiterWidgetContentState
-    data object NoHabits : HabiterWidgetContentState
-    data object FreeToday : HabiterWidgetContentState
-    data object AllComplete : HabiterWidgetContentState
+    data class Stale(val state: HabiterWidgetState? = null) : HabiterWidgetContentState
+    data class NoHabits(val state: HabiterWidgetState) : HabiterWidgetContentState
+    data class FreeToday(val state: HabiterWidgetState) : HabiterWidgetContentState
+    data class AllComplete(val state: HabiterWidgetState) : HabiterWidgetContentState
     data class JustCompleted(val state: HabiterWidgetState) : HabiterWidgetContentState
     data class Active(val state: HabiterWidgetState) : HabiterWidgetContentState
 }

@@ -55,7 +55,6 @@ class OnboardingScaffold extends StatelessWidget {
                   Expanded(
                     child: Semantics(
                       label: context.l10n.onboardingStepProgress(step, 8),
-                      value: '$step of 8',
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(HabiterRadius.pill),
                         child: LinearProgressIndicator(
@@ -116,15 +115,35 @@ class OnboardingScaffold extends StatelessWidget {
                   ),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 560),
-                    child: Row(
-                      children: <Widget>[
-                        if (secondaryAction != null)
-                          Expanded(child: secondaryAction!),
-                        if (secondaryAction != null && primaryAction != null)
-                          const SizedBox(width: HabiterSpace.sm),
-                        if (primaryAction != null)
-                          Expanded(flex: 2, child: primaryAction!),
-                      ],
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final stacked =
+                            constraints.maxWidth < 360 ||
+                            MediaQuery.textScalerOf(context).scale(1) > 1.3;
+                        if (stacked) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: <Widget>[
+                              if (primaryAction != null) primaryAction!,
+                              if (primaryAction != null &&
+                                  secondaryAction != null)
+                                const SizedBox(height: HabiterSpace.sm),
+                              if (secondaryAction != null) secondaryAction!,
+                            ],
+                          );
+                        }
+                        return Row(
+                          children: <Widget>[
+                            if (secondaryAction != null)
+                              Expanded(child: secondaryAction!),
+                            if (secondaryAction != null &&
+                                primaryAction != null)
+                              const SizedBox(width: HabiterSpace.sm),
+                            if (primaryAction != null)
+                              Expanded(flex: 2, child: primaryAction!),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),

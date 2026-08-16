@@ -1,4 +1,4 @@
-enum WidgetActionType { completeHabit, undoCompletion }
+enum WidgetActionType { completeHabit, undoCompletion, refresh }
 
 final class WidgetAction {
   const WidgetAction({
@@ -31,6 +31,16 @@ final class WidgetAction {
     localDate: localDate,
     actionId: actionId,
     sourceActionId: sourceActionId,
+  );
+
+  factory WidgetAction.refresh({
+    required String localDate,
+    required String actionId,
+  }) => WidgetAction(
+    type: WidgetActionType.refresh,
+    habitId: '',
+    localDate: localDate,
+    actionId: actionId,
   );
 
   factory WidgetAction.fromUri(Uri uri) {

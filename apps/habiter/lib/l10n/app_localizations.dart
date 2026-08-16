@@ -2275,6 +2275,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Noch nicht hinzugefügt'**
   String get widgetStatusNotAdded;
+
+  /// No description provided for @widgetPreviewSemantics.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorschau des responsiven Habiter-Homescreen-Widgets'**
+  String get widgetPreviewSemantics;
+
+  /// No description provided for @widgetPreviewNext.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Nächstes: {name}'**
+  String widgetPreviewNext(String name);
 }
 
 class _AppLocalizationsDelegate

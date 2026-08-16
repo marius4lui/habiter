@@ -70,7 +70,6 @@ Responsive screens are tested at narrow widths and large text sizes. The interfa
 | iOS | ✅ | Unsigned CI build | Manual signing and distribution gate |
 | Web | ✅ | Flutter web build | Build validation only |
 
-> The public release line restarts at **v1.0.0**. Until the first production tag is published, download routes may not have a released artifact to serve.
 
 ## Download
 
@@ -102,6 +101,26 @@ habiter/
 ```
 
 The release manifest in `packages/release-core/data/releases.json` is the reviewed source of truth. The Worker exposes that data through versioned, cache-aware endpoints and provides deterministic update and download decisions.
+
+<!-- roadmap:start -->
+## Roadmap
+
+This roadmap describes the next planned product milestones. Scope and release timing may change as implementation and testing progress.
+
+### v1.4 — Dynamic notifications
+
+- Adapt reminder timing and content to habit schedules, progress, and local context.
+- Reconcile notifications automatically when habits or reminder settings change.
+- Keep notification decisions local-first and preserve explicit user controls.
+
+### v1.5 — Automatic updates via API
+
+- Check the Habiter Release API for compatible updates in the background.
+- Download and install supported updates through a clear, user-controlled flow.
+- Verify version metadata and release artifacts before offering an update.
+<!-- roadmap:end -->
+
+The roadmap is maintained in [`ROADMAP.md`](ROADMAP.md). Run `pnpm roadmap:sync` after editing it; CI verifies that this generated section stays current.
 
 ## Getting started
 

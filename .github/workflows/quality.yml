@@ -46,6 +46,7 @@ jobs:
           node-version: '24.13.1'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm roadmap:check
       - run: pnpm release:validate
       - run: pnpm release:test
       - run: pnpm website:check

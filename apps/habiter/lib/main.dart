@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
@@ -32,9 +33,11 @@ import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await HomeWidget.registerInteractivityCallback(
-    habiterWidgetBackgroundCallback,
-  );
+  if (!kIsWeb) {
+    await HomeWidget.registerInteractivityCallback(
+      habiterWidgetBackgroundCallback,
+    );
+  }
   runApp(_HabiterLauncher(AppBootstrap(AppDependencies.production())));
 }
 
@@ -326,13 +329,26 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   }
 
   void _onNavChange(int index) {
-    setState(() => _index = index);
-    _restoreRoute(index);
-    _pageController.animateToPage(
-      index,
-      duration: HabiterMotion.standard.duration(reduced: context.reduceMotion),
-      curve: HabiterMotion.standard.curve,
-    );
+    if (index == _index) return;
+
+    void changePage() {
+      if (!mounted || !_pageController.hasClients) return;
+      if (context.reduceMotion) {
+        _pageController.jumpToPage(index);
+        return;
+      }
+      _pageController.animateToPage(
+        index,
+        duration: HabiterMotion.standard.duration(reduced: false),
+        curve: HabiterMotion.standard.curve,
+      );
+    }
+
+    if (_pageController.hasClients) {
+      changePage();
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) => changePage());
+    }
   }
 
   void _onRouteSelected(AppRoute route) {

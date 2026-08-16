@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/app/navigation/app_route.dart';
 import 'package:habiter/app/navigation/app_router.dart';
 import 'package:habiter/app/shell/adaptive_app_shell.dart';
+import 'package:habiter/core/design_system/tokens.dart';
 
 void main() {
   test('route codec handles deep links and canonical restoration', () {
@@ -44,6 +45,34 @@ void main() {
     await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
     await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
     await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+
+    expect(selected, AppRoute.analytics);
+  });
+
+  testWidgets('compact pill navigation selects a different page on tap', (
+    tester,
+  ) async {
+    var selected = AppRoute.today;
+    await tester.pumpWidget(_fixture(onSelected: (route) => selected = route));
+
+    final navigationBar = tester.widget<NavigationBar>(
+      find.byType(NavigationBar),
+    );
+    expect(navigationBar.height, 60);
+    expect(
+      tester
+          .widget<ClipRRect>(
+            find.ancestor(
+              of: find.byType(NavigationBar),
+              matching: find.byType(ClipRRect),
+            ),
+          )
+          .borderRadius,
+      BorderRadius.circular(HabiterRadius.pill),
+    );
+
+    await tester.tap(find.text('Analytics'));
+    await tester.pump();
 
     expect(selected, AppRoute.analytics);
   });

@@ -95,21 +95,35 @@ class AdaptiveAppShell extends StatelessWidget {
         ],
       ),
       body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _selectIndex,
-        destinations: <NavigationDestination>[
-          NavigationDestination(
-            icon: const Icon(Icons.today_outlined),
-            selectedIcon: const Icon(Icons.today_rounded),
-            label: todayLabel,
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+        child: Align(
+          heightFactor: 1,
+          alignment: Alignment.bottomCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 360),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(HabiterRadius.pill),
+              child: NavigationBar(
+                height: 60,
+                selectedIndex: _selectedIndex,
+                onDestinationSelected: _selectIndex,
+                destinations: <NavigationDestination>[
+                  NavigationDestination(
+                    icon: const Icon(Icons.today_outlined, size: 22),
+                    selectedIcon: const Icon(Icons.today_rounded, size: 22),
+                    label: todayLabel,
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(Icons.insights_outlined, size: 22),
+                    selectedIcon: const Icon(Icons.insights_rounded, size: 22),
+                    label: analyticsLabel,
+                  ),
+                ],
+              ),
+            ),
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.insights_outlined),
-            selectedIcon: const Icon(Icons.insights_rounded),
-            label: analyticsLabel,
-          ),
-        ],
+        ),
       ),
     );
   }

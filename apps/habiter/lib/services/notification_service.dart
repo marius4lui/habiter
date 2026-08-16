@@ -16,7 +16,6 @@ import '../features/reminders/application/reminder_diagnostics.dart';
 import '../features/reminders/domain/reminder_action.dart';
 import '../features/reminders/domain/reminder_payload.dart';
 import '../features/reminders/infrastructure/device_time_zone_service.dart';
-import '../models/habit.dart';
 
 /// Callback for handling notification actions (marking habits complete)
 typedef NotificationActionCallback =
@@ -49,8 +48,6 @@ class NotificationService implements NotificationGateway {
   static const String _learningChannelDesc =
       'Kurze Fragen zur Machbarkeit deiner Habits';
 
-  // Notification IDs
-  static const int _globalNotificationId = 0;
   static const String _requestLedgerKey = 'habiter_notification_requests_v1';
 
   bool _initialized = false;
@@ -225,7 +222,8 @@ class NotificationService implements NotificationGateway {
 
   @override
   Future<void> cancel(int id) async {
-    if (Platform.isAndroid || Platform.isIOS) await _plugin.cancel(id);
+    if (!Platform.isAndroid && !Platform.isIOS) return;
+    await _plugin.cancel(id);
     final ledger = await _loadLedger()
       ..remove(id);
     await _writeLedger(ledger);
@@ -313,173 +311,9 @@ class NotificationService implements NotificationGateway {
     );
   }
 
-  /// Schedule the global daily reminder at the specified time
-  Future<void> scheduleGlobalDailyReminder({
-    required String time,
-    required List<Habit> habits,
-  }) async {
-    if (!Platform.isAndroid && !Platform.isIOS) return;
-
-    // Cancel existing global notification
-    await _plugin.cancel(_globalNotificationId);
-
-    // Parse time string (HH:mm)
-    final parts = time.split(':');
-    if (parts.length != 2) return;
-
-    final hour = int.tryParse(parts[0]) ?? 20;
-    final minute = int.tryParse(parts[1]) ?? 0;
-
-    // Calculate next occurrence
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate = tz.TZDateTime(
-      tz.local,
-      now.year,
-      now.month,
-      now.day,
-      hour,
-      minute,
-    );
-
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
-
-    // Count incomplete habits for today
-    final incompleteCount = habits.where((h) => h.isActive).length;
-
-    const androidDetails = AndroidNotificationDetails(
-      _globalChannelId,
-      _globalChannelName,
-      channelDescription: _globalChannelDesc,
-      importance: Importance.high,
-      priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      categoryIdentifier: 'habiter_actions',
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _plugin.zonedSchedule(
-      _globalNotificationId,
-      'Habiter Erinnerung',
-      'Du hast noch $incompleteCount Habits für heute offen!',
-      scheduledDate,
-      details,
-      androidScheduleMode: await _getAndroidScheduleMode(),
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time, // Repeat daily
-    );
-
-    debugPrint('NotificationService: Scheduled global reminder at $time');
-  }
-
-  /// Cancel the global daily reminder
-  Future<void> cancelGlobalDailyReminder() async {
-    await _plugin.cancel(_globalNotificationId);
-    debugPrint('NotificationService: Cancelled global reminder');
-  }
-
-  /// Schedule a notification for a specific habit
-  Future<void> scheduleHabitNotification(Habit habit) async {
-    if (!Platform.isAndroid && !Platform.isIOS) return;
-    if (!habit.notificationEnabled || habit.notificationTime == null) return;
-
-    // Cancel existing notification for this habit
-    await cancelHabitNotification(habit.id);
-
-    // Parse time string (HH:mm)
-    final parts = habit.notificationTime!.split(':');
-    if (parts.length != 2) return;
-
-    final hour = int.tryParse(parts[0]) ?? 20;
-    final minute = int.tryParse(parts[1]) ?? 0;
-
-    // Calculate next occurrence
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate = tz.TZDateTime(
-      tz.local,
-      now.year,
-      now.month,
-      now.day,
-      hour,
-      minute,
-    );
-
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
-
-    // Generate unique ID from habit ID hash
-    final notificationId =
-        habit.id.hashCode.abs() % 100000 + 1; // Avoid 0 (global)
-
-    const androidDetails = AndroidNotificationDetails(
-      _habitChannelId,
-      _habitChannelName,
-      channelDescription: _habitChannelDesc,
-      importance: Importance.defaultImportance,
-      priority: Priority.defaultPriority,
-      icon: '@mipmap/ic_launcher',
-      actions: [
-        AndroidNotificationAction(
-          'mark_complete',
-          'Erledigt ✓',
-          showsUserInterface: true,
-        ),
-      ],
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      categoryIdentifier: 'habiter_actions',
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    // Payload format: habitId|date
-    final today = DateTime.now();
-    final payload =
-        '${habit.id}|${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-
-    await _plugin.zonedSchedule(
-      notificationId,
-      habit.icon.isNotEmpty ? '${habit.icon} ${habit.name}' : habit.name,
-      'Zeit für dein Habit! Tippe um als erledigt zu markieren.',
-      scheduledDate,
-      details,
-      payload: payload,
-      androidScheduleMode: await _getAndroidScheduleMode(),
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time, // Repeat daily
-    );
-
-    debugPrint(
-      'NotificationService: Scheduled habit notification for ${habit.name} at ${habit.notificationTime}',
-    );
-  }
-
-  /// Cancel notification for a specific habit
-  Future<void> cancelHabitNotification(String habitId) async {
-    final notificationId = habitId.hashCode.abs() % 100000 + 1;
-    await _plugin.cancel(notificationId);
-    debugPrint(
-      'NotificationService: Cancelled notification for habit $habitId',
-    );
-  }
-
   /// Cancel all notifications
   Future<void> cancelAllNotifications() async {
+    if (!Platform.isAndroid && !Platform.isIOS) return;
     await _plugin.cancelAll();
     await SharedPreferencesAsync().remove(_requestLedgerKey);
     debugPrint('NotificationService: Cancelled all notifications');
@@ -575,6 +409,7 @@ Future<ReminderActionRecord?> _persistNotificationResponse(
     receivedAt: DateTime.now().toUtc(),
     notificationKey: payload.stableNotificationKey,
     kind: kind,
+    notificationKind: payload.kind,
   );
   records.add(record.toMap());
   await preferences.setString(

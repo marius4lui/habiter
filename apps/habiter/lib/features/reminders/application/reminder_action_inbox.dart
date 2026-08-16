@@ -4,6 +4,7 @@ import '../../../core/persistence/key_value_store.dart';
 import '../../../core/time/clock.dart';
 import '../../../core/time/local_date.dart';
 import '../domain/reminder_action.dart';
+import '../domain/reminder_plan.dart';
 import '../domain/reminder_signal.dart';
 
 final class ReminderActionRecord {
@@ -15,6 +16,7 @@ final class ReminderActionRecord {
     this.notificationKey,
     this.kind = ReminderActionKind.complete,
     this.snoozeDuration = const Duration(minutes: 30),
+    this.notificationKind = PlannedReminderKind.normal,
   });
 
   final String id;
@@ -24,6 +26,7 @@ final class ReminderActionRecord {
   final String? notificationKey;
   final ReminderActionKind kind;
   final Duration snoozeDuration;
+  final PlannedReminderKind notificationKind;
 
   Map<String, Object?> toMap() => <String, Object?>{
     'id': id,
@@ -33,6 +36,7 @@ final class ReminderActionRecord {
     if (notificationKey != null) 'notificationKey': notificationKey,
     'kind': kind.name,
     'snoozeDurationMinutes': snoozeDuration.inMinutes,
+    'notificationKind': notificationKind.name,
   };
 
   factory ReminderActionRecord.fromMap(Map<String, Object?> map) =>
@@ -47,6 +51,9 @@ final class ReminderActionRecord {
             : ReminderActionKind.values.byName(map['kind']! as String),
         snoozeDuration: Duration(
           minutes: (map['snoozeDurationMinutes'] as num?)?.toInt() ?? 30,
+        ),
+        notificationKind: PlannedReminderKind.values.byName(
+          map['notificationKind'] as String? ?? PlannedReminderKind.normal.name,
         ),
       );
 }
@@ -100,6 +107,8 @@ final class ReminderActionInbox {
 
 typedef CompleteReminderOccurrence =
     Future<void> Function(String habitId, String date);
+typedef CompleteReminderAction =
+    Future<void> Function(ReminderActionRecord action);
 typedef RecordReminderFeasibility =
     Future<void> Function(
       ReminderActionRecord action,
@@ -118,13 +127,15 @@ final class ReminderActionProcessor {
     SnoozeReminder? snooze,
     IsReminderActionProcessed? isProcessed,
     MarkReminderActionProcessed? markProcessed,
+    CompleteReminderAction? completeAction,
   }) : _inbox = inbox,
        _clock = clock,
        _complete = complete,
        _recordFeasibility = recordFeasibility,
        _snooze = snooze,
        _isProcessed = isProcessed,
-       _markProcessed = markProcessed;
+       _markProcessed = markProcessed,
+       _completeAction = completeAction;
 
   final ReminderActionInbox _inbox;
   final Clock _clock;
@@ -133,6 +144,7 @@ final class ReminderActionProcessor {
   final SnoozeReminder? _snooze;
   final IsReminderActionProcessed? _isProcessed;
   final MarkReminderActionProcessed? _markProcessed;
+  final CompleteReminderAction? _completeAction;
 
   Future<int> drain() async {
     final today = LocalDate.fromDateTime(_clock.now());
@@ -151,7 +163,11 @@ final class ReminderActionProcessor {
         processed++;
       } else if (action.kind == ReminderActionKind.complete &&
           action.occurrence == today) {
-        await _complete(action.habitId, action.occurrence.toString());
+        if (_completeAction != null) {
+          await _completeAction(action);
+        } else {
+          await _complete(action.habitId, action.occurrence.toString());
+        }
         processed++;
       }
       await _markProcessed?.call(action.id);

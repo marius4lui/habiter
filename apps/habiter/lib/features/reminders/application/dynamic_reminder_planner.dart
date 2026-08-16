@@ -28,6 +28,7 @@ final class DynamicReminderPlanInput {
     required this.location,
     this.calibration,
     this.completedOccurrences = const <String>{},
+    this.pendingSnoozes = const <PendingReminderSnooze>[],
     this.horizonDays = 14,
     this.capacity = 64,
   });
@@ -38,6 +39,7 @@ final class DynamicReminderPlanInput {
   final Iterable<ReminderSignal> signals;
   final CalibrationSession? calibration;
   final Set<String> completedOccurrences;
+  final Iterable<PendingReminderSnooze> pendingSnoozes;
   final LocalDate start;
   final DateTime now;
   final tz.Location location;
@@ -110,6 +112,7 @@ final class DynamicReminderPlanner {
       }
     }
     candidates.addAll(_overviewCandidates(input));
+    candidates.addAll(_snoozeCandidates(input));
     var selected = _applyGlobalGuardrails(candidates, input);
     selected = _decorateQuestions(
       selected,
@@ -419,6 +422,43 @@ final class DynamicReminderPlanner {
     ];
   }
 
+  List<_Candidate> _snoozeCandidates(DynamicReminderPlanInput input) {
+    final habits = <String, Habit>{
+      for (final habit in input.habits) habit.id: habit,
+    };
+    final result = <_Candidate>[];
+    for (final snooze in input.pendingSnoozes) {
+      final habit = habits[snooze.habitId];
+      final policy = input.policies[snooze.habitId];
+      if (habit == null ||
+          policy == null ||
+          !habit.isActive ||
+          !policy.enabled ||
+          habit.isPausedOn(snooze.occurrence.toString()) ||
+          input.completedOccurrences.contains(
+            '${habit.id}@${snooze.occurrence.toString()}',
+          )) {
+        continue;
+      }
+      final local = tz.TZDateTime.from(snooze.scheduledFor, input.location);
+      final time = LocalTime(local.hour, local.minute);
+      if (!_allowed(time, input.preferences)) continue;
+      result.add(
+        _candidate(
+          habit: habit,
+          date: snooze.occurrence,
+          time: time,
+          attemptIndex: 0,
+          utility: 3,
+          kind: PlannedReminderKind.snooze,
+          reason: const ReminderReason(code: ReminderReasonCode.snoozedByUser),
+          input: input,
+        ),
+      );
+    }
+    return result;
+  }
+
   _Candidate _candidate({
     required Habit habit,
     required LocalDate date,
@@ -529,7 +569,10 @@ final class DynamicReminderPlanner {
     for (var index = 0; index < output.length; index++) {
       final reminder = output[index];
       final policy = input.policies[reminder.habit.id];
-      if (policy?.mode != ReminderMode.smart) continue;
+      if (policy?.mode != ReminderMode.smart ||
+          reminder.kind != PlannedReminderKind.normal) {
+        continue;
+      }
       final local = tz.TZDateTime.from(reminder.scheduledFor, input.location);
       final window = (local.hour * 60 + local.minute) ~/ 120 * 120;
       final key = '${reminder.occurrence}:$window';
@@ -615,6 +658,7 @@ final class DynamicReminderPlanner {
           for (var index = 0; index < output.length; index++)
             if (input.policies[output[index].habit.id]?.mode ==
                     ReminderMode.smart &&
+                output[index].kind == PlannedReminderKind.normal &&
                 input
                     .policies[output[index].habit.id]!
                     .smart!

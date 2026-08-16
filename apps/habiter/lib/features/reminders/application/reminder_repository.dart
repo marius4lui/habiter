@@ -6,6 +6,7 @@ import '../../../core/persistence/key_value_store.dart';
 import '../domain/availability_profile.dart';
 import '../domain/calibration_session.dart';
 import '../domain/reminder_policy.dart';
+import '../domain/reminder_plan.dart';
 import '../domain/reminder_preferences.dart';
 import '../domain/reminder_signal.dart';
 
@@ -17,6 +18,10 @@ final class ReminderRepositorySnapshot {
     Iterable<ReminderSignal> signals = const <ReminderSignal>[],
     Iterable<AvailabilityProfile> profiles = const <AvailabilityProfile>[],
     this.calibration,
+    Iterable<PersistedPlannedReminder> plannedReminders =
+        const <PersistedPlannedReminder>[],
+    Iterable<PendingReminderSnooze> pendingSnoozes =
+        const <PendingReminderSnooze>[],
     this.legacyMigrationComplete = false,
     Iterable<String> processedActionIds = const <String>[],
     Map<String, Object?> additionalFields = const <String, Object?>{},
@@ -31,6 +36,12 @@ final class ReminderRepositorySnapshot {
          <String, AvailabilityProfile>{
            for (final profile in profiles) profile.profileId: profile,
          },
+       ),
+       plannedReminders = List<PersistedPlannedReminder>.unmodifiable(
+         plannedReminders,
+       ),
+       pendingSnoozes = List<PendingReminderSnooze>.unmodifiable(
+         pendingSnoozes,
        ),
        processedActionIds = Set<String>.unmodifiable(processedActionIds),
        additionalFields = UnmodifiableMapView<String, Object?>(
@@ -47,6 +58,8 @@ final class ReminderRepositorySnapshot {
       'signals',
       'profiles',
       'calibration',
+      'plannedReminders',
+      'pendingSnoozes',
       'legacyMigrationComplete',
       'processedActionIds',
     };
@@ -76,6 +89,19 @@ final class ReminderRepositorySnapshot {
               Map<String, Object?>.from(map['calibration']! as Map),
             )
           : null,
+      plannedReminders:
+          ((map['plannedReminders'] as List<Object?>?) ?? const <Object?>[])
+              .map(
+                (value) => PersistedPlannedReminder.fromMap(
+                  Map<String, Object?>.from(value! as Map),
+                ),
+              ),
+      pendingSnoozes:
+          ((map['pendingSnoozes'] as List<Object?>?) ?? const <Object?>[]).map(
+            (value) => PendingReminderSnooze.fromMap(
+              Map<String, Object?>.from(value! as Map),
+            ),
+          ),
       legacyMigrationComplete: map['legacyMigrationComplete'] as bool? ?? false,
       processedActionIds:
           ((map['processedActionIds'] as List<Object?>?) ?? const <Object?>[])
@@ -91,6 +117,8 @@ final class ReminderRepositorySnapshot {
   final List<ReminderSignal> signals;
   final Map<String, AvailabilityProfile> profiles;
   final CalibrationSession? calibration;
+  final List<PersistedPlannedReminder> plannedReminders;
+  final List<PendingReminderSnooze> pendingSnoozes;
   final bool legacyMigrationComplete;
   final Set<String> processedActionIds;
   final Map<String, Object?> additionalFields;
@@ -103,6 +131,10 @@ final class ReminderRepositorySnapshot {
     'signals': signals.map((signal) => signal.toMap()).toList(),
     'profiles': profiles.values.map((profile) => profile.toMap()).toList(),
     if (calibration != null) 'calibration': calibration!.toMap(),
+    'plannedReminders': plannedReminders
+        .map((reminder) => reminder.toMap())
+        .toList(),
+    'pendingSnoozes': pendingSnoozes.map((snooze) => snooze.toMap()).toList(),
     'legacyMigrationComplete': legacyMigrationComplete,
     'processedActionIds': processedActionIds.toList()..sort(),
   };
@@ -116,6 +148,10 @@ final class ReminderRepositoryDraft {
       signals = List<ReminderSignal>.from(source.signals),
       profiles = Map<String, AvailabilityProfile>.from(source.profiles),
       calibration = source.calibration,
+      plannedReminders = List<PersistedPlannedReminder>.from(
+        source.plannedReminders,
+      ),
+      pendingSnoozes = List<PendingReminderSnooze>.from(source.pendingSnoozes),
       legacyMigrationComplete = source.legacyMigrationComplete,
       processedActionIds = Set<String>.from(source.processedActionIds),
       additionalFields = Map<String, Object?>.from(source.additionalFields);
@@ -126,6 +162,8 @@ final class ReminderRepositoryDraft {
   List<ReminderSignal> signals;
   Map<String, AvailabilityProfile> profiles;
   CalibrationSession? calibration;
+  List<PersistedPlannedReminder> plannedReminders;
+  List<PendingReminderSnooze> pendingSnoozes;
   bool legacyMigrationComplete;
   Set<String> processedActionIds;
   Map<String, Object?> additionalFields;
@@ -137,6 +175,8 @@ final class ReminderRepositoryDraft {
     signals: signals,
     profiles: profiles.values,
     calibration: calibration,
+    plannedReminders: plannedReminders,
+    pendingSnoozes: pendingSnoozes,
     legacyMigrationComplete: legacyMigrationComplete,
     processedActionIds: processedActionIds,
     additionalFields: additionalFields,
@@ -191,6 +231,10 @@ final class ReminderRepository {
     draft.signals.clear();
     draft.profiles.clear();
     draft.calibration = null;
+    draft.plannedReminders.removeWhere(
+      (reminder) => reminder.kind != PlannedReminderKind.dailyOverview,
+    );
+    draft.pendingSnoozes.clear();
     draft.processedActionIds.clear();
   });
 

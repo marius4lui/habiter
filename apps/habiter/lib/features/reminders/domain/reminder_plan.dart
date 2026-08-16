@@ -1,4 +1,5 @@
 import 'local_time.dart';
+import '../../../core/time/local_date.dart';
 
 enum PlannedReminderKind {
   normal,
@@ -72,5 +73,77 @@ final class ReminderReason {
     'positiveExplicitSignals': positiveExplicitSignals,
     'negativeExplicitSignals': negativeExplicitSignals,
     'factors': factors,
+  };
+}
+
+final class PersistedPlannedReminder {
+  const PersistedPlannedReminder({
+    required this.logicalKey,
+    required this.habitId,
+    required this.occurrence,
+    required this.scheduledFor,
+    required this.kind,
+    required this.reason,
+  });
+
+  factory PersistedPlannedReminder.fromMap(Map<String, Object?> map) =>
+      PersistedPlannedReminder(
+        logicalKey: map['logicalKey']! as String,
+        habitId: map['habitId']! as String,
+        occurrence: LocalDate.parse(map['occurrence']! as String),
+        scheduledFor: DateTime.parse(map['scheduledFor']! as String),
+        kind: PlannedReminderKind.values.byName(map['kind']! as String),
+        reason: ReminderReason.fromMap(
+          Map<String, Object?>.from(map['reason']! as Map),
+        ),
+      );
+
+  final String logicalKey;
+  final String habitId;
+  final LocalDate occurrence;
+  final DateTime scheduledFor;
+  final PlannedReminderKind kind;
+  final ReminderReason reason;
+
+  Map<String, Object?> toMap() => <String, Object?>{
+    'logicalKey': logicalKey,
+    'habitId': habitId,
+    'occurrence': occurrence.toString(),
+    'scheduledFor': scheduledFor.toUtc().toIso8601String(),
+    'kind': kind.name,
+    'reason': reason.toMap(),
+  };
+}
+
+final class PendingReminderSnooze {
+  const PendingReminderSnooze({
+    required this.id,
+    required this.habitId,
+    required this.occurrence,
+    required this.scheduledFor,
+    required this.createdAt,
+  });
+
+  factory PendingReminderSnooze.fromMap(Map<String, Object?> map) =>
+      PendingReminderSnooze(
+        id: map['id']! as String,
+        habitId: map['habitId']! as String,
+        occurrence: LocalDate.parse(map['occurrence']! as String),
+        scheduledFor: DateTime.parse(map['scheduledFor']! as String),
+        createdAt: DateTime.parse(map['createdAt']! as String),
+      );
+
+  final String id;
+  final String habitId;
+  final LocalDate occurrence;
+  final DateTime scheduledFor;
+  final DateTime createdAt;
+
+  Map<String, Object?> toMap() => <String, Object?>{
+    'id': id,
+    'habitId': habitId,
+    'occurrence': occurrence.toString(),
+    'scheduledFor': scheduledFor.toUtc().toIso8601String(),
+    'createdAt': createdAt.toUtc().toIso8601String(),
   };
 }

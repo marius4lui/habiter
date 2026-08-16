@@ -153,6 +153,7 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
             repository: dependencies.habitRepository,
             clock: dependencies.clock,
             ids: dependencies.ids,
+            actionStore: dependencies.store,
             synchronizeWidget: () => widgetSync.synchronize(
               locale: WidgetsBinding
                   .instance
@@ -372,6 +373,7 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _habitProvider?.syncWidget();
+      _habitProvider?.reconcileReminders(processActions: true);
     }
   }
 

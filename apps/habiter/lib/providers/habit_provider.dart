@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/ids/id_generator.dart';
 import '../core/persistence/key_value_store.dart';
-import '../core/persistence/shared_preferences_key_value_store.dart';
+import '../core/platform/notification_gateway.dart';
 import '../core/time/clock.dart';
 import '../core/time/local_date.dart';
 import '../features/analytics/application/analytics_controller.dart';
@@ -14,7 +15,13 @@ import '../features/habits/data/key_value_habit_repository.dart';
 import '../features/habits/domain/habit_source.dart';
 import '../features/history/application/history_controller.dart';
 import '../features/history/application/habit_lifecycle_reminder_gateway.dart';
-import '../features/reminders/application/reminder_action_inbox.dart';
+import '../features/reminders/application/reminder_coordinator.dart';
+import '../features/reminders/application/reminder_setup_service.dart';
+import '../features/reminders/domain/availability_profile.dart';
+import '../features/reminders/domain/calibration_session.dart';
+import '../features/reminders/domain/reminder_plan.dart';
+import '../features/reminders/domain/reminder_policy.dart';
+import '../features/reminders/domain/reminder_preferences.dart';
 import '../features/today/application/today_controller.dart';
 import '../features/today/application/completion_use_case.dart';
 import '../models/habit.dart';
@@ -30,11 +37,15 @@ class HabitProvider extends ChangeNotifier {
     IdGenerator ids = const UuidIdGenerator(),
     HabitLifecycleReminderGateway? lifecycleReminders,
     KeyValueStore? actionStore,
+    NotificationGateway? notificationGateway,
+    ReminderCoordinator? reminderCoordinator,
     Future<void> Function()? synchronizeWidget,
   }) {
     _clock = clock;
+    _ids = ids;
+    final fallbackStore = _ProviderSharedPreferencesStore();
     final resolvedRepository =
-        repository ?? KeyValueHabitRepository(SharedPreferencesKeyValueStore());
+        repository ?? KeyValueHabitRepository(fallbackStore);
     _repository = resolvedRepository;
     _habitsController = HabitsController(
       repository: resolvedRepository,
@@ -49,18 +60,21 @@ class HabitProvider extends ChangeNotifier {
       onChanged: _reloadHabitState,
     );
     _analyticsController = AnalyticsController(clock);
-    _lifecycleReminders =
-        lifecycleReminders ?? const _LegacyLifecycleReminderGateway();
-    _actionInbox = ReminderActionInbox(
-      actionStore ?? SharedPreferencesKeyValueStore(),
-    );
-    _actionProcessor = ReminderActionProcessor(
-      inbox: _actionInbox,
-      clock: clock,
-      complete: (habitId, date) async {
-        await _todayController.complete(habitId, date);
-      },
-    );
+    _lifecycleReminders = lifecycleReminders ?? const _NoopLifecycleReminders();
+    final reminderStore = actionStore ?? fallbackStore;
+    _reminders =
+        reminderCoordinator ??
+        ReminderCoordinator(
+          store: reminderStore,
+          notifications: notificationGateway ?? NotificationService.instance,
+          clock: clock,
+          ids: ids,
+          complete: _todayController.complete,
+        );
+    NotificationService.instance.setActionCallback((_, _) async {
+      await reconcileReminders(processActions: true);
+      notifyListeners();
+    });
     _synchronizeWidget = synchronizeWidget;
     _habitsController.addListener(notifyListeners);
     _historyController.addListener(notifyListeners);
@@ -72,9 +86,9 @@ class HabitProvider extends ChangeNotifier {
   late final TodayController _todayController;
   late final AnalyticsController _analyticsController;
   late final HabitLifecycleReminderGateway _lifecycleReminders;
-  late final ReminderActionInbox _actionInbox;
-  late final ReminderActionProcessor _actionProcessor;
+  late final ReminderCoordinator _reminders;
   late final Clock _clock;
+  late final IdGenerator _ids;
   Future<void> Function()? _synchronizeWidget;
 
   List<Habit> get habits => _habitsController.state.habits;
@@ -87,6 +101,14 @@ class HabitProvider extends ChangeNotifier {
     aiInsights: false,
     language: 'en',
   );
+
+  ReminderPreferences get reminderPreferences => _reminders.preferences;
+  Map<String, HabitReminderPolicy> get reminderPolicies => _reminders.policies;
+  CalibrationSession? get calibrationSession => _reminders.calibration;
+  Map<String, AvailabilityProfile> get availabilityProfiles =>
+      _reminders.profiles;
+  List<PersistedPlannedReminder> get plannedReminders =>
+      _reminders.plannedReminders;
 
   bool loading = true;
   String? error;
@@ -102,7 +124,6 @@ class HabitProvider extends ChangeNotifier {
       await _reloadHabitState();
       debugPrint('HabitProvider: Loaded ${habits.length} habits');
       debugPrint('HabitProvider: Loaded ${habitEntries.length} entries');
-      await _actionProcessor.drain();
 
       debugPrint('HabitProvider: Loading AI insights from storage...');
       aiInsights = await StorageService.getAIInsights();
@@ -112,37 +133,17 @@ class HabitProvider extends ChangeNotifier {
       preferences = await StorageService.getUserPreferences();
       debugPrint('HabitProvider: Loaded preferences');
 
-      final hasHabitNotifications = habits.any(
-        (habit) => habit.notificationEnabled && habit.notificationTime != null,
+      await _reminders.initialize(
+        habits: habits,
+        entries: habitEntries,
+        legacySettings: LegacyReminderSettings(
+          notificationsEnabled: preferences.notifications,
+          reminderTime: preferences.reminderTime,
+        ),
       );
-      if (preferences.notifications || hasHabitNotifications) {
-        await NotificationService.instance.initialize();
-        NotificationService.instance.setActionCallback(
-          handleNotificationAction,
-        );
-      }
-
-      if (preferences.notifications) {
-        debugPrint('HabitProvider: Scheduling global notification...');
-        await NotificationService.instance.scheduleGlobalDailyReminder(
-          time: preferences.reminderTime,
-          habits: habits,
-        );
-        debugPrint('HabitProvider: Global notification scheduled');
-      }
-
-      // Schedule individual habit notifications
-      if (hasHabitNotifications) {
-        debugPrint(
-          'HabitProvider: Scheduling individual habit notifications...',
-        );
-        for (final habit in habits) {
-          if (habit.notificationEnabled && habit.notificationTime != null) {
-            await NotificationService.instance.scheduleHabitNotification(habit);
-          }
-        }
-        debugPrint('HabitProvider: Individual notifications scheduled');
-      }
+      // Draining a completion action may refresh the habit repository. Use the
+      // resulting snapshot for the final reconciliation.
+      await _reminders.synchronize(habits: habits, entries: habitEntries);
 
       debugPrint('HabitProvider: Load complete!');
       loading = false;
@@ -199,12 +200,19 @@ class HabitProvider extends ChangeNotifier {
       notificationTime: notificationTime,
     );
     await syncWidget();
+    final habit = habits.where((item) => item.id == result).firstOrNull;
+    if (habit != null) {
+      await _reminders.ensurePolicyForNewHabit(habit);
+      if (!_reminders.policies.containsKey(habit.id)) {
+        await _reminders.applyLegacyHabitPolicy(habit);
+      }
+      await reconcileReminders();
+    }
     return result;
   }
 
   Future<bool> requestHabitReminderPermission() async {
     await NotificationService.instance.initialize();
-    NotificationService.instance.setActionCallback(handleNotificationAction);
     return NotificationService.instance.requestPermissions();
   }
 
@@ -215,19 +223,24 @@ class HabitProvider extends ChangeNotifier {
         habit.notificationTime == null) {
       return;
     }
-    await NotificationService.instance.scheduleHabitNotification(habit);
+    await _reminders.applyLegacyHabitPolicy(habit);
+    await reconcileReminders();
   }
 
   Future<void> updateHabit(String id, Habit updated) async {
     if (!habits.any((habit) => habit.id == id)) return;
     await _habitsController.update(updated);
+    await _reminders.applyLegacyHabitPolicy(updated);
+    await reconcileReminders();
     await syncWidget();
   }
 
   Future<void> deleteHabit(String id) async {
     await _habitsController.delete(id);
     await _lifecycleReminders.cancelForHabit(id);
+    await _reminders.deleteHabitData(id);
     await _historyController.load();
+    await reconcileReminders();
     await syncWidget();
   }
 
@@ -238,6 +251,7 @@ class HabitProvider extends ChangeNotifier {
     final result = await _habitsController.archive(id);
     if (!result.changed) return;
     await _lifecycleReminders.cancelForHabit(id);
+    await reconcileReminders();
     await syncWidget();
 
     debugPrint('HabitProvider: Archived habit: ${habit.name}');
@@ -246,6 +260,7 @@ class HabitProvider extends ChangeNotifier {
   Future<void> pauseHabit(String id) async {
     final result = await _habitsController.pause(id);
     if (result.changed) await _lifecycleReminders.cancelForHabit(id);
+    if (result.changed) await reconcileReminders();
     if (result.changed) await syncWidget();
   }
 
@@ -253,11 +268,8 @@ class HabitProvider extends ChangeNotifier {
     final result = await _habitsController.resume(id);
     if (!result.changed) return;
     final habit = habits.where((item) => item.id == id).firstOrNull;
-    if (habit != null &&
-        habit.notificationEnabled &&
-        habit.notificationTime != null) {
-      await _lifecycleReminders.scheduleForHabit(habit);
-    }
+    if (habit != null) await _lifecycleReminders.scheduleForHabit(habit);
+    await reconcileReminders();
     await syncWidget();
   }
 
@@ -265,23 +277,54 @@ class HabitProvider extends ChangeNotifier {
     final result = await _habitsController.restore(id);
     if (!result.changed) return;
     final habit = habits.where((item) => item.id == id).firstOrNull;
-    if (habit != null &&
-        habit.notificationEnabled &&
-        habit.notificationTime != null) {
-      await _lifecycleReminders.scheduleForHabit(habit);
-    }
+    if (habit != null) await _lifecycleReminders.scheduleForHabit(habit);
+    await reconcileReminders();
     await syncWidget();
   }
 
   Future<void> toggleHabitCompletion(String habitId, String date) async {
+    final wasCompleted = habitEntries.any(
+      (entry) =>
+          entry.habitId == habitId && entry.date == date && entry.completed,
+    );
     await _todayController.toggle(habitId, date);
+    if (wasCompleted) {
+      await _reminders.removeToggleCompletionSignal(habitId, date);
+    } else {
+      final occurredAt = _clock.now();
+      await _reminders.recordCompletion(
+        habitId: habitId,
+        occurredAt: occurredAt,
+        signalId:
+            'toggle:$habitId:$date:${occurredAt.toUtc().toIso8601String()}',
+      );
+    }
+    await reconcileReminders();
   }
 
-  Future<CompletionResult> completeHabit(String habitId, String date) =>
-      _todayController.complete(habitId, date);
+  Future<CompletionResult> completeHabit(String habitId, String date) async {
+    final result = await _todayController.complete(habitId, date);
+    if (result.changed) {
+      final committedAt = result.undoToken!.committedAt;
+      await _reminders.recordCompletion(
+        habitId: habitId,
+        occurredAt: committedAt,
+        signalId:
+            'completion:$habitId:$date:${committedAt.toUtc().toIso8601String()}',
+      );
+      await reconcileReminders();
+    }
+    return result;
+  }
 
-  Future<CompletionResult> undoCompletion(CompletionUndoToken token) =>
-      _todayController.undo(token);
+  Future<CompletionResult> undoCompletion(CompletionUndoToken token) async {
+    final result = await _todayController.undo(token);
+    if (result.changed) {
+      await _reminders.removeCompletionSignal(token);
+      await reconcileReminders();
+    }
+    return result;
+  }
 
   HabitStats getHabitStats(String habitId) {
     final habit = habits.firstWhere((h) => h.id == habitId);
@@ -321,17 +364,13 @@ class HabitProvider extends ChangeNotifier {
     preferences = prefs;
     await StorageService.saveUserPreferences(prefs);
 
-    // Handle notification changes
     if (prefs.notifications != oldPrefs.notifications ||
         prefs.reminderTime != oldPrefs.reminderTime) {
-      if (prefs.notifications) {
-        await NotificationService.instance.scheduleGlobalDailyReminder(
-          time: prefs.reminderTime,
-          habits: habits,
-        );
-      } else {
-        await NotificationService.instance.cancelGlobalDailyReminder();
-      }
+      await _reminders.applyLegacyOverviewSettings(
+        enabled: prefs.notifications,
+        time: prefs.reminderTime,
+      );
+      await reconcileReminders();
     }
 
     if (prefs.language != oldPrefs.language || prefs.theme != oldPrefs.theme) {
@@ -382,17 +421,41 @@ class HabitProvider extends ChangeNotifier {
     );
   }
 
-  /// Handle notification action to mark habit complete
-  Future<void> handleNotificationAction(String habitId, String date) async {
-    await _actionInbox.enqueue(
-      ReminderActionRecord(
-        id: '$habitId@$date:complete',
-        habitId: habitId,
-        occurrence: LocalDate.parse(date),
-        receivedAt: _clock.now().toUtc(),
-      ),
-    );
-    await _actionProcessor.drain();
+  Future<void> reconcileReminders({bool processActions = false}) =>
+      _reminders.synchronize(
+        habits: habits,
+        entries: habitEntries,
+        processActions: processActions,
+      );
+
+  Future<void> updateReminderPolicy(HabitReminderPolicy policy) async {
+    await _reminders.updatePolicy(policy);
+    notifyListeners();
+  }
+
+  Future<void> updateReminderPreferences(ReminderPreferences value) async {
+    await _reminders.updatePreferences(value);
+    notifyListeners();
+  }
+
+  Future<void> pauseCalibration() async {
+    await _reminders.pauseCalibration();
+    notifyListeners();
+  }
+
+  Future<void> resumeCalibration() async {
+    await _reminders.resumeCalibration();
+    notifyListeners();
+  }
+
+  Future<void> restartCalibration() async {
+    await _reminders.restartCalibration(sessionId: _ids.next());
+    notifyListeners();
+  }
+
+  Future<void> resetReminderLearning() async {
+    await _reminders.resetLearning();
+    notifyListeners();
   }
 
   /// Import Classly events as daily habits
@@ -467,15 +530,48 @@ class HabitProvider extends ChangeNotifier {
   }
 }
 
-final class _LegacyLifecycleReminderGateway
-    implements HabitLifecycleReminderGateway {
-  const _LegacyLifecycleReminderGateway();
+final class _NoopLifecycleReminders implements HabitLifecycleReminderGateway {
+  const _NoopLifecycleReminders();
 
   @override
-  Future<void> cancelForHabit(String habitId) =>
-      NotificationService.instance.cancelHabitNotification(habitId);
+  Future<void> cancelForHabit(String habitId) async {}
 
   @override
-  Future<void> scheduleForHabit(Habit habit) =>
-      NotificationService.instance.scheduleHabitNotification(habit);
+  Future<void> scheduleForHabit(Habit habit) async {}
+}
+
+final class _ProviderSharedPreferencesStore implements KeyValueStore {
+  @override
+  Future<bool> contains(String key) async =>
+      (await SharedPreferences.getInstance()).containsKey(key);
+
+  @override
+  Future<Object?> read(String key) async =>
+      (await SharedPreferences.getInstance()).get(key);
+
+  @override
+  Future<bool> remove(String key) async =>
+      (await SharedPreferences.getInstance()).remove(key);
+
+  @override
+  Future<Map<String, Object?>> snapshot() async {
+    final preferences = await SharedPreferences.getInstance();
+    return <String, Object?>{
+      for (final key in preferences.getKeys()) key: preferences.get(key),
+    };
+  }
+
+  @override
+  Future<void> write(String key, Object value) async {
+    final preferences = await SharedPreferences.getInstance();
+    final written = switch (value) {
+      String value => preferences.setString(key, value),
+      bool value => preferences.setBool(key, value),
+      int value => preferences.setInt(key, value),
+      double value => preferences.setDouble(key, value),
+      List<String> value => preferences.setStringList(key, List.of(value)),
+      _ => throw ArgumentError.value(value, 'value', 'Unsupported value.'),
+    };
+    if (!await written) throw StateError('SharedPreferences rejected "$key".');
+  }
 }

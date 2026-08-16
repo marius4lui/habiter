@@ -29,6 +29,7 @@ final class DynamicReminderPlanInput {
     this.calibration,
     this.completedOccurrences = const <String>{},
     this.pendingSnoozes = const <PendingReminderSnooze>[],
+    this.baselineProfiles = const <String, AvailabilityProfile>{},
     this.horizonDays = 14,
     this.capacity = 64,
   });
@@ -40,6 +41,7 @@ final class DynamicReminderPlanInput {
   final CalibrationSession? calibration;
   final Set<String> completedOccurrences;
   final Iterable<PendingReminderSnooze> pendingSnoozes;
+  final Map<String, AvailabilityProfile> baselineProfiles;
   final LocalDate start;
   final DateTime now;
   final tz.Location location;
@@ -85,6 +87,7 @@ final class DynamicReminderPlanner {
         now: input.now,
         preferences: input.preferences,
         calibrationActive: calibrationActive,
+        baselineProfiles: input.baselineProfiles,
       );
       profiles[habit.id] = computation;
       final schedule = _scheduleFor(habit);

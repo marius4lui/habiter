@@ -300,6 +300,57 @@ void main() {
     expect(coordinator.calibration!.status.name, 'completed');
     expect(coordinator.calibration!.completedAt, clock.now());
   });
+
+  test('pruned raw feedback does not erase its persisted aggregate', () async {
+    final store = InMemoryKeyValueStore();
+    final clock = FakeClock(now);
+    final habit = _habit();
+    final coordinator = _coordinator(
+      store,
+      RecordingNotificationGateway(),
+      clock,
+    );
+    await coordinator.initialize(
+      habits: <Habit>[habit],
+      entries: const <HabitEntry>[],
+      legacySettings: const LegacyReminderSettings(
+        notificationsEnabled: false,
+        reminderTime: '20:00',
+      ),
+    );
+    await coordinator.enableSmartForNewUser(sessionId: 'calibration');
+    await ReminderRepository(store).appendSignal(
+      ReminderSignal(
+        id: 'old-feedback',
+        habitId: habit.id,
+        source: SignalSource.inAppFeedback,
+        occurredAtUtc: now.subtract(const Duration(days: 181)),
+        timeZoneId: 'UTC',
+        localWeekday: DateTime.monday,
+        localMinuteOfDay: 600,
+        feasibility: FeasibilityRating.good,
+        createdAt: now.subtract(const Duration(days: 181)),
+      ),
+    );
+
+    await coordinator.synchronize(
+      habits: <Habit>[habit],
+      entries: const <HabitEntry>[],
+    );
+    final learned = coordinator.profiles['habit:${habit.id}']!;
+    expect((await ReminderRepository(store).load()).signals, isEmpty);
+    await coordinator.synchronize(
+      habits: <Habit>[habit],
+      entries: const <HabitEntry>[],
+    );
+    final retained = coordinator.profiles['habit:${habit.id}']!;
+
+    expect(
+      retained.bucketFor(DateTime.monday, 600)!.combinedScore,
+      learned.bucketFor(DateTime.monday, 600)!.combinedScore,
+    );
+    expect(retained.computedAt, learned.computedAt);
+  });
 }
 
 ReminderCoordinator _coordinator(

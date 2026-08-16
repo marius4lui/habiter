@@ -114,6 +114,7 @@ final class ReminderCoordinator {
         calibration: _snapshot.calibration,
         completedOccurrences: completed,
         pendingSnoozes: _snapshot.pendingSnoozes,
+        baselineProfiles: _snapshot.profiles,
         start: LocalDate(localNow.year, localNow.month, localNow.day),
         now: now,
         location: location,
@@ -139,7 +140,10 @@ final class ReminderCoordinator {
             !item.scheduledFor.isAfter(now) &&
             !item.scheduledFor.isBefore(recentCutoff),
       );
-      draft.profiles = profiles;
+      draft.profiles = <String, AvailabilityProfile>{
+        ...draft.profiles,
+        ...profiles,
+      };
       draft.plannedReminders = <PersistedPlannedReminder>[
         ...recentDelivered,
         ...result.reminders.map(

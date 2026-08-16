@@ -186,6 +186,52 @@ void main() {
     expect(FineTuningQuestionPolicy.questionsPerWeek(0.60), 4);
     expect(FineTuningQuestionPolicy.questionsPerWeek(0.75), 3);
   });
+
+  test('compatible aggregates remain when raw signals have been pruned', () {
+    final learned = engine.computeForHabit(
+      habit: habit,
+      allSignals: <ReminderSignal>[_signal('learned', now: now, minute: 600)],
+      now: now,
+    );
+
+    final retained = engine.computeForHabit(
+      habit: habit,
+      allSignals: const <ReminderSignal>[],
+      now: now.add(const Duration(days: 1)),
+      baselineProfiles: <String, AvailabilityProfile>{
+        learned.globalUserProfile.profileId: learned.globalUserProfile,
+        learned.habitProfile.profileId: learned.habitProfile,
+      },
+    );
+
+    expect(retained.habitProfile, same(learned.habitProfile));
+    expect(retained.globalUserProfile, same(learned.globalUserProfile));
+  });
+
+  test('incompatible aggregate versions are recomputed from defaults', () {
+    final incompatible = AvailabilityProfile(
+      profileId: 'habit:habit',
+      habitId: 'habit',
+      buckets: const <ProfileBucketKey, ProfileBucket>{},
+      confidence: 1,
+      effectiveSamples: 99,
+      computedAt: now,
+      algorithmVersion: 999,
+    );
+
+    final recomputed = engine.computeForHabit(
+      habit: habit,
+      allSignals: const <ReminderSignal>[],
+      now: now,
+      baselineProfiles: <String, AvailabilityProfile>{
+        incompatible.profileId: incompatible,
+      },
+    );
+
+    expect(recomputed.habitProfile.algorithmVersion, 1);
+    expect(recomputed.habitProfile.confidence, 0);
+    expect(recomputed.habitProfile.buckets, isNotEmpty);
+  });
 }
 
 Habit _habit({required String category}) => Habit(

@@ -99,6 +99,8 @@ final class AvailabilityProfileEngine {
     required DateTime now,
     ReminderPreferences? preferences,
     bool calibrationActive = false,
+    Map<String, AvailabilityProfile> baselineProfiles =
+        const <String, AvailabilityProfile>{},
   }) {
     final effectivePreferences = preferences ?? ReminderPreferences();
     final signals = allSignals
@@ -108,7 +110,7 @@ final class AvailabilityProfileEngine {
       category: habit.category,
       computedAt: now,
     );
-    final global = _computeLayer(
+    final computedGlobal = _computeLayer(
       profileId: 'global:${habit.category.toLowerCase()}',
       category: habit.category,
       signals: signals,
@@ -118,23 +120,37 @@ final class AvailabilityProfileEngine {
       preferences: effectivePreferences,
       calibrationActive: calibrationActive,
     );
-    final habitProfile = _computeLayer(
+    final globalBaseline = baselineProfiles[computedGlobal.profileId];
+    final global = signals.isEmpty && _isCompatible(globalBaseline)
+        ? globalBaseline!
+        : computedGlobal;
+    final habitSignals = signals
+        .where((signal) => signal.habitId == habit.id)
+        .toList(growable: false);
+    final computedHabit = _computeLayer(
       profileId: 'habit:${habit.id}',
       habitId: habit.id,
       category: habit.category,
-      signals: signals.where((signal) => signal.habitId == habit.id).toList(),
+      signals: habitSignals,
       prior: global,
       priorStrength: habitPriorStrength,
       now: now,
       preferences: effectivePreferences,
       calibrationActive: calibrationActive,
     );
+    final habitBaseline = baselineProfiles[computedHabit.profileId];
+    final habitProfile = habitSignals.isEmpty && _isCompatible(habitBaseline)
+        ? habitBaseline!
+        : computedHabit;
     return HabitProfileComputation(
       categoryProfile: category,
       globalUserProfile: global,
       habitProfile: habitProfile,
     );
   }
+
+  static bool _isCompatible(AvailabilityProfile? profile) =>
+      profile != null && profile.algorithmVersion == algorithmVersion;
 
   AvailabilityProfile _computeLayer({
     required String profileId,

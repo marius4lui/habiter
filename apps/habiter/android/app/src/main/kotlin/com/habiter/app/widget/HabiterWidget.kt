@@ -160,15 +160,30 @@ private fun Compact(state: HabiterWidgetState) {
 private fun CompactSquare(state: HabiterWidgetState) {
     val habit = state.nextHabit ?: return
     Column(
-        modifier = GlanceModifier.fillMaxSize().padding(14.dp),
+        modifier = GlanceModifier.fillMaxSize().padding(10.dp),
         horizontalAlignment = Alignment.Horizontal.Start,
     ) {
-        Text(progressLabel(state), style = mutedStyle(12))
-        Spacer(GlanceModifier.height(7.dp))
-        Text(habit.icon, style = titleStyle(25))
-        Text(habit.name, maxLines = 1, style = titleStyle(16))
+        Text(progressLabel(state), maxLines = 1, style = mutedStyle(11))
+        Spacer(GlanceModifier.height(5.dp))
+        Text("${habit.icon} ${habit.name}", maxLines = 1, style = titleStyle(15))
         Spacer(GlanceModifier.defaultWeight())
-        CompleteControl(state, habit, compact = false)
+        CompactSquareCompleteControl(state, habit)
+    }
+}
+
+@Composable
+private fun CompactSquareCompleteControl(state: HabiterWidgetState, habit: HabiterWidgetHabit) {
+    Box(
+        modifier = GlanceModifier
+            .fillMaxWidth()
+            .background(HabiterWidgetTheme.primary)
+            .cornerRadius(12.dp)
+            .clickable(onClick = completionAction(state, habit))
+            .semantics { contentDescription = if (state.isGerman) "${habit.name} erledigen" else "Complete ${habit.name}" }
+            .padding(horizontal = 8.dp, vertical = 7.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text("✓ ${completeLabel(state)}", maxLines = 1, style = TextStyle(color = HabiterWidgetTheme.surface, fontSize = 12.sp, fontWeight = FontWeight.Bold))
     }
 }
 

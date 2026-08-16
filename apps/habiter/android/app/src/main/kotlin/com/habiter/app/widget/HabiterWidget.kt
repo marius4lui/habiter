@@ -46,8 +46,11 @@ class HabiterWidget : GlanceAppWidget() {
         setOf(
             DpSize(110.dp, 60.dp),
             DpSize(110.dp, 110.dp),
+            DpSize(180.dp, 110.dp),
+            DpSize(180.dp, 180.dp),
             DpSize(250.dp, 60.dp),
             DpSize(250.dp, 120.dp),
+            DpSize(250.dp, 180.dp),
             DpSize(250.dp, 250.dp),
             DpSize(320.dp, 300.dp),
         ),

@@ -1,12 +1,15 @@
 import 'dart:convert';
 
 import '../../../core/persistence/key_value_store.dart';
+import '../../../core/persistence/storage_envelope.dart';
 import 'onboarding_state.dart';
 
 abstract interface class OnboardingRepository {
   Future<OnboardingState?> load();
 
   Future<void> save(OnboardingState state);
+
+  Future<bool> hasPriorProductData();
 }
 
 final class KeyValueOnboardingRepository implements OnboardingRepository {
@@ -33,4 +36,19 @@ final class KeyValueOnboardingRepository implements OnboardingRepository {
   @override
   Future<void> save(OnboardingState state) =>
       _store.write(storageKey, jsonEncode(state.toMap()));
+
+  @override
+  Future<bool> hasPriorProductData() async {
+    final backupValue = await _store.read(StorageEnvelope.backupKey);
+    if (backupValue is String) {
+      final decoded = jsonDecode(backupValue);
+      if (decoded is Map && decoded['raw'] is Map) {
+        if ((decoded['raw'] as Map).isNotEmpty) return true;
+      }
+    }
+    final envelopeValue = await _store.read(StorageEnvelope.storageKey);
+    if (envelopeValue is! String) return false;
+    final envelope = StorageEnvelope.fromJson(envelopeValue);
+    return envelope.data.isNotEmpty;
+  }
 }

@@ -10,6 +10,9 @@ import 'app/navigation/app_router.dart';
 import 'app/shell/adaptive_app_shell.dart';
 import 'core/design_system/haptics.dart';
 import 'core/design_system/motion.dart';
+import 'features/onboarding/application/onboarding_controller.dart';
+import 'features/onboarding/application/onboarding_repository.dart';
+import 'features/onboarding/presentation/onboarding_flow.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n.dart';
 import 'providers/app_lock_provider.dart';
@@ -130,6 +133,13 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
             ids: dependencies.ids,
           )..load(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => OnboardingController(
+            repository: KeyValueOnboardingRepository(dependencies.store),
+            ids: dependencies.ids,
+            clock: dependencies.clock,
+          ),
+        ),
         ChangeNotifierProvider(create: (_) => AppLockProvider()..load()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
       ],
@@ -152,7 +162,8 @@ class HabiterApp extends StatelessWidget {
     return Consumer<SettingsProvider>(
       builder: (context, settings, _) {
         final router = AppRouter(
-          primaryBuilder: (_, route) => _RootShell(initialRoute: route),
+          primaryBuilder: (_, route) =>
+              _OnboardingGate(child: _RootShell(initialRoute: route)),
           settingsBuilder: (_) => const SettingsScreen(),
           appLockBuilder: (_) => const AppLockScreen(),
         );
@@ -179,6 +190,55 @@ class HabiterApp extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class _OnboardingGate extends StatefulWidget {
+  const _OnboardingGate({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_OnboardingGate> createState() => _OnboardingGateState();
+}
+
+class _OnboardingGateState extends State<_OnboardingGate> {
+  HabitProvider? _habits;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final habits = context.read<HabitProvider>();
+    if (identical(habits, _habits)) return;
+    _habits?.removeListener(_initializeWhenReady);
+    _habits = habits..addListener(_initializeWhenReady);
+    _initializeWhenReady();
+  }
+
+  void _initializeWhenReady() {
+    final habits = _habits;
+    if (habits == null || habits.loading) return;
+    final onboarding = context.read<OnboardingController>();
+    if (!onboarding.initialized && !onboarding.loading) {
+      onboarding.initialize(hasExistingHabits: habits.habits.isNotEmpty);
+    }
+  }
+
+  @override
+  void dispose() {
+    _habits?.removeListener(_initializeWhenReady);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final habits = context.watch<HabitProvider>();
+    final onboarding = context.watch<OnboardingController>();
+    if (habits.loading || !onboarding.initialized) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (onboarding.shouldShowOnboarding) return const OnboardingFlow();
+    return widget.child;
   }
 }
 

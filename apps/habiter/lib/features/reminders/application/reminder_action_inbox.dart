@@ -3,6 +3,8 @@ import 'dart:convert';
 import '../../../core/persistence/key_value_store.dart';
 import '../../../core/time/clock.dart';
 import '../../../core/time/local_date.dart';
+import '../domain/reminder_action.dart';
+import '../domain/reminder_signal.dart';
 
 final class ReminderActionRecord {
   const ReminderActionRecord({
@@ -10,18 +12,27 @@ final class ReminderActionRecord {
     required this.habitId,
     required this.occurrence,
     required this.receivedAt,
+    this.notificationKey,
+    this.kind = ReminderActionKind.complete,
+    this.snoozeDuration = const Duration(minutes: 30),
   });
 
   final String id;
   final String habitId;
   final LocalDate occurrence;
   final DateTime receivedAt;
+  final String? notificationKey;
+  final ReminderActionKind kind;
+  final Duration snoozeDuration;
 
   Map<String, Object?> toMap() => <String, Object?>{
     'id': id,
     'habitId': habitId,
     'occurrence': occurrence.toString(),
     'receivedAt': receivedAt.toUtc().toIso8601String(),
+    if (notificationKey != null) 'notificationKey': notificationKey,
+    'kind': kind.name,
+    'snoozeDurationMinutes': snoozeDuration.inMinutes,
   };
 
   factory ReminderActionRecord.fromMap(Map<String, Object?> map) =>
@@ -30,6 +41,13 @@ final class ReminderActionRecord {
         habitId: map['habitId']! as String,
         occurrence: LocalDate.parse(map['occurrence']! as String),
         receivedAt: DateTime.parse(map['receivedAt']! as String),
+        notificationKey: map['notificationKey'] as String?,
+        kind: map['kind'] == null
+            ? ReminderActionKind.complete
+            : ReminderActionKind.values.byName(map['kind']! as String),
+        snoozeDuration: Duration(
+          minutes: (map['snoozeDurationMinutes'] as num?)?.toInt() ?? 30,
+        ),
       );
 }
 
@@ -82,28 +100,61 @@ final class ReminderActionInbox {
 
 typedef CompleteReminderOccurrence =
     Future<void> Function(String habitId, String date);
+typedef RecordReminderFeasibility =
+    Future<void> Function(
+      ReminderActionRecord action,
+      FeasibilityRating rating,
+    );
+typedef SnoozeReminder = Future<void> Function(ReminderActionRecord action);
+typedef IsReminderActionProcessed = Future<bool> Function(String id);
+typedef MarkReminderActionProcessed = Future<void> Function(String id);
 
 final class ReminderActionProcessor {
   const ReminderActionProcessor({
     required ReminderActionInbox inbox,
     required Clock clock,
     required CompleteReminderOccurrence complete,
+    RecordReminderFeasibility? recordFeasibility,
+    SnoozeReminder? snooze,
+    IsReminderActionProcessed? isProcessed,
+    MarkReminderActionProcessed? markProcessed,
   }) : _inbox = inbox,
        _clock = clock,
-       _complete = complete;
+       _complete = complete,
+       _recordFeasibility = recordFeasibility,
+       _snooze = snooze,
+       _isProcessed = isProcessed,
+       _markProcessed = markProcessed;
 
   final ReminderActionInbox _inbox;
   final Clock _clock;
   final CompleteReminderOccurrence _complete;
+  final RecordReminderFeasibility? _recordFeasibility;
+  final SnoozeReminder? _snooze;
+  final IsReminderActionProcessed? _isProcessed;
+  final MarkReminderActionProcessed? _markProcessed;
 
   Future<int> drain() async {
     final today = LocalDate.fromDateTime(_clock.now());
     var processed = 0;
     for (final action in await _inbox.pending()) {
-      if (action.occurrence == today) {
+      if (await _isProcessed?.call(action.id) ?? false) {
+        await _inbox.remove(action.id);
+        continue;
+      }
+      final feasibility = action.kind.feasibility;
+      if (feasibility != null && _recordFeasibility != null) {
+        await _recordFeasibility(action, feasibility);
+        processed++;
+      } else if (action.kind == ReminderActionKind.snooze && _snooze != null) {
+        await _snooze(action);
+        processed++;
+      } else if (action.kind == ReminderActionKind.complete &&
+          action.occurrence == today) {
         await _complete(action.habitId, action.occurrence.toString());
         processed++;
       }
+      await _markProcessed?.call(action.id);
       await _inbox.remove(action.id);
     }
     return processed;

@@ -1,5 +1,19 @@
 import 'dart:collection';
 
+enum NotificationCategory { reminder, calibration, fineTuning, overview }
+
+final class NotificationActionSpec {
+  const NotificationActionSpec({
+    required this.id,
+    required this.title,
+    this.opensApp = false,
+  });
+
+  final String id;
+  final String title;
+  final bool opensApp;
+}
+
 final class NotificationRequest {
   NotificationRequest({
     required this.id,
@@ -7,13 +21,18 @@ final class NotificationRequest {
     required this.title,
     required this.body,
     Map<String, String> payload = const <String, String>{},
-  }) : payload = UnmodifiableMapView<String, String>(payload);
+    this.category = NotificationCategory.reminder,
+    Iterable<NotificationActionSpec> actions = const <NotificationActionSpec>[],
+  }) : payload = UnmodifiableMapView<String, String>(payload),
+       actions = List<NotificationActionSpec>.unmodifiable(actions);
 
   final int id;
   final DateTime scheduledFor;
   final String title;
   final String body;
   final Map<String, String> payload;
+  final NotificationCategory category;
+  final List<NotificationActionSpec> actions;
 }
 
 abstract interface class NotificationGateway {

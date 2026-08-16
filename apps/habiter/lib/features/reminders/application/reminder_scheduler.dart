@@ -148,14 +148,51 @@ final class ReminderScheduler {
       final payload = ReminderPayload(
         habitId: reminder.habit.id,
         occurrence: reminder.occurrence,
+        notificationKey: reminder.logicalKey,
+        kind: reminder.kind,
+        reason: reminder.reason,
       );
+      final isQuestion =
+          reminder.kind == PlannedReminderKind.calibrationPulse ||
+          reminder.kind == PlannedReminderKind.fineTuningQuestion;
       await _gateway.schedule(
         NotificationRequest(
           id: id,
           scheduledFor: reminder.scheduledFor,
           title: reminder.habit.name,
-          body: 'A planned opportunity is ready when you are.',
+          body: isQuestion
+              ? 'Would this habit fit right now?'
+              : 'A planned opportunity is ready when you are.',
           payload: <String, String>{'schema': jsonEncode(payload.toMap())},
+          category: switch (reminder.kind) {
+            PlannedReminderKind.calibrationPulse =>
+              NotificationCategory.calibration,
+            PlannedReminderKind.fineTuningQuestion =>
+              NotificationCategory.fineTuning,
+            PlannedReminderKind.dailyOverview => NotificationCategory.overview,
+            _ => NotificationCategory.reminder,
+          },
+          actions: isQuestion
+              ? const <NotificationActionSpec>[
+                  NotificationActionSpec(
+                    id: 'feasibility_good',
+                    title: 'Jetzt gut',
+                  ),
+                  NotificationActionSpec(
+                    id: 'feasibility_maybe',
+                    title: 'Vielleicht',
+                  ),
+                  NotificationActionSpec(
+                    id: 'feasibility_bad',
+                    title: 'Gerade nicht',
+                  ),
+                ]
+              : reminder.kind == PlannedReminderKind.dailyOverview
+              ? const <NotificationActionSpec>[]
+              : const <NotificationActionSpec>[
+                  NotificationActionSpec(id: 'complete', title: 'Erledigt'),
+                  NotificationActionSpec(id: 'snooze', title: 'Später'),
+                ],
         ),
       );
     }

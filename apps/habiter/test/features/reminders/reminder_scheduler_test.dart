@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:habiter/core/platform/notification_gateway.dart';
 import 'package:habiter/core/time/local_date.dart';
 import 'package:habiter/features/reminders/application/notification_id_registry.dart';
 import 'package:habiter/features/reminders/application/reminder_scheduler.dart';
+import 'package:habiter/features/reminders/domain/reminder_plan.dart';
 import 'package:habiter/models/habit.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
@@ -66,6 +68,10 @@ void main() {
 
     await scheduler.replaceWith(first);
     expect(await gateway.pending(), hasLength(2));
+    expect(
+      (await gateway.pending()).first.actions.map((action) => action.id),
+      <String>['complete', 'snooze'],
+    );
     await scheduler.replaceWith(first);
     expect(
       gateway.calls.where((call) => call.operation == 'schedule'),
@@ -78,6 +84,37 @@ void main() {
     expect(await gateway.pending(), isEmpty);
     expect(await registry.snapshot(), isEmpty);
   });
+
+  test(
+    'question reminders carry feedback actions and a persisted reason',
+    () async {
+      final gateway = RecordingNotificationGateway();
+      final scheduler = ReminderScheduler(
+        registry: NotificationIdRegistry(InMemoryKeyValueStore()),
+        gateway: gateway,
+      );
+      final planned = PlannedReminder(
+        logicalKey: 'habit@2026-08-17:calibration',
+        habit: _habit('habit', HabitFrequency.daily),
+        occurrence: LocalDate(2026, 8, 17),
+        scheduledFor: DateTime.utc(2026, 8, 17, 9),
+        kind: PlannedReminderKind.calibrationPulse,
+        reason: const ReminderReason(
+          code: ReminderReasonCode.calibrationUncertainty,
+        ),
+      );
+
+      await scheduler.replaceWith(<PlannedReminder>[planned]);
+      final request = (await gateway.pending()).single;
+      expect(request.category, NotificationCategory.calibration);
+      expect(request.actions.map((action) => action.id), <String>[
+        'feasibility_good',
+        'feasibility_maybe',
+        'feasibility_bad',
+      ]);
+      expect(request.payload['schema'], contains('calibrationUncertainty'));
+    },
+  );
 }
 
 Habit _habit(

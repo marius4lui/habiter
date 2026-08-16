@@ -93,12 +93,11 @@ final class OnboardingController extends ChangeNotifier {
     ),
   );
 
-  Future<void> beginWidgetPin() => _replace(
-    _state.copyWith(
-      currentStep: OnboardingStep.widgetPin,
-      widgetPinAttempted: true,
-    ),
-  );
+  Future<void> beginWidgetPin() =>
+      _replace(_state.copyWith(currentStep: OnboardingStep.widgetPin));
+
+  Future<void> recordWidgetPinAttempt() =>
+      _replace(_state.copyWith(widgetPinAttempted: true));
 
   Future<void> deferWidget() => _complete(
     promotionState: WidgetPromotionState.deferred,

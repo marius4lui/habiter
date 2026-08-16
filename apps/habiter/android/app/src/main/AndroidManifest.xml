@@ -105,6 +105,11 @@
                 android:resource="@xml/habiter_widget_info" />
         </receiver>
 
+        <receiver
+            android:name=".widget.HabiterWidgetPinResultReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

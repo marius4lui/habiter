@@ -442,5 +442,22 @@
   "onboardingHabitReadyBody": "Jetzt bringen wir es dorthin, wo du es wirklich siehst.",
   "onboardingSaving": "Dein Habit wird eingerichtet…",
   "onboardingStepProgress": "Einrichtungsschritt {step} von {total}",
-  "@onboardingStepProgress": {"placeholders": {"step": {"type": "int"}, "total": {"type": "int"}}}
+  "@onboardingStepProgress": {"placeholders": {"step": {"type": "int"}, "total": {"type": "int"}}},
+  "onboardingWidgetIntroTitle": "Habiter gehört auf deinen Homescreen.",
+  "onboardingWidgetIntroBody": "Sieh deinen nächsten Schritt und hake ihn ab, ohne die App zu öffnen.",
+  "onboardingWidgetResponsive": "Passt in kompakte, breite und große Homescreen-Flächen.",
+  "onboardingWidgetAdd": "Widget hinzufügen",
+  "onboardingWidgetLater": "Später",
+  "onboardingWidgetPinTitle": "Habiter zum Homescreen hinzufügen",
+  "onboardingWidgetPinBody": "Android fragt dich, wo du das Widget platzieren möchtest.",
+  "onboardingWidgetReadyTitle": "Bereit.",
+  "onboardingWidgetReadyBody": "Dein nächster Schritt ist jetzt direkt auf deinem Homescreen.",
+  "onboardingWidgetDeclinedBody": "Du kannst das Widget jederzeit später in Habiter hinzufügen.",
+  "onboardingWidgetManualTitle": "Widget manuell hinzufügen",
+  "onboardingWidgetManualOne": "Homescreen gedrückt halten",
+  "onboardingWidgetManualTwo": "Widgets öffnen",
+  "onboardingWidgetManualThree": "Habiter auswählen",
+  "onboardingWidgetManualFour": "Widget platzieren",
+  "onboardingWidgetLetsGo": "Los geht's",
+  "onboardingWidgetUnderstood": "Verstanden"
 }

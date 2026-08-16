@@ -18,6 +18,7 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.ByteArrayOutputStream
 import java.util.TimeZone
 import android.util.Log
+import com.habiter.app.widget.HabiterWidgetPinPlugin
 
 class MainActivity: FlutterActivity() {
     private val TAG = "HabiterAppLock"
@@ -27,6 +28,7 @@ class MainActivity: FlutterActivity() {
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        flutterEngine.plugins.add(HabiterWidgetPinPlugin())
         
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {

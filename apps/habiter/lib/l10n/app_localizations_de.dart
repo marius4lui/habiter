@@ -1156,4 +1156,61 @@ class AppLocalizationsDe extends AppLocalizations {
   String onboardingStepProgress(int step, int total) {
     return 'Einrichtungsschritt $step von $total';
   }
+
+  @override
+  String get onboardingWidgetIntroTitle =>
+      'Habiter gehört auf deinen Homescreen.';
+
+  @override
+  String get onboardingWidgetIntroBody =>
+      'Sieh deinen nächsten Schritt und hake ihn ab, ohne die App zu öffnen.';
+
+  @override
+  String get onboardingWidgetResponsive =>
+      'Passt in kompakte, breite und große Homescreen-Flächen.';
+
+  @override
+  String get onboardingWidgetAdd => 'Widget hinzufügen';
+
+  @override
+  String get onboardingWidgetLater => 'Später';
+
+  @override
+  String get onboardingWidgetPinTitle => 'Habiter zum Homescreen hinzufügen';
+
+  @override
+  String get onboardingWidgetPinBody =>
+      'Android fragt dich, wo du das Widget platzieren möchtest.';
+
+  @override
+  String get onboardingWidgetReadyTitle => 'Bereit.';
+
+  @override
+  String get onboardingWidgetReadyBody =>
+      'Dein nächster Schritt ist jetzt direkt auf deinem Homescreen.';
+
+  @override
+  String get onboardingWidgetDeclinedBody =>
+      'Du kannst das Widget jederzeit später in Habiter hinzufügen.';
+
+  @override
+  String get onboardingWidgetManualTitle => 'Widget manuell hinzufügen';
+
+  @override
+  String get onboardingWidgetManualOne => 'Homescreen gedrückt halten';
+
+  @override
+  String get onboardingWidgetManualTwo => 'Widgets öffnen';
+
+  @override
+  String get onboardingWidgetManualThree => 'Habiter auswählen';
+
+  @override
+  String get onboardingWidgetManualFour => 'Widget platzieren';
+
+  @override
+  String get onboardingWidgetLetsGo => 'Los geht\'s';
+
+  @override
+  String get onboardingWidgetUnderstood => 'Verstanden';
 }

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/design_system/motion.dart';
 import '../application/onboarding_controller.dart';
 import '../application/onboarding_state.dart';
+import '../../widgets/domain/widget_bridge.dart';
 import 'onboarding_scaffold.dart';
 import 'steps/first_habit_step.dart';
 import 'steps/habit_ready_step.dart';
@@ -11,6 +12,8 @@ import 'steps/intent_step.dart';
 import 'steps/reminder_step.dart';
 import 'steps/rhythm_step.dart';
 import 'steps/welcome_step.dart';
+import 'steps/widget_intro_step.dart';
+import 'steps/widget_pin_step.dart';
 
 class OnboardingFlow extends StatelessWidget {
   const OnboardingFlow({super.key});
@@ -78,6 +81,19 @@ class OnboardingFlow extends StatelessWidget {
       return HabitReadyStep(
         key: const ValueKey<OnboardingStep>(OnboardingStep.habitReady),
         controller: controller,
+      );
+    }
+    if (step == OnboardingStep.widgetIntro) {
+      return WidgetIntroStep(
+        key: const ValueKey<OnboardingStep>(OnboardingStep.widgetIntro),
+        controller: controller,
+      );
+    }
+    if (step == OnboardingStep.widgetPin) {
+      return WidgetPinStep(
+        key: const ValueKey<OnboardingStep>(OnboardingStep.widgetPin),
+        controller: controller,
+        bridge: context.read<WidgetBridge>(),
       );
     }
     return OnboardingScaffold(

@@ -2143,6 +2143,108 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Einrichtungsschritt {step} von {total}'**
   String onboardingStepProgress(int step, int total);
+
+  /// No description provided for @onboardingWidgetIntroTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter gehört auf deinen Homescreen.'**
+  String get onboardingWidgetIntroTitle;
+
+  /// No description provided for @onboardingWidgetIntroBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sieh deinen nächsten Schritt und hake ihn ab, ohne die App zu öffnen.'**
+  String get onboardingWidgetIntroBody;
+
+  /// No description provided for @onboardingWidgetResponsive.
+  ///
+  /// In de, this message translates to:
+  /// **'Passt in kompakte, breite und große Homescreen-Flächen.'**
+  String get onboardingWidgetResponsive;
+
+  /// No description provided for @onboardingWidgetAdd.
+  ///
+  /// In de, this message translates to:
+  /// **'Widget hinzufügen'**
+  String get onboardingWidgetAdd;
+
+  /// No description provided for @onboardingWidgetLater.
+  ///
+  /// In de, this message translates to:
+  /// **'Später'**
+  String get onboardingWidgetLater;
+
+  /// No description provided for @onboardingWidgetPinTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter zum Homescreen hinzufügen'**
+  String get onboardingWidgetPinTitle;
+
+  /// No description provided for @onboardingWidgetPinBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Android fragt dich, wo du das Widget platzieren möchtest.'**
+  String get onboardingWidgetPinBody;
+
+  /// No description provided for @onboardingWidgetReadyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bereit.'**
+  String get onboardingWidgetReadyTitle;
+
+  /// No description provided for @onboardingWidgetReadyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein nächster Schritt ist jetzt direkt auf deinem Homescreen.'**
+  String get onboardingWidgetReadyBody;
+
+  /// No description provided for @onboardingWidgetDeclinedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Du kannst das Widget jederzeit später in Habiter hinzufügen.'**
+  String get onboardingWidgetDeclinedBody;
+
+  /// No description provided for @onboardingWidgetManualTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Widget manuell hinzufügen'**
+  String get onboardingWidgetManualTitle;
+
+  /// No description provided for @onboardingWidgetManualOne.
+  ///
+  /// In de, this message translates to:
+  /// **'Homescreen gedrückt halten'**
+  String get onboardingWidgetManualOne;
+
+  /// No description provided for @onboardingWidgetManualTwo.
+  ///
+  /// In de, this message translates to:
+  /// **'Widgets öffnen'**
+  String get onboardingWidgetManualTwo;
+
+  /// No description provided for @onboardingWidgetManualThree.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter auswählen'**
+  String get onboardingWidgetManualThree;
+
+  /// No description provided for @onboardingWidgetManualFour.
+  ///
+  /// In de, this message translates to:
+  /// **'Widget platzieren'**
+  String get onboardingWidgetManualFour;
+
+  /// No description provided for @onboardingWidgetLetsGo.
+  ///
+  /// In de, this message translates to:
+  /// **'Los geht\'s'**
+  String get onboardingWidgetLetsGo;
+
+  /// No description provided for @onboardingWidgetUnderstood.
+  ///
+  /// In de, this message translates to:
+  /// **'Verstanden'**
+  String get onboardingWidgetUnderstood;
 }
 
 class _AppLocalizationsDelegate

@@ -442,5 +442,22 @@
   "onboardingHabitReadyBody": "Now we'll bring it to where you actually see it.",
   "onboardingSaving": "Setting up your habit…",
   "onboardingStepProgress": "Setup step {step} of {total}",
-  "@onboardingStepProgress": {"placeholders": {"step": {"type": "int"}, "total": {"type": "int"}}}
+  "@onboardingStepProgress": {"placeholders": {"step": {"type": "int"}, "total": {"type": "int"}}},
+  "onboardingWidgetIntroTitle": "Habiter belongs on your home screen.",
+  "onboardingWidgetIntroBody": "See your next step and check it off without opening the app.",
+  "onboardingWidgetResponsive": "Fits compact, wide, and large home screen spaces.",
+  "onboardingWidgetAdd": "Add widget",
+  "onboardingWidgetLater": "Later",
+  "onboardingWidgetPinTitle": "Add Habiter to your home screen",
+  "onboardingWidgetPinBody": "Android will ask where you want to place the widget.",
+  "onboardingWidgetReadyTitle": "Ready.",
+  "onboardingWidgetReadyBody": "Your next step is now directly on your home screen.",
+  "onboardingWidgetDeclinedBody": "You can add the widget later from Habiter at any time.",
+  "onboardingWidgetManualTitle": "Add the widget manually",
+  "onboardingWidgetManualOne": "Touch and hold your home screen",
+  "onboardingWidgetManualTwo": "Open Widgets",
+  "onboardingWidgetManualThree": "Choose Habiter",
+  "onboardingWidgetManualFour": "Place the widget",
+  "onboardingWidgetLetsGo": "Let's go",
+  "onboardingWidgetUnderstood": "Got it"
 }

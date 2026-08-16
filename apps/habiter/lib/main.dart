@@ -18,6 +18,7 @@ import 'features/widgets/application/widget_background_entry_point.dart';
 import 'features/widgets/application/widget_app_lock_state_resolver.dart';
 import 'features/widgets/application/widget_sync_controller.dart';
 import 'features/widgets/data/android_widget_bridge.dart';
+import 'features/widgets/domain/widget_bridge.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n.dart';
 import 'providers/app_lock_provider.dart';
@@ -140,6 +141,7 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
     return MultiProvider(
       providers: [
         Provider<HapticGateway>.value(value: dependencies.haptics),
+        Provider<WidgetBridge>.value(value: const AndroidWidgetBridge()),
         ChangeNotifierProvider(
           create: (_) => HabitProvider(
             repository: dependencies.habitRepository,

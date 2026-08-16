@@ -16,10 +16,13 @@
 
 ## Reminders
 
-- Device-time-zone scheduling with daylight-saving handling
-- Stable notification identifiers and duplicate reconciliation
-- Permission-aware behavior without repeated prompts
-- Durable completion actions from foreground, background, or terminated states
+- Smart timing starts from useful category presets and learns personal and habit-specific availability locally.
+- An optional seven-day calibration asks at most once per two-hour window; ignored or dismissed notifications remain neutral.
+- Smart, deterministic-random, and fixed plans can be edited per habit in the Rhythm tab.
+- Active hours, quiet periods, daily limits, global spacing, completion, pause state, and habit rhythm always override candidate times.
+- Device-time-zone scheduling handles daylight-saving changes and reconciles stable notification identifiers after edits, resumes, and time-zone changes.
+- Completion, snooze, and feasibility actions remain durable and idempotent from foreground, background, or terminated states.
+- Raw learning signals expire after 180 days; aggregates remain local until the user resets or deletes them.
 
 Delivery is controlled by the operating system. Battery policy and manufacturer customizations can delay reminders; Habiter does not promise exact delivery.
 

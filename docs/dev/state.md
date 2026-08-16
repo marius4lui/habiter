@@ -6,6 +6,7 @@ Habiter uses `provider`/`ChangeNotifier` at the UI boundary and increasingly kee
 
 - `HabitProvider` remains the compatibility facade for habits, entries, imports, and several screen flows.
 - Feature controllers such as `TodayController`, `AnalyticsController`, `HistoryController`, and `OnboardingController` own focused view state.
+- `ReminderCoordinator` owns local reminder migration, profile recomputation, durable action processing, planning, and reconciliation behind `HabitProvider`.
 - Use cases such as completion and lifecycle operations apply domain rules without depending on widgets.
 - Repositories own persistence. Gateways isolate notifications, App Lock, files, time, IDs, and widgets.
 

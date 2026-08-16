@@ -13,13 +13,17 @@ Never write a new durable field without defining its default, serialization form
 The reminder subsystem contains:
 
 - permission state and prompt coordination;
+- versioned Smart, deterministic-random, and fixed habit policies;
+- local availability profiles with decayed explicit feedback, completion support, hierarchical backoff, and explainable peak windows;
+- calibration and adaptive fine-tuning questions that count as normal reminders;
+- deterministic candidate ranking followed by global active-time, quiet-time, spacing, completion, lifecycle, and daily-limit guardrails;
 - stable notification-ID allocation;
 - schedule planning in the device time zone;
 - reconciliation of desired and pending notifications;
 - durable, idempotent action inbox processing;
 - redacted diagnostics for support and QA.
 
-Notification content must not expose credentials or diagnostic payloads. Delivery remains best-effort under OS power policy.
+Profile formation uses no network, location, contacts, calendar, or sensor data. Notification content must not expose credentials or diagnostic payloads. Delivery remains best-effort under OS power policy.
 
 ## App Lock
 

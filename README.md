@@ -12,7 +12,7 @@ A polished, local-first habit tracker for mobile, desktop, and web — built wit
 [![Platform builds](https://github.com/marius4lui/habiter/actions/workflows/platform-builds.yml/badge.svg?branch=main)](https://github.com/marius4lui/habiter/actions/workflows/platform-builds.yml)
 [![Release API](https://github.com/marius4lui/habiter/actions/workflows/worker-deploy.yml/badge.svg?branch=main)](https://github.com/marius4lui/habiter/actions/workflows/worker-deploy.yml)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44.8-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Version](https://img.shields.io/badge/version-1.3.5-6C63FF)](apps/habiter/pubspec.yaml)
+[![Version](https://img.shields.io/badge/version-1.4.0-6C63FF)](apps/habiter/pubspec.yaml)
 
 [Website](https://habiter.dev) · [Download](https://get.habiter.dev/download) · [Documentation](docs/) · [Release API](https://get.habiter.dev/health)
 
@@ -38,7 +38,7 @@ Create daily, weekday-based, or weekly-frequency habits. Pause, resume, archive,
 
 ### Thoughtful reminders
 
-Timezone-aware scheduling, explicit permission flows, stable notification IDs, and reconciliation keep reminders predictable across restarts and edits.
+Local Smart timing, a transparent calibration week, explicit permission flows, stable notification IDs, and reconciliation keep reminders useful and predictable.
 
 </td>
 <td width="50%" valign="top">
@@ -105,13 +105,13 @@ The release manifest in `packages/release-core/data/releases.json` is the review
 <!-- roadmap:start -->
 ## Roadmap
 
-This roadmap describes the next planned product milestones. Scope and release timing may change as implementation and testing progress.
+This roadmap records the latest delivered milestone and the next planned product work. Future scope and timing may change as implementation and testing progress.
 
-### v1.4 — Dynamic notifications
+### Delivered in v1.4 — Dynamic notifications
 
-- Adapt reminder timing and content to habit schedules, progress, and local context.
-- Reconcile notifications automatically when habits or reminder settings change.
-- Keep notification decisions local-first and preserve explicit user controls.
+- Seven-day calibration and ongoing fine-tuning learn useful time windows entirely on device.
+- Smart, deterministic-random, and fixed plans share global quiet-time, spacing, completion, and daily-limit guardrails.
+- The Rhythm tab explains every learned peak and planned time while keeping schedules, learning, and data deletion under explicit user control.
 
 ### v1.5 — Automatic updates via API
 

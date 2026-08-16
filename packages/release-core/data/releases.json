@@ -2,6 +2,66 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.4.0",
+      "buildNumber": 10400,
+      "channel": "stable",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Smart-Reminder lernen in einer optionalen siebentägigen Kalibrierung passende Zeitfenster vollständig lokal und verfeinern sie anschließend mit wenigen adaptiven Rückfragen.",
+          "Der neue Rhythmus-Tab zeigt Lernfortschritt, globale und Habit-spezifische Peak Windows, nächste Erinnerungen sowie verständliche Begründungen.",
+          "Jedes Habit unterstützt Smart-, deterministische Zufalls- und feste Pläne mit eigener Intensität, Zeitfenstern und Snooze-Dauer."
+        ],
+        "changed": [
+          "Globale Wach- und Ruhezeiten, Tageslimit, Mindestabstand, Completion- und Lifecycle-Status haben jetzt einheitlich Vorrang vor allen Habit-Plänen.",
+          "Bestehende Habit-Uhrzeiten werden verlustfrei als feste Pläne migriert; Bestandsnutzer werden nicht ungefragt auf Smart umgestellt.",
+          "Die plattformübergreifende Planung priorisiert chronologisch die nächsten 64 stabilen, zeitzonen- und DST-sicheren Notifications."
+        ],
+        "fixed": [
+          "Doppelte oder verspätete Background-Actions erzeugen keine doppelten Lernsignale oder Completions.",
+          "Reconciliation entfernt veraltete Pläne nach Completion, Undo, Pause, Archivierung, Löschung, Einstellungs- oder Zeitzonenänderungen zuverlässig."
+        ],
+        "security": [
+          "Lernsignale und Profile bleiben auf dem Gerät, verwenden keine Standort-, Kontakt-, Kalender- oder Sensordaten und lassen sich vollständig zurücksetzen."
+        ]
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.0-android-universal.apk",
+          "signed": true
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.0-android-playstore.aab",
+          "signed": true
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.0-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.0-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.0-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.3.10",
       "buildNumber": 10310,
       "channel": "stable",

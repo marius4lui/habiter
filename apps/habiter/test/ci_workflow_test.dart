@@ -10,6 +10,7 @@ void main() {
     'worker-deploy.yml',
     'worker-preview.yml',
     'release.yml',
+    'docs-deploy.yml',
   };
 
   final repositoryRoot = Directory.current.parent.parent;
@@ -24,7 +25,7 @@ void main() {
       }
     });
 
-    test('uses the five intentional custom workflows', () {
+    test('uses the six intentional custom workflows', () {
       final actual = Directory('${repositoryRoot.path}/.github/workflows')
           .listSync()
           .whereType<File>()

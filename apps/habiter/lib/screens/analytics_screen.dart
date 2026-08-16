@@ -86,6 +86,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       habit: selected,
                       entries: provider.habitEntries,
                       metrics: provider.getHabitMetrics(selected.id),
+                      now: provider.reminderNow,
                     ),
                   ),
                   if (provider.preferences.showRecoverySupport) ...[
@@ -240,15 +241,17 @@ class _RhythmPanel extends StatelessWidget {
     required this.habit,
     required this.entries,
     required this.metrics,
+    required this.now,
   });
 
   final Habit habit;
   final List<HabitEntry> entries;
   final HabitMetrics metrics;
+  final DateTime now;
 
   @override
   Widget build(BuildContext context) {
-    final today = LocalDate.fromDateTime(DateTime.now());
+    final today = LocalDate.fromDateTime(now);
     final recent = HabitMetricCalculator.calculatePeriod(
       habit: habit,
       entries: entries,

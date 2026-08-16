@@ -10,6 +10,7 @@ import 'package:habiter/screens/analytics_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../support/fakes/fake_clock.dart';
 import '../../support/fakes/in_memory_key_value_store.dart';
 
 void main() {
@@ -56,7 +57,7 @@ void main() {
 
 Future<HabitProvider> _provider({required int historyDays}) async {
   final repository = KeyValueHabitRepository(InMemoryKeyValueStore());
-  final now = DateTime.now();
+  final now = DateTime(2026, 8, 16, 12);
   final habit = Habit(
     id: 'habit',
     name: 'Walk',
@@ -96,7 +97,7 @@ Future<HabitProvider> _provider({required int historyDays}) async {
       );
     }
   });
-  final provider = HabitProvider(repository: repository);
+  final provider = HabitProvider(repository: repository, clock: FakeClock(now));
   await provider.load();
   return provider;
 }

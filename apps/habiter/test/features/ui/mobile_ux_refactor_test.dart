@@ -16,6 +16,7 @@ import 'package:habiter/widgets/add_habit_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../support/fakes/fake_clock.dart';
 import '../../support/fakes/in_memory_key_value_store.dart';
 
 void main() {
@@ -265,6 +266,7 @@ Future<HabitProvider> _providerWithHabits() async {
   final provider = HabitProvider(
     repository: repository,
     lifecycleReminders: const _NoLifecycleReminders(),
+    clock: FakeClock(DateTime(2026, 8, 16, 12)),
   );
   await provider.load();
   await provider.addHabit(

@@ -44,6 +44,10 @@ class _RhythmScreenState extends State<RhythmScreen> {
     final profile = selectedHabit == null
         ? null
         : provider.availabilityProfiles['habit:${selectedHabit.id}'];
+    final globalProfile = selectedHabit == null
+        ? null
+        : provider
+              .availabilityProfiles['global:${selectedHabit.category.toLowerCase()}'];
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -122,6 +126,10 @@ class _RhythmScreenState extends State<RhythmScreen> {
                   _AvailabilityChart(
                     copy: _copy,
                     profile: profile,
+                    globalProfile: globalProfile,
+                    policy: selectedHabit == null
+                        ? null
+                        : provider.reminderPolicies[selectedHabit.id],
                     preferences: provider.reminderPreferences,
                   ),
                 ],
@@ -352,6 +360,11 @@ class _CalibrationCard extends StatelessWidget {
     final active = status == CalibrationStatus.active;
     final paused = status == CalibrationStatus.paused;
     final coverage = session?.coveredBuckets.length ?? 0;
+    final eligibleWindowsPerDay =
+        ((preferences.activeDayEnd.minuteOfDay -
+                    preferences.activeDayStart.minuteOfDay) /
+                120)
+            .ceil();
     final title = active
         ? copy.calibrationDay(session!.dayNumberAt(DateTime.now()))
         : paused
@@ -397,10 +410,15 @@ class _CalibrationCard extends StatelessWidget {
                   label: copy.answers,
                   value: '${session!.answeredPulseCount}',
                 ),
-                _MetricChip(label: copy.coverage, value: '$coverage'),
+                _MetricChip(
+                  label: copy.coverage,
+                  value: '$coverage/${eligibleWindowsPerDay * 7}',
+                ),
                 _MetricChip(
                   label: copy.confidenceTitle,
-                  value: '${(confidence * 100).round()} %',
+                  value: copy.confidence(
+                    ProfileConfidenceLabel.fromScore(confidence),
+                  ),
                 ),
               ],
             ),
@@ -463,11 +481,15 @@ class _AvailabilityChart extends StatelessWidget {
   const _AvailabilityChart({
     required this.copy,
     required this.profile,
+    required this.globalProfile,
+    required this.policy,
     required this.preferences,
   });
 
   final _RhythmCopy copy;
   final AvailabilityProfile? profile;
+  final AvailabilityProfile? globalProfile;
+  final HabitReminderPolicy? policy;
   final ReminderPreferences preferences;
 
   @override
@@ -477,6 +499,14 @@ class _AvailabilityChart extends StatelessWidget {
     }
     final weekday = _visibleBuckets(ProfileDayType.weekday);
     final weekend = _visibleBuckets(ProfileDayType.weekend);
+    final globalWeekday = _visibleBucketsFor(
+      globalProfile,
+      ProfileDayType.weekday,
+    );
+    final globalWeekend = _visibleBucketsFor(
+      globalProfile,
+      ProfileDayType.weekend,
+    );
     return HabiterSurface(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,10 +515,30 @@ class _AvailabilityChart extends StatelessWidget {
           const SizedBox(height: HabiterSpace.md),
           _ProfileRow(label: copy.weekend, buckets: weekend, copy: copy),
           const SizedBox(height: HabiterSpace.md),
-          Text(
-            copy.peakWindows(_peakWindows(weekday)),
-            style: Theme.of(context).textTheme.bodyMedium,
+          _WindowOriginRow(
+            title: copy.habitLearned,
+            value: copy.dayTypePeakWindows(
+              _peakWindows(weekday),
+              _peakWindows(weekend),
+            ),
           ),
+          const SizedBox(height: HabiterSpace.sm),
+          _WindowOriginRow(
+            title: copy.globalLearned,
+            value: copy.dayTypePeakWindows(
+              _peakWindows(globalWeekday),
+              _peakWindows(globalWeekend),
+            ),
+          ),
+          if (policy?.smart?.windowSource == PeakWindowSource.userDefined) ...[
+            const SizedBox(height: HabiterSpace.sm),
+            _WindowOriginRow(
+              title: copy.userDefined,
+              value: policy!.smart!.userPeakWindows
+                  .map((window) => '${window.start}–${window.end}')
+                  .join(', '),
+            ),
+          ],
           const SizedBox(height: HabiterSpace.xs),
           Text(
             copy.profileOrigin(profile!),
@@ -503,8 +553,13 @@ class _AvailabilityChart extends StatelessWidget {
 
   List<MapEntry<ProfileBucketKey, ProfileBucket>> _visibleBuckets(
     ProfileDayType dayType,
+  ) => _visibleBucketsFor(profile, dayType);
+
+  List<MapEntry<ProfileBucketKey, ProfileBucket>> _visibleBucketsFor(
+    AvailabilityProfile? source,
+    ProfileDayType dayType,
   ) =>
-      profile!.buckets.entries
+      (source?.buckets.entries ?? const Iterable.empty())
           .where(
             (entry) =>
                 entry.key.dayType == dayType &&
@@ -550,6 +605,39 @@ class _AvailabilityChart extends StatelessWidget {
     }
     return result.take(2).toList(growable: false);
   }
+}
+
+class _WindowOriginRow extends StatelessWidget {
+  const _WindowOriginRow({required this.title, required this.value});
+
+  final String title;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Icon(
+        Icons.timeline_rounded,
+        size: 18,
+        color: Theme.of(context).colorScheme.primary,
+      ),
+      const SizedBox(width: HabiterSpace.sm),
+      Expanded(
+        child: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: '$title: ',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              TextSpan(text: value),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
 }
 
 class _ProfileRow extends StatelessWidget {
@@ -1102,9 +1190,20 @@ final class _RhythmCopy {
       : 'The local profile will appear after the next planning run.';
   String get noPeak =>
       de ? 'Noch kein sicheres Peak Window.' : 'No confident peak window yet.';
-  String peakWindows(List<LocalTimeRange> values) => values.isEmpty
-      ? noPeak
-      : '${de ? 'Peak Windows' : 'Peak windows'}: ${values.map((value) => '${value.start}–${value.end}').join(', ')}';
+  String get habitLearned => de ? 'Habit gelernt' : 'Habit learned';
+  String get globalLearned => de ? 'Global gelernt' : 'Globally learned';
+  String get userDefined => de ? 'Von dir festgelegt' : 'User-defined';
+  String dayTypePeakWindows(
+    List<LocalTimeRange> weekdays,
+    List<LocalTimeRange> weekend,
+  ) {
+    String format(List<LocalTimeRange> values) => values.isEmpty
+        ? (de ? 'noch kein sicheres Fenster' : 'no confident window yet')
+        : values.map((value) => '${value.start}–${value.end}').join(', ');
+    return '${de ? 'Werktags' : 'Weekdays'} ${format(weekdays)} · '
+        '${de ? 'Wochenende' : 'Weekend'} ${format(weekend)}';
+  }
+
   String profileOrigin(AvailabilityProfile profile) =>
       profile.effectiveSamples == 0
       ? (de
@@ -1119,7 +1218,9 @@ final class _RhythmCopy {
     }
     if (!policy.enabled) return de ? 'Deaktiviert' : 'Disabled';
     return switch (policy.mode) {
-      ReminderMode.smart => 'Smart · ${intensity(policy.intensity)}',
+      ReminderMode.smart =>
+        'Smart · ${intensity(policy.intensity)} · '
+            '${policy.smart!.windowSource == PeakWindowSource.userDefined ? userDefined : (de ? 'gelernt' : 'learned')}',
       ReminderMode.randomWithinWindow =>
         de ? 'Zufällig im Fenster' : 'Random within window',
       ReminderMode.fixedTimes => de ? 'Feste Zeiten' : 'Fixed times',

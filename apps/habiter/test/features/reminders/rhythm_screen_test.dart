@@ -33,6 +33,14 @@ void main() {
     expect(find.text('Still learning'), findsOneWidget);
     expect(find.text('Availability profile'), findsOneWidget);
     expect(find.textContaining('Category preset'), findsWidgets);
+    expect(
+      find.textContaining('Habit learned:', findRichText: true),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Globally learned:', findRichText: true),
+      findsOneWidget,
+    );
 
     final whyButton = find.text('Why this time?');
     await tester.ensureVisible(whyButton);

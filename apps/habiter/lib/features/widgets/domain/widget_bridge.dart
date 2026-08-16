@@ -1,6 +1,6 @@
 import 'widget_snapshot.dart';
 
-enum WidgetPinResult { pinned, declined, unsupported, failed }
+enum WidgetPinResult { requested, pinned, declined, unsupported, failed }
 
 abstract interface class WidgetBridge {
   Future<void> publish(WidgetSnapshot snapshot);

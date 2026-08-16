@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:provider/provider.dart';
 
 import 'app/bootstrap.dart';
@@ -13,6 +14,7 @@ import 'core/design_system/motion.dart';
 import 'features/onboarding/application/onboarding_controller.dart';
 import 'features/onboarding/application/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_flow.dart';
+import 'features/widgets/application/widget_background_entry_point.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n.dart';
 import 'providers/app_lock_provider.dart';
@@ -24,8 +26,11 @@ import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await HomeWidget.registerInteractivityCallback(
+    habiterWidgetBackgroundCallback,
+  );
   runApp(_HabiterLauncher(AppBootstrap(AppDependencies.production())));
 }
 

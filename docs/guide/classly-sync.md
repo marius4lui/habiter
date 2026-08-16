@@ -1,26 +1,32 @@
-# Classly Sync
+# Classly-compatible sync
 
-Sync your homework and tasks from [Classly](https://classly.site) as daily habits.
+Import supported school events from a trusted Classly-compatible service as habits. The integration is optional and disabled until configured.
 
 ## Setup
 
-1. Go to **Settings** → **Classly Sync**
-2. Enter your Classly instance URL (default: `classly.site`)
-3. Log in with your credentials
-4. Tap **Sync Now**
+1. Go to **Settings → Advanced integrations → Classly Sync**.
+2. Enter the public HTTPS URL of the service you trust.
+3. Complete the OAuth login. Habiter uses PKCE and stores credentials in secure platform storage where available.
+4. Review the connection and select **Sync now**.
 
-Your Classly events will be imported as habits automatically.
+Imported items retain source metadata so repeated syncs can reconcile them rather than creating uncontrolled duplicates.
+
+::: warning Trust boundary
+Only connect to a service you recognize. Login and event data are handled by that service under its own privacy and availability terms.
+:::
 
 ## Auto-Sync
 
-Enable auto-sync to automatically fetch new tasks at regular intervals:
+When supported, auto-sync can check for new items at these intervals:
 
 - 5 minutes
 - 15 minutes
 - 30 minutes
 - 60 minutes
 
-## Supported Event Types
+Background execution remains subject to operating-system scheduling. Use **Sync now** when you need an immediate refresh.
+
+## Supported event types
 
 | Event Type | Habit Icon |
 |------------|------------|
@@ -28,3 +34,7 @@ Enable auto-sync to automatically fetch new tasks at regular intervals:
 | Exam       | 📝         |
 | Presentation | 🎤       |
 | Other      | 📋         |
+
+## Disconnecting
+
+Disable automatic sync and disconnect the integration from Settings to remove the local authorization state. Existing imported habits remain under your control and can be archived or deleted separately.

@@ -1,35 +1,40 @@
-# State Management
+# State management
 
-Habiter uses **Provider** for state management.
+Habiter uses `provider`/`ChangeNotifier` at the UI boundary and increasingly keeps behavior in focused controllers, queries, repositories, and use cases.
 
-## HabitProvider
+## Ownership
 
-The main provider managing all habit-related state:
+- `HabitProvider` remains the compatibility facade for habits, entries, imports, and several screen flows.
+- Feature controllers such as `TodayController`, `AnalyticsController`, `HistoryController`, and `OnboardingController` own focused view state.
+- Use cases such as completion and lifecycle operations apply domain rules without depending on widgets.
+- Repositories own persistence. Gateways isolate notifications, App Lock, files, time, IDs, and widgets.
 
-```dart
-class HabitProvider extends ChangeNotifier {
-  List<Habit> habits = [];
-  List<HabitEntry> habitEntries = [];
-  
-  Future<void> addHabit({...}) async { ... }
-  Future<void> toggleHabitCompletion(String habitId, String date) async { ... }
-  Future<void> importFromClasslyEvents(List<ClasslyEvent> events) async { ... }
-}
-```
-
-## Usage
+Widgets should observe the smallest useful state and call an application operation rather than mutating model collections directly.
 
 ```dart
-final provider = context.read<HabitProvider>();
-await provider.toggleHabitCompletion(habit.id, '2024-01-14');
+final habits = context.watch<HabitProvider>();
+await context.read<HabitProvider>().toggleHabitCompletion(habit.id, date);
 ```
 
-## Listening to Changes
+## State transition contract
 
-```dart
-Consumer<HabitProvider>(
-  builder: (context, provider, child) {
-    return Text('${provider.habits.length} habits');
-  },
-)
-```
+For mutations:
+
+1. Validate input and schedule rules.
+2. Persist the new canonical state.
+3. Reconcile dependent reminders, widgets, or lifecycle state.
+4. Publish one coherent state update.
+5. Surface recoverable failure without discarding the last valid state.
+
+Do not use widget lifecycle methods as the sole owner of durable business state. Background notification and widget actions must remain idempotent because platforms may retry them.
+
+## Time and schedules
+
+Domain code uses `LocalDate` and injected clocks rather than ad-hoc `DateTime.now()` calls. Reminder scheduling resolves the device time zone and explicitly handles daylight-saving gaps and overlaps.
+
+## Testing
+
+- Domain tests cover schedule and lifecycle invariants.
+- Controller/use-case tests use fake clocks, repositories, and gateways.
+- Widget tests cover responsive layouts, semantics, completion/undo, and key navigation flows.
+- Platform integrations retain manual physical-device gates where emulators cannot prove OS behavior.

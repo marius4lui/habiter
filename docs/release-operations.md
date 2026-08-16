@@ -95,6 +95,19 @@ pnpm --filter @habiter/website build
 pnpm --dir apps/website exec wrangler deploy
 ```
 
+## Documentation deployment on GitHub Pages
+
+VitePress is deployed independently from the product website to `docs.habiter.dev`. The `Deploy Documentation` workflow builds `docs/.vitepress/dist` and publishes it with GitHub Pages. The site uses the custom-domain root (`base: '/'`); changing it to a repository subpath breaks CSS, JavaScript, images, and navigation.
+
+Deployments run for documentation changes merged to `main` and can be started manually with:
+
+```bash
+gh workflow run docs-deploy.yml --ref main
+gh run watch --exit-status
+```
+
+The committed `docs/public/CNAME` preserves the custom domain in every artifact. Keep Pages in GitHub Actions mode and enforce HTTPS after DNS and certificate validation succeed.
+
 ## Legacy cleanup
 
 The old `v1.3` and `v1.3.3` tags and the `v1.3.3` GitHub Release belong to the superseded product line. Remove them only after all local checks, the manual dry run and signing verification pass. Commit history is retained even when the public tags and release are deleted.

@@ -1,38 +1,44 @@
-# Getting Started
+# Getting started
 
-Welcome to Habiter! This guide will help you get up and running.
+This guide covers installation, the first habit, everyday completion, and safe backup.
 
 ## Installation
 
-### Android
-Download the APK from the [Releases page](https://github.com/marius4lui/habiter/releases).
+Use the [smart download page](https://get.habiter.dev/download) to select the current artifact for Android, Windows, Linux, or macOS. Release files and checksums are also available on [GitHub Releases](https://github.com/marius4lui/habiter/releases).
 
-### Windows
-Download the Windows installer from the [Releases page](https://github.com/marius4lui/habiter/releases).
+::: info Platform status
+Android releases are signed. Windows, Linux, and macOS packages have verified checksums; Windows and macOS code signing is still planned. iOS CI artifacts are unsigned and require manual signing. The web build is validated but is not the primary distribution format.
+:::
 
 ### Build from Source
 
 ```bash
 git clone https://github.com/marius4lui/habiter.git
-cd habiter
-flutter pub get
+cd habiter/apps/habiter
+flutter pub get --enforce-lockfile
 flutter run
 ```
 
 ## Your First Habit
 
-1. Tap the **+** button on the home screen
-2. Enter a name for your habit (e.g., "Drink Water")
-3. Choose a category and icon
-4. Set your frequency (daily, weekly, or custom days)
-5. Tap **Create Habit**
+1. Open **Today** and select the create action.
+2. Choose a clear name, icon, and color.
+3. Select daily, specific weekdays, or a weekly frequency.
+4. Optionally configure a reminder.
+5. Review and save the habit.
 
 ## Completing Habits
 
-Simply tap on a habit card to mark it as complete for today. Tap again to undo.
+Tap an active habit once to complete it for today. Undo is available immediately. Paused and archived habits retain their history and can be restored later.
+
+## Keep your data safe
+
+Open **Settings → Data & privacy** to export a versioned JSON backup. Imports show a preview before changing local data, preserve existing collisions by default, and create a recovery backup after a successful import.
+
+Habiter does not require a cloud account. Store exported backups somewhere you control.
 
 ## Next Steps
 
-- Learn about [Features](/guide/features)
-- Set up [App Lock](/guide/app-lock)
-- Connect [Classly Sync](/guide/classly-sync)
+- Review all [features and platform limits](/guide/features).
+- Configure Android [App Lock](/guide/app-lock).
+- Connect an optional [Classly-compatible service](/guide/classly-sync).

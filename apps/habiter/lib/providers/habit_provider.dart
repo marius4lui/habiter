@@ -160,7 +160,8 @@ class HabitProvider extends ChangeNotifier {
     await Future.wait([_habitsController.load(), _historyController.load()]);
   }
 
-  Future<void> addHabit({
+  Future<String> addHabit({
+    String? id,
     required String name,
     String? description,
     required String category,
@@ -172,7 +173,8 @@ class HabitProvider extends ChangeNotifier {
     bool notificationEnabled = false,
     String? notificationTime,
   }) async {
-    await _habitsController.add(
+    return _habitsController.add(
+      id: id,
       name: name,
       description: description,
       color: color,
@@ -184,6 +186,22 @@ class HabitProvider extends ChangeNotifier {
       notificationEnabled: notificationEnabled,
       notificationTime: notificationTime,
     );
+  }
+
+  Future<bool> requestHabitReminderPermission() async {
+    await NotificationService.instance.initialize();
+    NotificationService.instance.setActionCallback(handleNotificationAction);
+    return NotificationService.instance.requestPermissions();
+  }
+
+  Future<void> scheduleHabitReminder(String habitId) async {
+    final habit = habits.where((item) => item.id == habitId).firstOrNull;
+    if (habit == null ||
+        !habit.notificationEnabled ||
+        habit.notificationTime == null) {
+      return;
+    }
+    await NotificationService.instance.scheduleHabitNotification(habit);
   }
 
   Future<void> updateHabit(String id, Habit updated) async {

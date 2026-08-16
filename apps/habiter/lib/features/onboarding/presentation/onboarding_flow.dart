@@ -5,6 +5,12 @@ import '../../../core/design_system/motion.dart';
 import '../application/onboarding_controller.dart';
 import '../application/onboarding_state.dart';
 import 'onboarding_scaffold.dart';
+import 'steps/first_habit_step.dart';
+import 'steps/habit_ready_step.dart';
+import 'steps/intent_step.dart';
+import 'steps/reminder_step.dart';
+import 'steps/rhythm_step.dart';
+import 'steps/welcome_step.dart';
 
 class OnboardingFlow extends StatelessWidget {
   const OnboardingFlow({super.key});
@@ -37,17 +43,41 @@ class OnboardingFlow extends StatelessWidget {
     OnboardingStep step,
   ) {
     if (step == OnboardingStep.welcome || step == OnboardingStep.notStarted) {
-      return OnboardingScaffold(
+      return WelcomeStep(
         key: const ValueKey<OnboardingStep>(OnboardingStep.welcome),
-        step: 1,
-        title: 'Habits that stay visible.',
-        subtitle:
-            'Habiter makes your next step clear — without pressure or complicated systems.',
-        body: const _LeafMark(),
-        primaryAction: FilledButton(
-          onPressed: controller.start,
-          child: const Text('Get started'),
-        ),
+        controller: controller,
+      );
+    }
+    if (step == OnboardingStep.intent) {
+      return IntentStep(
+        key: const ValueKey<OnboardingStep>(OnboardingStep.intent),
+        controller: controller,
+      );
+    }
+    if (step == OnboardingStep.firstHabit) {
+      return FirstHabitStep(
+        key: const ValueKey<OnboardingStep>(OnboardingStep.firstHabit),
+        controller: controller,
+      );
+    }
+    if (step == OnboardingStep.rhythm && controller.state.habitDraft != null) {
+      return RhythmStep(
+        key: const ValueKey<OnboardingStep>(OnboardingStep.rhythm),
+        controller: controller,
+      );
+    }
+    if (step == OnboardingStep.reminder &&
+        controller.state.habitDraft != null) {
+      return ReminderStep(
+        key: const ValueKey<OnboardingStep>(OnboardingStep.reminder),
+        controller: controller,
+      );
+    }
+    if (step == OnboardingStep.habitReady &&
+        controller.state.habitDraft != null) {
+      return HabitReadyStep(
+        key: const ValueKey<OnboardingStep>(OnboardingStep.habitReady),
+        controller: controller,
       );
     }
     return OnboardingScaffold(
@@ -98,31 +128,4 @@ class OnboardingFlow extends StatelessWidget {
     OnboardingStep.widgetPin => Icons.add_to_home_screen_rounded,
     _ => Icons.eco_rounded,
   };
-}
-
-class _LeafMark extends StatelessWidget {
-  const _LeafMark();
-
-  @override
-  Widget build(BuildContext context) => Center(
-    child: Container(
-      width: 144,
-      height: 144,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(72),
-          topRight: Radius.circular(72),
-          bottomRight: Radius.circular(20),
-          bottomLeft: Radius.circular(72),
-        ),
-      ),
-      child: Icon(
-        Icons.eco_rounded,
-        size: 76,
-        color: Theme.of(context).colorScheme.primary,
-      ),
-    ),
-  );
 }

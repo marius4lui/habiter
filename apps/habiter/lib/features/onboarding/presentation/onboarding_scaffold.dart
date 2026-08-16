@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/design_system/tokens.dart';
+import '../../../l10n/l10n.dart';
 
 class OnboardingScaffold extends StatelessWidget {
   const OnboardingScaffold({
@@ -53,7 +54,7 @@ class OnboardingScaffold extends StatelessWidget {
                   ),
                   Expanded(
                     child: Semantics(
-                      label: 'Onboarding step $step of 8',
+                      label: context.l10n.onboardingStepProgress(step, 8),
                       value: '$step of 8',
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(HabiterRadius.pill),

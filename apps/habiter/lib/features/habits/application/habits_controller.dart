@@ -68,7 +68,8 @@ final class HabitsController extends ChangeNotifier {
     }
   }
 
-  Future<void> add({
+  Future<String> add({
+    String? id,
     required String name,
     String? description,
     required String category,
@@ -81,8 +82,9 @@ final class HabitsController extends ChangeNotifier {
     String? notificationTime,
     HabitSourceMetadata? source,
   }) async {
+    final habitId = id ?? _ids.next();
     final habit = Habit(
-      id: _ids.next(),
+      id: habitId,
       name: name,
       description: description,
       color: color,
@@ -99,6 +101,7 @@ final class HabitsController extends ChangeNotifier {
     );
     await _repository.transact((draft) => draft.upsertHabit(habit));
     await load();
+    return habitId;
   }
 
   Future<void> update(Habit habit) async {

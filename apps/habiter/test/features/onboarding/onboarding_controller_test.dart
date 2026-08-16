@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/features/onboarding/application/onboarding_controller.dart';
 import 'package:habiter/features/onboarding/application/onboarding_repository.dart';
 import 'package:habiter/features/onboarding/application/onboarding_state.dart';
+import 'package:habiter/features/habits/application/habits_controller.dart';
+import 'package:habiter/features/habits/data/key_value_habit_repository.dart';
 import 'package:habiter/models/habit.dart';
 
 import '../../support/fakes/fake_clock.dart';
@@ -78,4 +80,33 @@ void main() {
     expect(controller.state.habitDraft?.name, 'Water');
     expect(controller.state.currentStep, OnboardingStep.firstHabit);
   });
+
+  test(
+    'replaying first-habit creation with its reserved id is idempotent',
+    () async {
+      final repository = KeyValueHabitRepository(InMemoryKeyValueStore());
+      final habits = HabitsController(
+        repository: repository,
+        ids: FakeIdGenerator(const <String>['unused']),
+        clock: FakeClock(DateTime.utc(2026, 8, 16)),
+      );
+
+      for (var attempt = 0; attempt < 2; attempt++) {
+        await habits.add(
+          id: 'reserved-first-habit',
+          name: 'Read',
+          category: 'Learning',
+          frequency: HabitFrequency.daily,
+          targetCount: 1,
+          color: '#7B61A8',
+          icon: '📚',
+        );
+      }
+
+      final snapshot = await repository.load();
+      expect(snapshot.habits, hasLength(1));
+      expect(snapshot.habits.single.id, 'reserved-first-habit');
+      habits.dispose();
+    },
+  );
 }

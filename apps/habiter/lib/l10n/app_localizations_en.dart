@@ -1061,4 +1061,88 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emptyStarterExamples => 'Water · Read · Walk · Meditate';
+
+  @override
+  String get onboardingWelcomeTitle => 'Habits that stay visible.';
+
+  @override
+  String get onboardingWelcomeBody =>
+      'Habiter makes your next step clear — without pressure or complicated systems.';
+
+  @override
+  String get onboardingGetStarted => 'Get started';
+
+  @override
+  String get onboardingIntentTitle => 'What would you like to strengthen?';
+
+  @override
+  String get onboardingIntentBody =>
+      'This only helps us put useful starting ideas first.';
+
+  @override
+  String get onboardingIntentOther => 'Something else';
+
+  @override
+  String get onboardingFirstHabitTitle => 'Start with something small.';
+
+  @override
+  String get onboardingFirstHabitBody =>
+      'Choose something or create your own habit.';
+
+  @override
+  String get onboardingCustomHabitName => 'Name your habit';
+
+  @override
+  String get onboardingRhythmTitle => 'How often does this fit your life?';
+
+  @override
+  String get onboardingEveryDay => 'Every day';
+
+  @override
+  String get onboardingEveryDayBody => 'A clear daily rhythm';
+
+  @override
+  String get onboardingSeveralTimes => 'Several times per week';
+
+  @override
+  String get onboardingSeveralTimesBody => 'Choose a weekly target';
+
+  @override
+  String get onboardingSpecificDays => 'Specific days';
+
+  @override
+  String get onboardingSpecificDaysBody => 'Choose the days that fit';
+
+  @override
+  String onboardingTimesPerWeek(int count) {
+    return '$count× per week';
+  }
+
+  @override
+  String get onboardingReminderTitle => 'Would you like a reminder?';
+
+  @override
+  String get onboardingReminderBody =>
+      'Optional. Your habit works without a reminder.';
+
+  @override
+  String get onboardingNoReminder => 'Without a reminder';
+
+  @override
+  String get onboardingAddReminder => 'Add a reminder';
+
+  @override
+  String get onboardingHabitReadyTitle => 'Your first habit is ready.';
+
+  @override
+  String get onboardingHabitReadyBody =>
+      'Now we\'ll bring it to where you actually see it.';
+
+  @override
+  String get onboardingSaving => 'Setting up your habit…';
+
+  @override
+  String onboardingStepProgress(int step, int total) {
+    return 'Setup step $step of $total';
+  }
 }

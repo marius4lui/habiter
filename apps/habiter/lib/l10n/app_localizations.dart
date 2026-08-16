@@ -1993,6 +1993,156 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Wasser · Lesen · Spazieren · Meditieren'**
   String get emptyStarterExamples;
+
+  /// No description provided for @onboardingWelcomeTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Gewohnheiten, die sichtbar bleiben.'**
+  String get onboardingWelcomeTitle;
+
+  /// No description provided for @onboardingWelcomeBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter macht deinen nächsten Schritt klar – ohne Druck, ohne komplizierte Systeme.'**
+  String get onboardingWelcomeBody;
+
+  /// No description provided for @onboardingGetStarted.
+  ///
+  /// In de, this message translates to:
+  /// **'Loslegen'**
+  String get onboardingGetStarted;
+
+  /// No description provided for @onboardingIntentTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Was möchtest du gerade stärken?'**
+  String get onboardingIntentTitle;
+
+  /// No description provided for @onboardingIntentBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Damit zeigen wir dir passende Startideen zuerst.'**
+  String get onboardingIntentBody;
+
+  /// No description provided for @onboardingIntentOther.
+  ///
+  /// In de, this message translates to:
+  /// **'Etwas anderes'**
+  String get onboardingIntentOther;
+
+  /// No description provided for @onboardingFirstHabitTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Starte mit etwas Kleinem.'**
+  String get onboardingFirstHabitTitle;
+
+  /// No description provided for @onboardingFirstHabitBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle etwas aus oder erstelle dein eigenes Habit.'**
+  String get onboardingFirstHabitBody;
+
+  /// No description provided for @onboardingCustomHabitName.
+  ///
+  /// In de, this message translates to:
+  /// **'Gib deinem Habit einen Namen'**
+  String get onboardingCustomHabitName;
+
+  /// No description provided for @onboardingRhythmTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie oft passt das in deinen Alltag?'**
+  String get onboardingRhythmTitle;
+
+  /// No description provided for @onboardingEveryDay.
+  ///
+  /// In de, this message translates to:
+  /// **'Jeden Tag'**
+  String get onboardingEveryDay;
+
+  /// No description provided for @onboardingEveryDayBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein klarer täglicher Rhythmus'**
+  String get onboardingEveryDayBody;
+
+  /// No description provided for @onboardingSeveralTimes.
+  ///
+  /// In de, this message translates to:
+  /// **'Mehrmals pro Woche'**
+  String get onboardingSeveralTimes;
+
+  /// No description provided for @onboardingSeveralTimesBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle dein Wochenziel'**
+  String get onboardingSeveralTimesBody;
+
+  /// No description provided for @onboardingSpecificDays.
+  ///
+  /// In de, this message translates to:
+  /// **'Bestimmte Tage'**
+  String get onboardingSpecificDays;
+
+  /// No description provided for @onboardingSpecificDaysBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle passende Wochentage'**
+  String get onboardingSpecificDaysBody;
+
+  /// No description provided for @onboardingTimesPerWeek.
+  ///
+  /// In de, this message translates to:
+  /// **'{count}× pro Woche'**
+  String onboardingTimesPerWeek(int count);
+
+  /// No description provided for @onboardingReminderTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchtest du erinnert werden?'**
+  String get onboardingReminderTitle;
+
+  /// No description provided for @onboardingReminderBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Optional. Dein Habit funktioniert auch ohne Erinnerung.'**
+  String get onboardingReminderBody;
+
+  /// No description provided for @onboardingNoReminder.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Erinnerung'**
+  String get onboardingNoReminder;
+
+  /// No description provided for @onboardingAddReminder.
+  ///
+  /// In de, this message translates to:
+  /// **'Erinnerung hinzufügen'**
+  String get onboardingAddReminder;
+
+  /// No description provided for @onboardingHabitReadyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein erstes Habit steht.'**
+  String get onboardingHabitReadyTitle;
+
+  /// No description provided for @onboardingHabitReadyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt bringen wir es dorthin, wo du es wirklich siehst.'**
+  String get onboardingHabitReadyBody;
+
+  /// No description provided for @onboardingSaving.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Habit wird eingerichtet…'**
+  String get onboardingSaving;
+
+  /// No description provided for @onboardingStepProgress.
+  ///
+  /// In de, this message translates to:
+  /// **'Einrichtungsschritt {step} von {total}'**
+  String onboardingStepProgress(int step, int total);
 }
 
 class _AppLocalizationsDelegate

@@ -1072,4 +1072,88 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get emptyStarterExamples => 'Wasser · Lesen · Spazieren · Meditieren';
+
+  @override
+  String get onboardingWelcomeTitle => 'Gewohnheiten, die sichtbar bleiben.';
+
+  @override
+  String get onboardingWelcomeBody =>
+      'Habiter macht deinen nächsten Schritt klar – ohne Druck, ohne komplizierte Systeme.';
+
+  @override
+  String get onboardingGetStarted => 'Loslegen';
+
+  @override
+  String get onboardingIntentTitle => 'Was möchtest du gerade stärken?';
+
+  @override
+  String get onboardingIntentBody =>
+      'Damit zeigen wir dir passende Startideen zuerst.';
+
+  @override
+  String get onboardingIntentOther => 'Etwas anderes';
+
+  @override
+  String get onboardingFirstHabitTitle => 'Starte mit etwas Kleinem.';
+
+  @override
+  String get onboardingFirstHabitBody =>
+      'Wähle etwas aus oder erstelle dein eigenes Habit.';
+
+  @override
+  String get onboardingCustomHabitName => 'Gib deinem Habit einen Namen';
+
+  @override
+  String get onboardingRhythmTitle => 'Wie oft passt das in deinen Alltag?';
+
+  @override
+  String get onboardingEveryDay => 'Jeden Tag';
+
+  @override
+  String get onboardingEveryDayBody => 'Ein klarer täglicher Rhythmus';
+
+  @override
+  String get onboardingSeveralTimes => 'Mehrmals pro Woche';
+
+  @override
+  String get onboardingSeveralTimesBody => 'Wähle dein Wochenziel';
+
+  @override
+  String get onboardingSpecificDays => 'Bestimmte Tage';
+
+  @override
+  String get onboardingSpecificDaysBody => 'Wähle passende Wochentage';
+
+  @override
+  String onboardingTimesPerWeek(int count) {
+    return '$count× pro Woche';
+  }
+
+  @override
+  String get onboardingReminderTitle => 'Möchtest du erinnert werden?';
+
+  @override
+  String get onboardingReminderBody =>
+      'Optional. Dein Habit funktioniert auch ohne Erinnerung.';
+
+  @override
+  String get onboardingNoReminder => 'Ohne Erinnerung';
+
+  @override
+  String get onboardingAddReminder => 'Erinnerung hinzufügen';
+
+  @override
+  String get onboardingHabitReadyTitle => 'Dein erstes Habit steht.';
+
+  @override
+  String get onboardingHabitReadyBody =>
+      'Jetzt bringen wir es dorthin, wo du es wirklich siehst.';
+
+  @override
+  String get onboardingSaving => 'Dein Habit wird eingerichtet…';
+
+  @override
+  String onboardingStepProgress(int step, int total) {
+    return 'Einrichtungsschritt $step von $total';
+  }
 }

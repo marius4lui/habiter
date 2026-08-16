@@ -139,7 +139,7 @@ void main() {
     expect(explicit.source.baseWeight, 1);
     expect(completion.targetValue, 1);
     expect(completion.source.baseWeight, 0.35);
-    expect(completion.withCompletionAttribution(true).source.baseWeight, 0.8);
+    expect(completion.withReminderAttribution('reminder').sourceWeight, 0.65);
   });
 
   test('availability profiles roundtrip and expose confidence labels', () {

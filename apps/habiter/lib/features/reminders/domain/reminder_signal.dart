@@ -90,19 +90,23 @@ final class ReminderSignal {
     return 1;
   }
 
-  ReminderSignal withCompletionAttribution(bool shortlyAfterReminder) {
-    if (source != SignalSource.habitCompletion || !shortlyAfterReminder) {
-      return this;
-    }
+  double get sourceWeight =>
+      source == SignalSource.habitCompletion &&
+          originatingNotificationKey != null
+      ? 0.65
+      : source.baseWeight;
+
+  ReminderSignal withReminderAttribution(String notificationKey) {
+    if (source != SignalSource.habitCompletion) return this;
     return ReminderSignal(
       id: id,
       habitId: habitId,
-      source: SignalSource.notificationCompletion,
+      source: source,
       occurredAtUtc: occurredAtUtc,
       timeZoneId: timeZoneId,
       localWeekday: localWeekday,
       localMinuteOfDay: localMinuteOfDay,
-      originatingNotificationKey: originatingNotificationKey,
+      originatingNotificationKey: notificationKey,
       createdAt: createdAt,
     );
   }

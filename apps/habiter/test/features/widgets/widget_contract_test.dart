@@ -19,6 +19,7 @@ void main() {
       completedCount: 1,
       scheduledCount: 2,
       allComplete: false,
+      hasAnyHabits: true,
       nextHabit: habit,
       habits: const <WidgetHabitItem>[habit],
     );

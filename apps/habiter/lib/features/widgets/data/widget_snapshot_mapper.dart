@@ -39,6 +39,7 @@ final class WidgetSnapshotMapper {
       completedCount: today.completed.length,
       scheduledCount: today.scheduled.length,
       allComplete: today.scheduled.isNotEmpty && today.pending.isEmpty,
+      hasAnyHabits: habits.isNotEmpty,
       nextHabit: items.where((item) => !item.isCompleted).firstOrNull,
       habits: items,
       lastCompletion: lastCompletion,

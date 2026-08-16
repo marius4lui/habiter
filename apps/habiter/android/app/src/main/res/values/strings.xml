@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="habiter_widget_name">Habiter</string>
+    <string name="habiter_widget_description">See today\'s habits and complete the next step from your home screen.</string>
+</resources>

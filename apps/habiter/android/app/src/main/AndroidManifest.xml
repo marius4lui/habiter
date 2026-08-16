@@ -92,6 +92,19 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".widget.HabiterWidgetReceiver"
+            android:enabled="true"
+            android:exported="false"
+            android:label="@string/habiter_widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/habiter_widget_info" />
+        </receiver>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

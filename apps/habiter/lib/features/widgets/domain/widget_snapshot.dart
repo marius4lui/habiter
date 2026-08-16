@@ -41,6 +41,7 @@ final class WidgetSnapshot {
     required this.completedCount,
     required this.scheduledCount,
     required this.allComplete,
+    required this.hasAnyHabits,
     required Iterable<WidgetHabitItem> habits,
     this.nextHabit,
     this.lastCompletion,
@@ -70,6 +71,7 @@ final class WidgetSnapshot {
       completedCount: (map['completedCount']! as num).toInt(),
       scheduledCount: (map['scheduledCount']! as num).toInt(),
       allComplete: map['allComplete']! as bool,
+      hasAnyHabits: map['hasAnyHabits'] as bool? ?? habits.isNotEmpty,
       habits: habits,
       nextHabit: next is Map
           ? WidgetHabitItem.fromMap(Map<String, Object?>.from(next))
@@ -87,6 +89,7 @@ final class WidgetSnapshot {
   final int completedCount;
   final int scheduledCount;
   final bool allComplete;
+  final bool hasAnyHabits;
   final WidgetHabitItem? nextHabit;
   final List<WidgetHabitItem> habits;
   final WidgetLastCompletion? lastCompletion;
@@ -99,6 +102,7 @@ final class WidgetSnapshot {
     'completedCount': completedCount,
     'scheduledCount': scheduledCount,
     'allComplete': allComplete,
+    'hasAnyHabits': hasAnyHabits,
     'nextHabit': nextHabit?.toMap(),
     'habits': habits.map((habit) => habit.toMap()).toList(growable: false),
     'lastCompletion': lastCompletion?.toMap(),

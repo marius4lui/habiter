@@ -2,6 +2,60 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.3.5",
+      "buildNumber": 10305,
+      "channel": "stable",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Zusätzliche responsive Widget-Größenprofile decken kompakte Android-Launcher-Raster zuverlässig ab."
+        ],
+        "changed": [
+          "Kleine Android-Widgets nutzen ein kompaktes 2×2-Layout mit klarer Habit-Zeile und vollständig sichtbarer Erledigen-Aktion."
+        ],
+        "fixed": [
+          "Kompakte Widget-Aktionen werden auch bei engen Launcher-Rastern nicht mehr abgeschnitten.",
+          "Das Öffnen von Habiter über ein Widget räumt doppelte Activity- und Flutter-Routen auf und zeigt die Heute-Seite ohne falschen Zurück-Pfeil."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.3.5-android-universal.apk",
+          "signed": true
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.3.5-android-playstore.aab",
+          "signed": true
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.3.5-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.3.5-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.3.5-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.3.0",
       "buildNumber": 10300,
       "channel": "stable",

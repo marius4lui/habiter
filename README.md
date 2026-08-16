@@ -12,7 +12,7 @@ A polished, local-first habit tracker for mobile, desktop, and web — built wit
 [![Platform builds](https://github.com/marius4lui/habiter/actions/workflows/platform-builds.yml/badge.svg?branch=main)](https://github.com/marius4lui/habiter/actions/workflows/platform-builds.yml)
 [![Release API](https://github.com/marius4lui/habiter/actions/workflows/worker-deploy.yml/badge.svg?branch=main)](https://github.com/marius4lui/habiter/actions/workflows/worker-deploy.yml)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44.8-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Version](https://img.shields.io/badge/version-1.2.0-6C63FF)](apps/habiter/pubspec.yaml)
+[![Version](https://img.shields.io/badge/version-1.3.0-6C63FF)](apps/habiter/pubspec.yaml)
 
 [Website](https://habiter.dev) · [Download](https://get.habiter.dev/download) · [Documentation](docs/) · [Release API](https://get.habiter.dev/health)
 

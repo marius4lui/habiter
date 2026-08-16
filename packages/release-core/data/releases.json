@@ -2,6 +2,63 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.3.0",
+      "buildNumber": 10300,
+      "channel": "stable",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Ein vollständiges, fortsetzbares Onboarding richtet das erste Habit mit Vorlage, Rhythmus und optionaler Erinnerung ein.",
+          "Das neue responsive Android-Widget zeigt Tagesfortschritt und Habits in kompakten, breiten und großen Homescreen-Layouts.",
+          "Habits lassen sich direkt im Widget erledigen und sicher rückgängig machen, ohne Habiter zu öffnen."
+        ],
+        "changed": [
+          "Habiter bewirbt das Widget kontextuell nach dem ersten Habit sowie dezent für bestehende Nutzer und bietet einen eigenen Homescreen-Bereich in den Einstellungen.",
+          "Widget-Zustände, Pinning, Vorschau und Aktionen sind auf Deutsch und Englisch sowie für Light Mode, Dark Mode und große Schrift optimiert."
+        ],
+        "fixed": [
+          "Widget-Completions verwenden denselben idempotenten Domain-Pfad wie die App und halten Verlauf sowie App Lock auch im Headless-Prozess synchron.",
+          "Datums-, Zeitzonen-, Locale- und Reboot-Ereignisse aktualisieren das Widget ohne aggressives Polling."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.3.0-android-universal.apk",
+          "signed": true
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.3.0-android-playstore.aab",
+          "signed": true
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.3.0-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.3.0-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.3.0-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.2.0",
       "buildNumber": 10200,
       "channel": "stable",

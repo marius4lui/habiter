@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/core/design_system/habiter_theme.dart';
 import 'package:habiter/features/habits/data/key_value_habit_repository.dart';
+import 'package:habiter/features/reminders/domain/local_time.dart';
 import 'package:habiter/features/reminders/domain/reminder_policy.dart';
 import 'package:habiter/features/reminders/presentation/habit_reminder_plan_editor.dart';
 import 'package:habiter/l10n/app_localizations.dart';
@@ -12,6 +13,8 @@ import 'package:habiter/screens/rhythm_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../support/fakes/fake_clock.dart';
+import '../../support/fakes/fake_id_generator.dart';
 import '../../support/fakes/in_memory_key_value_store.dart';
 import '../../support/fakes/recording_notification_gateway.dart';
 
@@ -91,6 +94,74 @@ void main() {
     expect(find.text('Smart'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('plan editor switches and saves all three modes', (tester) async {
+    tester.view.physicalSize = const Size(412, 915);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final provider = await _providerWithSmartPlan();
+    addTearDown(provider.dispose);
+    final habit = provider.habits.single;
+    HabitReminderPolicy? saved;
+
+    await tester.pumpWidget(
+      _app(
+        provider: provider,
+        home: HabitReminderPlanEditor(
+          habit: habit,
+          policy: provider.reminderPolicies[habit.id]!,
+          onSave: (policy) async => saved = policy,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Intensity'), findsOneWidget);
+    await tester.tap(find.text('Random'));
+    await tester.pumpAndSettle();
+    expect(find.text('Times per habit day'), findsOneWidget);
+    await tester.tap(find.text('Fixed'));
+    await tester.pumpAndSettle();
+    expect(find.text('Add time'), findsOneWidget);
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(saved?.mode, ReminderMode.fixedTimes);
+    expect(saved?.fixed?.times, const [LocalTime(20, 0)]);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final dark in <bool>[false, true]) {
+    testWidgets('rhythm has a stable ${dark ? 'dark' : 'light'} layout', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(412, 915);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final provider = await _providerWithSmartPlan();
+      addTearDown(provider.dispose);
+
+      await tester.pumpWidget(_app(provider: provider, dark: dark));
+      await tester.pumpAndSettle();
+
+      await tester.drag(find.byType(ListView).first, const Offset(0, -500));
+      await tester.pumpAndSettle();
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              (widget.properties.label ?? '').startsWith('Monday–Friday.'),
+        ),
+        findsOneWidget,
+      );
+      await expectLater(
+        find.byType(Scaffold),
+        matchesGoldenFile('goldens/rhythm_${dark ? 'dark' : 'light'}_412.png'),
+      );
+    });
+  }
 }
 
 Future<HabitProvider> _providerWithSmartPlan() async {
@@ -99,6 +170,8 @@ Future<HabitProvider> _providerWithSmartPlan() async {
     repository: KeyValueHabitRepository(store),
     actionStore: store,
     notificationGateway: RecordingNotificationGateway(),
+    clock: FakeClock(DateTime(2026, 8, 17, 8)),
+    ids: FakeIdGenerator(const <String>['habit']),
   );
   await provider.load();
   final id = await provider.addHabit(
@@ -129,11 +202,12 @@ Widget _app({
   required HabitProvider provider,
   Widget home = const RhythmScreen(),
   double textScale = 1,
+  bool dark = false,
 }) => ChangeNotifierProvider<HabitProvider>.value(
   value: provider,
   child: MaterialApp(
     locale: const Locale('en'),
-    theme: HabiterTheme.light(),
+    theme: dark ? HabiterTheme.dark() : HabiterTheme.light(),
     supportedLocales: AppLocalizations.supportedLocales,
     localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
       AppLocalizations.delegate,

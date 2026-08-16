@@ -87,6 +87,7 @@ class _RhythmScreenState extends State<RhythmScreen> {
                   preferences: provider.reminderPreferences,
                   session: provider.calibrationSession,
                   confidence: profile?.confidence ?? 0,
+                  now: provider.reminderNow,
                   activating: _activating,
                   onActivate: _notificationPlatformSupported
                       ? () => _activate(provider)
@@ -147,7 +148,11 @@ class _RhythmScreenState extends State<RhythmScreen> {
                       copy: _copy,
                       habit: habit,
                       policy: provider.reminderPolicies[habit.id],
-                      next: _nextFor(provider.plannedReminders, habit.id),
+                      next: _nextFor(
+                        provider.plannedReminders,
+                        habit.id,
+                        provider.reminderNow,
+                      ),
                       explanationsEnabled:
                           provider.reminderPreferences.showLearningExplanations,
                       onEdit: () => HabitReminderPlanEditor.show(
@@ -182,8 +187,8 @@ class _RhythmScreenState extends State<RhythmScreen> {
   PersistedPlannedReminder? _nextFor(
     List<PersistedPlannedReminder> reminders,
     String habitId,
+    DateTime now,
   ) {
-    final now = DateTime.now();
     final matches =
         reminders
             .where(
@@ -337,6 +342,7 @@ class _CalibrationCard extends StatelessWidget {
     required this.preferences,
     required this.session,
     required this.confidence,
+    required this.now,
     required this.activating,
     required this.onActivate,
     required this.onPause,
@@ -348,6 +354,7 @@ class _CalibrationCard extends StatelessWidget {
   final ReminderPreferences preferences;
   final CalibrationSession? session;
   final double confidence;
+  final DateTime now;
   final bool activating;
   final VoidCallback? onActivate;
   final Future<void> Function() onPause;
@@ -366,7 +373,7 @@ class _CalibrationCard extends StatelessWidget {
                 120)
             .ceil();
     final title = active
-        ? copy.calibrationDay(session!.dayNumberAt(DateTime.now()))
+        ? copy.calibrationDay(session!.dayNumberAt(now))
         : paused
         ? copy.calibrationPaused
         : status == CalibrationStatus.completed

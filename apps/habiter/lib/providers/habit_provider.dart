@@ -98,6 +98,7 @@ class HabitProvider extends ChangeNotifier {
 
   List<Habit> get habits => _habitsController.state.habits;
   List<HabitEntry> get habitEntries => _historyController.state.entries;
+  DateTime get reminderNow => _clock.now();
   List<AIInsight> aiInsights = [];
   UserPreferences preferences = UserPreferences(
     theme: ThemePreference.system,

@@ -10,6 +10,10 @@ import '../core/time/local_date.dart';
 import '../features/history/presentation/habit_lifecycle_panel.dart';
 import '../features/habits/presentation/templates/habit_template.dart';
 import '../features/onboarding/presentation/onboarding_empty_state.dart';
+import '../features/onboarding/application/onboarding_controller.dart';
+import '../features/onboarding/application/onboarding_state.dart';
+import '../features/widgets/domain/widget_bridge.dart';
+import '../features/widgets/presentation/widget_promotion_card.dart';
 import '../features/today/application/today_query.dart';
 import '../l10n/l10n.dart';
 import '../models/habit.dart';
@@ -63,6 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
       habits: provider.habits,
       entries: provider.habitEntries,
     );
+    final onboarding = context.watch<OnboardingController?>();
+    final showWidgetPromotion =
+        onboarding?.state.isComplete == true &&
+        onboarding?.state.widgetPromotionState == WidgetPromotionState.pending;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -108,6 +116,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   onComplete: (habit) => _complete(provider, habit, date),
                   onOpen: (habit, completed) =>
                       _openDetails(provider, habit, completed, date.toString()),
+                  promotion: showWidgetPromotion
+                      ? WidgetPromotionCard(
+                          bridge: context.read<WidgetBridge>(),
+                          onDismiss: onboarding!.dismissWidgetPromotion,
+                          onPinned: onboarding.markWidgetPinned,
+                        )
+                      : null,
                 ),
               ),
             ),
@@ -189,6 +204,7 @@ class _TodayContent extends StatelessWidget {
     required this.onCreateHabit,
     required this.onComplete,
     required this.onOpen,
+    this.promotion,
   });
 
   final TodaySnapshot snapshot;
@@ -198,6 +214,7 @@ class _TodayContent extends StatelessWidget {
   final VoidCallback onCreateHabit;
   final ValueChanged<Habit> onComplete;
   final void Function(Habit habit, bool completed) onOpen;
+  final Widget? promotion;
 
   @override
   Widget build(BuildContext context) {
@@ -293,6 +310,10 @@ class _TodayContent extends StatelessWidget {
           subtitle: context.l10n.todaySubtitle,
         ),
         const SizedBox(height: HabiterSpace.lg),
+        if (promotion != null) ...[
+          promotion!,
+          const SizedBox(height: HabiterSpace.lg),
+        ],
         if (snapshot.scheduled.isNotEmpty) ...[
           _ProgressSummary(snapshot: snapshot),
           const SizedBox(height: HabiterSpace.lg),

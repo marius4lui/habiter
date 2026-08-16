@@ -2245,6 +2245,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Verstanden'**
   String get onboardingWidgetUnderstood;
+
+  /// No description provided for @widgetPromotionTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter auf deinem Homescreen'**
+  String get widgetPromotionTitle;
+
+  /// No description provided for @widgetPromotionBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Habits abhaken, ohne die App zu öffnen.'**
+  String get widgetPromotionBody;
+
+  /// No description provided for @widgetSettingsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Homescreen / Widget'**
+  String get widgetSettingsTitle;
+
+  /// No description provided for @widgetStatusAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'Widget hinzugefügt'**
+  String get widgetStatusAdded;
+
+  /// No description provided for @widgetStatusNotAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nicht hinzugefügt'**
+  String get widgetStatusNotAdded;
 }
 
 class _AppLocalizationsDelegate

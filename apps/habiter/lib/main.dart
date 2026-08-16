@@ -142,6 +142,7 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
       providers: [
         Provider<HapticGateway>.value(value: dependencies.haptics),
         Provider<WidgetBridge>.value(value: const AndroidWidgetBridge()),
+        Provider<WidgetSyncController>.value(value: widgetSync),
         ChangeNotifierProvider(
           create: (_) => HabitProvider(
             repository: dependencies.habitRepository,

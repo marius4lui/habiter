@@ -109,4 +109,30 @@ void main() {
       habits.dispose();
     },
   );
+
+  test('existing user widget promotion dismissal survives restart', () async {
+    final repository = KeyValueOnboardingRepository(InMemoryKeyValueStore());
+    final first = OnboardingController(
+      repository: repository,
+      ids: FakeIdGenerator(const <String>['unused']),
+      clock: FakeClock(DateTime.utc(2026, 8, 16)),
+    );
+    await first.initialize(hasExistingHabits: true);
+    expect(first.state.currentStep, OnboardingStep.completed);
+    expect(first.state.widgetPromotionState, WidgetPromotionState.pending);
+
+    await first.dismissWidgetPromotion();
+    final restarted = OnboardingController(
+      repository: repository,
+      ids: FakeIdGenerator(const <String>['unused-2']),
+      clock: FakeClock(DateTime.utc(2026, 8, 17)),
+    );
+    await restarted.initialize(hasExistingHabits: true);
+
+    expect(
+      restarted.state.widgetPromotionState,
+      WidgetPromotionState.dismissed,
+    );
+    expect(restarted.shouldShowOnboarding, isFalse);
+  });
 }

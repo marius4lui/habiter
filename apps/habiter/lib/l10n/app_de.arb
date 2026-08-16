@@ -459,5 +459,10 @@
   "onboardingWidgetManualThree": "Habiter auswählen",
   "onboardingWidgetManualFour": "Widget platzieren",
   "onboardingWidgetLetsGo": "Los geht's",
-  "onboardingWidgetUnderstood": "Verstanden"
+  "onboardingWidgetUnderstood": "Verstanden",
+  "widgetPromotionTitle": "Habiter auf deinem Homescreen",
+  "widgetPromotionBody": "Habits abhaken, ohne die App zu öffnen.",
+  "widgetSettingsTitle": "Homescreen / Widget",
+  "widgetStatusAdded": "Widget hinzugefügt",
+  "widgetStatusNotAdded": "Noch nicht hinzugefügt"
 }

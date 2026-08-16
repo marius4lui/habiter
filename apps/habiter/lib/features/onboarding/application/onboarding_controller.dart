@@ -114,6 +114,10 @@ final class OnboardingController extends ChangeNotifier {
     widgetPinned: false,
   );
 
+  Future<void> dismissWidgetPromotion() => _replace(
+    _state.copyWith(widgetPromotionState: WidgetPromotionState.dismissed),
+  );
+
   Future<void> back() {
     final previous = switch (_state.currentStep) {
       OnboardingStep.intent => OnboardingStep.welcome,

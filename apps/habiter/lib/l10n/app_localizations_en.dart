@@ -1202,4 +1202,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingWidgetUnderstood => 'Got it';
+
+  @override
+  String get widgetPromotionTitle => 'Habiter on your home screen';
+
+  @override
+  String get widgetPromotionBody => 'Check off habits without opening the app.';
+
+  @override
+  String get widgetSettingsTitle => 'Home screen / Widget';
+
+  @override
+  String get widgetStatusAdded => 'Widget added';
+
+  @override
+  String get widgetStatusNotAdded => 'Not added yet';
 }

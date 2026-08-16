@@ -6,6 +6,9 @@ import '../core/design_system/components.dart';
 import '../core/design_system/tokens.dart';
 import '../features/reminders/application/reminder_permission_controller.dart';
 import '../features/reminders/infrastructure/local_reminder_permission_gateway.dart';
+import '../features/widgets/domain/widget_bridge.dart';
+import '../features/widgets/application/widget_sync_controller.dart';
+import '../features/widgets/presentation/widget_promotion_card.dart';
 import '../l10n/l10n.dart';
 import '../models/habit.dart';
 import '../providers/classly_sync_provider.dart';
@@ -36,6 +39,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _update(UserPreferences preferences) =>
       context.read<HabitProvider>().updatePreferences(preferences);
 
+  Future<void> _syncWidgetPresentation(String locale) async {
+    final sync = context.read<WidgetSyncController?>();
+    await sync?.synchronize(locale: locale);
+  }
+
   Future<void> _chooseReminderTime(UserPreferences preferences) async {
     final parts = preferences.reminderTime.split(':');
     final selected = await showTimePicker(
@@ -59,6 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final habits = context.watch<HabitProvider>();
     final preferences = habits.preferences;
     final settings = context.watch<SettingsProvider>();
+    final widgetBridge = context.read<WidgetBridge?>();
     return Scaffold(
       appBar: Navigator.of(context).canPop() ? AppBar() : null,
       body: ListView(
@@ -98,8 +107,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: Text(context.l10n.themeDark),
                         ),
                       ],
-                      onChanged: (value) {
-                        if (value != null) settings.setThemeMode(value);
+                      onChanged: (value) async {
+                        if (value != null) {
+                          await settings.setThemeMode(value);
+                          await _syncWidgetPresentation(
+                            settings.locale.languageCode,
+                          );
+                        }
                       },
                     ),
                     const SizedBox(height: HabiterSpace.md),
@@ -125,9 +139,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 child: Text(context.l10n.english),
                               ),
                             ],
-                            onChanged: (value) {
+                            onChanged: (value) async {
                               if (value != null) {
-                                settings.setLocale(Locale(value));
+                                await settings.setLocale(Locale(value));
+                                await _syncWidgetPresentation(value);
                               }
                             },
                           );
@@ -144,8 +159,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ],
                           selected: {settings.locale.languageCode},
-                          onSelectionChanged: (value) =>
-                              settings.setLocale(Locale(value.single)),
+                          onSelectionChanged: (value) async {
+                            await settings.setLocale(Locale(value.single));
+                            await _syncWidgetPresentation(value.single);
+                          },
                         );
                       },
                     ),
@@ -186,6 +203,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onTap: preferences.notifications
                           ? () => _chooseReminderTime(preferences)
                           : null,
+                    ),
+                  ],
+                ),
+                _SettingsSection(
+                  icon: Icons.widgets_outlined,
+                  title: context.l10n.widgetSettingsTitle,
+                  children: [
+                    FutureBuilder<bool>(
+                      future:
+                          widgetBridge?.hasInstalledWidgets() ??
+                          Future<bool>.value(false),
+                      builder: (context, snapshot) => ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.add_to_home_screen_rounded),
+                        title: Text(context.l10n.widgetSettingsTitle),
+                        subtitle: Text(
+                          snapshot.data == true
+                              ? context.l10n.widgetStatusAdded
+                              : context.l10n.widgetStatusNotAdded,
+                        ),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: widgetBridge == null
+                            ? null
+                            : () => showWidgetManagementDialog(context),
+                      ),
                     ),
                   ],
                 ),

@@ -459,5 +459,10 @@
   "onboardingWidgetManualThree": "Choose Habiter",
   "onboardingWidgetManualFour": "Place the widget",
   "onboardingWidgetLetsGo": "Let's go",
-  "onboardingWidgetUnderstood": "Got it"
+  "onboardingWidgetUnderstood": "Got it",
+  "widgetPromotionTitle": "Habiter on your home screen",
+  "widgetPromotionBody": "Check off habits without opening the app.",
+  "widgetSettingsTitle": "Home screen / Widget",
+  "widgetStatusAdded": "Widget added",
+  "widgetStatusNotAdded": "Not added yet"
 }

@@ -77,6 +77,34 @@ void main() {
     expect(selected, AppRoute.analytics);
   });
 
+  testWidgets('primary shell never implies a back button', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute<void>(builder: (_) => _fixtureShell())),
+            child: const Text('Open shell'),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open shell'));
+    await tester.pumpAndSettle();
+
+    expect(
+      Navigator.of(tester.element(find.byType(AdaptiveAppShell))).canPop(),
+      isTrue,
+    );
+    expect(find.byType(BackButton), findsNothing);
+    expect(
+      tester.widget<AppBar>(find.byType(AppBar)).automaticallyImplyLeading,
+      isFalse,
+    );
+  });
+
   testWidgets('secondary routes pop back to the primary shell', (tester) async {
     final router = AppRouter(
       primaryBuilder: (_, _) => Builder(
@@ -105,12 +133,13 @@ void main() {
   });
 }
 
-Widget _fixture({ValueChanged<AppRoute>? onSelected}) => MaterialApp(
-  home: AdaptiveAppShell(
-    selected: AppRoute.today,
-    onSelected: onSelected ?? (_) {},
-    onOpenSettings: () {},
-    onOpenAppLock: () {},
-    child: const ColoredBox(color: Colors.white),
-  ),
+Widget _fixture({ValueChanged<AppRoute>? onSelected}) =>
+    MaterialApp(home: _fixtureShell(onSelected: onSelected));
+
+Widget _fixtureShell({ValueChanged<AppRoute>? onSelected}) => AdaptiveAppShell(
+  selected: AppRoute.today,
+  onSelected: onSelected ?? (_) {},
+  onOpenSettings: () {},
+  onOpenAppLock: () {},
+  child: const ColoredBox(color: Colors.white),
 );

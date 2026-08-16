@@ -1,5 +1,6 @@
 package com.habiter.app.widget
 
+import android.content.Intent
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -49,8 +50,11 @@ class HabiterWidgetStateTest {
     fun `responsive size buckets cover compact wide hero large and tablet`() {
         assertEquals(HabiterWidgetLayout.COMPACT, HabiterWidgetLayout.forSize(110, 60))
         assertEquals(HabiterWidgetLayout.COMPACT_SQUARE, HabiterWidgetLayout.forSize(110, 110))
+        assertEquals(HabiterWidgetLayout.COMPACT_SQUARE, HabiterWidgetLayout.forSize(180, 110))
+        assertEquals(HabiterWidgetLayout.COMPACT_SQUARE, HabiterWidgetLayout.forSize(180, 180))
         assertEquals(HabiterWidgetLayout.WIDE, HabiterWidgetLayout.forSize(250, 70))
         assertEquals(HabiterWidgetLayout.MEDIUM_HERO, HabiterWidgetLayout.forSize(250, 120))
+        assertEquals(HabiterWidgetLayout.MEDIUM_HERO, HabiterWidgetLayout.forSize(250, 180))
         assertEquals(HabiterWidgetLayout.LARGE, HabiterWidgetLayout.forSize(250, 250))
         assertEquals(HabiterWidgetLayout.EXTRA_LARGE, HabiterWidgetLayout.forSize(320, 300))
         assertEquals(HabiterWidgetLayout.COMPACT, HabiterWidgetLayout.forSize(179, 72))
@@ -58,6 +62,12 @@ class HabiterWidgetStateTest {
         assertEquals(HabiterWidgetLayout.WIDE, HabiterWidgetLayout.forSize(319, 99))
         assertEquals(HabiterWidgetLayout.MEDIUM_HERO, HabiterWidgetLayout.forSize(319, 189))
         assertEquals(HabiterWidgetLayout.LARGE, HabiterWidgetLayout.forSize(299, 259))
+    }
+
+    @Test
+    fun `widget launch reuses the root activity instead of stacking it`() {
+        assertTrue(habiterWidgetLaunchFlags and Intent.FLAG_ACTIVITY_CLEAR_TOP != 0)
+        assertTrue(habiterWidgetLaunchFlags and Intent.FLAG_ACTIVITY_SINGLE_TOP != 0)
     }
 
     @Test

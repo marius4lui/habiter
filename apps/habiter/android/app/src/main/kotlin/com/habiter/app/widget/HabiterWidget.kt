@@ -97,10 +97,13 @@ private fun WidgetSurface(
 private fun launchHabiter(context: Context): Action {
     val intent = Intent(context, MainActivity::class.java).apply {
         action = HomeWidgetLaunchIntent.HOME_WIDGET_LAUNCH_ACTION
-        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        flags = habiterWidgetLaunchFlags
     }
     return actionStartActivity(intent)
 }
+
+internal val habiterWidgetLaunchFlags =
+    Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
 
 @Composable
 private fun JustCompletedState(state: HabiterWidgetState, layout: HabiterWidgetLayout) {

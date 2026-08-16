@@ -6,6 +6,7 @@ import '../../../core/platform/notification_gateway.dart';
 import '../../../core/time/local_date.dart';
 import '../../../models/habit.dart';
 import '../../habits/domain/habit_schedule.dart';
+import '../domain/reminder_plan.dart';
 import '../domain/reminder_payload.dart';
 import '../infrastructure/device_time_zone_service.dart';
 import 'notification_id_registry.dart';
@@ -16,12 +17,37 @@ final class PlannedReminder {
     required this.habit,
     required this.occurrence,
     required this.scheduledFor,
+    this.kind = PlannedReminderKind.normal,
+    this.attemptIndex = 0,
+    this.utility = 1,
+    this.reason = const ReminderReason(code: ReminderReasonCode.fixedTime),
   });
 
   final String logicalKey;
   final Habit habit;
   final LocalDate occurrence;
   final DateTime scheduledFor;
+  final PlannedReminderKind kind;
+  final int attemptIndex;
+  final double utility;
+  final ReminderReason reason;
+
+  PlannedReminder copyWith({
+    String? logicalKey,
+    DateTime? scheduledFor,
+    PlannedReminderKind? kind,
+    double? utility,
+    ReminderReason? reason,
+  }) => PlannedReminder(
+    logicalKey: logicalKey ?? this.logicalKey,
+    habit: habit,
+    occurrence: occurrence,
+    scheduledFor: scheduledFor ?? this.scheduledFor,
+    kind: kind ?? this.kind,
+    attemptIndex: attemptIndex,
+    utility: utility ?? this.utility,
+    reason: reason ?? this.reason,
+  );
 }
 
 abstract final class ReminderPlanner {

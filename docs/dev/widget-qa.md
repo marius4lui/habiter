@@ -46,3 +46,36 @@ system font size, light and dark launcher themes, and these state transitions:
    habit-specific localized action.
 
 This matrix is the regression gate for GitHub issue #9.
+
+## Lifecycle convergence
+
+The app and widget can run in separate Flutter isolates. A widget action writes
+the canonical repository first, while a running app may still hold an older
+controller snapshot. Foreground reconciliation must therefore follow this
+order:
+
+1. Load one versioned repository snapshot.
+2. Rehydrate habits and history from that same revision.
+3. Reconcile reminder and App Lock consumers from the fresh provider state.
+4. Publish the final widget snapshot.
+5. Re-read the repository after a short settle window and repeat when its
+   revision advanced during reconciliation.
+
+Automated tests cover external completion state, an overlapping write during
+resume, coalesced lifecycle requests, background publication, and safe recovery
+after a failed lifecycle operation.
+
+Manual Android regression checks:
+
+- Complete and undo from the widget while the app is backgrounded, then resume
+  the app and verify Today, analytics, Reminder state, and App Lock immediately.
+- Open the app immediately after tapping the widget and confirm the final state
+  does not jump backwards.
+- Complete in the app and immediately return to the launcher; confirm every
+  installed widget instance updates without a manual refresh.
+- Repeat across midnight and after date, timezone, locale, boot, and process
+  recreation events.
+- Confirm repeated `inactive`, `hidden`, `paused`, and `resumed` transitions do
+  not create refresh storms.
+
+This lifecycle matrix is the regression gate for GitHub issue #11.

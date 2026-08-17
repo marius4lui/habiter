@@ -2,6 +2,59 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.4.2",
+      "buildNumber": 10402,
+      "channel": "stable",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [],
+        "changed": [
+          "App, Habit-Speicher, Reminder, App Lock und Android-Widget gleichen ihren Zustand bei Foreground- und Background-Wechseln in einer festen Reihenfolge ab."
+        ],
+        "fixed": [
+          "Im Android-Widget ausgeführte Completion- und Undo-Aktionen erscheinen nach dem Öffnen oder Fortsetzen der App ohne manuellen Hard-Refresh.",
+          "Parallel eintreffende Widget-Aktionen und App-Resume-Ereignisse konvergieren anhand persistierter State-Revisionen auf den neuesten beobachteten Zustand.",
+          "Schnelle Lifecycle-Wechsel führen nicht mehr zu überlappenden Reminder- oder Widget-Synchronisationen."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.2-android-universal.apk",
+          "signed": true
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.2-android-playstore.aab",
+          "signed": true
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.2-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.2-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.2-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.4.1",
       "buildNumber": 10401,
       "channel": "stable",

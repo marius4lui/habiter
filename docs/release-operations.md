@@ -2,7 +2,7 @@
 
 ## Version contract
 
-The public version is SemVer and the internal Flutter build number is monotonic. `apps/habiter/pubspec.yaml`, the `vX.Y.Z` tag and the matching entry in `packages/release-core/data/releases.json` must agree.
+The public version is SemVer and the internal Flutter build number is monotonic. `apps/habiter/pubspec.yaml`, the `vX.Y.Z` tag and the matching entry in `packages/release-core/data/releases.json` must agree. Every manifest entry explicitly selects either the `stable` or `beta` channel.
 
 Prepare a release by adding a newest-first manifest entry with `status: draft`, updating the Flutter version, reviewing structured notes and running:
 
@@ -12,7 +12,11 @@ pnpm release:test
 pnpm --filter @habiter/release-api check
 ```
 
-Use the manual `Publish Habiter Release` workflow with `dry_run=true` before creating the tag. The production tag workflow builds all artifacts, verifies Android signing, calculates checksums, creates a draft GitHub Release, deploys enriched metadata and only then publishes the draft.
+Use the manual `Publish Habiter Release` workflow with `dry_run=true` before creating the tag. The production tag workflow builds all artifacts, verifies Android signing, calculates checksums, creates a draft GitHub Release, deploys enriched metadata and only then publishes the draft. Stable releases become normal GitHub Releases and may become `latest`; beta releases become GitHub prereleases and never replace the latest stable release.
+
+After the API smoke tests pass, the workflow finalizes the matching manifest entry with the verified publication timestamp, download URLs, sizes and SHA-256 hashes on `main`. This persistence step must succeed before the draft is made public, so later Worker deployments cannot silently drop an already published release.
+
+The Release API defaults to `stable`. Beta clients opt in explicitly with `?channel=beta` on list, latest, update and download routes. Unknown channel values are rejected instead of being treated as an empty channel.
 
 ## GitHub configuration
 
@@ -52,7 +56,7 @@ To rotate GitHub's stored copy without changing the certificate, re-upload the s
 
 Production Worker code deploys only from relevant changes on `main`. Pull requests from the same repository upload native Cloudflare preview versions to the shared `habiter-release-api-preview` Worker. Each pull request receives a stable `pr-<number>` preview alias and a reusable preview comment; preview uploads never promote a version to an active deployment.
 
-The checked-in release manifest remains authoritative. Production data includes only `published` entries; previews may expose draft entries with preview-only runtime metadata.
+The checked-in release manifest remains authoritative. Production data includes only `published` entries; previews may expose draft entries with preview-only runtime metadata. Do not manually mark a candidate as published before its tag workflow succeeds; the workflow owns that transition.
 
 Inspect and roll back deployments from `apps/release-api`:
 

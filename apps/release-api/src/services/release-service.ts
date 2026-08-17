@@ -1,4 +1,4 @@
-import type { Platform, Release, ReleaseArtifact, ReleaseManifest } from "../types/releases";
+import type { Platform, Release, ReleaseArtifact, ReleaseChannel, ReleaseManifest } from "../types/releases";
 
 function compareVersions(left: string, right: string): number {
   const a = left.split(".").map(Number);
@@ -19,7 +19,7 @@ export class ReleaseService {
       .sort((left, right) => right.buildNumber - left.buildNumber);
   }
 
-  list(channel: string, page: number, limit: number) {
+  list(channel: ReleaseChannel, page: number, limit: number) {
     const matches = this.#published.filter((release) => release.channel === channel);
     const start = (page - 1) * limit;
     return {
@@ -35,7 +35,7 @@ export class ReleaseService {
     };
   }
 
-  latest(channel: string): Release | null {
+  latest(channel: ReleaseChannel): Release | null {
     return this.#published.find((release) => release.channel === channel) ?? null;
   }
 
@@ -49,7 +49,7 @@ export class ReleaseService {
     ) ?? null;
   }
 
-  checkUpdate(platform: Platform, currentVersion: string, currentBuild: number, channel: string, now: Date) {
+  checkUpdate(platform: Platform, currentVersion: string, currentBuild: number, channel: ReleaseChannel, now: Date) {
     const latest = this.latest(channel);
     if (!latest) return null;
     const updateAvailable = latest.buildNumber > currentBuild || compareVersions(latest.version, currentVersion) > 0;

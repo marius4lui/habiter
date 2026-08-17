@@ -30,6 +30,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       tag: ${{ steps.version.outputs.tag }}
+      channel: ${{ steps.version.outputs.channel }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -48,8 +49,11 @@ jobs:
           INPUT_VERSION: ${{ inputs.version }}
         run: |
           if [ "$EVENT_NAME" = push ]; then VERSION="${GITHUB_REF_NAME#v}"; else VERSION="$INPUT_VERSION"; fi
+          CHANNEL=$(jq -r --arg version "$VERSION" '.releases[] | select(.version == $version) | .channel' packages/release-core/data/releases.json)
+          case "$CHANNEL" in stable|beta) ;; *) echo "Invalid release channel: $CHANNEL" >&2; exit 1;; esac
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
       - env:
           TAG: ${{ steps.version.outputs.tag }}
         run: pnpm release:validate --tag="$TAG"
@@ -257,7 +261,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.validate.outputs.tag }}
           VERSION: ${{ needs.validate.outputs.version }}
-        run: gh release create "$TAG" artifacts/* --draft --title "Habiter $VERSION" --notes-file release-notes.md --verify-tag
+          CHANNEL: ${{ needs.validate.outputs.channel }}
+        run: |
+          PRERELEASE_ARGS=()
+          if [ "$CHANNEL" = beta ]; then PRERELEASE_ARGS+=(--prerelease); fi
+          gh release create "$TAG" artifacts/* --draft "${PRERELEASE_ARGS[@]}" --title "Habiter $VERSION" --notes-file release-notes.md --verify-tag
       - name: Deploy release metadata
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -272,11 +280,35 @@ jobs:
         env:
           RELEASE_API_BASE_URL: ${{ vars.RELEASE_API_BASE_URL }}
           VERSION: ${{ needs.validate.outputs.version }}
+          CHANNEL: ${{ needs.validate.outputs.channel }}
         run: |
           curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/health"
-          curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/api/v1/releases/$VERSION"
+          curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/api/v1/releases/$VERSION" \
+            | jq --exit-status --arg version "$VERSION" --arg channel "$CHANNEL" '.version == $version and .channel == $channel'
+          curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/api/v1/releases/latest?channel=$CHANNEL" \
+            | jq --exit-status --arg version "$VERSION" '.version == $version'
+      - name: Persist verified release metadata on main
+        env:
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          cp runtime-releases.json "$RUNNER_TEMP/runtime-releases.json"
+          git restore apps/release-api/src/generated/releases.json
+          git fetch origin main
+          git switch -C "release/finalize-$VERSION" origin/main
+          node scripts/release/finalize-manifest.mjs "$VERSION" "$RUNNER_TEMP/runtime-releases.json"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add packages/release-core/data/releases.json
+          git commit -m "release: finalize Habiter $VERSION"
+          git push origin HEAD:main
       - name: Publish the verified draft
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.validate.outputs.tag }}
-        run: gh release edit "$TAG" --draft=false --latest
+          CHANNEL: ${{ needs.validate.outputs.channel }}
+        run: |
+          if [ "$CHANNEL" = beta ]; then
+            gh release edit "$TAG" --draft=false --prerelease --latest=false
+          else
+            gh release edit "$TAG" --draft=false --prerelease=false --latest
+          fi

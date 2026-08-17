@@ -109,37 +109,37 @@ A concise view of the released baseline and upcoming product milestones.
 
 ### Released
 
-**v1.4.0 — Dynamic notifications**
+**v1.4.0 — Dynamic notifications (Stable)**
 
 - Seven-day calibration and local smart timing.
 - Dynamic reminder planning with local-only data.
 - Explainable Rhythm experience.
 
-### Upcoming
-
-**v1.4.1 — Completion UI stability**
+**v1.4.1 — Completion UI stability (Beta)**
 
 - Fix completion-state layout issues.
 
-**v1.4.2 — Widget/App lifecycle reconciliation**
+**v1.4.2 — Widget/App lifecycle reconciliation (Beta)**
 
 - Improve state synchronization between app, widgets and background actions.
 
-**v1.5.0 — Automatic update client**
+### Upcoming
+
+**v1.5.0 — Automatic update client (Stable)**
 
 - Add the client update experience on top of the existing Release API.
 
-**v1.6.0 — Habit Experience and Onboarding v3**
+**v1.6.0 — Habit Experience and Onboarding v3 (Stable)**
 
 - Improve habit schedule understanding.
 - Improve onboarding navigation.
 - Align reminder creation flows.
 
-**v1.7.0 — Persistent Habiter Runtime**
+**v1.7.0 — Persistent Habiter Runtime (Stable)**
 
 - Introduce a shared background runtime for adaptive reminders and future focus features.
 
-**v1.8.0 — App Block 2.0**
+**v1.8.0 — App Block 2.0 (Stable)**
 
 - Add local distraction discovery and habit-based app blocking.
 

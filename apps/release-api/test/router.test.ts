@@ -5,6 +5,18 @@ import type { ReleaseManifest } from "../src/types/releases";
 const manifest: ReleaseManifest = {
   schemaVersion: 1,
   releases: [{
+    version: "1.1.0",
+    buildNumber: 10100,
+    channel: "beta",
+    status: "published",
+    publishedAt: "2026-08-16T12:00:00Z",
+    minimumSupportedVersion: "1.0.0",
+    mandatoryAfter: null,
+    notes: { added: [], changed: ["beta"], fixed: [], security: [] },
+    artifacts: [
+      { platform: "android", architecture: "universal", fileName: "habiter-beta.apk", signed: true, url: "https://example.com/habiter-beta.apk", sha256: "c".repeat(64), size: 10 }
+    ]
+  }, {
     version: "1.0.0",
     buildNumber: 10000,
     channel: "stable",
@@ -33,6 +45,7 @@ describe("release API", () => {
 
   it("serves latest, version details and downloads", async () => {
     expect(await (await call("/api/v1/releases/latest")).json()).toMatchObject({ version: "1.0.0" });
+    expect(await (await call("/api/v1/releases/latest?channel=beta")).json()).toMatchObject({ version: "1.1.0", channel: "beta" });
     expect((await call("/api/v1/releases/1.0.0")).headers.get("cache-control")).toContain("immutable");
     expect((await call("/api/v1/releases/1.0.0/downloads")).status).toBe(200);
   });
@@ -45,6 +58,7 @@ describe("release API", () => {
   it("detects platforms and accepts deterministic overrides", async () => {
     expect((await call("/download", { "user-agent": "Mozilla Android" })).headers.get("location")).toContain("/api/v1/download/android/universal");
     expect((await call("/download?platform=windows&arch=x64")).headers.get("location")).toContain("/api/v1/download/windows/x64");
+    expect((await call("/download?platform=android&channel=beta")).headers.get("location")).toContain("/api/v1/download/android/universal?channel=beta");
     expect((await call("/api/v1/download/windows/x64")).headers.get("location")).toBe("https://example.com/habiter.zip");
   });
 
@@ -53,5 +67,8 @@ describe("release API", () => {
     const response = await call("/api/v1/releases/9.9.9");
     expect(response.status).toBe(404);
     expect(await response.json()).toMatchObject({ error: { code: "release_not_found" } });
+    const invalidChannel = await call("/api/v1/releases/latest?channel=nightly");
+    expect(invalidChannel.status).toBe(400);
+    expect(await invalidChannel.json()).toMatchObject({ error: { code: "invalid_channel" } });
   });
 });

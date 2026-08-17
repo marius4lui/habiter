@@ -2,13 +2,14 @@
   "$schema": "./schemas/roadmap.schema.json",
   "schemaVersion": 1,
   "title": "Roadmap",
-  "description": "This roadmap tracks the released baseline and planned product releases. Version dates are stable-release targets and may move depending on testing results.",
+  "description": "This roadmap tracks stable and beta releases alongside planned product releases. Target dates may move depending on testing results.",
   "releases": [
     {
       "version": "1.4.0",
       "title": "Dynamic notifications",
       "status": "released",
-      "statusText": "Released.",
+      "channel": "stable",
+      "statusText": "Released as the current stable version.",
       "summary": [
         "Seven-day calibration and local smart timing.",
         "Dynamic reminder planning with local-only data.",
@@ -18,8 +19,9 @@
     {
       "version": "1.4.1",
       "title": "Completion UI stability",
-      "status": "planned",
-      "target": "18 Aug 2026",
+      "status": "released",
+      "channel": "beta",
+      "statusText": "Released to the beta channel.",
       "issues": [9],
       "summary": ["Fix completion-state layout issues."],
       "scope": [
@@ -39,8 +41,9 @@
     {
       "version": "1.4.2",
       "title": "Widget/App lifecycle reconciliation",
-      "status": "planned",
-      "target": "19 Aug 2026",
+      "status": "released",
+      "channel": "beta",
+      "statusText": "Released to the beta channel.",
       "issues": [11],
       "summary": ["Improve state synchronization between app, widgets and background actions."],
       "scope": [
@@ -60,6 +63,7 @@
       "version": "1.5.0",
       "title": "Automatic update client",
       "status": "planned",
+      "channel": "stable",
       "target": "20 Aug 2026",
       "summary": ["Add the client update experience on top of the existing Release API."],
       "scope": [
@@ -74,6 +78,7 @@
       "version": "1.6.0",
       "title": "Habit Experience and Onboarding v3",
       "status": "planned",
+      "channel": "stable",
       "target": "21–22 Aug 2026",
       "issues": [6, 7, 8],
       "summary": [
@@ -119,6 +124,7 @@
       "version": "1.7.0",
       "title": "Persistent Habiter Runtime",
       "status": "planned",
+      "channel": "stable",
       "target": "22–24 Aug 2026",
       "issues": [10],
       "summary": ["Introduce a shared background runtime for adaptive reminders and future focus features."],
@@ -140,6 +146,7 @@
       "version": "1.8.0",
       "title": "App Block 2.0",
       "status": "planned",
+      "channel": "stable",
       "target": "24–31 Aug 2026",
       "issues": [12],
       "summary": ["Add local distraction discovery and habit-based app blocking."],

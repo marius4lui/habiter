@@ -26,11 +26,12 @@
     "release": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["version", "title", "status", "summary"],
+      "required": ["version", "title", "status", "channel", "summary"],
       "properties": {
         "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
         "title": { "type": "string", "minLength": 1 },
         "status": { "enum": ["released", "planned"] },
+        "channel": { "enum": ["stable", "beta"] },
         "statusText": { "type": "string", "minLength": 1 },
         "target": { "type": "string", "minLength": 1 },
         "issues": {

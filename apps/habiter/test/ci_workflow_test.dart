@@ -97,6 +97,9 @@ void main() {
       );
       expect(release, contains('scripts/release/finalize-manifest.mjs'));
       expect(release, contains('git push origin HEAD:main'));
+      expect(release, contains('for ATTEMPT in {1..10}'));
+      expect(release, contains('cache_bust=\$CACHE_BUST'));
+      expect(release, contains('Latest release did not converge'));
     });
   });
 }

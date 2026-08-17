@@ -283,10 +283,24 @@ jobs:
           CHANNEL: ${{ needs.validate.outputs.channel }}
         run: |
           curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/health"
-          curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/api/v1/releases/$VERSION" \
-            | jq --exit-status --arg version "$VERSION" --arg channel "$CHANNEL" '.version == $version and .channel == $channel'
-          curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/api/v1/releases/latest?channel=$CHANNEL" \
-            | jq --exit-status --arg version "$VERSION" '.version == $version'
+          for ATTEMPT in {1..10}; do
+            CACHE_BUST="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${ATTEMPT}"
+            if curl --silent --show-error --fail "$RELEASE_API_BASE_URL/api/v1/releases/$VERSION?cache_bust=$CACHE_BUST" \
+              | jq --exit-status --arg version "$VERSION" --arg channel "$CHANNEL" '.version == $version and .channel == $channel'; then
+              break
+            fi
+            if [ "$ATTEMPT" = 10 ]; then echo "Release detail did not converge" >&2; exit 1; fi
+            sleep 3
+          done
+          for ATTEMPT in {1..10}; do
+            CACHE_BUST="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${ATTEMPT}"
+            if curl --silent --show-error --fail "$RELEASE_API_BASE_URL/api/v1/releases/latest?channel=$CHANNEL&cache_bust=$CACHE_BUST" \
+              | jq --exit-status --arg version "$VERSION" '.version == $version'; then
+              break
+            fi
+            if [ "$ATTEMPT" = 10 ]; then echo "Latest release did not converge" >&2; exit 1; fi
+            sleep 3
+          done
       - name: Persist verified release metadata on main
         env:
           VERSION: ${{ needs.validate.outputs.version }}

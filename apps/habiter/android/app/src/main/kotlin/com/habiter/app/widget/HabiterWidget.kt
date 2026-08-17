@@ -108,6 +108,7 @@ internal val habiterWidgetLaunchFlags =
 @Composable
 private fun JustCompletedState(state: HabiterWidgetState, layout: HabiterWidgetLayout) {
     val completion = state.lastCompletion ?: return
+    val completionLayout = HabiterWidgetCompletionLayout.forLayout(layout)
     val action = actionRunCallback<HabiterWidgetUndoActionCallback>(
         actionParametersOf(
             HabiterWidgetAction.habitIdKey to completion.habitId,
@@ -115,29 +116,115 @@ private fun JustCompletedState(state: HabiterWidgetState, layout: HabiterWidgetL
             HabiterWidgetAction.sourceActionIdKey to completion.actionId,
         ),
     )
-    Row(
-        modifier = GlanceModifier.fillMaxSize().padding(if (layout == HabiterWidgetLayout.COMPACT) 12.dp else 20.dp),
-        verticalAlignment = Alignment.Vertical.CenterVertically,
-    ) {
-        Text("✓", style = TextStyle(color = HabiterWidgetTheme.success, fontSize = 24.sp, fontWeight = FontWeight.Bold))
-        Spacer(GlanceModifier.width(10.dp))
-        Column(modifier = GlanceModifier.defaultWeight()) {
-            Text(completion.habitName, maxLines = 1, style = titleStyle(16))
-            if (layout != HabiterWidgetLayout.COMPACT) {
-                Text(if (state.locale.startsWith("de")) "Erledigt" else "Completed", style = mutedStyle(13))
-            }
-        }
-        Box(
+    when (completionLayout.transientArrangement) {
+        HabiterWidgetCompletionArrangement.STACKED -> Column(
             modifier = GlanceModifier
-                .background(HabiterWidgetTheme.surfaceAccent)
-                .cornerRadius(14.dp)
-                .clickable(onClick = action)
-                .semantics { contentDescription = if (state.isGerman) "${completion.habitName} rückgängig machen" else "Undo ${completion.habitName}" }
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            contentAlignment = Alignment.Center,
+                .fillMaxSize()
+                .padding(
+                    horizontal = completionLayout.horizontalPaddingDp.dp,
+                    vertical = completionLayout.verticalPaddingDp.dp,
+                ),
+            verticalAlignment = Alignment.Vertical.CenterVertically,
+            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
         ) {
-            Text(if (layout == HabiterWidgetLayout.COMPACT) "↶" else if (state.locale.startsWith("de")) "Rückgängig" else "Undo", style = titleStyle(13))
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Vertical.CenterVertically,
+            ) {
+                CompletionSummary(
+                    state,
+                    completion,
+                    completionLayout,
+                    GlanceModifier.defaultWeight(),
+                )
+            }
+            Spacer(GlanceModifier.height(6.dp))
+            CompletionUndoControl(state, completion, completionLayout, action)
         }
+
+        HabiterWidgetCompletionArrangement.INLINE,
+        HabiterWidgetCompletionArrangement.ICON_ONLY,
+        -> Row(
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .padding(
+                    horizontal = completionLayout.horizontalPaddingDp.dp,
+                    vertical = completionLayout.verticalPaddingDp.dp,
+                ),
+            verticalAlignment = Alignment.Vertical.CenterVertically,
+        ) {
+            CompletionSummary(
+                state,
+                completion,
+                completionLayout,
+                GlanceModifier.defaultWeight(),
+            )
+            Spacer(GlanceModifier.width(6.dp))
+            CompletionUndoControl(state, completion, completionLayout, action)
+        }
+    }
+}
+
+@Composable
+private fun CompletionSummary(
+    state: HabiterWidgetState,
+    completion: HabiterWidgetCompletion,
+    layout: HabiterWidgetCompletionLayout,
+    textModifier: GlanceModifier,
+) {
+    Text(
+        "✓",
+        style = TextStyle(
+            color = HabiterWidgetTheme.success,
+            fontSize = layout.transientIconSizeSp.sp,
+            fontWeight = FontWeight.Bold,
+        ),
+    )
+    Spacer(GlanceModifier.width(8.dp))
+    Column(modifier = textModifier) {
+        Text(completion.habitName, maxLines = 1, style = titleStyle(layout.titleSizeSp))
+        if (layout.showTransientStatus) {
+            Text(
+                HabiterWidgetCompletionCopy.status(state.isGerman),
+                maxLines = 1,
+                style = mutedStyle(layout.statusSizeSp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CompletionUndoControl(
+    state: HabiterWidgetState,
+    completion: HabiterWidgetCompletion,
+    layout: HabiterWidgetCompletionLayout,
+    action: Action,
+) {
+    Box(
+        modifier = GlanceModifier
+            .background(HabiterWidgetTheme.surfaceAccent)
+            .cornerRadius(14.dp)
+            .clickable(onClick = action)
+            .semantics {
+                contentDescription = HabiterWidgetCompletionCopy.undoDescription(
+                    habitName = completion.habitName,
+                    isGerman = state.isGerman,
+                )
+            }
+            .padding(
+                horizontal = if (layout.showFullUndoLabel) 12.dp else 10.dp,
+                vertical = if (layout.showFullUndoLabel) 7.dp else 6.dp,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            HabiterWidgetCompletionCopy.undoLabel(
+                isGerman = state.isGerman,
+                full = layout.showFullUndoLabel,
+            ),
+            maxLines = 1,
+            style = titleStyle(layout.statusSizeSp),
+        )
     }
 }
 
@@ -320,17 +407,67 @@ private fun ProgressSegments(state: HabiterWidgetState) {
 
 @Composable
 private fun CompletedState(state: HabiterWidgetState, layout: HabiterWidgetLayout) {
-    Column(
-        modifier = GlanceModifier.fillMaxSize().padding(if (layout == HabiterWidgetLayout.COMPACT) 10.dp else 20.dp),
-        verticalAlignment = Alignment.Vertical.CenterVertically,
-        horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
-    ) {
-        Text("✓", style = TextStyle(color = HabiterWidgetTheme.success, fontSize = if (layout == HabiterWidgetLayout.COMPACT) 22.sp else 38.sp, fontWeight = FontWeight.Bold))
-        if (layout != HabiterWidgetLayout.COMPACT) {
-            Spacer(GlanceModifier.height(8.dp))
-            Text(if (state.isGerman) "Alles für heute erledigt." else "Everything for today is done.", maxLines = 2, style = titleStyle(17))
+    val completionLayout = HabiterWidgetCompletionLayout.forLayout(layout)
+    val message = HabiterWidgetCompletionCopy.settledMessage(state.isGerman)
+    val modifier = GlanceModifier
+        .fillMaxSize()
+        .padding(
+            horizontal = completionLayout.horizontalPaddingDp.dp,
+            vertical = completionLayout.verticalPaddingDp.dp,
+        )
+
+    when (completionLayout.settledArrangement) {
+        HabiterWidgetCompletionArrangement.ICON_ONLY -> Box(
+            modifier = modifier,
+            contentAlignment = Alignment.Center,
+        ) {
+            SettledCompletionIcon(completionLayout)
+        }
+
+        HabiterWidgetCompletionArrangement.INLINE -> Row(
+            modifier = modifier,
+            verticalAlignment = Alignment.Vertical.CenterVertically,
+        ) {
+            SettledCompletionIcon(completionLayout)
+            Spacer(GlanceModifier.width(10.dp))
+            Text(
+                message,
+                modifier = GlanceModifier.defaultWeight(),
+                maxLines = completionLayout.settledMessageMaxLines,
+                style = titleStyle(completionLayout.settledMessageSizeSp),
+            )
+        }
+
+        HabiterWidgetCompletionArrangement.STACKED -> Column(
+            modifier = modifier,
+            verticalAlignment = Alignment.Vertical.CenterVertically,
+            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+        ) {
+            SettledCompletionIcon(completionLayout)
+            Spacer(
+                GlanceModifier.height(
+                    if (layout == HabiterWidgetLayout.COMPACT_SQUARE) 4.dp else 8.dp,
+                ),
+            )
+            Text(
+                message,
+                maxLines = completionLayout.settledMessageMaxLines,
+                style = titleStyle(completionLayout.settledMessageSizeSp),
+            )
         }
     }
+}
+
+@Composable
+private fun SettledCompletionIcon(layout: HabiterWidgetCompletionLayout) {
+    Text(
+        "✓",
+        style = TextStyle(
+            color = HabiterWidgetTheme.success,
+            fontSize = layout.settledIconSizeSp.sp,
+            fontWeight = FontWeight.Bold,
+        ),
+    )
 }
 
 @Composable

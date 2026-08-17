@@ -108,6 +108,7 @@ internal val habiterWidgetLaunchFlags =
 @Composable
 private fun JustCompletedState(state: HabiterWidgetState, layout: HabiterWidgetLayout) {
     val completion = state.lastCompletion ?: return
+    val completionLayout = HabiterWidgetCompletionLayout.forLayout(layout)
     val action = actionRunCallback<HabiterWidgetUndoActionCallback>(
         actionParametersOf(
             HabiterWidgetAction.habitIdKey to completion.habitId,
@@ -115,29 +116,113 @@ private fun JustCompletedState(state: HabiterWidgetState, layout: HabiterWidgetL
             HabiterWidgetAction.sourceActionIdKey to completion.actionId,
         ),
     )
-    Row(
-        modifier = GlanceModifier.fillMaxSize().padding(if (layout == HabiterWidgetLayout.COMPACT) 12.dp else 20.dp),
-        verticalAlignment = Alignment.Vertical.CenterVertically,
-    ) {
-        Text("✓", style = TextStyle(color = HabiterWidgetTheme.success, fontSize = 24.sp, fontWeight = FontWeight.Bold))
-        Spacer(GlanceModifier.width(10.dp))
-        Column(modifier = GlanceModifier.defaultWeight()) {
-            Text(completion.habitName, maxLines = 1, style = titleStyle(16))
-            if (layout != HabiterWidgetLayout.COMPACT) {
-                Text(if (state.locale.startsWith("de")) "Erledigt" else "Completed", style = mutedStyle(13))
-            }
-        }
-        Box(
+    when (completionLayout.transientArrangement) {
+        HabiterWidgetCompletionArrangement.STACKED -> Column(
             modifier = GlanceModifier
-                .background(HabiterWidgetTheme.surfaceAccent)
-                .cornerRadius(14.dp)
-                .clickable(onClick = action)
-                .semantics { contentDescription = if (state.isGerman) "${completion.habitName} rückgängig machen" else "Undo ${completion.habitName}" }
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            contentAlignment = Alignment.Center,
+                .fillMaxSize()
+                .padding(
+                    horizontal = completionLayout.horizontalPaddingDp.dp,
+                    vertical = completionLayout.verticalPaddingDp.dp,
+                ),
+            verticalAlignment = Alignment.Vertical.CenterVertically,
+            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
         ) {
-            Text(if (layout == HabiterWidgetLayout.COMPACT) "↶" else if (state.locale.startsWith("de")) "Rückgängig" else "Undo", style = titleStyle(13))
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Vertical.CenterVertically,
+            ) {
+                CompletionSummary(
+                    state,
+                    completion,
+                    completionLayout,
+                    GlanceModifier.defaultWeight(),
+                )
+            }
+            Spacer(GlanceModifier.height(6.dp))
+            CompletionUndoControl(state, completion, completionLayout, action)
         }
+
+        HabiterWidgetCompletionArrangement.INLINE,
+        HabiterWidgetCompletionArrangement.ICON_ONLY,
+        -> Row(
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .padding(
+                    horizontal = completionLayout.horizontalPaddingDp.dp,
+                    vertical = completionLayout.verticalPaddingDp.dp,
+                ),
+            verticalAlignment = Alignment.Vertical.CenterVertically,
+        ) {
+            CompletionSummary(
+                state,
+                completion,
+                completionLayout,
+                GlanceModifier.defaultWeight(),
+            )
+            Spacer(GlanceModifier.width(6.dp))
+            CompletionUndoControl(state, completion, completionLayout, action)
+        }
+    }
+}
+
+@Composable
+private fun CompletionSummary(
+    state: HabiterWidgetState,
+    completion: HabiterWidgetCompletion,
+    layout: HabiterWidgetCompletionLayout,
+    textModifier: GlanceModifier,
+) {
+    Text(
+        "✓",
+        style = TextStyle(
+            color = HabiterWidgetTheme.success,
+            fontSize = layout.transientIconSizeSp.sp,
+            fontWeight = FontWeight.Bold,
+        ),
+    )
+    Spacer(GlanceModifier.width(8.dp))
+    Column(modifier = textModifier) {
+        Text(completion.habitName, maxLines = 1, style = titleStyle(layout.titleSizeSp))
+        if (layout.showTransientStatus) {
+            Text(
+                if (state.isGerman) "Erledigt" else "Completed",
+                maxLines = 1,
+                style = mutedStyle(layout.statusSizeSp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CompletionUndoControl(
+    state: HabiterWidgetState,
+    completion: HabiterWidgetCompletion,
+    layout: HabiterWidgetCompletionLayout,
+    action: Action,
+) {
+    Box(
+        modifier = GlanceModifier
+            .background(HabiterWidgetTheme.surfaceAccent)
+            .cornerRadius(14.dp)
+            .clickable(onClick = action)
+            .semantics {
+                contentDescription = if (state.isGerman) {
+                    "${completion.habitName} rückgängig machen"
+                } else {
+                    "Undo ${completion.habitName}"
+                }
+            }
+            .padding(
+                horizontal = if (layout.showFullUndoLabel) 12.dp else 10.dp,
+                vertical = if (layout.showFullUndoLabel) 7.dp else 6.dp,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            if (!layout.showFullUndoLabel) "↶" else if (state.isGerman) "Rückgängig" else "Undo",
+            maxLines = 1,
+            style = titleStyle(layout.statusSizeSp),
+        )
     }
 }
 

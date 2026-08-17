@@ -42,6 +42,7 @@ final class UpdateController extends ChangeNotifier {
   List<UpdateRelease> _upgradeReleases = const [];
   bool _initialized = false;
   bool _checking = false;
+  bool _pollingDownload = false;
   bool _mandatoryEnforced = false;
   Timer? _downloadPoller;
 
@@ -71,7 +72,17 @@ final class UpdateController extends ChangeNotifier {
   Future<void> initialize() async {
     if (_initialized) return;
     _local = await _repository.load();
-    _runtime = await _platform.runtimeInfo();
+    try {
+      _runtime = await _platform.runtimeInfo();
+    } on Object {
+      _state = const UpdateState(
+        phase: UpdatePhase.error,
+        errorCode: 'runtime_info_failed',
+      );
+      _initialized = true;
+      notifyListeners();
+      return;
+    }
     await _restoreVerifiedCache();
     await _reconcileUpgrade();
     await _reconcileDownload();
@@ -183,6 +194,7 @@ final class UpdateController extends ChangeNotifier {
     try {
       final network = await _platform.networkStatus();
       if (!network.isOnline) {
+        _mandatoryEnforced = false;
         _state = UpdateState(
           phase: UpdatePhase.error,
           candidate: _state.candidate,
@@ -220,6 +232,7 @@ final class UpdateController extends ChangeNotifier {
         await download(allowMetered: profile == UpdateProfile.immediate);
       }
     } on Object {
+      _mandatoryEnforced = false;
       _state = UpdateState(
         phase: UpdatePhase.error,
         candidate: _state.candidate,
@@ -358,25 +371,34 @@ final class UpdateController extends ChangeNotifier {
   }
 
   Future<void> pollDownload() async {
+    if (_pollingDownload) return;
     final id = _local.downloadId;
     if (id == null) return;
-    final status = await _platform.downloadStatus(id);
-    switch (status.phase) {
-      case UpdateDownloadPhase.queued ||
-          UpdateDownloadPhase.running ||
-          UpdateDownloadPhase.paused:
-        _transition(UpdatePhase.downloading, progress: status.progress);
-      case UpdateDownloadPhase.complete:
-        _downloadPoller?.cancel();
-        _transition(UpdatePhase.verifying, progress: 1);
-        await _verifyCompletedDownload();
-      case UpdateDownloadPhase.failed || UpdateDownloadPhase.missing:
-        _downloadPoller?.cancel();
-        await _clearDownload(removeNative: true);
-        _transition(
-          UpdatePhase.error,
-          errorCode: status.failureCode ?? 'download_failed',
-        );
+    _pollingDownload = true;
+    try {
+      final status = await _platform.downloadStatus(id);
+      switch (status.phase) {
+        case UpdateDownloadPhase.queued ||
+            UpdateDownloadPhase.running ||
+            UpdateDownloadPhase.paused:
+          _transition(UpdatePhase.downloading, progress: status.progress);
+        case UpdateDownloadPhase.complete:
+          _downloadPoller?.cancel();
+          _transition(UpdatePhase.verifying, progress: 1);
+          await _verifyCompletedDownload();
+        case UpdateDownloadPhase.failed || UpdateDownloadPhase.missing:
+          _downloadPoller?.cancel();
+          await _clearDownload(removeNative: true);
+          _transition(
+            UpdatePhase.error,
+            errorCode: status.failureCode ?? 'download_failed',
+          );
+      }
+    } on Object {
+      _downloadPoller?.cancel();
+      _transition(UpdatePhase.error, errorCode: 'download_status_failed');
+    } finally {
+      _pollingDownload = false;
     }
   }
 
@@ -487,7 +509,27 @@ final class UpdateController extends ChangeNotifier {
 
   Future<void> handleResume() async {
     await _reconcileDownload();
+    await _refreshConnectivity();
     await check(UpdateCheckTrigger.resume);
+  }
+
+  Future<void> _refreshConnectivity() async {
+    var isOnline = false;
+    try {
+      isOnline = (await _platform.networkStatus()).isOnline;
+    } on Object {
+      // Unknown connectivity must never keep a mandatory screen locked.
+    }
+    if (_state.isOnline == isOnline) return;
+    _state = UpdateState(
+      phase: _state.phase,
+      candidate: _state.candidate,
+      progress: _state.progress,
+      errorCode: _state.errorCode,
+      isOnline: isOnline,
+      lastCheckedAt: _state.lastCheckedAt,
+    );
+    notifyListeners();
   }
 
   Future<void> handleForegroundTick() =>

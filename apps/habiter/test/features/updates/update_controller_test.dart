@@ -47,6 +47,7 @@ void main() {
     required FakeClock clock,
     UpdateLocalState? local,
     String? responseEnvelope,
+    String Function()? responseEnvelopeProvider,
     InMemoryKeyValueStore? existingStore,
     bool seedLocalState = true,
   }) async {
@@ -67,7 +68,7 @@ void main() {
       client: SignedManifestClient(
         client: MockClient(
           (_) async => http.Response(
-            responseEnvelope ?? envelope,
+            responseEnvelopeProvider?.call() ?? responseEnvelope ?? envelope,
             200,
             headers: {'etag': '"new"'},
           ),
@@ -197,6 +198,40 @@ void main() {
     controller.dispose();
   });
 
+  test(
+    'a failed server verification releases an existing mandatory lock',
+    () async {
+      final fixture = await signed([
+        releaseJson(
+          build: 10500,
+          channel: 'stable',
+          mandatoryAfter: DateTime.utc(2026, 8, 16),
+        ),
+      ]);
+      final tampered = jsonDecode(fixture.envelope) as Map<String, Object?>;
+      tampered['signature'] = base64UrlEncode(List<int>.filled(64, 7));
+      var serverEnvelope = fixture.envelope;
+      final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+      final platform = FakeUpdatePlatform(buildNumber: 10400);
+      final controller = await controllerFor(
+        envelope: fixture.envelope,
+        publicKey: fixture.publicKey,
+        platform: platform,
+        clock: clock,
+        responseEnvelopeProvider: () => serverEnvelope,
+      );
+      await controller.check(UpdateCheckTrigger.manual);
+      expect(controller.mandatoryEnforced, isTrue);
+      serverEnvelope = jsonEncode(tampered);
+
+      await controller.check(UpdateCheckTrigger.manual);
+
+      expect(controller.state.phase, UpdatePhase.error);
+      expect(controller.mandatoryEnforced, isFalse);
+      controller.dispose();
+    },
+  );
+
   test('tampered server data cannot replace the last verified cache', () async {
     final fixture = await signed([
       releaseJson(build: 10500, channel: 'stable'),
@@ -303,6 +338,95 @@ void main() {
     await restored.pollDownload();
     expect(restored.state.phase, UpdatePhase.ready);
     restored.dispose();
+  });
+
+  test(
+    'a ready mandatory update fails open when resume finds no network',
+    () async {
+      final fixture = await signed([
+        releaseJson(
+          build: 10500,
+          channel: 'stable',
+          mandatoryAfter: DateTime.utc(2026, 8, 16),
+        ),
+      ]);
+      final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+      final platform = FakeUpdatePlatform(buildNumber: 10400);
+      final controller = await controllerFor(
+        envelope: fixture.envelope,
+        publicKey: fixture.publicKey,
+        platform: platform,
+        clock: clock,
+      );
+      await controller.check(UpdateCheckTrigger.manual);
+      await controller.download();
+      platform.download = const UpdateDownloadStatus(
+        phase: UpdateDownloadPhase.complete,
+        downloadedBytes: 100,
+        totalBytes: 100,
+      );
+      await controller.pollDownload();
+      expect(controller.state.phase, UpdatePhase.ready);
+      platform.network = const UpdateNetworkStatus(
+        isOnline: false,
+        isMetered: false,
+      );
+
+      await controller.handleResume();
+
+      expect(controller.state.phase, UpdatePhase.ready);
+      expect(controller.state.isOnline, isFalse);
+      controller.dispose();
+    },
+  );
+
+  test(
+    'download status errors fail safely and can be reconciled on resume',
+    () async {
+      final fixture = await signed([
+        releaseJson(build: 10500, channel: 'stable'),
+      ]);
+      final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+      final platform = FakeUpdatePlatform(buildNumber: 10400);
+      final controller = await controllerFor(
+        envelope: fixture.envelope,
+        publicKey: fixture.publicKey,
+        platform: platform,
+        clock: clock,
+      );
+      await controller.check(UpdateCheckTrigger.manual);
+      await controller.download();
+      platform.downloadStatusError = StateError('binder unavailable');
+
+      await controller.pollDownload();
+
+      expect(controller.state.phase, UpdatePhase.error);
+      expect(controller.state.errorCode, 'download_status_failed');
+      platform.downloadStatusError = null;
+      await controller.handleResume();
+      expect(controller.state.phase, UpdatePhase.downloading);
+      controller.dispose();
+    },
+  );
+
+  test('runtime platform failures leave startup usable', () async {
+    final fixture = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final platform = FakeUpdatePlatform(buildNumber: 10400)
+      ..runtimeInfoError = StateError('channel unavailable');
+    final controller = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+    );
+
+    expect(controller.initialized, isTrue);
+    expect(controller.state.phase, UpdatePhase.error);
+    expect(controller.state.errorCode, 'runtime_info_failed');
+    controller.dispose();
   });
 
   test('an installer failure deletes the candidate and fails safely', () async {
@@ -517,6 +641,8 @@ final class FakeUpdatePlatform implements UpdatePlatformGateway {
   bool? lastAllowMetered;
   Object? installError;
   Object? enqueueError;
+  Object? downloadStatusError;
+  Object? runtimeInfoError;
 
   @override
   Future<void> cleanupAfterUpgrade(int currentBuild) async {}
@@ -527,8 +653,10 @@ final class FakeUpdatePlatform implements UpdatePlatformGateway {
   }
 
   @override
-  Future<UpdateDownloadStatus> downloadStatus(String downloadId) async =>
-      download;
+  Future<UpdateDownloadStatus> downloadStatus(String downloadId) async {
+    if (downloadStatusError case final error?) throw error;
+    return download;
+  }
 
   @override
   Future<String> enqueueDownload(
@@ -568,7 +696,10 @@ final class FakeUpdatePlatform implements UpdatePlatformGateway {
   }
 
   @override
-  Future<UpdateRuntimeInfo> runtimeInfo() async => info;
+  Future<UpdateRuntimeInfo> runtimeInfo() async {
+    if (runtimeInfoError case final error?) throw error;
+    return info;
+  }
 
   @override
   Future<int> storedDownloadBytes() async => 100;

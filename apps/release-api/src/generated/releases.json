@@ -28,7 +28,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.1/habiter-1.4.1-android-universal.apk",
           "sha256": "e79fc8f961f8975576da44599843498bfb8de76b794f51b169028a2822d035fe",
-          "size": 62702211
+          "size": 62702211,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -37,7 +38,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.1/habiter-1.4.1-android-playstore.aab",
           "sha256": "0c6fc00c8de31febef1e56007dae7702096ff1dff89997cc019b74ea14d67f3c",
-          "size": 61282201
+          "size": 61282201,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -103,7 +105,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.0/habiter-1.4.0-android-universal.apk",
           "sha256": "b05e54b1ef5a0536a116b1d2e860e42cee6c195c2067ac5b9277f9a44bec641e",
-          "size": 62702207
+          "size": 62702207,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -112,7 +115,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.0/habiter-1.4.0-android-playstore.aab",
           "sha256": "b9cb1de5127b4f2191647df23e95fdb3ce167c114ed7acf897ab98cb23c342ba",
-          "size": 61275286
+          "size": 61275286,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -167,7 +171,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.3.10/habiter-1.3.10-android-universal.apk",
           "sha256": "260c77b3e59b2c1c1e3ca8e8ee0bdef2cb37b5ffeb5d0924f9d04e5fa28e1a83",
-          "size": 61373751
+          "size": 61373751,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -176,7 +181,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.3.10/habiter-1.3.10-android-playstore.aab",
           "sha256": "ad4afbf304c425ad7a21a17ed5f3b296ab0bc1bef40e3f816200a68b5cb68e1b",
-          "size": 60138457
+          "size": 60138457,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -236,7 +242,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.3.5/habiter-1.3.5-android-universal.apk",
           "sha256": "8834a79a99de472369ff471269cf9e728f37d6abbedc132dbc374910904c03f1",
-          "size": 61291827
+          "size": 61291827,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -245,7 +252,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.3.5/habiter-1.3.5-android-playstore.aab",
           "sha256": "5082fb0768192f13be0de0ed009315cd5c2b9909b1901c6716af21f4c78d6fbc",
-          "size": 60099278
+          "size": 60099278,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -308,7 +316,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.3.0/habiter-1.3.0-android-universal.apk",
           "sha256": "5511c04dd793fc878de51dce257fb20f62ac22ba32ce7efbf186955c7c627564",
-          "size": 61291827
+          "size": 61291827,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -317,7 +326,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.3.0/habiter-1.3.0-android-playstore.aab",
           "sha256": "2dc7cdc7524a43fa6677e5505e831168985041e98049f2457078737fff974b54",
-          "size": 60090103
+          "size": 60090103,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -381,7 +391,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.2.0/habiter-1.2.0-android-universal.apk",
           "sha256": "a1acaa71ab7fea83bb163c2eb3fb0a444fd9720bbf4a5b415aa0004e4ad01bf4",
-          "size": 59989213
+          "size": 59989213,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -390,7 +401,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.2.0/habiter-1.2.0-android-playstore.aab",
           "sha256": "ae8a00c0ca750e90ac63d774ece748e40ce4393b6a20ecdeb7f43ff34b7da3f4",
-          "size": 58079805
+          "size": 58079805,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -454,7 +466,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.1.0/habiter-1.1.0-android-universal.apk",
           "sha256": "cdc2c0d935bd504fbebb25132f8d21d5ae106d9a5e0bd5c5c591c215878684c2",
-          "size": 60201833
+          "size": 60201833,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -463,7 +476,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.1.0/habiter-1.1.0-android-playstore.aab",
           "sha256": "e9a8045cb369dc459763757fd5641a8b4933d218c6cfebb51046b2842d397973",
-          "size": 58295046
+          "size": 58295046,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -520,7 +534,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.0.0/habiter-1.0.0-android-universal.apk",
           "sha256": "e3f5cd55a952e932ec2e4bf42d1176cab01d34cacdd4eb6002ac4e3217bc0760",
-          "size": 60330889
+          "size": 60330889,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -529,7 +544,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.0.0/habiter-1.0.0-android-playstore.aab",
           "sha256": "94f93b30249a7b929ad3f0371f5fadee3df1d5a042948815a09bd7a32e29f146",
-          "size": 58311090
+          "size": 58311090,
+          "distribution": "play"
         },
         {
           "platform": "windows",

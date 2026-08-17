@@ -1,4 +1,10 @@
-import { createHash } from "node:crypto";
+import {
+  createHash,
+  createPrivateKey,
+  createPublicKey,
+  sign,
+  verify
+} from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
@@ -41,12 +47,92 @@ export async function validateManifest(manifest, schema) {
       if (artifact.platform === "android" && !artifact.signed) {
         throw new Error(`Android artifact must be signed: ${artifact.fileName}`);
       }
+      if (artifact.platform === "android" && !artifact.distribution) {
+        throw new Error(`Android artifact requires a distribution: ${artifact.fileName}`);
+      }
+      if (artifact.platform !== "android" && artifact.distribution) {
+        throw new Error(`Only Android artifacts may set distribution: ${artifact.fileName}`);
+      }
+      if (release.status === "published") assertPublishedAsset(artifact, artifact.fileName);
+    }
+
+    const mediaIds = new Set();
+    for (const media of release.media ?? []) {
+      if (mediaIds.has(media.id)) throw new Error(`Duplicate release media id: ${media.id}`);
+      mediaIds.add(media.id);
+      if (release.status === "published") assertPublishedAsset(media, media.fileName);
+    }
+    for (const locale of ["de", "en"]) {
+      for (const highlight of release.presentation?.[locale]?.highlights ?? []) {
+        if (highlight.mediaId && !mediaIds.has(highlight.mediaId)) {
+          throw new Error(`Unknown media id ${highlight.mediaId} in ${release.version} ${locale}`);
+        }
+      }
     }
     versions.add(release.version);
     builds.add(release.buildNumber);
     previousBuild = release.buildNumber;
   }
   return manifest;
+}
+
+function assertPublishedAsset(asset, label) {
+  if (!asset.url || !asset.sha256 || !asset.size) {
+    throw new Error(`Published asset metadata is incomplete for ${label}`);
+  }
+  const url = new URL(asset.url);
+  if (url.protocol !== "https:") throw new Error(`Published asset must use HTTPS: ${label}`);
+}
+
+export function publishedManifest(manifest) {
+  return {
+    schemaVersion: manifest.schemaVersion,
+    releases: manifest.releases.filter((release) => release.status === "published")
+  };
+}
+
+export function manifestPayloadBytes(manifest) {
+  return Buffer.from(JSON.stringify(publishedManifest(manifest)), "utf8");
+}
+
+export function signManifestEnvelope({ manifest, keyId, privateKey }) {
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]+$/.test(keyId)) {
+    throw new Error("Invalid manifest signing key id");
+  }
+  const payload = manifestPayloadBytes(manifest);
+  const key = createPrivateKey(privateKey);
+  if (key.asymmetricKeyType !== "ed25519") throw new Error("Manifest signing key must use Ed25519");
+  return {
+    schemaVersion: 1,
+    keyId,
+    algorithm: "ed25519",
+    payload: payload.toString("base64url"),
+    signature: sign(null, payload, key).toString("base64url")
+  };
+}
+
+export function verifyManifestEnvelope(envelope, publicKeyRing) {
+  if (
+    envelope?.schemaVersion !== 1
+    || envelope.algorithm !== "ed25519"
+    || typeof envelope.keyId !== "string"
+    || typeof envelope.payload !== "string"
+    || typeof envelope.signature !== "string"
+  ) {
+    throw new Error("Invalid signed manifest envelope");
+  }
+  const publicKey = publicKeyRing[envelope.keyId];
+  if (!publicKey) throw new Error(`Unknown manifest signing key: ${envelope.keyId}`);
+  const key = createPublicKey(publicKey);
+  if (key.asymmetricKeyType !== "ed25519") throw new Error("Manifest verification key must use Ed25519");
+  const payload = Buffer.from(envelope.payload, "base64url");
+  const signature = Buffer.from(envelope.signature, "base64url");
+  if (!verify(null, payload, key, signature)) throw new Error("Manifest signature verification failed");
+  const manifest = JSON.parse(payload.toString("utf8"));
+  if (manifest.releases?.some((release) => release.status !== "published")) {
+    throw new Error("Signed manifest contains an unpublished release");
+  }
+  return { manifest, payload };
 }
 
 export function parsePubspecVersion(contents) {
@@ -112,6 +198,7 @@ export function finalizeRelease(manifest, runtimeManifest, version) {
       runtimeArtifact.platform !== artifact.platform
       || runtimeArtifact.architecture !== artifact.architecture
       || runtimeArtifact.signed !== artifact.signed
+      || runtimeArtifact.distribution !== artifact.distribution
     ) {
       throw new Error(`Runtime artifact contract does not match for ${artifact.fileName}`);
     }
@@ -126,13 +213,30 @@ export function finalizeRelease(manifest, runtimeManifest, version) {
     throw new Error(`Runtime artifact set does not match for ${version}`);
   }
 
+  const runtimeMedia = new Map((published.media ?? []).map((media) => [media.id, media]));
+  const media = (source.media ?? []).map((item) => {
+    const runtimeItem = runtimeMedia.get(item.id);
+    if (
+      !runtimeItem?.url
+      || !runtimeItem.sha256
+      || !runtimeItem.size
+      || runtimeItem.fileName !== item.fileName
+      || runtimeItem.mimeType !== item.mimeType
+    ) {
+      throw new Error(`Runtime media metadata is incomplete or mismatched for ${item.id}`);
+    }
+    return { ...item, url: runtimeItem.url, sha256: runtimeItem.sha256, size: runtimeItem.size };
+  });
+  if (runtimeMedia.size !== media.length) throw new Error(`Runtime media set does not match for ${version}`);
+
   return {
     ...manifest,
     releases: manifest.releases.map((release) => release.version === version ? {
       ...release,
       status: "published",
       publishedAt: published.publishedAt,
-      artifacts
+      artifacts,
+      ...(media.length > 0 ? { media } : {})
     } : release)
   };
 }
@@ -150,5 +254,23 @@ export async function enrichRelease({ release, artifactDirectory, repository, pu
       url: `https://github.com/${repository}/releases/download/v${release.version}/${artifact.fileName}`
     });
   }
-  return { ...release, status: "published", publishedAt, artifacts };
+  const media = [];
+  for (const item of release.media ?? []) {
+    const file = path.join(artifactDirectory, item.fileName);
+    const data = await readFile(file);
+    const info = await stat(file);
+    media.push({
+      ...item,
+      size: info.size,
+      sha256: createHash("sha256").update(data).digest("hex"),
+      url: `https://github.com/${repository}/releases/download/v${release.version}/${item.fileName}`
+    });
+  }
+  return {
+    ...release,
+    status: "published",
+    publishedAt,
+    artifacts,
+    ...(media.length > 0 ? { media } : {})
+  };
 }

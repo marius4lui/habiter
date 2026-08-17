@@ -15,6 +15,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -24,7 +25,11 @@ import io.flutter.plugin.common.MethodChannel
 import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
+import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
+import java.net.HttpURLConnection
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
 
 internal class UpdateManager(private val activity: MainActivity) {
     private val downloads = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -36,6 +41,7 @@ internal class UpdateManager(private val activity: MainActivity) {
             when (call.method) {
                 "getRuntimeInfo" -> result.success(runtimeInfo())
                 "getNetworkStatus" -> result.success(networkStatus())
+                "fetchManifest" -> fetchManifest(call, result)
                 "enqueueDownload" -> result.success(enqueue(call))
                 "getDownloadStatus" -> result.success(downloadStatus(requiredId(call)))
                 "verifyDownload" -> result.success(verifyDownload(requiredId(call), call))
@@ -102,6 +108,59 @@ internal class UpdateManager(private val activity: MainActivity) {
         val online = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
             capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
         return mapOf("isOnline" to online, "isMetered" to connectivity.isActiveNetworkMetered)
+    }
+
+    private fun fetchManifest(call: MethodCall, result: MethodChannel.Result) {
+        val url = requiredString(call, "url")
+        val etag = call.argument<String>("etag")
+        Thread({
+            var connection: HttpsURLConnection? = null
+            try {
+                val endpoint = URL(url)
+                if (endpoint.protocol != "https") throw UpdateFailure("unsafe_manifest_url")
+                connection = endpoint.openConnection() as? HttpsURLConnection
+                    ?: throw UpdateFailure("unsafe_manifest_url")
+                connection.instanceFollowRedirects = false
+                connection.connectTimeout = MANIFEST_TIMEOUT_MS
+                connection.readTimeout = MANIFEST_TIMEOUT_MS
+                connection.setRequestProperty("Accept", "application/json")
+                connection.setRequestProperty("User-Agent", "Habiter/${BuildConfig.VERSION_NAME} Android")
+                if (etag != null) connection.setRequestProperty("If-None-Match", etag)
+
+                val statusCode = connection.responseCode
+                val body = if (statusCode == HttpURLConnection.HTTP_OK) {
+                    connection.inputStream.use { input ->
+                        val output = ByteArrayOutputStream()
+                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                        var total = 0
+                        while (true) {
+                            val count = input.read(buffer)
+                            if (count < 0) break
+                            total += count
+                            if (total > MAX_MANIFEST_BYTES) {
+                                throw UpdateFailure("manifest_too_large")
+                            }
+                            output.write(buffer, 0, count)
+                        }
+                        output.toString(Charsets.UTF_8.name())
+                    }
+                } else {
+                    ""
+                }
+                val response = mapOf(
+                    "statusCode" to statusCode,
+                    "body" to body,
+                    "etag" to connection.getHeaderField("ETag"),
+                )
+                activity.runOnUiThread { result.success(response) }
+            } catch (error: Exception) {
+                Log.w(TAG, "Native manifest request failed", error)
+                val code = (error as? UpdateFailure)?.code ?: "manifest_network_error"
+                activity.runOnUiThread { result.error(code, error.message, null) }
+            } finally {
+                connection?.disconnect()
+            }
+        }, "habiter-manifest-fetch").start()
     }
 
     private fun enqueue(call: MethodCall): Long {
@@ -434,6 +493,9 @@ internal class UpdateManager(private val activity: MainActivity) {
     private class UpdateFailure(val code: String) : IllegalStateException(code)
 
     private companion object {
+        const val TAG = "HabiterUpdates"
+        const val MANIFEST_TIMEOUT_MS = 15_000
+        const val MAX_MANIFEST_BYTES = 4 * 1024 * 1024
         const val APK_MIME = "application/vnd.android.package-archive"
         const val METADATA_PREFIX = "download_"
         const val UPDATE_CHANNEL = "habiter_updates"

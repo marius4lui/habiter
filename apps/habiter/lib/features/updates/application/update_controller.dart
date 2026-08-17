@@ -231,7 +231,8 @@ final class UpdateController extends ChangeNotifier {
           )) {
         await download(allowMetered: profile == UpdateProfile.immediate);
       }
-    } on Object {
+    } on Object catch (error, stackTrace) {
+      debugPrint('Update check failed: $error\n$stackTrace');
       _mandatoryEnforced = false;
       _state = UpdateState(
         phase: UpdatePhase.error,

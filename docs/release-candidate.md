@@ -21,6 +21,11 @@ This document records reproducible release-candidate gates. It is not a release 
 
 ## v1.5 update-system gates
 
+The Android build job runs both native unit-test variants and validates the
+actual merged manifests with `scripts/android/verify-update-flavors.sh`.
+Source-manifest inspection alone is not accepted as evidence for flavor
+isolation.
+
 - Install Habiter 1.5 manually over the newest pre-1.5 direct build, then update to a higher RC build from inside the app.
 - Confirm the direct APK resumes after process termination, works over Wi-Fi and mobile data according to the selected profile, asks clearly for unknown-app permission, and still requires Android's explicit **Install** action.
 - Deny unknown-app permission and verify that Habiter remains usable and can reopen the correct Android settings page without a prompt loop.

@@ -76,7 +76,7 @@ After configuring the custom domain, set `RELEASE_API_BASE_URL` so deployment an
 
 ## Automatic-update release assets
 
-Android is built in two flavors with the same application ID. `direct` produces a signed universal APK with the installer permission and FileProvider; `store` produces an AAB without either direct-install capability. The release workflow verifies both artifacts against `ANDROID_CERT_SHA256`. The build flavor is authoritative, while the detected Android install source is an additional safeguard: a Store-installed build never receives a direct APK.
+Android is built in two flavors with the same application ID. `direct` produces a signed universal APK with the installer permission and FileProvider; `store` produces an AAB without either direct-install capability. The build and release workflows inspect the merged manifests with `scripts/android/verify-update-flavors.sh`, and the release workflow verifies both artifacts against `ANDROID_CERT_SHA256`. The build flavor is authoritative, while the detected Android install source is an additional safeguard: a Store-installed build never receives a direct APK.
 
 Optional story images belong in `packages/release-core/media/<version>/` and must be declared by file name, MIME type and ID in the matching draft. The publish job copies them beside the platform artifacts, calculates size and SHA-256, adds their immutable GitHub Release URLs to the runtime manifest and signs those exact manifest bytes. Missing or corrupt client-side media falls back to the declared icon without affecting the update itself.
 

@@ -82,6 +82,8 @@ abstract interface class UpdatePlatformGateway {
 
   Future<void> removeDownload(String downloadId);
 
+  Future<void> clearDownloads();
+
   Future<UpdateInstallResult> install(
     String downloadId,
     UpdateCandidate candidate,

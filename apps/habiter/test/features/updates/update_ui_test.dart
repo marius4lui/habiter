@@ -579,6 +579,9 @@ final class _FakePlatform implements UpdatePlatformGateway {
   Future<void> cleanupAfterUpgrade(int currentBuild) async {}
 
   @override
+  Future<void> clearDownloads() async {}
+
+  @override
   Future<UpdateDownloadStatus> downloadStatus(String downloadId) async =>
       const UpdateDownloadStatus(
         phase: UpdateDownloadPhase.missing,

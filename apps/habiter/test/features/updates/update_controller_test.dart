@@ -47,17 +47,21 @@ void main() {
     required FakeClock clock,
     UpdateLocalState? local,
     String? responseEnvelope,
+    InMemoryKeyValueStore? existingStore,
+    bool seedLocalState = true,
   }) async {
-    final store = InMemoryKeyValueStore();
+    final store = existingStore ?? InMemoryKeyValueStore();
     final repository = UpdateLocalRepository(store);
-    await repository.save(
-      local ??
-          UpdateLocalState(
-            profile: UpdateProfile.saver,
-            previousAppBuild: platform.info.buildNumber,
-            lastCheckedAt: clock.now(),
-          ),
-    );
+    if (seedLocalState) {
+      await repository.save(
+        local ??
+            UpdateLocalState(
+              profile: UpdateProfile.saver,
+              previousAppBuild: platform.info.buildNumber,
+              lastCheckedAt: clock.now(),
+            ),
+      );
+    }
     final controller = UpdateController(
       repository: repository,
       client: SignedManifestClient(
@@ -257,6 +261,50 @@ void main() {
     },
   );
 
+  test('a persisted DownloadManager ID resumes after app restart', () async {
+    final fixture = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final platform = FakeUpdatePlatform(buildNumber: 10400);
+    final store = InMemoryKeyValueStore();
+    final first = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+      existingStore: store,
+    );
+    await first.check(UpdateCheckTrigger.manual);
+    await first.download();
+    first.dispose();
+    platform.download = const UpdateDownloadStatus(
+      phase: UpdateDownloadPhase.running,
+      downloadedBytes: 60,
+      totalBytes: 100,
+    );
+
+    final restored = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+      existingStore: store,
+      seedLocalState: false,
+    );
+
+    expect(restored.state.phase, UpdatePhase.downloading);
+    expect(restored.state.progress, 0.6);
+    platform.download = const UpdateDownloadStatus(
+      phase: UpdateDownloadPhase.complete,
+      downloadedBytes: 100,
+      totalBytes: 100,
+    );
+    await restored.pollDownload();
+    expect(restored.state.phase, UpdatePhase.ready);
+    restored.dispose();
+  });
+
   test('an installer failure deletes the candidate and fails safely', () async {
     final fixture = await signed([
       releaseJson(build: 10500, channel: 'stable'),
@@ -333,6 +381,28 @@ void main() {
 
     expect(controller.state.phase, UpdatePhase.error);
     expect(controller.state.errorCode, 'download_failed');
+    controller.dispose();
+  });
+
+  test('storage cleanup removes every native update download', () async {
+    final fixture = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final platform = FakeUpdatePlatform(buildNumber: 10400);
+    final controller = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+    );
+    await controller.check(UpdateCheckTrigger.manual);
+    await controller.download();
+
+    await controller.clearDownloads();
+
+    expect(platform.clearDownloadsCalls, 1);
+    expect(controller.state.phase, UpdatePhase.available);
     controller.dispose();
   });
 
@@ -443,12 +513,18 @@ final class FakeUpdatePlatform implements UpdatePlatformGateway {
   int verifyCalls = 0;
   int removeCalls = 0;
   int openExternalCalls = 0;
+  int clearDownloadsCalls = 0;
   bool? lastAllowMetered;
   Object? installError;
   Object? enqueueError;
 
   @override
   Future<void> cleanupAfterUpgrade(int currentBuild) async {}
+
+  @override
+  Future<void> clearDownloads() async {
+    clearDownloadsCalls += 1;
+  }
 
   @override
   Future<UpdateDownloadStatus> downloadStatus(String downloadId) async =>

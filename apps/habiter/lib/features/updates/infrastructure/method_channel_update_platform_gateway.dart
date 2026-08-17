@@ -134,6 +134,12 @@ final class MethodChannelUpdatePlatformGateway
       _channel.invokeMethod<void>('removeDownload', {'downloadId': downloadId});
 
   @override
+  Future<void> clearDownloads() async {
+    if (_platformName != 'android') return;
+    await _channel.invokeMethod<void>('clearDownloads');
+  }
+
+  @override
   Future<UpdateInstallResult> install(
     String downloadId,
     UpdateCandidate candidate,

@@ -87,7 +87,11 @@ final class UpdateController extends ChangeNotifier {
       _manifest = (await _verifier.verify(cached)).manifest;
       _applyCandidate(verifiedOnline: false);
     } on Object {
-      _local = _local.copyWith(cachedEnvelope: null, etag: null);
+      _local = _local.copyWith(
+        cachedEnvelope: null,
+        etag: null,
+        lastCheckedAt: null,
+      );
       await _repository.save(_local);
     }
   }
@@ -419,7 +423,21 @@ final class UpdateController extends ChangeNotifier {
   Future<void> openInstallerPermission() => _platform.openInstallerPermission();
 
   Future<void> clearDownloads() async {
-    await _clearDownload(removeNative: true);
+    try {
+      await _platform.clearDownloads();
+    } on Object {
+      _state = UpdateState(
+        phase: UpdatePhase.error,
+        candidate: _state.candidate,
+        errorCode: 'storage_cleanup_failed',
+        isOnline: _state.isOnline,
+        lastCheckedAt: _local.lastCheckedAt,
+      );
+      notifyListeners();
+      return;
+    }
+    _local = _local.copyWith(downloadId: null, downloadBuild: null);
+    await _repository.save(_local);
     final candidate = _state.candidate;
     _state = UpdateState(
       phase: candidate == null ? UpdatePhase.idle : UpdatePhase.available,

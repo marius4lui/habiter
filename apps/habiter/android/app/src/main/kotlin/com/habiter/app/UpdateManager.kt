@@ -43,6 +43,10 @@ internal class UpdateManager(private val activity: MainActivity) {
                     removeDownload(requiredId(call))
                     result.success(null)
                 }
+                "clearDownloads" -> {
+                    clearDownloads()
+                    result.success(null)
+                }
                 "installUpdate" -> result.success(install(requiredId(call), requiredLong(call, "buildNumber")))
                 "openInstallerPermission" -> {
                     openInstallerPermission()
@@ -231,6 +235,13 @@ internal class UpdateManager(private val activity: MainActivity) {
     private fun storedDownloadBytes(): Long = updateDirectory().listFiles()
         ?.filter(File::isFile)
         ?.sumOf(File::length) ?: 0L
+
+    private fun clearDownloads() {
+        preferences.all.keys.filter { it.startsWith(METADATA_PREFIX) }.forEach { key ->
+            key.removePrefix(METADATA_PREFIX).toLongOrNull()?.let(::removeDownload)
+        }
+        updateDirectory().listFiles()?.filter(File::isFile)?.forEach(File::delete)
+    }
 
     private fun cleanupAfterUpgrade(currentBuild: Long) {
         preferences.all.keys.filter { it.startsWith(METADATA_PREFIX) }.forEach { key ->

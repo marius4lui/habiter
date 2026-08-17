@@ -47,6 +47,12 @@ void main() {
 
       expect(buildFile, contains('create("direct")'));
       expect(buildFile, contains('create("store")'));
+      expect(buildFile, contains('applicationId = "com.habiter.app"'));
+      expect(
+        buildFile,
+        isNot(contains('applicationIdSuffix')),
+        reason: 'Both update distributions must upgrade the same app ID.',
+      );
       expect(directManifest, contains('REQUEST_INSTALL_PACKAGES'));
       expect(directManifest, contains('androidx.core.content.FileProvider'));
       expect(mainManifest, isNot(contains('REQUEST_INSTALL_PACKAGES')));

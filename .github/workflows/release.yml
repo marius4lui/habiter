@@ -118,6 +118,8 @@ jobs:
           node ../../scripts/release/validate-public-key-ring.mjs
           flutter build apk --release --flavor direct --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
           flutter build appbundle --release --flavor store --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
+          ../../scripts/android/verify-update-flavors.sh \
+            build/app/intermediates/merged_manifests directRelease storeRelease
       - name: Name and verify signed artifacts
         env:
           VERSION: ${{ needs.validate.outputs.version }}

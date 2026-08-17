@@ -48,6 +48,9 @@ jobs:
         run: |
           flutter build apk --debug --flavor direct
           flutter build apk --debug --flavor store
+          ./android/gradlew -p android :app:testDirectDebugUnitTest :app:testStoreDebugUnitTest
+          ../../scripts/android/verify-update-flavors.sh \
+            build/app/intermediates/merged_manifests directDebug storeDebug
       - if: matrix.target == 'web'
         run: flutter build web --release
 

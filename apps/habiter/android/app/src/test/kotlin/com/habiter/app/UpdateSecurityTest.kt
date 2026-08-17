@@ -51,4 +51,11 @@ class UpdateSecurityTest {
         assertFalse(UpdateSecurity.shouldPostReadyNotification(true, true))
         assertFalse(UpdateSecurity.shouldPostReadyNotification(false, false))
     }
+
+    @Test
+    fun acceptsOnlyStrictlyNewerApkBuilds() {
+        assertTrue(UpdateSecurity.isNewerBuild(10_400, 10_500))
+        assertFalse(UpdateSecurity.isNewerBuild(10_500, 10_500))
+        assertFalse(UpdateSecurity.isNewerBuild(10_500, 10_400))
+    }
 }

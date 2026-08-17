@@ -353,7 +353,7 @@ Concrete release responses are immutable; latest, update, and download decisions
 
 - Every push and pull request runs formatting, analysis, tests, schema checks, Worker contracts, website validation, documentation builds, and secret scanning.
 - Platform builds cover Android, Windows, Linux, macOS, web, and unsigned iOS.
-- Pull requests that affect the Worker receive isolated preview deployments.
+- Pull requests that affect the Worker receive native aliased Cloudflare preview versions.
 - Relevant pushes to `main` deploy the production Worker through GitHub Actions.
 - Only a matching `v<semver>` tag can start an application release.
 - Android APK and AAB artifacts must pass signature and certificate-fingerprint verification before publication.

@@ -25,6 +25,7 @@
     "preview": {
       "name": "habiter-release-api-preview",
       "workers_dev": true,
+      "preview_urls": true,
       "vars": {
         "ENVIRONMENT": "preview",
         "WEBSITE_URL": "https://habiter.dev/#download"

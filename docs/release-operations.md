@@ -50,7 +50,7 @@ To rotate GitHub's stored copy without changing the certificate, re-upload the s
 
 ## Worker deployment and rollback
 
-Production Worker code deploys only from relevant changes on `main`. Pull requests from the same repository receive isolated workers named `habiter-release-api-pr-<number>` and a reusable preview comment. Closing the pull request deletes that preview worker.
+Production Worker code deploys only from relevant changes on `main`. Pull requests from the same repository upload native Cloudflare preview versions to the shared `habiter-release-api-preview` Worker. Each pull request receives a stable `pr-<number>` preview alias and a reusable preview comment; preview uploads never promote a version to an active deployment.
 
 The checked-in release manifest remains authoritative. Production data includes only `published` entries; previews may expose draft entries with preview-only runtime metadata.
 

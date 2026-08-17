@@ -57,6 +57,17 @@ void main() {
       expect(preview, isNot(contains('|| true')));
     });
 
+    test('worker previews use one native versioned preview worker', () {
+      final preview = workflow('worker-preview.yml').readAsStringSync();
+
+      expect(preview, contains('wrangler versions upload'));
+      expect(preview, contains('--preview-alias "\$PREVIEW_ALIAS"'));
+      expect(preview, contains('PREVIEW_ALIAS: pr-'));
+      expect(preview, isNot(contains('wrangler deploy --env preview')));
+      expect(preview, isNot(contains('habiter-release-api-pr-')));
+      expect(preview, isNot(contains('wrangler delete')));
+    });
+
     test('quality workflows expose stable required-check job names', () {
       final quality = workflow('quality.yml').readAsStringSync();
       expect(quality, contains('name: Flutter Quality'));

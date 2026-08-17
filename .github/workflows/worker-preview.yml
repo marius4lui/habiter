@@ -2,7 +2,7 @@ name: Release API Preview
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened]
     paths:
       - 'apps/release-api/**'
       - 'packages/release-core/**'
@@ -22,8 +22,8 @@ concurrency:
 
 jobs:
   preview:
-    name: Deploy Preview Worker
-    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    name: Deploy Native Preview Version
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -48,9 +48,14 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          WORKER_NAME: habiter-release-api-pr-${{ github.event.pull_request.number }}
+          PREVIEW_ALIAS: pr-${{ github.event.pull_request.number }}
         run: |
-          pnpm exec wrangler deploy --env preview --name "$WORKER_NAME" | tee deploy.log
+          pnpm exec wrangler versions upload \
+            --env preview \
+            --preview-alias "$PREVIEW_ALIAS" \
+            --tag "$PREVIEW_ALIAS" \
+            --message "Pull request #${{ github.event.pull_request.number }} at ${GITHUB_SHA}" \
+            | tee deploy.log
           PREVIEW_URL=$(grep -Eo 'https://[^ ]+\.workers\.dev' deploy.log | tail -1)
           test -n "$PREVIEW_URL"
           echo "url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
@@ -63,7 +68,7 @@ jobs:
         with:
           script: |
             const marker = '<!-- habiter-release-api-preview -->';
-            const body = `${marker}\n✅ Release API preview: ${process.env.PREVIEW_URL}`;
+            const body = `${marker}\n✅ Native Cloudflare Release API preview: ${process.env.PREVIEW_URL}`;
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -85,25 +90,3 @@ jobs:
                 body,
               });
             }
-
-  cleanup:
-    name: Delete Preview Worker
-    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11.21.0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24.13.1'
-      - run: pnpm install --frozen-lockfile
-      - name: Delete preview
-        working-directory: apps/release-api
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          WORKER_NAME: habiter-release-api-pr-${{ github.event.pull_request.number }}
-        run: pnpm exec wrangler delete --name "$WORKER_NAME" --force

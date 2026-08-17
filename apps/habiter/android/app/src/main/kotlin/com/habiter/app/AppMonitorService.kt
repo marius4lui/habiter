@@ -25,7 +25,7 @@ class AppMonitorService : Service() {
     companion object {
         private const val NOTIFICATION_ID = 1001
         private const val CHANNEL_ID = "app_lock_channel"
-        private const val BLOCK_COOLDOWN_MS = 1000L  // Prevent spam blocking
+        private const val INITIAL_USAGE_WINDOW_MS = 10_000L
         private const val TAG = "HabiterAppLock"
     }
     
@@ -34,12 +34,17 @@ class AppMonitorService : Service() {
     private lateinit var usageStatsManager: UsageStatsManager
     private lateinit var prefs: SharedPreferences
     
-    // Race condition prevention
-    private var lastBlockedPackage: String? = null
-    private var lastBlockTime = 0L
+    @Volatile
+    private var foregroundPackage: String? = null
+    @Volatile
+    private var lastUsageQueryAt = 0L
+    @Volatile
+    private var suppressedBlockedPackage: String? = null
     
     // Screen state tracking for battery optimization
+    @Volatile
     private var isScreenOn = true
+    @Volatile
     private var monitoring = false
     
     private val monitorRunnable = object : Runnable {
@@ -60,6 +65,10 @@ class AppMonitorService : Service() {
                 Intent.ACTION_SCREEN_OFF -> {
                     isScreenOn = false
                     handler.removeCallbacks(monitorRunnable)
+                    foregroundPackage = null
+                    suppressedBlockedPackage = null
+                    lastUsageQueryAt = System.currentTimeMillis()
+                    BlockingOverlay.dismiss()
                 }
                 Intent.ACTION_SCREEN_ON -> {
                     isScreenOn = true
@@ -75,6 +84,7 @@ class AppMonitorService : Service() {
         prefs = getSharedPreferences("app_lock", Context.MODE_PRIVATE)
         monitorThread = HandlerThread("habiter-app-lock-monitor").apply { start() }
         handler = Handler(monitorThread.looper)
+        lastUsageQueryAt = System.currentTimeMillis() - INITIAL_USAGE_WINDOW_MS
         createNotificationChannel()
         
         // Register screen receiver
@@ -98,12 +108,13 @@ class AppMonitorService : Service() {
     }
     
     override fun onDestroy() {
-        super.onDestroy()
         monitoring = false
         handler.removeCallbacksAndMessages(null)
         monitorThread.quitSafely()
+        BlockingOverlay.dismiss()
         runCatching { unregisterReceiver(screenReceiver) }
             .onFailure { Log.w(TAG, "Screen receiver cleanup failed", it) }
+        super.onDestroy()
     }
     
     override fun onBind(intent: Intent?): IBinder? = null
@@ -112,45 +123,60 @@ class AppMonitorService : Service() {
         val isEnabled = prefs.getBoolean("is_enabled", false)
         val habitsComplete = prefs.getBoolean("habits_complete", false)
         
-        val lockedPackages = prefs.getStringSet("locked_packages", emptySet()) ?: emptySet()
+        val lockedPackages = prefs.getStringSet("locked_packages", emptySet())?.toSet() ?: emptySet()
         val usageAccess = hasUsageStatsPermission()
         val overlayAccess = Settings.canDrawOverlays(this)
-        if (!AppLockPolicy.shouldMonitor(
-                enabled = isEnabled && !habitsComplete,
-                hasUsageAccess = usageAccess,
-                hasOverlayAccess = overlayAccess,
-                lockedPackageCount = lockedPackages.size,
-            )) {
-            if (isEnabled && (!usageAccess || !overlayAccess)) {
-                prefs.edit().putBoolean("is_enabled", false).apply()
-                stopSelf()
-            }
-            return
+
+        val observedForegroundPackage = if (usageAccess) getForegroundPackage() else null
+        if (observedForegroundPackage != suppressedBlockedPackage) {
+            suppressedBlockedPackage = null
         }
-        
-        val foregroundPackage = getForegroundPackage()
-        
-        if (foregroundPackage != null && lockedPackages.contains(foregroundPackage)) {
-            showBlockingScreen(foregroundPackage)
+
+        val uiState = AppLockPolicy.blockingUiState(
+            enabled = isEnabled,
+            hasUsageAccess = usageAccess,
+            hasOverlayAccess = overlayAccess,
+            habitsComplete = habitsComplete,
+            foregroundPackage = observedForegroundPackage,
+            lockedPackages = lockedPackages,
+        )
+        when (uiState) {
+            BlockingUiState.Hidden -> BlockingOverlay.dismiss()
+            is BlockingUiState.Visible -> {
+                if (uiState.blockedPackage == suppressedBlockedPackage) {
+                    BlockingOverlay.dismiss()
+                } else {
+                    showBlockingScreen(uiState.blockedPackage)
+                }
+            }
+        }
+
+        if (isEnabled && (!usageAccess || !overlayAccess)) {
+            BlockingOverlay.dismiss()
+            prefs.edit().putBoolean("is_enabled", false).apply()
+            stopSelf()
         }
     }
     
     private fun getForegroundPackage(): String? {
         val endTime = System.currentTimeMillis()
-        val startTime = endTime - 500  // Reduced window for faster detection
-        
-        val usageEvents = usageStatsManager.queryEvents(startTime, endTime)
-        var lastForegroundPackage: String? = null
-        
-        val event = UsageEvents.Event()
-        while (usageEvents.hasNextEvent()) {
-            usageEvents.getNextEvent(event)
-            if (event.eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
-                lastForegroundPackage = event.packageName
+        val startTime = lastUsageQueryAt.coerceAtMost(endTime)
+        lastUsageQueryAt = endTime
+
+        return runCatching {
+            val usageEvents = usageStatsManager.queryEvents(startTime, endTime)
+            val event = UsageEvents.Event()
+            while (usageEvents.hasNextEvent()) {
+                usageEvents.getNextEvent(event)
+                if (event.eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
+                    foregroundPackage = event.packageName
+                }
             }
-        }
-        
-        return lastForegroundPackage
+            foregroundPackage
+        }.onFailure {
+            foregroundPackage = null
+            Log.w(TAG, "Unable to resolve foreground package", it)
+        }.getOrNull()
     }
 
     private fun hasUsageStatsPermission(): Boolean {
@@ -173,17 +199,6 @@ class AppMonitorService : Service() {
     }
     
     private fun showBlockingScreen(blockedPackage: String) {
-        val now = System.currentTimeMillis()
-        
-        // Race condition prevention: Don't spam block the same app
-        if (blockedPackage == lastBlockedPackage && 
-            now - lastBlockTime < BLOCK_COOLDOWN_MS) {
-            return
-        }
-        
-        lastBlockedPackage = blockedPackage
-        lastBlockTime = now
-        
         // Get app name for display
         val blockedAppName = try {
             val pm = packageManager
@@ -196,10 +211,20 @@ class AppMonitorService : Service() {
         
         // Get incomplete habit names from SharedPreferences
         val incompleteHabits = prefs.getStringSet("incomplete_habits", emptySet())
-            ?.toList() ?: emptyList()
+            ?.sortedWith(String.CASE_INSENSITIVE_ORDER) ?: emptyList()
         
-        // Show modern overlay
-        BlockingOverlay.show(this, blockedAppName, incompleteHabits)
+        BlockingOverlay.show(
+            context = this,
+            blockedPackage = blockedPackage,
+            blockedAppName = blockedAppName,
+            incompleteHabits = incompleteHabits,
+            onLeaveBlockedApp = ::suppressUntilForegroundChanges,
+        )
+    }
+
+    private fun suppressUntilForegroundChanges(blockedPackage: String) {
+        suppressedBlockedPackage = blockedPackage
+        BlockingOverlay.dismiss()
     }
     
     private fun createNotificationChannel() {

@@ -2,4 +2,22 @@
 <resources>
     <string name="habiter_widget_name">Habiter</string>
     <string name="habiter_widget_description">See today\'s habits and complete the next step from your home screen.</string>
+    <string name="app_lock_brand">HABITER</string>
+    <string name="app_lock_paused_title">%1$s is paused</string>
+    <string name="app_lock_status_generic">Your open habits are the next step</string>
+    <plurals name="app_lock_habits_until_release">
+        <item quantity="one">One more habit until access</item>
+        <item quantity="other">%1$d more habits until access</item>
+    </plurals>
+    <string name="app_lock_generic_habit">Your habits for today</string>
+    <string name="app_lock_habit_open_today">Today · still open</string>
+    <plurals name="app_lock_more_habits">
+        <item quantity="one">+%1$d more habit</item>
+        <item quantity="other">+%1$d more habits</item>
+    </plurals>
+    <string name="app_lock_rationale">You chose to pause %1$s until after today\'s habits.</string>
+    <string name="app_lock_open_single_habit">Open %1$s in Habiter</string>
+    <string name="app_lock_open_habits">Open habits in Habiter</string>
+    <string name="app_lock_go_home">Go to Home screen</string>
+    <string name="app_lock_generic_app_name">This app</string>
 </resources>

@@ -15,11 +15,13 @@ final class HabitRepositorySnapshot {
   HabitRepositorySnapshot({
     required Iterable<Habit> habits,
     required Iterable<HabitEntry> entries,
+    this.revision = 0,
   }) : habits = UnmodifiableListView<Habit>(habits.toList()),
        entries = UnmodifiableListView<HabitEntry>(entries.toList());
 
   final List<Habit> habits;
   final List<HabitEntry> entries;
+  final int revision;
 }
 
 final class HabitRepositoryDraft {

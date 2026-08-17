@@ -11,6 +11,7 @@ final class KeyValueHabitRepository implements HabitRepository {
 
   static const habitsKey = 'habiter_habits';
   static const entriesKey = 'habiter_habit_entries';
+  static const revisionKey = 'habiter_habit_state_revision';
 
   final KeyValueStore _store;
   Future<void> _queue = Future<void>.value();
@@ -32,8 +33,9 @@ final class KeyValueHabitRepository implements HabitRepository {
       }
       final oldHabits = await _store.read(habitsKey);
       final oldEntries = await _store.read(entriesKey);
+      final oldRevision = await _store.read(revisionKey);
       try {
-        final snapshot = _decode(oldHabits, oldEntries);
+        final snapshot = _decode(oldHabits, oldEntries, oldRevision);
         final draft = HabitRepositoryDraft(
           habits: snapshot.habits,
           entries: snapshot.entries,
@@ -47,9 +49,11 @@ final class KeyValueHabitRepository implements HabitRepository {
           entriesKey,
           jsonEncode(draft.entries.map((entry) => entry.toMap()).toList()),
         );
+        await _store.write(revisionKey, snapshot.revision + 1);
       } catch (error) {
         await _restore(habitsKey, oldHabits);
         await _restore(entriesKey, oldEntries);
+        await _restore(revisionKey, oldRevision);
         if (error is HabitRepositoryException) rethrow;
         throw HabitRepositoryException(
           'The habit transaction failed and was rolled back.',
@@ -69,11 +73,16 @@ final class KeyValueHabitRepository implements HabitRepository {
           );
         }
         final envelope = StorageEnvelope.fromJson(envelopeValue);
-        return _decode(envelope.data[habitsKey], envelope.data[entriesKey]);
+        return _decode(
+          envelope.data[habitsKey],
+          envelope.data[entriesKey],
+          envelope.data[revisionKey],
+        );
       }
       return _decode(
         await _store.read(habitsKey),
         await _store.read(entriesKey),
+        await _store.read(revisionKey),
       );
     } catch (error) {
       if (error is HabitRepositoryException) rethrow;
@@ -84,10 +93,15 @@ final class KeyValueHabitRepository implements HabitRepository {
     }
   }
 
-  HabitRepositorySnapshot _decode(Object? habitsValue, Object? entriesValue) {
+  HabitRepositorySnapshot _decode(
+    Object? habitsValue,
+    Object? entriesValue,
+    Object? revisionValue,
+  ) {
     return HabitRepositorySnapshot(
       habits: _decodeList(habitsValue, Habit.fromMap),
       entries: _decodeList(entriesValue, HabitEntry.fromMap),
+      revision: (revisionValue as num?)?.toInt() ?? 0,
     );
   }
 
@@ -119,6 +133,7 @@ final class KeyValueHabitRepository implements HabitRepository {
       final snapshot = _decode(
         envelope.data[habitsKey],
         envelope.data[entriesKey],
+        envelope.data[revisionKey],
       );
       final draft = HabitRepositoryDraft(
         habits: snapshot.habits,
@@ -127,10 +142,8 @@ final class KeyValueHabitRepository implements HabitRepository {
       await mutation(draft);
       final data = Map<String, Object?>.from(envelope.data)
         ..[habitsKey] = _mergeHabits(envelope.data[habitsKey], draft.habits)
-        ..[entriesKey] = _mergeEntries(
-          envelope.data[entriesKey],
-          draft.entries,
-        );
+        ..[entriesKey] = _mergeEntries(envelope.data[entriesKey], draft.entries)
+        ..[revisionKey] = snapshot.revision + 1;
       await _store.write(
         StorageEnvelope.storageKey,
         envelope.withData(data).toJson(),

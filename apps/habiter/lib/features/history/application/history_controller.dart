@@ -35,14 +35,7 @@ final class HistoryController extends ChangeNotifier {
     _emit(HistoryState(status: FeatureStatus.loading, entries: _state.entries));
     try {
       final snapshot = await _repository.load();
-      _emit(
-        HistoryState(
-          status: snapshot.entries.isEmpty
-              ? FeatureStatus.empty
-              : FeatureStatus.ready,
-          entries: snapshot.entries,
-        ),
-      );
+      replaceSnapshot(snapshot);
     } catch (_) {
       _emit(
         HistoryState(
@@ -54,8 +47,20 @@ final class HistoryController extends ChangeNotifier {
     }
   }
 
-  void _emit(HistoryState value) {
+  void replaceSnapshot(HabitRepositorySnapshot snapshot, {bool notify = true}) {
+    _emit(
+      HistoryState(
+        status: snapshot.entries.isEmpty
+            ? FeatureStatus.empty
+            : FeatureStatus.ready,
+        entries: snapshot.entries,
+      ),
+      notify: notify,
+    );
+  }
+
+  void _emit(HistoryState value, {bool notify = true}) {
     _state = value;
-    notifyListeners();
+    if (notify) notifyListeners();
   }
 }

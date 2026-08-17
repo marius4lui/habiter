@@ -49,14 +49,7 @@ final class HabitsController extends ChangeNotifier {
     _emit(HabitsState(status: FeatureStatus.loading, habits: _state.habits));
     try {
       final snapshot = await _repository.load();
-      _emit(
-        HabitsState(
-          status: snapshot.habits.isEmpty
-              ? FeatureStatus.empty
-              : FeatureStatus.ready,
-          habits: snapshot.habits,
-        ),
-      );
+      replaceSnapshot(snapshot);
     } catch (_) {
       _emit(
         HabitsState(
@@ -66,6 +59,18 @@ final class HabitsController extends ChangeNotifier {
         ),
       );
     }
+  }
+
+  void replaceSnapshot(HabitRepositorySnapshot snapshot, {bool notify = true}) {
+    _emit(
+      HabitsState(
+        status: snapshot.habits.isEmpty
+            ? FeatureStatus.empty
+            : FeatureStatus.ready,
+        habits: snapshot.habits,
+      ),
+      notify: notify,
+    );
   }
 
   Future<String> add({
@@ -138,8 +143,8 @@ final class HabitsController extends ChangeNotifier {
     return result;
   }
 
-  void _emit(HabitsState value) {
+  void _emit(HabitsState value, {bool notify = true}) {
     _state = value;
-    notifyListeners();
+    if (notify) notifyListeners();
   }
 }

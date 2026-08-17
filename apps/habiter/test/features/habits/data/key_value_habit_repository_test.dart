@@ -64,9 +64,11 @@ void main() {
       final snapshot = await repository.load();
       expect(snapshot.habits.single.id, 'one');
       expect(snapshot.entries.single.id, 'entry-1');
+      expect(snapshot.revision, 1);
       expect(store.writes.map((write) => write.key), <String>[
         KeyValueHabitRepository.habitsKey,
         KeyValueHabitRepository.entriesKey,
+        KeyValueHabitRepository.revisionKey,
       ]);
     });
 

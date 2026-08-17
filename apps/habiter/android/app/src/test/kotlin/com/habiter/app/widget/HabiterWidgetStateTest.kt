@@ -65,6 +65,30 @@ class HabiterWidgetStateTest {
     }
 
     @Test
+    fun `completion layouts reserve vertical space on narrow square widgets`() {
+        val compact = HabiterWidgetCompletionLayout.forLayout(HabiterWidgetLayout.COMPACT)
+        val square = HabiterWidgetCompletionLayout.forLayout(HabiterWidgetLayout.COMPACT_SQUARE)
+
+        assertEquals(HabiterWidgetCompletionArrangement.INLINE, compact.transientArrangement)
+        assertEquals(HabiterWidgetCompletionArrangement.ICON_ONLY, compact.settledArrangement)
+        assertFalse(compact.showFullUndoLabel)
+        assertEquals(HabiterWidgetCompletionArrangement.STACKED, square.transientArrangement)
+        assertEquals(HabiterWidgetCompletionArrangement.STACKED, square.settledArrangement)
+        assertTrue(square.showFullUndoLabel)
+        assertTrue(square.showTransientStatus)
+    }
+
+    @Test
+    fun `short wide completion layouts stay horizontal`() {
+        val wide = HabiterWidgetCompletionLayout.forLayout(HabiterWidgetLayout.WIDE)
+
+        assertEquals(HabiterWidgetCompletionArrangement.INLINE, wide.transientArrangement)
+        assertEquals(HabiterWidgetCompletionArrangement.INLINE, wide.settledArrangement)
+        assertEquals(1, wide.settledMessageMaxLines)
+        assertFalse(wide.showTransientStatus)
+    }
+
+    @Test
     fun `widget launch reuses the root activity instead of stacking it`() {
         assertTrue(habiterWidgetLaunchFlags and Intent.FLAG_ACTIVITY_CLEAR_TOP != 0)
         assertTrue(habiterWidgetLaunchFlags and Intent.FLAG_ACTIVITY_SINGLE_TOP != 0)

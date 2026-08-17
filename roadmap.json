@@ -1,0 +1,180 @@
+{
+  "$schema": "./schemas/roadmap.schema.json",
+  "schemaVersion": 1,
+  "title": "Roadmap",
+  "description": "This roadmap tracks the released baseline and planned product releases. Version dates are stable-release targets and may move depending on testing results.",
+  "releases": [
+    {
+      "version": "1.4.0",
+      "title": "Dynamic notifications",
+      "status": "released",
+      "statusText": "Released.",
+      "summary": [
+        "Seven-day calibration and local smart timing.",
+        "Dynamic reminder planning with local-only data.",
+        "Explainable Rhythm experience."
+      ]
+    },
+    {
+      "version": "1.4.1",
+      "title": "Completion UI stability",
+      "status": "planned",
+      "target": "18 Aug 2026",
+      "issues": [9],
+      "summary": ["Fix completion-state layout issues."],
+      "scope": [
+        "Fix completion success-state layout compression.",
+        "Prevent clipped text and overlapping undo actions.",
+        "Verify responsive behavior across Android sizes."
+      ],
+      "rationale": {
+        "title": "Reason for separate patch release",
+        "items": [
+          "User-visible bug.",
+          "No architecture changes.",
+          "Can ship independently."
+        ]
+      }
+    },
+    {
+      "version": "1.4.2",
+      "title": "Widget/App lifecycle reconciliation",
+      "status": "planned",
+      "target": "19 Aug 2026",
+      "issues": [11],
+      "summary": ["Improve state synchronization between app, widgets and background actions."],
+      "scope": [
+        "Introduce reliable `rehydrate → reconcile → publish` lifecycle flow.",
+        "Sync external widget/headless changes back into active app state.",
+        "Ensure Reminder and App Lock use fresh state after resume.",
+        "Preserve widget idempotency and avoid refresh loops."
+      ],
+      "rationale": {
+        "title": "Reason before larger features",
+        "items": [
+          "Provides the state consistency foundation required by future background features."
+        ]
+      }
+    },
+    {
+      "version": "1.5.0",
+      "title": "Automatic update client",
+      "status": "planned",
+      "target": "20 Aug 2026",
+      "summary": ["Add the client update experience on top of the existing Release API."],
+      "scope": [
+        "Add client-side update checking.",
+        "Use existing Release API infrastructure.",
+        "Verify release metadata and artifacts.",
+        "Keep installation user-controlled."
+      ],
+      "note": "The release API and release infrastructure already exist. This release focuses on the application experience."
+    },
+    {
+      "version": "1.6.0",
+      "title": "Habit Experience and Onboarding v3",
+      "status": "planned",
+      "target": "21–22 Aug 2026",
+      "issues": [6, 7, 8],
+      "summary": [
+        "Improve habit schedule understanding.",
+        "Improve onboarding navigation.",
+        "Align reminder creation flows."
+      ],
+      "implementationOrder": [
+        {
+          "issue": 8,
+          "title": "Canonical habit schedule semantics.",
+          "items": [
+            "Daily, fixed-day and flexible weekly behavior.",
+            "Shared progress model for Today, Analytics, Reminders and future App Block."
+          ]
+        },
+        {
+          "issue": 7,
+          "title": "Onboarding navigation foundation.",
+          "items": [
+            "Replace step switching with a proper navigation flow.",
+            "Preserve resumable onboarding state."
+          ]
+        },
+        {
+          "issue": 8,
+          "title": "Interactive onboarding education.",
+          "items": [
+            "Explain habit schedules visually.",
+            "Explain reminder behavior.",
+            "Add reusable education components."
+          ]
+        },
+        {
+          "issue": 6,
+          "title": "Manual habit creation parity.",
+          "items": ["Reuse the same reminder components outside onboarding."]
+        }
+      ],
+      "goal": "Avoid multiple independent implementations of schedule and reminder behavior."
+    },
+    {
+      "version": "1.7.0",
+      "title": "Persistent Habiter Runtime",
+      "status": "planned",
+      "target": "22–24 Aug 2026",
+      "issues": [10],
+      "summary": ["Introduce a shared background runtime for adaptive reminders and future focus features."],
+      "scope": [
+        "Convert the existing Android foreground service into a shared Habiter runtime.",
+        "Support adaptive reminder evaluation while the UI is closed.",
+        "Keep reminder business logic in Dart/domain code.",
+        "Replace App-Lock-specific watchdog behavior with targeted runtime recovery.",
+        "Share background and battery prerequisites across runtime features."
+      ],
+      "testing": [
+        "Android lifecycle behavior.",
+        "Background execution.",
+        "Reminder delivery.",
+        "Recovery after process/service termination."
+      ]
+    },
+    {
+      "version": "1.8.0",
+      "title": "App Block 2.0",
+      "status": "planned",
+      "target": "24–31 Aug 2026",
+      "issues": [12],
+      "summary": ["Add local distraction discovery and habit-based app blocking."],
+      "scope": [
+        "Optional App Block onboarding flow.",
+        "Local usage analysis.",
+        "Distraction recommendations.",
+        "Explicit app selection.",
+        "App-to-habit bindings.",
+        "Schedule-aware blocking rules.",
+        "Overlay education and blocking experience."
+      ],
+      "dependencies": [
+        "#8 schedule semantics.",
+        "#11 state reconciliation.",
+        "#10 persistent runtime."
+      ],
+      "goal": "Build App Block on stable foundations instead of duplicating runtime, schedule or lifecycle logic."
+    }
+  ],
+  "versioning": {
+    "patch": {
+      "usedFor": ["Bugs.", "Reliability fixes.", "Small UX corrections."],
+      "example": "`1.4.1`, `1.4.2`"
+    },
+    "minor": {
+      "usedFor": [
+        "New user-facing features.",
+        "Large UX improvements.",
+        "New architectural capabilities."
+      ],
+      "example": "`1.5.0`, `1.6.0`, `1.7.0`, `1.8.0`"
+    },
+    "major": {
+      "description": "Reserved for incompatible product/data/platform changes. Current planned work does not require a major release."
+    }
+  }
+}

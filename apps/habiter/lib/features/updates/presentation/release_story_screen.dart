@@ -445,6 +445,9 @@ final class _StoryUpdateAction extends StatelessWidget {
     if (state.phase == UpdatePhase.verifying) {
       return const Center(child: CircularProgressIndicator());
     }
+    if (state.phase == UpdatePhase.installing) {
+      return Center(child: Text(context.l10n.updateStatusInstalling));
+    }
     final ready = state.phase == UpdatePhase.ready;
     final external = controller.runtime?.supportsDirectInstall != true;
     return FilledButton.icon(

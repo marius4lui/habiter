@@ -445,6 +445,7 @@ final class UpdateController extends ChangeNotifier {
   Future<void> openInstallerPermission() => _platform.openInstallerPermission();
 
   Future<void> clearDownloads() async {
+    _downloadPoller?.cancel();
     try {
       await _platform.clearDownloads();
     } on Object {
@@ -470,12 +471,31 @@ final class UpdateController extends ChangeNotifier {
   }
 
   Future<void> clearManifestCache() async {
+    _downloadPoller?.cancel();
+    final id = _local.downloadId;
+    if (id != null) {
+      try {
+        await _platform.removeDownload(id);
+      } on Object {
+        _state = UpdateState(
+          phase: UpdatePhase.error,
+          candidate: _state.candidate,
+          errorCode: 'storage_cleanup_failed',
+          isOnline: _state.isOnline,
+          lastCheckedAt: _local.lastCheckedAt,
+        );
+        notifyListeners();
+        return;
+      }
+    }
     _manifest = null;
     _mandatoryEnforced = false;
     _local = _local.copyWith(
       cachedEnvelope: null,
       etag: null,
       lastCheckedAt: null,
+      downloadId: null,
+      downloadBuild: null,
     );
     await _repository.save(_local);
     _state = const UpdateState();
@@ -485,6 +505,7 @@ final class UpdateController extends ChangeNotifier {
   Future<int> storedDownloadBytes() => _platform.storedDownloadBytes();
 
   Future<void> _clearDownload({required bool removeNative}) async {
+    _downloadPoller?.cancel();
     final id = _local.downloadId;
     if (removeNative && id != null) await _platform.removeDownload(id);
     _local = _local.copyWith(downloadId: null, downloadBuild: null);

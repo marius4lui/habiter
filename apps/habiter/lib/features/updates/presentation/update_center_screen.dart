@@ -155,7 +155,8 @@ final class _StatusCard extends StatelessWidget {
                 ),
               if (candidate != null &&
                   state.phase != UpdatePhase.downloading &&
-                  state.phase != UpdatePhase.verifying)
+                  state.phase != UpdatePhase.verifying &&
+                  state.phase != UpdatePhase.installing)
                 OutlinedButton.icon(
                   onPressed: state.phase == UpdatePhase.ready
                       ? () => requestUpdateInstall(context, controller)

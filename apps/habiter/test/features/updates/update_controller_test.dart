@@ -530,6 +530,32 @@ void main() {
     controller.dispose();
   });
 
+  test(
+    'clearing the verified cache also removes its active download',
+    () async {
+      final fixture = await signed([
+        releaseJson(build: 10500, channel: 'stable'),
+      ]);
+      final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+      final platform = FakeUpdatePlatform(buildNumber: 10400);
+      final controller = await controllerFor(
+        envelope: fixture.envelope,
+        publicKey: fixture.publicKey,
+        platform: platform,
+        clock: clock,
+      );
+      await controller.check(UpdateCheckTrigger.manual);
+      await controller.download();
+
+      await controller.clearManifestCache();
+
+      expect(platform.removeCalls, 1);
+      expect(controller.manifest, isNull);
+      expect(controller.state.phase, UpdatePhase.idle);
+      controller.dispose();
+    },
+  );
+
   test('fresh installs do not show an upgrade story', () async {
     final fixture = await signed([
       releaseJson(build: 10500, channel: 'stable'),

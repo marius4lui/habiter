@@ -16,7 +16,7 @@ final class UpdateExperienceGate extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = context.watch<UpdateController>();
     if (!controller.initialized) return child;
-    if (controller.mandatoryEnforced) {
+    if (controller.mandatoryEnforced && controller.state.isOnline) {
       return _MandatoryUpdateScreen(controller: controller);
     }
     final upgrade = controller.upgradeReleases;

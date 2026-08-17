@@ -70,6 +70,17 @@ void main() {
     expect((await rotated.verify(next.envelope)).manifest.schemaVersion, 1);
   });
 
+  test('rejects malformed embedded public-key rings without trusting data', () {
+    expect(
+      () => ManifestVerifier.fromEncodedKeyRing('{broken'),
+      throwsA(isA<FormatException>()),
+    );
+    expect(
+      () => ManifestVerifier.fromEncodedKeyRing('{"release-key":"AQ"}'),
+      throwsA(isA<ArgumentError>()),
+    );
+  });
+
   test('uses ETag without sending any user identifier', () async {
     final fixture = await signedEnvelope();
     final client = SignedManifestClient(

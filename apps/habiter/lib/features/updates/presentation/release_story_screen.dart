@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -371,18 +372,42 @@ final class _VersionDetails extends StatelessWidget {
   }
 }
 
-final class _DeadlineNotice extends StatelessWidget {
+final class _DeadlineNotice extends StatefulWidget {
   const _DeadlineNotice({required this.release});
 
   final UpdateRelease release;
 
   @override
+  State<_DeadlineNotice> createState() => _DeadlineNoticeState();
+}
+
+final class _DeadlineNoticeState extends State<_DeadlineNotice> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.release.mandatoryAfter != null) {
+      _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+        if (mounted) setState(() {});
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final deadline = release.mandatoryAfter;
+    final deadline = widget.release.mandatoryAfter;
     if (deadline == null || !deadline.isAfter(DateTime.now())) {
       return const SizedBox.shrink();
     }
-    final hours = math.max(1, deadline.difference(DateTime.now()).inHours);
+    final remainingMinutes = deadline.difference(DateTime.now()).inMinutes;
+    final hours = math.max(1, (remainingMinutes / 60).ceil());
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Card(

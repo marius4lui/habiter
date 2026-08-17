@@ -115,8 +115,7 @@ jobs:
           HABITER_UPDATE_PUBLIC_KEYS: ${{ vars.HABITER_UPDATE_PUBLIC_KEYS }}
           RELEASE_MANIFEST_KEY_ID: ${{ vars.RELEASE_MANIFEST_KEY_ID }}
         run: |
-          test -n "$HABITER_UPDATE_PUBLIC_KEYS" && test -n "$RELEASE_MANIFEST_KEY_ID"
-          printf '%s' "$HABITER_UPDATE_PUBLIC_KEYS" | jq --exit-status --arg key "$RELEASE_MANIFEST_KEY_ID" 'has($key)'
+          node ../../scripts/release/validate-public-key-ring.mjs
           flutter build apk --release --flavor direct --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
           flutter build appbundle --release --flavor store --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
       - name: Name and verify signed artifacts
@@ -169,8 +168,9 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - env:
           HABITER_UPDATE_PUBLIC_KEYS: ${{ vars.HABITER_UPDATE_PUBLIC_KEYS }}
+          RELEASE_MANIFEST_KEY_ID: ${{ vars.RELEASE_MANIFEST_KEY_ID }}
         run: |
-          test -n "$HABITER_UPDATE_PUBLIC_KEYS"
+          node ../../scripts/release/validate-public-key-ring.mjs
           flutter build linux --release --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
       - env:
           VERSION: ${{ needs.validate.outputs.version }}
@@ -200,8 +200,9 @@ jobs:
       - shell: pwsh
         env:
           HABITER_UPDATE_PUBLIC_KEYS: ${{ vars.HABITER_UPDATE_PUBLIC_KEYS }}
+          RELEASE_MANIFEST_KEY_ID: ${{ vars.RELEASE_MANIFEST_KEY_ID }}
         run: |
-          if (-not $env:HABITER_UPDATE_PUBLIC_KEYS) { throw "HABITER_UPDATE_PUBLIC_KEYS is required" }
+          node ../../scripts/release/validate-public-key-ring.mjs
           flutter build windows --release --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$env:HABITER_UPDATE_PUBLIC_KEYS"
       - shell: pwsh
         env:
@@ -231,8 +232,9 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - env:
           HABITER_UPDATE_PUBLIC_KEYS: ${{ vars.HABITER_UPDATE_PUBLIC_KEYS }}
+          RELEASE_MANIFEST_KEY_ID: ${{ vars.RELEASE_MANIFEST_KEY_ID }}
         run: |
-          test -n "$HABITER_UPDATE_PUBLIC_KEYS"
+          node ../../scripts/release/validate-public-key-ring.mjs
           flutter build macos --release --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
       - env:
           VERSION: ${{ needs.validate.outputs.version }}

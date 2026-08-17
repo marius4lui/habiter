@@ -527,7 +527,7 @@
   "updateOfflineMandatoryWarning": "A required update is pending. Habiter stays usable offline and will verify again when you reconnect.",
   "updateMandatoryTitle": "Update required",
   "updateMandatoryBody": "A verified deadline has passed. Install the update to continue online with Habiter.",
-  "updateMandatoryCountdown": "Required in {hours} hours",
+  "updateMandatoryCountdown": "{hours, plural, =1{Required in 1 hour} other{Required in {hours} hours}}",
   "@updateMandatoryCountdown": {"placeholders": {"hours": {"type": "int"}}},
   "releaseStorySuccessTitle": "Update installed",
   "releaseStorySuccessBody": "Habiter is ready with the latest improvements.",

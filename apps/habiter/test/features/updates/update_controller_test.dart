@@ -191,6 +191,85 @@ void main() {
     },
   );
 
+  test('an installer failure deletes the candidate and fails safely', () async {
+    final fixture = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final platform = FakeUpdatePlatform(buildNumber: 10400);
+    final controller = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+    );
+    await controller.check(UpdateCheckTrigger.manual);
+    await controller.download();
+    platform.download = const UpdateDownloadStatus(
+      phase: UpdateDownloadPhase.complete,
+      downloadedBytes: 100,
+      totalBytes: 100,
+    );
+    await controller.pollDownload();
+    platform.installError = StateError('APK changed after verification');
+
+    expect(await controller.install(), UpdateInstallResult.unavailable);
+    expect(controller.state.phase, UpdatePhase.error);
+    expect(platform.removeCalls, 1);
+    controller.dispose();
+  });
+
+  test('an invalid APK is removed after native verification', () async {
+    final fixture = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final platform = FakeUpdatePlatform(buildNumber: 10400)
+      ..verification = const UpdateVerificationResult.invalid('foreign_signer');
+    final controller = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+    );
+    await controller.check(UpdateCheckTrigger.manual);
+    await controller.download();
+    platform.download = const UpdateDownloadStatus(
+      phase: UpdateDownloadPhase.complete,
+      downloadedBytes: 100,
+      totalBytes: 100,
+    );
+
+    await controller.pollDownload();
+
+    expect(controller.state.phase, UpdatePhase.error);
+    expect(controller.state.errorCode, 'foreign_signer');
+    expect(platform.removeCalls, 1);
+    controller.dispose();
+  });
+
+  test('missing storage becomes a non-blocking download error', () async {
+    final fixture = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final platform = FakeUpdatePlatform(buildNumber: 10400)
+      ..enqueueError = StateError('insufficient_storage');
+    final controller = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+    );
+    await controller.check(UpdateCheckTrigger.manual);
+
+    await controller.download();
+
+    expect(controller.state.phase, UpdatePhase.error);
+    expect(controller.state.errorCode, 'download_failed');
+    controller.dispose();
+  });
+
   test('fresh installs do not show an upgrade story', () async {
     final fixture = await signed([
       releaseJson(build: 10500, channel: 'stable'),
@@ -263,6 +342,8 @@ final class FakeUpdatePlatform implements UpdatePlatformGateway {
   int enqueueCalls = 0;
   int verifyCalls = 0;
   int removeCalls = 0;
+  Object? installError;
+  Object? enqueueError;
 
   @override
   Future<void> cleanupAfterUpgrade(int currentBuild) async {}
@@ -277,6 +358,7 @@ final class FakeUpdatePlatform implements UpdatePlatformGateway {
     required bool allowMetered,
   }) async {
     enqueueCalls += 1;
+    if (enqueueError case final error?) throw error;
     return '42';
   }
 
@@ -284,7 +366,10 @@ final class FakeUpdatePlatform implements UpdatePlatformGateway {
   Future<UpdateInstallResult> install(
     String downloadId,
     UpdateCandidate candidate,
-  ) async => UpdateInstallResult.launched;
+  ) async {
+    if (installError case final error?) throw error;
+    return UpdateInstallResult.launched;
+  }
 
   @override
   Future<UpdateNetworkStatus> networkStatus() async => network;

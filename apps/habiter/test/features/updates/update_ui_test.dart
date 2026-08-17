@@ -87,6 +87,31 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('a future mandatory deadline shows a live rounded countdown', (
+    tester,
+  ) async {
+    final releases = manifestOf([
+      releaseJson(
+        build: 10500,
+        channel: 'stable',
+        mandatoryAfter: DateTime.now().add(const Duration(minutes: 90)),
+      ),
+    ]).releases;
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('en'),
+        home: ReleaseStoryScreen(
+          releases: releases,
+          isUpgrade: false,
+          onClose: () {},
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Required in 2 hours'), findsOneWidget);
+  });
+
   testWidgets('verified online deadline replaces the app with mandatory UI', (
     tester,
   ) async {
@@ -141,6 +166,43 @@ void main() {
         home: const UpdateExperienceGate(child: Text('private habits')),
       ),
     );
+    await tester.pump();
+
+    expect(find.text('private habits'), findsOneWidget);
+    expect(find.byType(MaterialBanner), findsOneWidget);
+    expect(find.text('Update required'), findsNothing);
+  });
+
+  testWidgets('a verified mandatory screen fails open after going offline', (
+    tester,
+  ) async {
+    final now = DateTime.utc(2026, 8, 17, 12);
+    final fixture = await _signed([
+      releaseJson(
+        build: 10500,
+        channel: 'stable',
+        mandatoryAfter: now.subtract(const Duration(hours: 1)),
+      ),
+    ]);
+    final platform = _FakePlatform(buildNumber: 10400);
+    final controller = await _controller(fixture, now: now, platform: platform);
+    await controller.check(UpdateCheckTrigger.manual);
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('en'),
+        controller: controller,
+        home: const UpdateExperienceGate(child: Text('private habits')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Update required'), findsOneWidget);
+
+    platform.network = const UpdateNetworkStatus(
+      isOnline: false,
+      isMetered: false,
+    );
+    await controller.check(UpdateCheckTrigger.manual);
     await tester.pump();
 
     expect(find.text('private habits'), findsOneWidget);

@@ -21,6 +21,8 @@ class UpdateSecurityTest {
         val digest = "a".repeat(64)
         assertTrue(UpdateSecurity.sizeMatches(42, 42))
         assertFalse(UpdateSecurity.sizeMatches(42, 41))
+        assertTrue(UpdateSecurity.hasEnoughStorage(42, 42))
+        assertFalse(UpdateSecurity.hasEnoughStorage(42, 41))
         assertTrue(UpdateSecurity.digestMatches(digest, digest))
         assertFalse(UpdateSecurity.digestMatches(digest, "b".repeat(64)))
         assertTrue(UpdateSecurity.signersMatch(setOf("one"), setOf("one")))
@@ -41,5 +43,12 @@ class UpdateSecurityTest {
         assertEquals("paused", UpdateSecurity.downloadPhase(DownloadManager.STATUS_PAUSED))
         assertEquals("complete", UpdateSecurity.downloadPhase(DownloadManager.STATUS_SUCCESSFUL))
         assertEquals("failed", UpdateSecurity.downloadPhase(DownloadManager.STATUS_FAILED))
+    }
+
+    @Test
+    fun postsTheReadyNotificationOnlyForTheFirstAllowedVerification() {
+        assertTrue(UpdateSecurity.shouldPostReadyNotification(false, true))
+        assertFalse(UpdateSecurity.shouldPostReadyNotification(true, true))
+        assertFalse(UpdateSecurity.shouldPostReadyNotification(false, false))
     }
 }

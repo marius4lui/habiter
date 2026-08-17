@@ -122,7 +122,18 @@ final class UpdateController extends ChangeNotifier {
       await _clearDownload(removeNative: true);
       return;
     }
-    final download = await _platform.downloadStatus(id);
+    late final UpdateDownloadStatus download;
+    try {
+      download = await _platform.downloadStatus(id);
+    } on Object {
+      _state = UpdateState(
+        phase: UpdatePhase.error,
+        candidate: candidate,
+        errorCode: 'download_status_failed',
+        lastCheckedAt: _local.lastCheckedAt,
+      );
+      return;
+    }
     switch (download.phase) {
       case UpdateDownloadPhase.complete:
         _state = UpdateState(
@@ -367,7 +378,13 @@ final class UpdateController extends ChangeNotifier {
     final id = _local.downloadId;
     final candidate = _state.candidate;
     if (id == null || candidate == null) return;
-    final result = await _platform.verifyDownload(id, candidate);
+    late final UpdateVerificationResult result;
+    try {
+      result = await _platform.verifyDownload(id, candidate);
+    } on Object {
+      _transition(UpdatePhase.error, errorCode: 'verification_failed');
+      return;
+    }
     if (result.isValid) {
       _transition(UpdatePhase.ready, progress: 1);
     } else {
@@ -384,11 +401,17 @@ final class UpdateController extends ChangeNotifier {
     final candidate = _state.candidate;
     if (id == null || candidate == null) return UpdateInstallResult.unavailable;
     _transition(UpdatePhase.installing);
-    final result = await _platform.install(id, candidate);
-    if (result != UpdateInstallResult.launched) {
-      _transition(UpdatePhase.ready);
+    try {
+      final result = await _platform.install(id, candidate);
+      if (result != UpdateInstallResult.launched) {
+        _transition(UpdatePhase.ready);
+      }
+      return result;
+    } on Object {
+      await _clearDownload(removeNative: true);
+      _transition(UpdatePhase.error, errorCode: 'install_failed');
+      return UpdateInstallResult.unavailable;
     }
-    return result;
   }
 
   Future<void> openInstallerPermission() => _platform.openInstallerPermission();
@@ -406,6 +429,7 @@ final class UpdateController extends ChangeNotifier {
 
   Future<void> clearManifestCache() async {
     _manifest = null;
+    _mandatoryEnforced = false;
     _local = _local.copyWith(
       cachedEnvelope: null,
       etag: null,

@@ -2621,7 +2621,7 @@ abstract class AppLocalizations {
   /// No description provided for @updateMandatoryCountdown.
   ///
   /// In de, this message translates to:
-  /// **'Erforderlich in {hours} Stunden'**
+  /// **'{hours, plural, =1{In 1 Stunde erforderlich} other{In {hours} Stunden erforderlich}}'**
   String updateMandatoryCountdown(int hours);
 
   /// No description provided for @releaseStorySuccessTitle.

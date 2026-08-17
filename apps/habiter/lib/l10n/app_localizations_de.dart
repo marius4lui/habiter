@@ -1425,7 +1425,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String updateMandatoryCountdown(int hours) {
-    return 'Erforderlich in $hours Stunden';
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: 'In $hours Stunden erforderlich',
+      one: 'In 1 Stunde erforderlich',
+    );
+    return '$_temp0';
   }
 
   @override

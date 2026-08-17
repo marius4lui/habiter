@@ -7,6 +7,7 @@ import {
   compareVersions,
   finalizeRelease,
   manifestPayloadBytes,
+  parseRawPublicKeyRing,
   parsePubspecVersion,
   publishedManifest,
   readJson,
@@ -155,6 +156,19 @@ test("manifest verification supports explicit key rotation", async () => {
   assert.equal(verifyManifestEnvelope(oldEnvelope, ring).manifest.schemaVersion, 1);
   assert.equal(verifyManifestEnvelope(nextEnvelope, ring).manifest.schemaVersion, 1);
   assert.throws(() => verifyManifestEnvelope(nextEnvelope, { "release-2026-01": ring["release-2026-01"] }), /Unknown/);
+});
+
+test("embedded raw public-key rings are canonical and contain the active key", () => {
+  const raw = Buffer.alloc(32, 7).toString("base64url");
+  assert.deepEqual(parseRawPublicKeyRing(JSON.stringify({ "release-2026-01": raw }), "release-2026-01"), {
+    "release-2026-01": raw
+  });
+  assert.throws(() => parseRawPublicKeyRing("{}"), /non-empty/);
+  assert.throws(() => parseRawPublicKeyRing(JSON.stringify({ bad: "not+base64" })), /Base64URL/);
+  assert.throws(
+    () => parseRawPublicKeyRing(JSON.stringify({ "release-2026-01": raw }), "release-2027-01"),
+    /active key/
+  );
 });
 
 test("runtime metadata finalizes a release without changing its channel contract", async () => {

@@ -68,7 +68,16 @@ final class ManifestVerifier {
   ManifestVerifier({required Map<String, List<int>> publicKeyRing})
     : _publicKeyRing = Map.unmodifiable({
         for (final entry in publicKeyRing.entries)
-          entry.key: SimplePublicKey(entry.value, type: KeyPairType.ed25519),
+          entry.key: SimplePublicKey(
+            entry.value.length == 32
+                ? entry.value
+                : throw ArgumentError.value(
+                    entry.value.length,
+                    entry.key,
+                    'Ed25519 public keys must contain exactly 32 bytes.',
+                  ),
+            type: KeyPairType.ed25519,
+          ),
       });
 
   factory ManifestVerifier.fromEnvironment() {
@@ -76,6 +85,14 @@ final class ManifestVerifier {
       'HABITER_UPDATE_PUBLIC_KEYS',
       defaultValue: '{}',
     );
+    try {
+      return ManifestVerifier.fromEncodedKeyRing(encoded);
+    } on Object {
+      return ManifestVerifier(publicKeyRing: const {});
+    }
+  }
+
+  factory ManifestVerifier.fromEncodedKeyRing(String encoded) {
     final decoded = jsonDecode(encoded);
     if (decoded is! Map) {
       throw const FormatException('HABITER_UPDATE_PUBLIC_KEYS must be JSON.');

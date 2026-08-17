@@ -114,6 +114,9 @@ internal class UpdateManager(private val activity: MainActivity) {
             throw UpdateFailure("stale_apk")
         }
         val root = updateDirectory()
+        if (!UpdateSecurity.hasEnoughStorage(size, root.usableSpace)) {
+            throw UpdateFailure("insufficient_storage")
+        }
         val destination = File(root, fileName)
         if (destination.exists() && !destination.delete()) throw UpdateFailure("storage_unavailable")
         val request = DownloadManager.Request(Uri.parse(url))
@@ -165,15 +168,7 @@ internal class UpdateManager(private val activity: MainActivity) {
             metadata.optLong("buildNumber") != expectedBuild
         ) return invalid(id, "metadata_mismatch")
         val file = verifiedPath(metadata) ?: return invalid(id, "download_missing")
-        if (!UpdateSecurity.sizeMatches(expectedSize, file.length())) return invalid(id, "wrong_size")
-        if (!UpdateSecurity.digestMatches(expectedHash, sha256(file))) return invalid(id, "wrong_hash")
-        val archive = archivePackage(file) ?: return invalid(id, "invalid_apk")
-        if (archive.packageName != activity.packageName) return invalid(id, "foreign_package")
-        if (archive.longVersionCodeCompat() != expectedBuild) return invalid(id, "stale_apk")
-        val installed = installedPackage()
-        if (!UpdateSecurity.signersMatch(signerDigests(installed), signerDigests(archive))) {
-            return invalid(id, "foreign_signer")
-        }
+        verificationFailure(metadata, file, expectedBuild)?.let { return invalid(id, it) }
         metadata.put("verified", true)
         metadata(id, metadata)
         showReadyNotificationOnce(expectedBuild, expectedVersion)
@@ -190,6 +185,10 @@ internal class UpdateManager(private val activity: MainActivity) {
             return "permissionRequired"
         }
         val file = verifiedPath(metadata) ?: throw UpdateFailure("download_missing")
+        verificationFailure(metadata, file, expectedBuild)?.let { failure ->
+            removeDownload(id)
+            throw UpdateFailure(failure)
+        }
         val uri = FileProvider.getUriForFile(activity, "${activity.packageName}.updates", file)
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(uri, APK_MIME)
@@ -247,7 +246,11 @@ internal class UpdateManager(private val activity: MainActivity) {
 
     private fun showReadyNotificationOnce(build: Long, version: String) {
         val notifiedKey = "notified_$build"
-        if (preferences.getBoolean(notifiedKey, false) || !notificationsAllowed()) return
+        if (!UpdateSecurity.shouldPostReadyNotification(
+                preferences.getBoolean(notifiedKey, false),
+                notificationsAllowed()
+            )
+        ) return
         val manager = activity.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             manager.createNotificationChannel(NotificationChannel(
@@ -274,8 +277,12 @@ internal class UpdateManager(private val activity: MainActivity) {
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
             .build()
-        NotificationManagerCompat.from(activity).notify(READY_NOTIFICATION_BASE + build.toInt(), notification)
-        preferences.edit().putBoolean(notifiedKey, true).commit()
+        try {
+            NotificationManagerCompat.from(activity).notify(READY_NOTIFICATION_BASE + build.toInt(), notification)
+            preferences.edit().putBoolean(notifiedKey, true).commit()
+        } catch (_: SecurityException) {
+            // Notification permission can be revoked between the explicit check and posting.
+        }
     }
 
     private fun notificationsAllowed(): Boolean {
@@ -332,6 +339,24 @@ internal class UpdateManager(private val activity: MainActivity) {
             }
         }
         return bytesToHex(digest.digest())
+    }
+
+    private fun verificationFailure(metadata: JSONObject, file: File, expectedBuild: Long): String? {
+        val expectedSize = metadata.optLong("size")
+        val expectedHash = metadata.optString("sha256")
+        if (!UpdateSecurity.sizeMatches(expectedSize, file.length())) return "wrong_size"
+        if (!UpdateSecurity.digestMatches(expectedHash, sha256(file))) return "wrong_hash"
+        val archive = archivePackage(file) ?: return "invalid_apk"
+        if (archive.packageName != activity.packageName) return "foreign_package"
+        if (
+            archive.longVersionCodeCompat() != expectedBuild ||
+            !UpdateSecurity.isNewerBuild(BuildConfig.VERSION_CODE.toLong(), expectedBuild)
+        ) return "stale_apk"
+        return if (UpdateSecurity.signersMatch(signerDigests(installedPackage()), signerDigests(archive))) {
+            null
+        } else {
+            "foreign_signer"
+        }
     }
 
     private fun verifiedPath(metadata: JSONObject): File? {

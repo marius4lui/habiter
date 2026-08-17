@@ -22,6 +22,9 @@ internal object UpdateSecurity {
 
     fun sizeMatches(expected: Long, actual: Long): Boolean = expected > 0 && expected == actual
 
+    fun hasEnoughStorage(required: Long, available: Long): Boolean =
+        required > 0 && available >= required
+
     fun digestMatches(expected: String, actual: String): Boolean =
         isValidSha256(expected) && expected.equals(actual, ignoreCase = false)
 
@@ -32,6 +35,9 @@ internal object UpdateSecurity {
         if (buildDistribution == "store" || installerSource in storeInstallers) "play" else "direct"
 
     fun isNewerBuild(currentBuild: Long, targetBuild: Long): Boolean = targetBuild > currentBuild
+
+    fun shouldPostReadyNotification(alreadyNotified: Boolean, notificationsAllowed: Boolean): Boolean =
+        !alreadyNotified && notificationsAllowed
 
     fun downloadPhase(status: Int): String = when (status) {
         DownloadManager.STATUS_PENDING -> "queued"

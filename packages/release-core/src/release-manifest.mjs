@@ -10,6 +10,8 @@ import path from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 
+export { parseRawPublicKeyRing } from "./public-key-ring.mjs";
+
 const semverPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 
 export async function readJson(file) {

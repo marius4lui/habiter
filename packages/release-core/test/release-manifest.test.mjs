@@ -112,7 +112,9 @@ test("release enrichment hashes and publishes declared story media", async (cont
   const directory = await mkdtemp(path.join(tmpdir(), "habiter-release-media-"));
   context.after(() => rm(directory, { recursive: true, force: true }));
   const manifest = await readJson(manifestPath);
-  const release = structuredClone(manifest.releases[0]);
+  const release = structuredClone(
+    manifest.releases.find((item) => item.presentation != null),
+  );
   release.artifacts = [release.artifacts[0]];
   release.media = [{ id: "update-center", fileName: "update-center.webp", mimeType: "image/webp" }];
   release.presentation.de.highlights[0].mediaId = "update-center";

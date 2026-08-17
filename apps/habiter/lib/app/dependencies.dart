@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../core/design_system/haptics.dart';
 import '../core/ids/id_generator.dart';
 import '../core/persistence/key_value_store.dart';
@@ -9,6 +11,7 @@ import '../features/habits/data/key_value_habit_repository.dart';
 import '../features/updates/application/update_controller.dart';
 import '../features/updates/data/signed_manifest_client.dart';
 import '../features/updates/data/update_local_repository.dart';
+import '../features/updates/infrastructure/method_channel_manifest_transport.dart';
 import '../features/updates/infrastructure/method_channel_update_platform_gateway.dart';
 
 typedef StartupTask = Future<void> Function();
@@ -41,7 +44,11 @@ final class AppDependencies {
     final repository = KeyValueHabitRepository(store);
     final updates = UpdateController(
       repository: UpdateLocalRepository(store),
-      client: SignedManifestClient(),
+      client: SignedManifestClient(
+        transport: defaultTargetPlatform == TargetPlatform.android && !kIsWeb
+            ? const MethodChannelManifestTransport()
+            : null,
+      ),
       verifier: ManifestVerifier.fromEnvironment(),
       platform: const MethodChannelUpdatePlatformGateway(),
       clock: clock,

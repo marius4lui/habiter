@@ -2,6 +2,62 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.5.1",
+      "buildNumber": 10501,
+      "channel": "stable",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [],
+        "changed": [
+          "Android ruft das signierte Release-Manifest jetzt über den nativen Netzwerkstack ab; Linux, Windows und macOS verwenden weiterhin den bestehenden Desktop-Transport."
+        ],
+        "fixed": [
+          "Update-Prüfungen funktionieren auf Android-Custom-ROMs, deren SELinux-Regeln den DNS-Zugriff des Dart-Runtimes auf die Hosts-Datei blockieren.",
+          "Fehler bei der Update-Prüfung werden mit ihrer tatsächlichen Ursache protokolliert, statt ausschließlich den generischen Fehlerstatus zu hinterlassen."
+        ],
+        "security": [
+          "Der native Android-Transport akzeptiert ausschließlich HTTPS, folgt keinen Weiterleitungen und begrenzt Antwortgröße sowie Verbindungs- und Lesezeit."
+        ]
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.5.1-android-universal.apk",
+          "signed": true,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.5.1-android-playstore.aab",
+          "signed": true,
+          "distribution": "play"
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.5.1-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.5.1-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.5.1-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.5.0",
       "buildNumber": 10500,
       "channel": "stable",

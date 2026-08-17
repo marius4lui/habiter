@@ -143,25 +143,30 @@ final class ManifestFetchResult {
   bool get isNotModified => envelopeJson == null;
 }
 
-final class SignedManifestClient {
-  SignedManifestClient({http.Client? client, Uri? endpoint})
-    : _client = client ?? http.Client(),
-      endpoint =
-          endpoint ??
-          Uri.parse(
-            const String.fromEnvironment(
-              'HABITER_UPDATE_MANIFEST_URL',
-              defaultValue: 'https://get.habiter.dev/api/v1/manifest',
-            ),
-          );
+final class ManifestTransportResponse {
+  const ManifestTransportResponse({
+    required this.statusCode,
+    required this.body,
+    required this.etag,
+  });
+
+  final int statusCode;
+  final String body;
+  final String? etag;
+}
+
+abstract interface class ManifestTransport {
+  Future<ManifestTransportResponse> get(Uri endpoint, {String? etag});
+}
+
+final class HttpManifestTransport implements ManifestTransport {
+  HttpManifestTransport({http.Client? client})
+    : _client = client ?? http.Client();
 
   final http.Client _client;
-  final Uri endpoint;
 
-  Future<ManifestFetchResult> fetch({String? etag}) async {
-    if (endpoint.scheme != 'https' || !endpoint.hasAuthority) {
-      throw const FormatException('Manifest endpoint must use HTTPS.');
-    }
+  @override
+  Future<ManifestTransportResponse> get(Uri endpoint, {String? etag}) async {
     final response = await _client.get(
       endpoint,
       headers: {
@@ -169,10 +174,40 @@ final class SignedManifestClient {
         if (etag != null) 'if-none-match': etag,
       },
     );
+    return ManifestTransportResponse(
+      statusCode: response.statusCode,
+      body: utf8.decode(response.bodyBytes),
+      etag: response.headers['etag'],
+    );
+  }
+}
+
+final class SignedManifestClient {
+  SignedManifestClient({
+    http.Client? client,
+    ManifestTransport? transport,
+    Uri? endpoint,
+  }) : assert(client == null || transport == null),
+       _transport = transport ?? HttpManifestTransport(client: client),
+       endpoint =
+           endpoint ??
+           Uri.parse(
+             const String.fromEnvironment(
+               'HABITER_UPDATE_MANIFEST_URL',
+               defaultValue: 'https://get.habiter.dev/api/v1/manifest',
+             ),
+           );
+
+  final ManifestTransport _transport;
+  final Uri endpoint;
+
+  Future<ManifestFetchResult> fetch({String? etag}) async {
+    if (endpoint.scheme != 'https' || !endpoint.hasAuthority) {
+      throw const FormatException('Manifest endpoint must use HTTPS.');
+    }
+    final response = await _transport.get(endpoint, etag: etag);
     if (response.statusCode == 304) {
-      return ManifestFetchResult.notModified(
-        etag: response.headers['etag'] ?? etag,
-      );
+      return ManifestFetchResult.notModified(etag: response.etag ?? etag);
     }
     if (response.statusCode != 200) {
       throw http.ClientException(
@@ -180,12 +215,13 @@ final class SignedManifestClient {
         endpoint,
       );
     }
-    if (response.bodyBytes.length > ManifestVerifier.maximumPayloadBytes * 2) {
+    if (utf8.encode(response.body).length >
+        ManifestVerifier.maximumPayloadBytes * 2) {
       throw const FormatException('Manifest envelope is too large.');
     }
     return ManifestFetchResult.updated(
-      envelopeJson: utf8.decode(response.bodyBytes),
-      etag: response.headers['etag'],
+      envelopeJson: response.body,
+      etag: response.etag,
     );
   }
 }

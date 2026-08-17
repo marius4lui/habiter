@@ -110,16 +110,23 @@ jobs:
           } > android/key.properties
           chmod 600 android/key.properties
       - run: flutter pub get --enforce-lockfile
-      - run: flutter build apk --release
-      - run: flutter build appbundle --release
+      - name: Build distribution-specific Android artifacts
+        env:
+          HABITER_UPDATE_PUBLIC_KEYS: ${{ vars.HABITER_UPDATE_PUBLIC_KEYS }}
+          RELEASE_MANIFEST_KEY_ID: ${{ vars.RELEASE_MANIFEST_KEY_ID }}
+        run: |
+          test -n "$HABITER_UPDATE_PUBLIC_KEYS" && test -n "$RELEASE_MANIFEST_KEY_ID"
+          printf '%s' "$HABITER_UPDATE_PUBLIC_KEYS" | jq --exit-status --arg key "$RELEASE_MANIFEST_KEY_ID" 'has($key)'
+          flutter build apk --release --flavor direct --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
+          flutter build appbundle --release --flavor store --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
       - name: Name and verify signed artifacts
         env:
           VERSION: ${{ needs.validate.outputs.version }}
           EXPECTED_SHA256: ${{ vars.ANDROID_CERT_SHA256 }}
         run: |
           mkdir -p dist
-          cp build/app/outputs/flutter-apk/app-release.apk "dist/habiter-$VERSION-android-universal.apk"
-          cp build/app/outputs/bundle/release/app-release.aab "dist/habiter-$VERSION-android-playstore.aab"
+          cp build/app/outputs/flutter-apk/app-direct-release.apk "dist/habiter-$VERSION-android-universal.apk"
+          cp build/app/outputs/bundle/storeRelease/app-store-release.aab "dist/habiter-$VERSION-android-playstore.aab"
           APKSIGNER=$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)
           test -x "$APKSIGNER"
           test -n "$EXPECTED_SHA256"
@@ -160,7 +167,11 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get --enforce-lockfile
-      - run: flutter build linux --release
+      - env:
+          HABITER_UPDATE_PUBLIC_KEYS: ${{ vars.HABITER_UPDATE_PUBLIC_KEYS }}
+        run: |
+          test -n "$HABITER_UPDATE_PUBLIC_KEYS"
+          flutter build linux --release --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
       - env:
           VERSION: ${{ needs.validate.outputs.version }}
         run: tar -C build/linux/x64/release/bundle -czf "habiter-$VERSION-linux-x64.tar.gz" .
@@ -186,7 +197,12 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get --enforce-lockfile
-      - run: flutter build windows --release
+      - shell: pwsh
+        env:
+          HABITER_UPDATE_PUBLIC_KEYS: ${{ vars.HABITER_UPDATE_PUBLIC_KEYS }}
+        run: |
+          if (-not $env:HABITER_UPDATE_PUBLIC_KEYS) { throw "HABITER_UPDATE_PUBLIC_KEYS is required" }
+          flutter build windows --release --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$env:HABITER_UPDATE_PUBLIC_KEYS"
       - shell: pwsh
         env:
           VERSION: ${{ needs.validate.outputs.version }}
@@ -213,7 +229,11 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get --enforce-lockfile
-      - run: flutter build macos --release
+      - env:
+          HABITER_UPDATE_PUBLIC_KEYS: ${{ vars.HABITER_UPDATE_PUBLIC_KEYS }}
+        run: |
+          test -n "$HABITER_UPDATE_PUBLIC_KEYS"
+          flutter build macos --release --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
       - env:
           VERSION: ${{ needs.validate.outputs.version }}
         run: ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/habiter.app "habiter-$VERSION-macos-universal.zip"

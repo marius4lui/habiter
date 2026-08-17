@@ -33,6 +33,27 @@ void main() {
       );
     });
 
+    test('direct and store update flavors have isolated installer access', () {
+      final buildFile = File('android/app/build.gradle.kts').readAsStringSync();
+      final mainManifest = File(
+        'android/app/src/main/AndroidManifest.xml',
+      ).readAsStringSync();
+      final directManifest = File(
+        'android/app/src/direct/AndroidManifest.xml',
+      ).readAsStringSync();
+      final storeManifest = File(
+        'android/app/src/store/AndroidManifest.xml',
+      ).readAsStringSync();
+
+      expect(buildFile, contains('create("direct")'));
+      expect(buildFile, contains('create("store")'));
+      expect(directManifest, contains('REQUEST_INSTALL_PACKAGES'));
+      expect(directManifest, contains('androidx.core.content.FileProvider'));
+      expect(mainManifest, isNot(contains('REQUEST_INSTALL_PACKAGES')));
+      expect(storeManifest, isNot(contains('REQUEST_INSTALL_PACKAGES')));
+      expect(storeManifest, isNot(contains('FileProvider')));
+    });
+
     test('scheduled notifications declare delivery and action receivers', () {
       final content = File(
         'android/app/src/main/AndroidManifest.xml',

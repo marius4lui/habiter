@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="update_download_title">Habiter-Update</string>
+    <string name="update_ready_channel">Habiter-Updates</string>
+    <string name="update_ready_title">Bereit zur Installation</string>
+    <string name="update_ready_body">Habiter %1$s wurde geprüft und ist bereit.</string>
     <string name="habiter_widget_name">Habiter</string>
     <string name="habiter_widget_description">Sieh deine heutigen Habits und erledige den nächsten Schritt direkt vom Homescreen.</string>
 </resources>

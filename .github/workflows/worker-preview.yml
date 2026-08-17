@@ -39,9 +39,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm release:validate
+      - run: node scripts/release/sync-worker-data.mjs --preview
       - run: pnpm --filter @habiter/release-api types
       - run: pnpm --filter @habiter/release-api check
-      - run: node scripts/release/sync-worker-data.mjs --preview
       - name: Deploy preview
         id: deploy
         working-directory: apps/release-api
@@ -61,6 +61,7 @@ jobs:
           echo "url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
           curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$PREVIEW_URL/health"
           curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$PREVIEW_URL/api/v1/releases/latest"
+          curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$PREVIEW_URL/api/v1/manifest"
       - name: Create or update preview comment
         uses: actions/github-script@v7
         env:

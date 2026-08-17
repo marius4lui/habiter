@@ -2,6 +2,391 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.5.0",
+      "buildNumber": 10500,
+      "channel": "stable",
+      "status": "published",
+      "publishedAt": "2099-01-01T00:00:00Z",
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Das neue Update-Center bündelt Kanal, Prüfprofil, Status, Release-Verlauf und belegten Download-Speicher.",
+          "Android-Direct-Builds laden passende Updates nach dem gewählten Profil fortsetzbar herunter und übergeben sie erst nach vollständiger Prüfung an den Systeminstaller.",
+          "Lokalisierte Release Stories zeigen vor und nach einem Upgrade bis zu fünf Highlights sowie zusammengeführte Details übersprungener Versionen."
+        ],
+        "changed": [
+          "Stable verwendet ausschließlich Stable-Releases; Beta vergleicht Stable und Beta und wählt ohne Downgrade den höchsten verfügbaren Build.",
+          "Pflichtfristen werden nur nach erfolgreicher Online-Verifikation durchgesetzt; offline bleibt Habiter mit einer permanenten Warnung nutzbar.",
+          "Desktop öffnet verifizierte Release-Downloads im Browser, während iOS und Web in v1.5 keinen Self-Updater aktivieren."
+        ],
+        "fixed": [],
+        "security": [
+          "Release-Manifeste werden als exakte JSON-Bytes mit Ed25519 signiert und anhand eines rotationsfähigen Public-Key-Rings geprüft.",
+          "Direkte Android-APKs müssen HTTPS, erwartete Größe, SHA-256, Paketname, höheren Build und dasselbe Signaturzertifikat wie die installierte App erfüllen."
+        ]
+      },
+      "presentation": {
+        "de": {
+          "headline": "Updates, denen du vertrauen kannst",
+          "summary": "Habiter lädt neue Versionen sicher im Hintergrund, erklärt jede Änderung und lässt den Installationsschritt immer bei dir.",
+          "highlights": [
+            {
+              "id": "verified-downloads",
+              "title": "Lückenlos verifiziert",
+              "description": "Signatur, HTTPS, Dateigröße, SHA-256 und Android-Zertifikat müssen stimmen, bevor der Installer die APK sieht.",
+              "icon": "security"
+            },
+            {
+              "id": "smart-profiles",
+              "title": "Dein Tempo",
+              "description": "Sofort, Ausgewogen oder Sparsam steuern Prüfintervall, Netztyp und automatischen Download.",
+              "icon": "speed"
+            },
+            {
+              "id": "update-center",
+              "title": "Alles an einem Ort",
+              "description": "Kanal, Status, Verlauf, Speicher und die manuelle Prüfung leben im neuen Update-Center.",
+              "icon": "design"
+            },
+            {
+              "id": "release-stories",
+              "title": "Neuigkeiten mit Kontext",
+              "description": "Immersive Stories zeigen Highlights vor dem Download und fassen übersprungene Releases nach dem Upgrade zusammen.",
+              "icon": "history"
+            },
+            {
+              "id": "offline-safe",
+              "title": "Offline bleibt offen",
+              "description": "Eine Pflichtsperre entsteht nur nach einer aktuellen, erfolgreichen Online-Prüfung; Netzfehler sperren deine Habits nie weg.",
+              "icon": "security"
+            }
+          ],
+          "changes": {
+            "added": [
+              "Update-Center mit Stable/Beta-Kanal, drei Prüfprofilen, Verlauf und Speicherverwaltung.",
+              "Fortsetzbare Android-Downloads, Bereit-Benachrichtigung und geführter Systeminstaller.",
+              "Lokalisierte Release Stories vor und nach Upgrades."
+            ],
+            "changed": [
+              "Der App-Start beginnt Update-Prüfungen erst nach Bootstrap und Onboarding und wartet nie auf das Netzwerk.",
+              "Store-Builds leiten ausschließlich zum Store weiter; Desktop-Builds öffnen den passenden Download im Browser."
+            ],
+            "fixed": [],
+            "security": [
+              "Ed25519-signierte Manifeste und vollständige APK-Integritäts- sowie Signerprüfung schützen den Update-Pfad."
+            ]
+          }
+        },
+        "en": {
+          "headline": "Updates you can trust",
+          "summary": "Habiter downloads new versions safely in the background, explains every change, and always leaves installation in your hands.",
+          "highlights": [
+            {
+              "id": "verified-downloads",
+              "title": "Verified end to end",
+              "description": "Signature, HTTPS, file size, SHA-256, and the Android certificate must match before the installer sees an APK.",
+              "icon": "security"
+            },
+            {
+              "id": "smart-profiles",
+              "title": "Your pace",
+              "description": "Immediate, Balanced, or Saver controls check intervals, network use, and automatic downloads.",
+              "icon": "speed"
+            },
+            {
+              "id": "update-center",
+              "title": "Everything in one place",
+              "description": "Track, status, history, storage, and manual checks now live in the new Update Center.",
+              "icon": "design"
+            },
+            {
+              "id": "release-stories",
+              "title": "What's new, with context",
+              "description": "Immersive stories introduce highlights before download and combine skipped releases after an upgrade.",
+              "icon": "history"
+            },
+            {
+              "id": "offline-safe",
+              "title": "Offline stays open",
+              "description": "A required-update lock starts only after a fresh successful online check, so network failures never lock away your habits.",
+              "icon": "security"
+            }
+          ],
+          "changes": {
+            "added": [
+              "Update Center with Stable/Beta tracks, three check profiles, history, and storage controls.",
+              "Resumable Android downloads, a ready notification, and a guided system installer.",
+              "Localized release stories before and after upgrades."
+            ],
+            "changed": [
+              "Update checks start only after bootstrap and onboarding and never make app startup wait for the network.",
+              "Store builds route exclusively to the store while desktop builds open the matching browser download."
+            ],
+            "fixed": [],
+            "security": [
+              "Ed25519-signed manifests plus complete APK integrity and signer verification protect the update path."
+            ]
+          }
+        }
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.5.0-android-universal.apk",
+          "signed": true,
+          "distribution": "direct",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.5.0/habiter-1.5.0-android-universal.apk",
+          "sha256": "9531a9acf36267c2f7793764c2ed44a474ca835f0a872696eb0ffcc8c7988084",
+          "size": 1
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.5.0-android-playstore.aab",
+          "signed": true,
+          "distribution": "play",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.5.0/habiter-1.5.0-android-playstore.aab",
+          "sha256": "81b7f2286cb3d61c89cd5f1d1d711a0c37335e888be3e43928a5c68781531f52",
+          "size": 1
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.5.0-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.5.0/habiter-1.5.0-windows-x64.zip",
+          "sha256": "5c7b45bf226b7d8cf0a5943bf06283ab7d273177949f9ef544f3cc6000b55791",
+          "size": 1
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.5.0-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.5.0/habiter-1.5.0-linux-x64.tar.gz",
+          "sha256": "d4c50fe97c22f72983305e90d945604ac2a736943fd6342f6f1c3591f52bc6a5",
+          "size": 1
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.5.0-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.5.0/habiter-1.5.0-macos-universal.zip",
+          "sha256": "4fdbeef99c4d5c333123ace948d58fa27297cb4170b2773c69c8ccdaad4d296c",
+          "size": 1
+        }
+      ]
+    },
+    {
+      "version": "1.4.4",
+      "buildNumber": 10404,
+      "channel": "beta",
+      "status": "published",
+      "publishedAt": "2026-08-17T21:20:54+02:00",
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [],
+        "changed": [],
+        "fixed": [
+          "Linux, Windows und macOS überspringen nicht unterstützte Home-Widget-Aufrufe, sodass die Desktop-App ohne MissingPluginException startet."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.4-android-universal.apk",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.4/habiter-1.4.4-android-universal.apk",
+          "sha256": "6d5c9b229bd0cd16ab746128151886a49604879c56af18fbee243ffa03e2bf5d",
+          "size": 62717740,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.4-android-playstore.aab",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.4/habiter-1.4.4-android-playstore.aab",
+          "sha256": "14bf4987d1159d3491afbb29b7378fce327f52da401439c3932310c84d985897",
+          "size": 61303917,
+          "distribution": "play"
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.4-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.4/habiter-1.4.4-windows-x64.zip",
+          "sha256": "da2053bd55f6fae2a8ce097fa70b662b67c0efd3e1f431f965b8f1aa711c73f4",
+          "size": 14354326
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.4-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.4/habiter-1.4.4-linux-x64.tar.gz",
+          "sha256": "61e0366f79e27e5ab36a7d0db7c15980a2b4f4f823eb05be1a0809bc32f9915b",
+          "size": 11632910
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.4-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.4/habiter-1.4.4-macos-universal.zip",
+          "sha256": "b0e89e2e18efe4021a90197960db35c5f20989726bdad6f47f1cc72cd6bc8db1",
+          "size": 20468218
+        }
+      ]
+    },
+    {
+      "version": "1.4.3",
+      "buildNumber": 10403,
+      "channel": "beta",
+      "status": "published",
+      "publishedAt": "2026-08-17T19:45:55+02:00",
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [],
+        "changed": [
+          "App Block zeigt eine ruhige Habiter-Oberfläche mit konkretem Habit-CTA, klarer Homescreen-Aktion und responsivem Layout für Insets, Landscape und große Schrift."
+        ],
+        "fixed": [
+          "Das Blocking-Overlay verschwindet automatisch, sobald die blockierte App den Vordergrund verliert, statt über Launcher oder anderen Apps liegen zu bleiben.",
+          "Beim direkten Wechsel zwischen blockierten Apps werden App-Name und offene Habits aktualisiert, ohne veralteten Overlay-Inhalt beizubehalten.",
+          "Habit-Abschluss, App-Block-Deaktivierung, Permission-Verlust, Screen-off und Service-Shutdown entfernen ein vorhandenes Overlay zuverlässig."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.3-android-universal.apk",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.3/habiter-1.4.3-android-universal.apk",
+          "sha256": "563629fa273e5dd530880ff707222bfc5498a8bed3182af6d8f106be3433ff84",
+          "size": 62717740,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.3-android-playstore.aab",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.3/habiter-1.4.3-android-playstore.aab",
+          "sha256": "e63d0edea7da93cf0ba805736eaefc8b032ce3c89ee95c13eaa8dc8709bcc2a3",
+          "size": 61303324,
+          "distribution": "play"
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.3-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.3/habiter-1.4.3-windows-x64.zip",
+          "sha256": "f4ce78f93ecb60a57e110ae805aa1f3d503bb354b4be2d20b94433eb3926f961",
+          "size": 14359081
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.3-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.3/habiter-1.4.3-linux-x64.tar.gz",
+          "sha256": "a81cb1e90b5f33182e70865df0f713a4f2ae92cf39e2252a4b103527e960fc08",
+          "size": 11635192
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.3-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.3/habiter-1.4.3-macos-universal.zip",
+          "sha256": "2556bf9f26abf069296176050473d7d1b57f1f77b4477a0c93aef8e6d77602d5",
+          "size": 20469000
+        }
+      ]
+    },
+    {
+      "version": "1.4.2",
+      "buildNumber": 10402,
+      "channel": "beta",
+      "status": "published",
+      "publishedAt": "2026-08-17T19:01:39+02:00",
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [],
+        "changed": [
+          "App, Habit-Speicher, Reminder, App Lock und Android-Widget gleichen ihren Zustand bei Foreground- und Background-Wechseln in einer festen Reihenfolge ab."
+        ],
+        "fixed": [
+          "Im Android-Widget ausgeführte Completion- und Undo-Aktionen erscheinen nach dem Öffnen oder Fortsetzen der App ohne manuellen Hard-Refresh.",
+          "Parallel eintreffende Widget-Aktionen und App-Resume-Ereignisse konvergieren anhand persistierter State-Revisionen auf den neuesten beobachteten Zustand.",
+          "Schnelle Lifecycle-Wechsel führen nicht mehr zu überlappenden Reminder- oder Widget-Synchronisationen."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.2-android-universal.apk",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.2/habiter-1.4.2-android-universal.apk",
+          "sha256": "a3f88e9fee866c6c229aa25ba9da01bd3259a1771799d203dbb1e766f78c282a",
+          "size": 62702207,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.2-android-playstore.aab",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.2/habiter-1.4.2-android-playstore.aab",
+          "sha256": "a90b8582b74179855b142e8ecc8c0c7a2b7b2deb152f584a42bf6fd19034a073",
+          "size": 61286650,
+          "distribution": "play"
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.2-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.2/habiter-1.4.2-windows-x64.zip",
+          "sha256": "006ca895ced42a5fc04fefaec4cb12e39d82eeb29b7f08ac012321dd4a3b849e",
+          "size": 14359079
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.2-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.2/habiter-1.4.2-linux-x64.tar.gz",
+          "sha256": "51234b79ce28215d9dfe18e7c804f0c5fc768b893d1f0a11a885dedaacf296cf",
+          "size": 11635281
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.2-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.2/habiter-1.4.2-macos-universal.zip",
+          "sha256": "2d85b5326b68073468e21cd3508f56e91824b598fcdc7b59986e514e6195203d",
+          "size": 20468994
+        }
+      ]
+    },
+    {
       "version": "1.4.1",
       "buildNumber": 10401,
       "channel": "beta",
@@ -28,7 +413,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.1/habiter-1.4.1-android-universal.apk",
           "sha256": "e79fc8f961f8975576da44599843498bfb8de76b794f51b169028a2822d035fe",
-          "size": 62702211
+          "size": 62702211,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -37,7 +423,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.1/habiter-1.4.1-android-playstore.aab",
           "sha256": "0c6fc00c8de31febef1e56007dae7702096ff1dff89997cc019b74ea14d67f3c",
-          "size": 61282201
+          "size": 61282201,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -103,7 +490,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.0/habiter-1.4.0-android-universal.apk",
           "sha256": "b05e54b1ef5a0536a116b1d2e860e42cee6c195c2067ac5b9277f9a44bec641e",
-          "size": 62702207
+          "size": 62702207,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -112,7 +500,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.0/habiter-1.4.0-android-playstore.aab",
           "sha256": "b9cb1de5127b4f2191647df23e95fdb3ce167c114ed7acf897ab98cb23c342ba",
-          "size": 61275286
+          "size": 61275286,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -167,7 +556,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.3.10/habiter-1.3.10-android-universal.apk",
           "sha256": "260c77b3e59b2c1c1e3ca8e8ee0bdef2cb37b5ffeb5d0924f9d04e5fa28e1a83",
-          "size": 61373751
+          "size": 61373751,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -176,7 +566,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.3.10/habiter-1.3.10-android-playstore.aab",
           "sha256": "ad4afbf304c425ad7a21a17ed5f3b296ab0bc1bef40e3f816200a68b5cb68e1b",
-          "size": 60138457
+          "size": 60138457,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -236,7 +627,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.3.5/habiter-1.3.5-android-universal.apk",
           "sha256": "8834a79a99de472369ff471269cf9e728f37d6abbedc132dbc374910904c03f1",
-          "size": 61291827
+          "size": 61291827,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -245,7 +637,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.3.5/habiter-1.3.5-android-playstore.aab",
           "sha256": "5082fb0768192f13be0de0ed009315cd5c2b9909b1901c6716af21f4c78d6fbc",
-          "size": 60099278
+          "size": 60099278,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -308,7 +701,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.3.0/habiter-1.3.0-android-universal.apk",
           "sha256": "5511c04dd793fc878de51dce257fb20f62ac22ba32ce7efbf186955c7c627564",
-          "size": 61291827
+          "size": 61291827,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -317,7 +711,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.3.0/habiter-1.3.0-android-playstore.aab",
           "sha256": "2dc7cdc7524a43fa6677e5505e831168985041e98049f2457078737fff974b54",
-          "size": 60090103
+          "size": 60090103,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -381,7 +776,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.2.0/habiter-1.2.0-android-universal.apk",
           "sha256": "a1acaa71ab7fea83bb163c2eb3fb0a444fd9720bbf4a5b415aa0004e4ad01bf4",
-          "size": 59989213
+          "size": 59989213,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -390,7 +786,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.2.0/habiter-1.2.0-android-playstore.aab",
           "sha256": "ae8a00c0ca750e90ac63d774ece748e40ce4393b6a20ecdeb7f43ff34b7da3f4",
-          "size": 58079805
+          "size": 58079805,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -454,7 +851,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.1.0/habiter-1.1.0-android-universal.apk",
           "sha256": "cdc2c0d935bd504fbebb25132f8d21d5ae106d9a5e0bd5c5c591c215878684c2",
-          "size": 60201833
+          "size": 60201833,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -463,7 +861,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.1.0/habiter-1.1.0-android-playstore.aab",
           "sha256": "e9a8045cb369dc459763757fd5641a8b4933d218c6cfebb51046b2842d397973",
-          "size": 58295046
+          "size": 58295046,
+          "distribution": "play"
         },
         {
           "platform": "windows",
@@ -520,7 +919,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.0.0/habiter-1.0.0-android-universal.apk",
           "sha256": "e3f5cd55a952e932ec2e4bf42d1176cab01d34cacdd4eb6002ac4e3217bc0760",
-          "size": 60330889
+          "size": 60330889,
+          "distribution": "direct"
         },
         {
           "platform": "android",
@@ -529,7 +929,8 @@
           "signed": true,
           "url": "https://github.com/marius4lui/habiter/releases/download/v1.0.0/habiter-1.0.0-android-playstore.aab",
           "sha256": "94f93b30249a7b929ad3f0371f5fadee3df1d5a042948815a09bd7a32e29f146",
-          "size": 58311090
+          "size": 58311090,
+          "distribution": "play"
         },
         {
           "platform": "windows",

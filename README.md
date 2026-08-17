@@ -94,6 +94,7 @@ habiter/
 ├── packages/
 │   └── release-core/     Release schema, manifest, validation, and metadata
 ├── scripts/
+│   ├── android/          Merged-manifest checks for update flavors
 │   ├── release/          Deterministic release tooling
 │   └── website/          Website contract validation
 ├── docs/                 Product and engineering documentation
@@ -129,9 +130,9 @@ A concise view of the released baseline and upcoming product milestones.
 
 ### Upcoming
 
-**v1.5.0 — Automatic update client (Stable)**
+**v1.5.0 — Premium automatic update system (Stable)**
 
-- Add the client update experience on top of the existing Release API.
+- Deliver a signed, localized update experience with safe direct Android downloads and user-controlled installation.
 
 **v1.6.0 — Habit Experience and Onboarding v3 (Stable)**
 
@@ -208,6 +209,7 @@ Open `http://localhost:3000`. Use `pnpm website:check` for the complete website 
 | `GET /api/v1/releases` | Paginated published releases |
 | `GET /api/v1/releases/latest` | Latest release for a channel |
 | `GET /api/v1/releases/:version` | One concrete release |
+| `GET /api/v1/manifest` | ETag-aware Ed25519-signed update manifest envelope |
 | `GET /api/v1/update/:platform` | Version and build update decision |
 | `GET /api/v1/download/:platform` | Latest platform download |
 | `GET /download` | User-Agent-aware download redirect |

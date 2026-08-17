@@ -95,22 +95,30 @@ Stable testing required:
 
 ## Planned releases
 
-### v1.5.0 — Automatic update client
+### v1.5.0 — Premium automatic update system
 
 **Channel:** Stable
 
-**Target:** 20 Aug 2026
+**Target:** After successful RC and real-device testing
 
 Scope:
 
-- Add client-side update checking.
-- Use existing Release API infrastructure.
-- Verify release metadata and artifacts.
-- Keep installation user-controlled.
+- Publish an Ed25519-signed manifest containing only published releases, localized presentation data and verified media metadata.
+- Add Stable and Beta tracks plus Immediate, Balanced and Saver update profiles.
+- Provide a localized Update Center, pre-install release story, post-upgrade success story, history and storage controls.
+- Download direct Android APKs through DownloadManager and verify HTTPS, size, SHA-256 and the installed-app signing certificate.
+- Keep installation user-controlled and route store builds and desktop platforms to their supported external destination.
+- Fail open for network and signature errors while enforcing verified mandatory-update deadlines online.
 
 Note:
 
-The release API and release infrastructure already exist. This release focuses on the application experience.
+Older clients install v1.5 manually once; automatic updates are supported from v1.5 onward. Stable publication is gated on successful RC and real-device acceptance.
+
+Stable testing required:
+
+- Preview and release-candidate rollout before Stable.
+- Release-core, API, client state-machine, security, widget and Android flavor checks.
+- Real-device direct upgrade, store routing, metered and unmetered networks, installer denial, offline mandatory mode and process recovery.
 
 ---
 

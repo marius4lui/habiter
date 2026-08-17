@@ -1254,4 +1254,210 @@ class AppLocalizationsEn extends AppLocalizations {
   String widgetPreviewNext(String name) {
     return 'Next: $name';
   }
+
+  @override
+  String get updateCenterTitle => 'Update Center';
+
+  @override
+  String get updateSettingsEntry => 'App updates';
+
+  @override
+  String get updateSettingsBody =>
+      'Channel, schedule, status and update history';
+
+  @override
+  String get updateStatusTitle => 'Update status';
+
+  @override
+  String get updateStatusIdle => 'Ready to check';
+
+  @override
+  String get updateStatusChecking => 'Checking securely…';
+
+  @override
+  String get updateStatusCurrent => 'Habiter is up to date';
+
+  @override
+  String updateStatusAvailable(String version) {
+    return 'Habiter $version is available';
+  }
+
+  @override
+  String updateStatusDownloading(int percent) {
+    return 'Downloading · $percent%';
+  }
+
+  @override
+  String get updateStatusVerifying => 'Verifying download…';
+
+  @override
+  String get updateStatusReady => 'Ready to install';
+
+  @override
+  String get updateStatusInstalling => 'Android installer opened';
+
+  @override
+  String get updateStatusMandatory => 'This update is now required';
+
+  @override
+  String get updateStatusError => 'Update check unavailable';
+
+  @override
+  String get updateAvailableBadge => 'Update available';
+
+  @override
+  String get updateCheckNow => 'Check now';
+
+  @override
+  String updateLastChecked(String date) {
+    return 'Last checked: $date';
+  }
+
+  @override
+  String get updateNeverChecked => 'Not checked yet';
+
+  @override
+  String get updateTrackTitle => 'Release channel';
+
+  @override
+  String get updateTrackStable => 'Stable';
+
+  @override
+  String get updateTrackStableBody => 'Only tested stable releases';
+
+  @override
+  String get updateTrackBeta => 'Beta';
+
+  @override
+  String get updateTrackBetaBody => 'Newest build across Stable and Beta';
+
+  @override
+  String get updateProfileTitle => 'Update profile';
+
+  @override
+  String get updateProfileImmediate => 'Immediate';
+
+  @override
+  String get updateProfileImmediateBody =>
+      'Start/resume and hourly checks · download on any network';
+
+  @override
+  String get updateProfileBalanced => 'Balanced';
+
+  @override
+  String get updateProfileBalancedBody =>
+      'Every 24 hours · auto-download on unmetered networks';
+
+  @override
+  String get updateProfileSaver => 'Saver';
+
+  @override
+  String get updateProfileSaverBody =>
+      'Every seven days · no automatic downloads';
+
+  @override
+  String get updateViewWhatsNew => 'What’s new';
+
+  @override
+  String get updateDownload => 'Download update';
+
+  @override
+  String get updateInstall => 'Install';
+
+  @override
+  String get updateOpenDownload => 'Open download';
+
+  @override
+  String get updateNotNow => 'Not now';
+
+  @override
+  String get updateInstallerPermissionTitle =>
+      'Allow Habiter to install this update';
+
+  @override
+  String get updateInstallerPermissionBody =>
+      'Android asks once whether Habiter may open verified APK updates. You can revoke this permission anytime.';
+
+  @override
+  String get updateOpenSettings => 'Open Android settings';
+
+  @override
+  String get updateHistoryTitle => 'Release history';
+
+  @override
+  String get updateStorageTitle => 'Update storage';
+
+  @override
+  String updateStorageUsage(String metadata, String downloads) {
+    return 'Metadata: $metadata · downloads: $downloads';
+  }
+
+  @override
+  String get updateClearDownloads => 'Delete downloads';
+
+  @override
+  String get updateClearCache => 'Clear manifest cache';
+
+  @override
+  String get updatePrivacyNote =>
+      'Checks contain no user identifier and create no analytics.';
+
+  @override
+  String get updateOfflineMandatoryWarning =>
+      'A required update is pending. Habiter stays usable offline and will verify again when you reconnect.';
+
+  @override
+  String get updateMandatoryTitle => 'Update required';
+
+  @override
+  String get updateMandatoryBody =>
+      'A verified deadline has passed. Install the update to continue online with Habiter.';
+
+  @override
+  String updateMandatoryCountdown(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: 'Required in $hours hours',
+      one: 'Required in 1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get releaseStorySuccessTitle => 'Update installed';
+
+  @override
+  String get releaseStorySuccessBody =>
+      'Habiter is ready with the latest improvements.';
+
+  @override
+  String get releaseStoryContinue => 'Continue to Habiter';
+
+  @override
+  String get releaseStoryDetails => 'Details by version';
+
+  @override
+  String get releaseStoryAdded => 'Added';
+
+  @override
+  String get releaseStoryChanged => 'Changed';
+
+  @override
+  String get releaseStoryFixed => 'Fixed';
+
+  @override
+  String get releaseStorySecurity => 'Security';
+
+  @override
+  String releaseStoryFallbackHeadline(String version) {
+    return 'Habiter $version';
+  }
+
+  @override
+  String get releaseStoryFallbackSummary => 'A new Habiter release is ready.';
+
+  @override
+  String get updateUnsupported =>
+      'Updates are not available on this platform yet.';
 }

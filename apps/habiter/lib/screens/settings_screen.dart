@@ -4,11 +4,14 @@ import 'package:provider/provider.dart';
 
 import '../core/design_system/components.dart';
 import '../core/design_system/tokens.dart';
+import '../app/navigation/app_route.dart';
 import '../features/reminders/application/reminder_permission_controller.dart';
 import '../features/reminders/infrastructure/local_reminder_permission_gateway.dart';
 import '../features/widgets/domain/widget_bridge.dart';
 import '../features/widgets/application/widget_sync_controller.dart';
 import '../features/widgets/presentation/widget_promotion_card.dart';
+import '../features/updates/application/update_controller.dart';
+import '../features/updates/domain/update_models.dart';
 import '../l10n/l10n.dart';
 import '../models/habit.dart';
 import '../providers/classly_sync_provider.dart';
@@ -67,6 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final habits = context.watch<HabitProvider>();
     final preferences = habits.preferences;
     final settings = context.watch<SettingsProvider>();
+    final updates = context.watch<UpdateController>();
     final widgetBridge = context.read<WidgetBridge?>();
     return Scaffold(
       appBar: Navigator.of(context).canPop() ? AppBar() : null,
@@ -228,6 +232,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ? null
                             : () => showWidgetManagementDialog(context),
                       ),
+                    ),
+                  ],
+                ),
+                _SettingsSection(
+                  icon: Icons.system_update_alt_rounded,
+                  title: context.l10n.updateSettingsEntry,
+                  children: [
+                    ListTile(
+                      key: const Key('update-center-entry'),
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.rocket_launch_outlined),
+                      title: Text(context.l10n.updateSettingsEntry),
+                      subtitle: Text(_updateSummary(context, updates)),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (updates.state.candidate != null)
+                            const Badge(
+                              label: Text('1'),
+                              child: Icon(Icons.new_releases_outlined),
+                            ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.chevron_right_rounded),
+                        ],
+                      ),
+                      onTap: () => Navigator.of(
+                        context,
+                      ).pushNamed(AppRouteCodec.encode(AppRoute.updates)),
                     ),
                   ],
                 ),
@@ -412,6 +444,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ),
   );
 }
+
+String _updateSummary(BuildContext context, UpdateController controller) =>
+    switch (controller.state.phase) {
+      UpdatePhase.checking => context.l10n.updateStatusChecking,
+      UpdatePhase.upToDate => context.l10n.updateStatusCurrent,
+      UpdatePhase.available => context.l10n.updateStatusAvailable(
+        controller.state.candidate?.release.version ?? '',
+      ),
+      UpdatePhase.downloading => context.l10n.updateStatusDownloading(
+        (controller.state.progress * 100).round(),
+      ),
+      UpdatePhase.verifying => context.l10n.updateStatusVerifying,
+      UpdatePhase.ready => context.l10n.updateStatusReady,
+      UpdatePhase.installing => context.l10n.updateStatusInstalling,
+      UpdatePhase.mandatory => context.l10n.updateStatusMandatory,
+      UpdatePhase.error => context.l10n.updateStatusError,
+      UpdatePhase.idle => context.l10n.updateSettingsBody,
+    };
 
 class _SettingsSection extends StatelessWidget {
   const _SettingsSection({

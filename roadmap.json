@@ -82,18 +82,27 @@
     },
     {
       "version": "1.5.0",
-      "title": "Automatic update client",
+      "title": "Premium automatic update system",
       "status": "planned",
       "channel": "stable",
-      "target": "20 Aug 2026",
-      "summary": ["Add the client update experience on top of the existing Release API."],
-      "scope": [
-        "Add client-side update checking.",
-        "Use existing Release API infrastructure.",
-        "Verify release metadata and artifacts.",
-        "Keep installation user-controlled."
+      "target": "After successful RC and real-device testing",
+      "summary": [
+        "Deliver a signed, localized update experience with safe direct Android downloads and user-controlled installation."
       ],
-      "note": "The release API and release infrastructure already exist. This release focuses on the application experience."
+      "scope": [
+        "Publish an Ed25519-signed manifest containing only published releases, localized presentation data and verified media metadata.",
+        "Add Stable and Beta tracks plus Immediate, Balanced and Saver update profiles.",
+        "Provide a localized Update Center, pre-install release story, post-upgrade success story, history and storage controls.",
+        "Download direct Android APKs through DownloadManager and verify HTTPS, size, SHA-256 and the installed-app signing certificate.",
+        "Keep installation user-controlled and route store builds and desktop platforms to their supported external destination.",
+        "Fail open for network and signature errors while enforcing verified mandatory-update deadlines online."
+      ],
+      "testing": [
+        "Preview and release-candidate rollout before Stable.",
+        "Release-core, API, client state-machine, security, widget and Android flavor checks.",
+        "Real-device direct upgrade, store routing, metered and unmetered networks, installer denial, offline mandatory mode and process recovery."
+      ],
+      "note": "Older clients install v1.5 manually once; automatic updates are supported from v1.5 onward. Stable publication is gated on successful RC and real-device acceptance."
     },
     {
       "version": "1.6.0",

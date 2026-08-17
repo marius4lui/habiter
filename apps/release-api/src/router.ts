@@ -1,7 +1,7 @@
 import { apiError, json, withCache } from "./responses/http";
 import { defaultArchitecture, detectPlatform, parsePlatform } from "./services/platform";
 import { ReleaseService } from "./services/release-service";
-import type { ReleaseChannel, ReleaseManifest } from "./types/releases";
+import type { ReleaseChannel, ReleaseManifest, SignedManifestEnvelope } from "./types/releases";
 
 const shortCache = "public, max-age=60, s-maxage=300";
 const immutableCache = "public, max-age=86400, s-maxage=31536000, immutable";
@@ -18,7 +18,21 @@ function releaseChannel(value: string | null): ReleaseChannel | null {
   return value === "stable" || value === "beta" ? value : null;
 }
 
-export function createHandler(manifest: ReleaseManifest) {
+function manifestResponse(request: Request, envelope: SignedManifestEnvelope | undefined): Response {
+  if (!envelope) return new Response(JSON.stringify({ error: { code: "manifest_unavailable", message: "Signed manifest is unavailable" } }), {
+    status: 503,
+    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" }
+  });
+  const etag = `"${envelope.keyId}.${envelope.signature.slice(0, 32)}"`;
+  if (request.headers.get("if-none-match") === etag) {
+    return new Response(null, { status: 304, headers: { etag, "cache-control": shortCache } });
+  }
+  const response = json(envelope);
+  response.headers.set("etag", etag);
+  return withCache(response, shortCache);
+}
+
+export function createHandler(manifest: ReleaseManifest, envelope?: SignedManifestEnvelope) {
   const releases = new ReleaseService(manifest);
 
   return async function handle(request: Request, env: Env): Promise<Response> {
@@ -43,6 +57,10 @@ export function createHandler(manifest: ReleaseManifest) {
 
     if (segments[0] !== "api" || segments[1] !== "v1") {
       return apiError(requestId, 404, "not_found", "Route not found");
+    }
+
+    if (segments[2] === "manifest" && segments.length === 3) {
+      return manifestResponse(request, envelope);
     }
 
     if (segments[2] === "releases" && segments.length === 3) {

@@ -38,9 +38,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm release:validate
       - run: pnpm release:test
+      - name: Prepare signed production manifest
+        env:
+          RELEASE_MANIFEST_KEY_ID: ${{ vars.RELEASE_MANIFEST_KEY_ID }}
+          RELEASE_MANIFEST_PRIVATE_KEY_BASE64: ${{ secrets.RELEASE_MANIFEST_PRIVATE_KEY_BASE64 }}
+        run: node scripts/release/sync-worker-data.mjs
       - run: pnpm --filter @habiter/release-api types
       - run: pnpm --filter @habiter/release-api check
-      - run: node scripts/release/sync-worker-data.mjs
       - name: Deploy production
         working-directory: apps/release-api
         env:
@@ -54,3 +58,4 @@ jobs:
         run: |
           curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/health"
           curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/api/v1/releases"
+          curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/api/v1/manifest"

@@ -27,6 +27,7 @@ android {
     ndkVersion = flutter.ndkVersion
 
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 
@@ -52,6 +53,18 @@ android {
 
         ndk {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
+        }
+    }
+
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("direct") {
+            dimension = "distribution"
+            buildConfigField("String", "HABITER_DISTRIBUTION", "\"direct\"")
+        }
+        create("store") {
+            dimension = "distribution"
+            buildConfigField("String", "HABITER_DISTRIBUTION", "\"store\"")
         }
     }
 

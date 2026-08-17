@@ -2335,6 +2335,360 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Als Nächstes: {name}'**
   String widgetPreviewNext(String name);
+
+  /// No description provided for @updateCenterTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Update-Center'**
+  String get updateCenterTitle;
+
+  /// No description provided for @updateSettingsEntry.
+  ///
+  /// In de, this message translates to:
+  /// **'App-Updates'**
+  String get updateSettingsEntry;
+
+  /// No description provided for @updateSettingsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Kanal, Zeitplan, Status und Update-Verlauf'**
+  String get updateSettingsBody;
+
+  /// No description provided for @updateStatusTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Update-Status'**
+  String get updateStatusTitle;
+
+  /// No description provided for @updateStatusIdle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bereit zur Prüfung'**
+  String get updateStatusIdle;
+
+  /// No description provided for @updateStatusChecking.
+  ///
+  /// In de, this message translates to:
+  /// **'Sichere Prüfung läuft…'**
+  String get updateStatusChecking;
+
+  /// No description provided for @updateStatusCurrent.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter ist aktuell'**
+  String get updateStatusCurrent;
+
+  /// No description provided for @updateStatusAvailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter {version} ist verfügbar'**
+  String updateStatusAvailable(String version);
+
+  /// No description provided for @updateStatusDownloading.
+  ///
+  /// In de, this message translates to:
+  /// **'Download · {percent}%'**
+  String updateStatusDownloading(int percent);
+
+  /// No description provided for @updateStatusVerifying.
+  ///
+  /// In de, this message translates to:
+  /// **'Download wird geprüft…'**
+  String get updateStatusVerifying;
+
+  /// No description provided for @updateStatusReady.
+  ///
+  /// In de, this message translates to:
+  /// **'Bereit zur Installation'**
+  String get updateStatusReady;
+
+  /// No description provided for @updateStatusInstalling.
+  ///
+  /// In de, this message translates to:
+  /// **'Android-Installer geöffnet'**
+  String get updateStatusInstalling;
+
+  /// No description provided for @updateStatusMandatory.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Update ist jetzt erforderlich'**
+  String get updateStatusMandatory;
+
+  /// No description provided for @updateStatusError.
+  ///
+  /// In de, this message translates to:
+  /// **'Update-Prüfung nicht verfügbar'**
+  String get updateStatusError;
+
+  /// No description provided for @updateAvailableBadge.
+  ///
+  /// In de, this message translates to:
+  /// **'Update verfügbar'**
+  String get updateAvailableBadge;
+
+  /// No description provided for @updateCheckNow.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt prüfen'**
+  String get updateCheckNow;
+
+  /// No description provided for @updateLastChecked.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuletzt geprüft: {date}'**
+  String updateLastChecked(String date);
+
+  /// No description provided for @updateNeverChecked.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nicht geprüft'**
+  String get updateNeverChecked;
+
+  /// No description provided for @updateTrackTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Release-Kanal'**
+  String get updateTrackTitle;
+
+  /// No description provided for @updateTrackStable.
+  ///
+  /// In de, this message translates to:
+  /// **'Stable'**
+  String get updateTrackStable;
+
+  /// No description provided for @updateTrackStableBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur getestete Stable-Releases'**
+  String get updateTrackStableBody;
+
+  /// No description provided for @updateTrackBeta.
+  ///
+  /// In de, this message translates to:
+  /// **'Beta'**
+  String get updateTrackBeta;
+
+  /// No description provided for @updateTrackBetaBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Höchster Build aus Stable und Beta'**
+  String get updateTrackBetaBody;
+
+  /// No description provided for @updateProfileTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Update-Profil'**
+  String get updateProfileTitle;
+
+  /// No description provided for @updateProfileImmediate.
+  ///
+  /// In de, this message translates to:
+  /// **'Sofort'**
+  String get updateProfileImmediate;
+
+  /// No description provided for @updateProfileImmediateBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Bei Start/Fortsetzen und stündlich · Download über jedes Netz'**
+  String get updateProfileImmediateBody;
+
+  /// No description provided for @updateProfileBalanced.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausgewogen'**
+  String get updateProfileBalanced;
+
+  /// No description provided for @updateProfileBalancedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle 24 Stunden · Auto-Download über ungetaktete Netze'**
+  String get updateProfileBalancedBody;
+
+  /// No description provided for @updateProfileSaver.
+  ///
+  /// In de, this message translates to:
+  /// **'Sparsam'**
+  String get updateProfileSaver;
+
+  /// No description provided for @updateProfileSaverBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle sieben Tage · kein automatischer Download'**
+  String get updateProfileSaverBody;
+
+  /// No description provided for @updateViewWhatsNew.
+  ///
+  /// In de, this message translates to:
+  /// **'Was ist neu?'**
+  String get updateViewWhatsNew;
+
+  /// No description provided for @updateDownload.
+  ///
+  /// In de, this message translates to:
+  /// **'Update herunterladen'**
+  String get updateDownload;
+
+  /// No description provided for @updateInstall.
+  ///
+  /// In de, this message translates to:
+  /// **'Installieren'**
+  String get updateInstall;
+
+  /// No description provided for @updateOpenDownload.
+  ///
+  /// In de, this message translates to:
+  /// **'Download öffnen'**
+  String get updateOpenDownload;
+
+  /// No description provided for @updateNotNow.
+  ///
+  /// In de, this message translates to:
+  /// **'Später'**
+  String get updateNotNow;
+
+  /// No description provided for @updateInstallerPermissionTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter darf dieses Update installieren'**
+  String get updateInstallerPermissionTitle;
+
+  /// No description provided for @updateInstallerPermissionBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Android fragt einmal, ob Habiter geprüfte APK-Updates öffnen darf. Du kannst diese Freigabe jederzeit entziehen.'**
+  String get updateInstallerPermissionBody;
+
+  /// No description provided for @updateOpenSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Android-Einstellungen öffnen'**
+  String get updateOpenSettings;
+
+  /// No description provided for @updateHistoryTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Release-Verlauf'**
+  String get updateHistoryTitle;
+
+  /// No description provided for @updateStorageTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Update-Speicher'**
+  String get updateStorageTitle;
+
+  /// No description provided for @updateStorageUsage.
+  ///
+  /// In de, this message translates to:
+  /// **'Metadaten: {metadata} · Downloads: {downloads}'**
+  String updateStorageUsage(String metadata, String downloads);
+
+  /// No description provided for @updateClearDownloads.
+  ///
+  /// In de, this message translates to:
+  /// **'Downloads löschen'**
+  String get updateClearDownloads;
+
+  /// No description provided for @updateClearCache.
+  ///
+  /// In de, this message translates to:
+  /// **'Manifest-Cache leeren'**
+  String get updateClearCache;
+
+  /// No description provided for @updatePrivacyNote.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfungen enthalten keine Nutzerkennung und erzeugen keine Analytics.'**
+  String get updatePrivacyNote;
+
+  /// No description provided for @updateOfflineMandatoryWarning.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Pflichtupdate wartet. Habiter bleibt offline nutzbar und prüft erneut, sobald du online bist.'**
+  String get updateOfflineMandatoryWarning;
+
+  /// No description provided for @updateMandatoryTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Update erforderlich'**
+  String get updateMandatoryTitle;
+
+  /// No description provided for @updateMandatoryBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine verifizierte Frist ist abgelaufen. Installiere das Update, um Habiter online weiterzuverwenden.'**
+  String get updateMandatoryBody;
+
+  /// No description provided for @updateMandatoryCountdown.
+  ///
+  /// In de, this message translates to:
+  /// **'{hours, plural, =1{In 1 Stunde erforderlich} other{In {hours} Stunden erforderlich}}'**
+  String updateMandatoryCountdown(int hours);
+
+  /// No description provided for @releaseStorySuccessTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Update installiert'**
+  String get releaseStorySuccessTitle;
+
+  /// No description provided for @releaseStorySuccessBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter ist mit den neuesten Verbesserungen bereit.'**
+  String get releaseStorySuccessBody;
+
+  /// No description provided for @releaseStoryContinue.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter zu Habiter'**
+  String get releaseStoryContinue;
+
+  /// No description provided for @releaseStoryDetails.
+  ///
+  /// In de, this message translates to:
+  /// **'Details nach Version'**
+  String get releaseStoryDetails;
+
+  /// No description provided for @releaseStoryAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu'**
+  String get releaseStoryAdded;
+
+  /// No description provided for @releaseStoryChanged.
+  ///
+  /// In de, this message translates to:
+  /// **'Geändert'**
+  String get releaseStoryChanged;
+
+  /// No description provided for @releaseStoryFixed.
+  ///
+  /// In de, this message translates to:
+  /// **'Behoben'**
+  String get releaseStoryFixed;
+
+  /// No description provided for @releaseStorySecurity.
+  ///
+  /// In de, this message translates to:
+  /// **'Sicherheit'**
+  String get releaseStorySecurity;
+
+  /// No description provided for @releaseStoryFallbackHeadline.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter {version}'**
+  String releaseStoryFallbackHeadline(String version);
+
+  /// No description provided for @releaseStoryFallbackSummary.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine neue Habiter-Version ist bereit.'**
+  String get releaseStoryFallbackSummary;
+
+  /// No description provided for @updateUnsupported.
+  ///
+  /// In de, this message translates to:
+  /// **'Updates sind auf dieser Plattform noch nicht verfügbar.'**
+  String get updateUnsupported;
 }
 
 class _AppLocalizationsDelegate

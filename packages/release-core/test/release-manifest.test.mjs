@@ -1,14 +1,23 @@
 import assert from "node:assert/strict";
+import { createHash, generateKeyPairSync } from "node:crypto";
 import { test } from "node:test";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import {
   assertTagMatches,
   compareVersions,
+  enrichRelease,
   finalizeRelease,
+  manifestPayloadBytes,
+  parseRawPublicKeyRing,
   parsePubspecVersion,
+  publishedManifest,
   readJson,
   renderNotes,
-  validateManifest
+  signManifestEnvelope,
+  validateManifest,
+  verifyManifestEnvelope
 } from "../src/release-manifest.mjs";
 
 const manifestPath = new URL("../data/releases.json", import.meta.url);
@@ -28,6 +37,26 @@ test("tag, pubspec version and build number must agree", async () => {
   assert.throws(() => assertTagMatches({ tag: "v0.0.0", pubspec, manifest }), /does not match/);
 });
 
+test("the v1.5 bootstrap candidate carries the complete update experience contract", async () => {
+  const manifest = await readJson(manifestPath);
+  const release = manifest.releases.find((item) => item.version === "1.5.0");
+  assert.equal(release?.buildNumber, 10500);
+  assert.equal(release?.channel, "stable");
+  assert.equal(release?.status, "draft");
+  assert.deepEqual(Object.keys(release?.presentation ?? {}).sort(), ["de", "en"]);
+  assert.equal(release?.presentation.de.highlights.length, 5);
+  assert.equal(release?.presentation.en.highlights.length, 5);
+  assert.deepEqual(
+    release?.artifacts.filter((item) => item.platform === "android").map((item) => item.distribution).sort(),
+    ["direct", "play"]
+  );
+  assert.deepEqual(
+    new Set(release?.artifacts.map((item) => item.platform)),
+    new Set(["android", "windows", "linux", "macos"])
+  );
+  assert.equal(publishedManifest(manifest).releases.some((item) => item.version === "1.5.0"), false);
+});
+
 test("version comparison is numeric and release notes are deterministic", async () => {
   const manifest = await readJson(manifestPath);
   const notes = renderNotes(manifest.releases[0]);
@@ -43,6 +72,137 @@ test("duplicate versions are rejected", async () => {
   const schema = await readJson(schemaPath);
   manifest.releases.push(structuredClone(manifest.releases[0]));
   await assert.rejects(validateManifest(manifest, schema), /Duplicate version/);
+});
+
+test("published assets require HTTPS and complete integrity metadata", async () => {
+  const manifest = await readJson(manifestPath);
+  const schema = await readJson(schemaPath);
+  const unsafe = structuredClone(manifest);
+  const publishedIndex = unsafe.releases.findIndex((release) => release.status === "published");
+  unsafe.releases[publishedIndex].artifacts[0].url = "http://example.com/habiter.apk";
+  await assert.rejects(validateManifest(unsafe, schema), /must use HTTPS/);
+
+  const missingDistribution = structuredClone(manifest);
+  delete missingDistribution.releases[0].artifacts[0].distribution;
+  await assert.rejects(validateManifest(missingDistribution, schema), /requires a distribution/);
+});
+
+test("localized highlights may reference only declared release media", async () => {
+  const manifest = await readJson(manifestPath);
+  const schema = await readJson(schemaPath);
+  const invalid = structuredClone(manifest);
+  invalid.releases[0].presentation = {
+    de: {
+      headline: "Neu",
+      summary: "Zusammenfassung",
+      highlights: [{ id: "one", title: "Eins", description: "Text", icon: "update", mediaId: "missing" }],
+      changes: { added: [], changed: [], fixed: [], security: [] }
+    },
+    en: {
+      headline: "New",
+      summary: "Summary",
+      highlights: [],
+      changes: { added: [], changed: [], fixed: [], security: [] }
+    }
+  };
+  await assert.rejects(validateManifest(invalid, schema), /Unknown media id missing/);
+});
+
+test("release enrichment hashes and publishes declared story media", async (context) => {
+  const directory = await mkdtemp(path.join(tmpdir(), "habiter-release-media-"));
+  context.after(() => rm(directory, { recursive: true, force: true }));
+  const manifest = await readJson(manifestPath);
+  const release = structuredClone(manifest.releases[0]);
+  release.artifacts = [release.artifacts[0]];
+  release.media = [{ id: "update-center", fileName: "update-center.webp", mimeType: "image/webp" }];
+  release.presentation.de.highlights[0].mediaId = "update-center";
+  release.presentation.en.highlights[0].mediaId = "update-center";
+  const artifactBytes = Buffer.from("signed-apk-fixture");
+  const mediaBytes = Buffer.from("verified-webp-fixture");
+  await writeFile(path.join(directory, release.artifacts[0].fileName), artifactBytes);
+  await writeFile(path.join(directory, release.media[0].fileName), mediaBytes);
+
+  const enriched = await enrichRelease({
+    release,
+    artifactDirectory: directory,
+    repository: "example/habiter",
+    publishedAt: "2026-08-17T12:00:00Z"
+  });
+
+  assert.equal(enriched.status, "published");
+  assert.equal(enriched.media[0].size, mediaBytes.length);
+  assert.equal(enriched.media[0].sha256, createHash("sha256").update(mediaBytes).digest("hex"));
+  assert.equal(
+    enriched.media[0].url,
+    "https://github.com/example/habiter/releases/download/v1.5.0/update-center.webp"
+  );
+  assert.equal(enriched.artifacts[0].size, artifactBytes.length);
+});
+
+test("signed manifests are deterministic, published-only and tamper evident", async () => {
+  const manifest = await readJson(manifestPath);
+  const draft = structuredClone(manifest.releases[0]);
+  draft.version = "9.0.0";
+  draft.buildNumber = 90000;
+  draft.status = "draft";
+  draft.publishedAt = null;
+  const source = { schemaVersion: 1, releases: [draft, ...manifest.releases] };
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const privatePem = privateKey.export({ format: "pem", type: "pkcs8" });
+  const publicPem = publicKey.export({ format: "pem", type: "spki" });
+
+  const first = signManifestEnvelope({ manifest: source, keyId: "test-2026-01", privateKey: privatePem });
+  const second = signManifestEnvelope({ manifest: source, keyId: "test-2026-01", privateKey: privatePem });
+  assert.deepEqual(first, second);
+  assert.deepEqual(manifestPayloadBytes(source), manifestPayloadBytes(source));
+  assert.equal(publishedManifest(source).releases.some((release) => release.status === "draft"), false);
+
+  const verified = verifyManifestEnvelope(first, { "test-2026-01": publicPem });
+  assert.equal(verified.manifest.releases.some((release) => release.version === "9.0.0"), false);
+  assert.deepEqual(verified.payload, manifestPayloadBytes(source));
+
+  const tampered = { ...first, payload: `${first.payload.slice(0, -1)}${first.payload.endsWith("A") ? "B" : "A"}` };
+  assert.throws(
+    () => verifyManifestEnvelope(tampered, { "test-2026-01": publicPem }),
+    /signature verification failed/
+  );
+});
+
+test("manifest verification supports explicit key rotation", async () => {
+  const manifest = await readJson(manifestPath);
+  const oldPair = generateKeyPairSync("ed25519");
+  const nextPair = generateKeyPairSync("ed25519");
+  const pem = (key, type) => key.export({ format: "pem", type });
+  const ring = {
+    "release-2026-01": pem(oldPair.publicKey, "spki"),
+    "release-2027-01": pem(nextPair.publicKey, "spki")
+  };
+  const oldEnvelope = signManifestEnvelope({
+    manifest,
+    keyId: "release-2026-01",
+    privateKey: pem(oldPair.privateKey, "pkcs8")
+  });
+  const nextEnvelope = signManifestEnvelope({
+    manifest,
+    keyId: "release-2027-01",
+    privateKey: pem(nextPair.privateKey, "pkcs8")
+  });
+  assert.equal(verifyManifestEnvelope(oldEnvelope, ring).manifest.schemaVersion, 1);
+  assert.equal(verifyManifestEnvelope(nextEnvelope, ring).manifest.schemaVersion, 1);
+  assert.throws(() => verifyManifestEnvelope(nextEnvelope, { "release-2026-01": ring["release-2026-01"] }), /Unknown/);
+});
+
+test("embedded raw public-key rings are canonical and contain the active key", () => {
+  const raw = Buffer.alloc(32, 7).toString("base64url");
+  assert.deepEqual(parseRawPublicKeyRing(JSON.stringify({ "release-2026-01": raw }), "release-2026-01"), {
+    "release-2026-01": raw
+  });
+  assert.throws(() => parseRawPublicKeyRing("{}"), /non-empty/);
+  assert.throws(() => parseRawPublicKeyRing(JSON.stringify({ bad: "not+base64" })), /Base64URL/);
+  assert.throws(
+    () => parseRawPublicKeyRing(JSON.stringify({ "release-2026-01": raw }), "release-2027-01"),
+    /active key/
+  );
 });
 
 test("runtime metadata finalizes a release without changing its channel contract", async () => {

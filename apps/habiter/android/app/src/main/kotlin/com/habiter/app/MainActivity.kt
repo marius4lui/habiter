@@ -25,10 +25,16 @@ class MainActivity: FlutterActivity() {
     private val CHANNEL = "com.habiter.app/applock"
     private val TIME_ZONE_CHANNEL = "com.habiter.app/timezone"
     private val SETTINGS_CHANNEL = "com.habiter.app/settings"
+    private val UPDATE_CHANNEL = "com.habiter.app/updates"
+    private var updateMethodChannel: MethodChannel? = null
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         flutterEngine.plugins.add(HabiterWidgetPinPlugin())
+        val updateManager = UpdateManager(this)
+        updateMethodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, UPDATE_CHANNEL).also {
+            it.setMethodCallHandler(updateManager::handle)
+        }
         
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
@@ -106,6 +112,15 @@ class MainActivity: FlutterActivity() {
                 }
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.getBooleanExtra("openUpdateCenter", false)) {
+            intent.removeExtra("openUpdateCenter")
+            updateMethodChannel?.invokeMethod("openUpdateCenter", null)
         }
     }
 

@@ -13,7 +13,7 @@ on:
       version:
         description: SemVer to validate during a dry run
         required: true
-        default: '1.4.0'
+        default: '1.5.0'
 
 permissions:
   contents: read
@@ -110,16 +110,24 @@ jobs:
           } > android/key.properties
           chmod 600 android/key.properties
       - run: flutter pub get --enforce-lockfile
-      - run: flutter build apk --release
-      - run: flutter build appbundle --release
+      - name: Build distribution-specific Android artifacts
+        env:
+          HABITER_UPDATE_PUBLIC_KEYS: ${{ vars.HABITER_UPDATE_PUBLIC_KEYS }}
+          RELEASE_MANIFEST_KEY_ID: ${{ vars.RELEASE_MANIFEST_KEY_ID }}
+        run: |
+          node ../../scripts/release/validate-public-key-ring.mjs
+          flutter build apk --release --flavor direct --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
+          flutter build appbundle --release --flavor store --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
+          ../../scripts/android/verify-update-flavors.sh \
+            build/app/intermediates/merged_manifests directRelease storeRelease
       - name: Name and verify signed artifacts
         env:
           VERSION: ${{ needs.validate.outputs.version }}
           EXPECTED_SHA256: ${{ vars.ANDROID_CERT_SHA256 }}
         run: |
           mkdir -p dist
-          cp build/app/outputs/flutter-apk/app-release.apk "dist/habiter-$VERSION-android-universal.apk"
-          cp build/app/outputs/bundle/release/app-release.aab "dist/habiter-$VERSION-android-playstore.aab"
+          cp build/app/outputs/flutter-apk/app-direct-release.apk "dist/habiter-$VERSION-android-universal.apk"
+          cp build/app/outputs/bundle/storeRelease/app-store-release.aab "dist/habiter-$VERSION-android-playstore.aab"
           APKSIGNER=$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)
           test -x "$APKSIGNER"
           test -n "$EXPECTED_SHA256"
@@ -160,7 +168,12 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get --enforce-lockfile
-      - run: flutter build linux --release
+      - env:
+          HABITER_UPDATE_PUBLIC_KEYS: ${{ vars.HABITER_UPDATE_PUBLIC_KEYS }}
+          RELEASE_MANIFEST_KEY_ID: ${{ vars.RELEASE_MANIFEST_KEY_ID }}
+        run: |
+          node ../../scripts/release/validate-public-key-ring.mjs
+          flutter build linux --release --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
       - env:
           VERSION: ${{ needs.validate.outputs.version }}
         run: tar -C build/linux/x64/release/bundle -czf "habiter-$VERSION-linux-x64.tar.gz" .
@@ -186,7 +199,13 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get --enforce-lockfile
-      - run: flutter build windows --release
+      - shell: pwsh
+        env:
+          HABITER_UPDATE_PUBLIC_KEYS: ${{ vars.HABITER_UPDATE_PUBLIC_KEYS }}
+          RELEASE_MANIFEST_KEY_ID: ${{ vars.RELEASE_MANIFEST_KEY_ID }}
+        run: |
+          node ../../scripts/release/validate-public-key-ring.mjs
+          flutter build windows --release --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$env:HABITER_UPDATE_PUBLIC_KEYS"
       - shell: pwsh
         env:
           VERSION: ${{ needs.validate.outputs.version }}
@@ -213,7 +232,12 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get --enforce-lockfile
-      - run: flutter build macos --release
+      - env:
+          HABITER_UPDATE_PUBLIC_KEYS: ${{ vars.HABITER_UPDATE_PUBLIC_KEYS }}
+          RELEASE_MANIFEST_KEY_ID: ${{ vars.RELEASE_MANIFEST_KEY_ID }}
+        run: |
+          node ../../scripts/release/validate-public-key-ring.mjs
+          flutter build macos --release --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
       - env:
           VERSION: ${{ needs.validate.outputs.version }}
         run: ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/habiter.app "habiter-$VERSION-macos-universal.zip"
@@ -252,6 +276,7 @@ jobs:
           VERSION: ${{ needs.validate.outputs.version }}
           PUBLISHED_AT: ${{ github.event.head_commit.timestamp }}
         run: |
+          if [ -d "packages/release-core/media/$VERSION" ]; then cp packages/release-core/media/$VERSION/* artifacts/; fi
           node scripts/release/render-notes.mjs "$VERSION" > release-notes.md
           node scripts/release/enrich-artifacts.mjs "$VERSION" artifacts runtime-releases.json
           (cd artifacts && sha256sum * > "habiter-$VERSION-checksums.txt")
@@ -280,8 +305,11 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          RELEASE_MANIFEST_KEY_ID: ${{ vars.RELEASE_MANIFEST_KEY_ID }}
+          RELEASE_MANIFEST_PRIVATE_KEY_BASE64: ${{ secrets.RELEASE_MANIFEST_PRIVATE_KEY_BASE64 }}
         run: |
           cp runtime-releases.json apps/release-api/src/generated/releases.json
+          node scripts/release/sign-manifest.mjs runtime-releases.json apps/release-api/src/generated/manifest-envelope.json
           pnpm --filter @habiter/release-api types
           pnpm --filter @habiter/release-api check
           pnpm --dir apps/release-api exec wrangler deploy --env production
@@ -293,6 +321,8 @@ jobs:
           CHANNEL: ${{ needs.validate.outputs.channel }}
         run: |
           curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/health"
+          curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/api/v1/manifest" \
+            | jq --exit-status '.schemaVersion == 1 and .algorithm == "ed25519" and (.payload | length > 0) and (.signature | length > 0)'
           for ATTEMPT in {1..30}; do
             CACHE_BUST="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${ATTEMPT}"
             if curl --silent --show-error --fail "$RELEASE_API_BASE_URL/api/v1/releases/$VERSION?cache_bust=$CACHE_BUST" \

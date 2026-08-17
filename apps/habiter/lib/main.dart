@@ -20,6 +20,7 @@ import 'features/onboarding/presentation/onboarding_flow.dart';
 import 'features/widgets/application/widget_background_entry_point.dart';
 import 'features/widgets/application/widget_app_lock_state_resolver.dart';
 import 'features/widgets/application/widget_sync_controller.dart';
+import 'features/widgets/application/widget_lifecycle_coordinator.dart';
 import 'features/widgets/data/android_widget_bridge.dart';
 import 'features/widgets/domain/widget_bridge.dart';
 import 'l10n/app_localizations.dart';
@@ -331,6 +332,7 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   late int _index;
   late final PageController _pageController;
   HabitProvider? _habitProvider;
+  WidgetLifecycleCoordinator? _widgetLifecycle;
   final _pages = const [HomeScreen(), AnalyticsScreen(), RhythmScreen()];
 
   @override
@@ -353,6 +355,14 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   void _setupHabitListener() {
     final habitProvider = context.read<HabitProvider>();
     _habitProvider = habitProvider;
+    _widgetLifecycle = WidgetLifecycleCoordinator(
+      reconcileForeground: () => habitProvider.reconcileExternalHabitState(),
+      publishBackground: habitProvider.syncWidget,
+      onError: (error, stackTrace) {
+        debugPrint('Widget lifecycle reconciliation failed safely: $error');
+        debugPrintStack(stackTrace: stackTrace);
+      },
+    );
     _updateAppLock();
     habitProvider.addListener(_updateAppLock);
   }
@@ -376,13 +386,8 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _habitProvider?.syncWidget();
-      _habitProvider?.reconcileReminders(
-        processActions: true,
-        refreshTimeZone: true,
-      );
-    }
+    final lifecycle = _widgetLifecycle;
+    if (lifecycle != null) unawaited(lifecycle.handle(state));
   }
 
   void _onNavChange(int index) {

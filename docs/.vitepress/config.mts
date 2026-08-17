@@ -44,6 +44,7 @@ export default defineConfig({
             { text: 'Branch Workflow', link: '/dev/branches' },
             { text: 'State Management', link: '/dev/state' },
             { text: 'Services', link: '/dev/services' },
+            { text: 'Android Widget QA', link: '/dev/widget-qa' },
             { text: 'Documentation', link: '/dev/documentation' }
           ]
         }

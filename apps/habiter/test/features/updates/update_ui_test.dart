@@ -64,7 +64,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final releases = manifestOf([
-      releaseJson(build: 10500, channel: 'stable'),
+      _storyRelease(build: 10500, channel: 'stable'),
       releaseJson(build: 10400, channel: 'stable'),
     ]).releases;
     await tester.pumpWidget(
@@ -82,8 +82,38 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Update installed'), findsOneWidget);
+    await _scrollStoryUntilVisible(tester, find.text('Details by version'));
     expect(find.text('Details by version'), findsOneWidget);
     expect(find.text('Habiter ${releases.first.version}'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('German story stays usable on a compact phone at 200% text', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final releases = manifestOf([
+      _storyRelease(build: 10500, channel: 'stable'),
+    ]).releases;
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('de'),
+        textScale: 2,
+        disableAnimations: true,
+        home: ReleaseStoryScreen(
+          releases: releases,
+          isUpgrade: false,
+          onClose: () {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _scrollStoryUntilVisible(tester, find.text('Später'));
+
+    expect(find.text('Später'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -215,7 +245,11 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    final controller = _idleController();
+    final now = DateTime.utc(2026, 8, 17, 12);
+    final fixture = await _signed([
+      _storyRelease(build: 10500, channel: 'stable'),
+    ]);
+    final controller = await _checkedController(fixture, now: now);
     addTearDown(controller.dispose);
     await tester.pumpWidget(
       _app(
@@ -237,7 +271,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final releases = manifestOf([
-      releaseJson(build: 10500, channel: 'stable'),
+      _storyRelease(build: 10500, channel: 'stable'),
       releaseJson(build: 10400, channel: 'stable'),
     ]).releases;
     await tester.pumpWidget(
@@ -258,6 +292,158 @@ void main() {
       matchesGoldenFile('goldens/release_story_en_dark.png'),
     );
   });
+
+  testWidgets('Update Center English dark wide golden', (tester) async {
+    tester.view.physicalSize = const Size(900, 720);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final now = DateTime.utc(2026, 8, 17, 12);
+    final fixture = await _signed([
+      _storyRelease(build: 10500, channel: 'stable'),
+    ]);
+    final controller = await _checkedController(fixture, now: now);
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('en'),
+        dark: true,
+        controller: controller,
+        home: const UpdateCenterScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await expectLater(
+      find.byType(UpdateCenterScreen),
+      matchesGoldenFile('goldens/update_center_en_dark_wide.png'),
+    );
+  });
+
+  testWidgets('German release story light compact golden', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final releases = manifestOf([
+      _storyRelease(build: 10500, channel: 'stable'),
+    ]).releases;
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('de'),
+        textScale: 1.3,
+        disableAnimations: true,
+        home: ReleaseStoryScreen(
+          releases: releases,
+          isUpgrade: false,
+          onClose: () {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await expectLater(
+      find.byType(ReleaseStoryScreen),
+      matchesGoldenFile('goldens/release_story_de_light_compact.png'),
+    );
+  });
+
+  testWidgets('German mandatory update dark golden', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final now = DateTime.utc(2026, 8, 17, 12);
+    final fixture = await _signed([
+      _storyRelease(
+        build: 10500,
+        channel: 'stable',
+        mandatoryAfter: now.subtract(const Duration(hours: 1)),
+      ),
+    ]);
+    final controller = await _checkedController(fixture, now: now);
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('de'),
+        dark: true,
+        controller: controller,
+        home: const UpdateExperienceGate(child: Text('habits')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await expectLater(
+      find.byType(UpdateExperienceGate),
+      matchesGoldenFile('goldens/mandatory_update_de_dark.png'),
+    );
+  });
+}
+
+Map<String, Object?> _storyRelease({
+  required int build,
+  required String channel,
+  DateTime? mandatoryAfter,
+}) {
+  final release = releaseJson(
+    build: build,
+    channel: channel,
+    mandatoryAfter: mandatoryAfter,
+  );
+  final presentations = release['presentation']! as Map<String, Object?>;
+  for (final entry in <String, List<Map<String, Object?>>>{
+    'de': [
+      {
+        'id': 'verified',
+        'title': 'Sicher verifiziert',
+        'description': 'Signatur, Größe und Hash werden vollständig geprüft.',
+        'icon': 'security',
+      },
+      {
+        'id': 'profiles',
+        'title': 'Dein Profil',
+        'description': 'Du bestimmst Intervall und erlaubte Netzwerke.',
+        'icon': 'speed',
+      },
+      {
+        'id': 'stories',
+        'title': 'Alles Neue',
+        'description': 'Highlights und Details bleiben übersichtlich.',
+        'icon': 'history',
+      },
+    ],
+    'en': [
+      {
+        'id': 'verified',
+        'title': 'Verified safely',
+        'description': 'Signature, size, and hash are checked end to end.',
+        'icon': 'security',
+      },
+      {
+        'id': 'profiles',
+        'title': 'Your profile',
+        'description': 'You control the interval and allowed networks.',
+        'icon': 'speed',
+      },
+      {
+        'id': 'stories',
+        'title': 'What is new',
+        'description': 'Highlights and details remain easy to explore.',
+        'icon': 'history',
+      },
+    ],
+  }.entries) {
+    final presentation = presentations[entry.key]! as Map<String, Object?>;
+    presentation['highlights'] = entry.value;
+  }
+  return release;
+}
+
+Future<void> _scrollStoryUntilVisible(
+  WidgetTester tester,
+  Finder target,
+) async {
+  for (var attempt = 0; attempt < 12 && target.evaluate().isEmpty; attempt++) {
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -420));
+    await tester.pump();
+  }
 }
 
 UpdateController _idleController() => UpdateController(

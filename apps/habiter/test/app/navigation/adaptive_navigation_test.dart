@@ -128,6 +128,7 @@ void main() {
       ),
       settingsBuilder: (_) => const Scaffold(body: Text('Settings page')),
       appLockBuilder: (_) => const Scaffold(body: Text('App lock page')),
+      updatesBuilder: (_) => const Scaffold(body: Text('Updates page')),
     );
     await tester.pumpWidget(
       MaterialApp(

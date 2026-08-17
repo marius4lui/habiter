@@ -54,6 +54,7 @@ internal class UpdateManager(private val activity: MainActivity) {
                     cleanupAfterUpgrade(requiredLong(call, "currentBuild"))
                     result.success(null)
                 }
+                "consumePendingOpen" -> result.success(consumePendingOpen())
                 else -> result.notImplemented()
             }
         } catch (error: UpdateFailure) {
@@ -71,6 +72,13 @@ internal class UpdateManager(private val activity: MainActivity) {
             "directInstallAllowed" to (distribution == "direct"),
             "installerSource" to installer
         )
+    }
+
+    private fun consumePendingOpen(): Boolean {
+        val intent = activity.intent ?: return false
+        val pending = intent.getBooleanExtra("openUpdateCenter", false)
+        if (pending) intent.removeExtra("openUpdateCenter")
+        return pending
     }
 
     private fun installerSource(): String? = try {

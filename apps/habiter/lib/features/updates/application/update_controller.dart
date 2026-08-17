@@ -42,6 +42,7 @@ final class UpdateController extends ChangeNotifier {
   List<UpdateRelease> _upgradeReleases = const [];
   bool _initialized = false;
   bool _checking = false;
+  bool _mandatoryEnforced = false;
   Timer? _downloadPoller;
 
   UpdateState get state => _state;
@@ -51,6 +52,9 @@ final class UpdateController extends ChangeNotifier {
   UpdateManifest? get manifest => _manifest;
   List<UpdateRelease> get upgradeReleases => _upgradeReleases;
   bool get initialized => _initialized;
+  bool get mandatoryEnforced => _mandatoryEnforced;
+  bool get hasExpiredMandatoryCandidate =>
+      _state.candidate?.release.isMandatoryAt(_clock.now()) == true;
   bool get shouldShowAvailableStory =>
       _state.candidate != null &&
       !_local.presentedBuilds.contains(_state.candidate!.release.buildNumber);
@@ -231,6 +235,7 @@ final class UpdateController extends ChangeNotifier {
       androidDistribution: runtime.androidDistribution,
     );
     if (candidate == null) {
+      _mandatoryEnforced = false;
       _state = UpdateState(
         phase: UpdatePhase.upToDate,
         lastCheckedAt: _local.lastCheckedAt,
@@ -238,8 +243,11 @@ final class UpdateController extends ChangeNotifier {
     } else {
       final mandatory =
           verifiedOnline && candidate.release.isMandatoryAt(_clock.now());
+      if (mandatory) _mandatoryEnforced = true;
       _state = UpdateState(
-        phase: mandatory ? UpdatePhase.mandatory : UpdatePhase.available,
+        phase: _mandatoryEnforced
+            ? UpdatePhase.mandatory
+            : UpdatePhase.available,
         candidate: candidate,
         lastCheckedAt: _local.lastCheckedAt,
       );

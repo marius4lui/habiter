@@ -5,6 +5,11 @@ import 'package:habiter/core/design_system/habiter_theme.dart';
 import 'package:habiter/core/design_system/haptics.dart';
 import 'package:habiter/features/habits/data/key_value_habit_repository.dart';
 import 'package:habiter/features/history/application/habit_lifecycle_reminder_gateway.dart';
+import 'package:habiter/features/updates/application/update_controller.dart';
+import 'package:habiter/features/updates/data/signed_manifest_client.dart';
+import 'package:habiter/features/updates/data/update_local_repository.dart';
+import 'package:habiter/features/updates/domain/update_models.dart';
+import 'package:habiter/features/updates/domain/update_platform_gateway.dart';
 import 'package:habiter/l10n/app_localizations.dart';
 import 'package:habiter/models/habit.dart';
 import 'package:habiter/providers/habit_provider.dart';
@@ -302,6 +307,15 @@ Widget _app({
       value: settings ?? SettingsProvider(),
     ),
     Provider<HapticGateway>.value(value: const _NoHaptics()),
+    ChangeNotifierProvider<UpdateController>(
+      create: (_) => UpdateController(
+        repository: UpdateLocalRepository(InMemoryKeyValueStore()),
+        client: SignedManifestClient(),
+        verifier: ManifestVerifier(publicKeyRing: const {}),
+        platform: const _NoUpdatePlatform(),
+        clock: FakeClock(DateTime(2026, 8, 16, 12)),
+      ),
+    ),
   ],
   child: MaterialApp(
     locale: const Locale('en'),
@@ -343,4 +357,63 @@ class _NoLifecycleReminders implements HabitLifecycleReminderGateway {
 
   @override
   Future<void> scheduleForHabit(Habit habit) async {}
+}
+
+class _NoUpdatePlatform implements UpdatePlatformGateway {
+  const _NoUpdatePlatform();
+
+  @override
+  Future<void> cleanupAfterUpgrade(int currentBuild) async {}
+
+  @override
+  Future<UpdateDownloadStatus> downloadStatus(String downloadId) async =>
+      const UpdateDownloadStatus(
+        phase: UpdateDownloadPhase.missing,
+        downloadedBytes: 0,
+        totalBytes: 0,
+      );
+
+  @override
+  Future<String> enqueueDownload(
+    UpdateCandidate candidate, {
+    required bool allowMetered,
+  }) async => 'none';
+
+  @override
+  Future<UpdateInstallResult> install(
+    String downloadId,
+    UpdateCandidate candidate,
+  ) async => UpdateInstallResult.unavailable;
+
+  @override
+  Future<UpdateNetworkStatus> networkStatus() async =>
+      const UpdateNetworkStatus(isOnline: false, isMetered: false);
+
+  @override
+  Future<void> openInstallerPermission() async {}
+
+  @override
+  Future<UpdateInstallResult> openExternal(UpdateCandidate candidate) async =>
+      UpdateInstallResult.unavailable;
+
+  @override
+  Future<void> removeDownload(String downloadId) async {}
+
+  @override
+  Future<UpdateRuntimeInfo> runtimeInfo() async => const UpdateRuntimeInfo(
+    platform: 'linux',
+    version: '1.5.0',
+    buildNumber: 10500,
+    supportsUpdates: true,
+    supportsDirectInstall: false,
+  );
+
+  @override
+  Future<int> storedDownloadBytes() async => 0;
+
+  @override
+  Future<UpdateVerificationResult> verifyDownload(
+    String downloadId,
+    UpdateCandidate candidate,
+  ) async => const UpdateVerificationResult.invalid('missing');
 }

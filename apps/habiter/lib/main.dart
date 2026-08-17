@@ -17,6 +17,9 @@ import 'core/design_system/motion.dart';
 import 'features/onboarding/application/onboarding_controller.dart';
 import 'features/onboarding/application/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_flow.dart';
+import 'features/updates/application/update_controller.dart';
+import 'features/updates/presentation/update_center_screen.dart';
+import 'features/updates/presentation/update_experience_gate.dart';
 import 'features/widgets/application/widget_background_entry_point.dart';
 import 'features/widgets/application/widget_app_lock_state_resolver.dart';
 import 'features/widgets/application/widget_sync_controller.dart';
@@ -174,6 +177,7 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
         ),
         ChangeNotifierProvider(create: (_) => AppLockProvider()..load()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
+        ChangeNotifierProvider(create: (_) => dependencies.updateController),
       ],
       child: const HabiterApp(),
     );
@@ -194,6 +198,7 @@ class HabiterApp extends StatefulWidget {
 }
 
 class _HabiterAppState extends State<HabiterApp> {
+  static const _updateChannel = MethodChannel('com.habiter.app/updates');
   final _navigatorKey = GlobalKey<NavigatorState>();
   StreamSubscription<Uri?>? _widgetLaunchSubscription;
 
@@ -201,6 +206,10 @@ class _HabiterAppState extends State<HabiterApp> {
   void initState() {
     super.initState();
     if (kIsWeb) return;
+    _updateChannel.setMethodCallHandler((call) async {
+      if (call.method == 'openUpdateCenter') _openUpdates();
+    });
+    unawaited(_consumePendingUpdateNavigation());
     _widgetLaunchSubscription = HomeWidget.widgetClicked.listen(
       (_) => _openTodayFromWidget(),
     );
@@ -227,9 +236,31 @@ class _HabiterAppState extends State<HabiterApp> {
     );
   }
 
+  Future<void> _consumePendingUpdateNavigation() async {
+    try {
+      if (await _updateChannel.invokeMethod<bool>('consumePendingOpen') ==
+          true) {
+        _openUpdates();
+      }
+    } on MissingPluginException {
+      // Non-Android platforms have no native update intent.
+    }
+  }
+
+  void _openUpdates() {
+    if (!mounted) return;
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _openUpdates());
+      return;
+    }
+    navigator.pushNamed<void>(AppRouteCodec.encode(AppRoute.updates));
+  }
+
   @override
   void dispose() {
     _widgetLaunchSubscription?.cancel();
+    if (!kIsWeb) _updateChannel.setMethodCallHandler(null);
     super.dispose();
   }
 
@@ -242,6 +273,7 @@ class _HabiterAppState extends State<HabiterApp> {
               _OnboardingGate(child: _RootShell(initialRoute: route)),
           settingsBuilder: (_) => const SettingsScreen(),
           appLockBuilder: (_) => const AppLockScreen(),
+          updatesBuilder: (_) => const UpdateCenterScreen(),
         );
         return MaterialApp(
           navigatorKey: _navigatorKey,
@@ -264,6 +296,8 @@ class _HabiterAppState extends State<HabiterApp> {
               WidgetsBinding.instance.platformDispatcher.defaultRouteName,
           onGenerateInitialRoutes: router.initialRoutes,
           onGenerateRoute: router.routeFor,
+          builder: (context, child) =>
+              UpdateExperienceGate(child: child ?? const SizedBox.shrink()),
         );
       },
     );
@@ -281,6 +315,7 @@ class _OnboardingGate extends StatefulWidget {
 
 class _OnboardingGateState extends State<_OnboardingGate> {
   HabitProvider? _habits;
+  bool _updatesStarted = false;
 
   @override
   void didChangeDependencies() {
@@ -315,6 +350,10 @@ class _OnboardingGateState extends State<_OnboardingGate> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     if (onboarding.shouldShowOnboarding) return const OnboardingFlow();
+    if (!_updatesStarted) {
+      _updatesStarted = true;
+      unawaited(context.read<UpdateController>().initialize());
+    }
     return widget.child;
   }
 }
@@ -333,6 +372,7 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   late final PageController _pageController;
   HabitProvider? _habitProvider;
   WidgetLifecycleCoordinator? _widgetLifecycle;
+  Timer? _updateTimer;
   final _pages = const [HomeScreen(), AnalyticsScreen(), RhythmScreen()];
 
   @override
@@ -345,6 +385,10 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
     };
     _pageController = PageController(initialPage: _index);
     WidgetsBinding.instance.addObserver(this);
+    _updateTimer = Timer.periodic(const Duration(hours: 1), (_) {
+      final updates = context.read<UpdateController>();
+      if (updates.initialized) unawaited(updates.handleForegroundTick());
+    });
 
     // Listen to habit changes to update app lock status
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -381,6 +425,7 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _habitProvider?.removeListener(_updateAppLock);
     _pageController.dispose();
+    _updateTimer?.cancel();
     super.dispose();
   }
 
@@ -388,6 +433,10 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final lifecycle = _widgetLifecycle;
     if (lifecycle != null) unawaited(lifecycle.handle(state));
+    if (state == AppLifecycleState.resumed) {
+      final updates = context.read<UpdateController>();
+      if (updates.initialized) unawaited(updates.handleResume());
+    }
   }
 
   void _onNavChange(int index) {

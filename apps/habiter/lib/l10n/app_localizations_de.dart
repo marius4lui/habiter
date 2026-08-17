@@ -1265,4 +1265,204 @@ class AppLocalizationsDe extends AppLocalizations {
   String widgetPreviewNext(String name) {
     return 'Als Nächstes: $name';
   }
+
+  @override
+  String get updateCenterTitle => 'Update-Center';
+
+  @override
+  String get updateSettingsEntry => 'App-Updates';
+
+  @override
+  String get updateSettingsBody => 'Kanal, Zeitplan, Status und Update-Verlauf';
+
+  @override
+  String get updateStatusTitle => 'Update-Status';
+
+  @override
+  String get updateStatusIdle => 'Bereit zur Prüfung';
+
+  @override
+  String get updateStatusChecking => 'Sichere Prüfung läuft…';
+
+  @override
+  String get updateStatusCurrent => 'Habiter ist aktuell';
+
+  @override
+  String updateStatusAvailable(String version) {
+    return 'Habiter $version ist verfügbar';
+  }
+
+  @override
+  String updateStatusDownloading(int percent) {
+    return 'Download · $percent%';
+  }
+
+  @override
+  String get updateStatusVerifying => 'Download wird geprüft…';
+
+  @override
+  String get updateStatusReady => 'Bereit zur Installation';
+
+  @override
+  String get updateStatusInstalling => 'Android-Installer geöffnet';
+
+  @override
+  String get updateStatusMandatory => 'Dieses Update ist jetzt erforderlich';
+
+  @override
+  String get updateStatusError => 'Update-Prüfung nicht verfügbar';
+
+  @override
+  String get updateAvailableBadge => 'Update verfügbar';
+
+  @override
+  String get updateCheckNow => 'Jetzt prüfen';
+
+  @override
+  String updateLastChecked(String date) {
+    return 'Zuletzt geprüft: $date';
+  }
+
+  @override
+  String get updateNeverChecked => 'Noch nicht geprüft';
+
+  @override
+  String get updateTrackTitle => 'Release-Kanal';
+
+  @override
+  String get updateTrackStable => 'Stable';
+
+  @override
+  String get updateTrackStableBody => 'Nur getestete Stable-Releases';
+
+  @override
+  String get updateTrackBeta => 'Beta';
+
+  @override
+  String get updateTrackBetaBody => 'Höchster Build aus Stable und Beta';
+
+  @override
+  String get updateProfileTitle => 'Update-Profil';
+
+  @override
+  String get updateProfileImmediate => 'Sofort';
+
+  @override
+  String get updateProfileImmediateBody =>
+      'Bei Start/Fortsetzen und stündlich · Download über jedes Netz';
+
+  @override
+  String get updateProfileBalanced => 'Ausgewogen';
+
+  @override
+  String get updateProfileBalancedBody =>
+      'Alle 24 Stunden · Auto-Download über ungetaktete Netze';
+
+  @override
+  String get updateProfileSaver => 'Sparsam';
+
+  @override
+  String get updateProfileSaverBody =>
+      'Alle sieben Tage · kein automatischer Download';
+
+  @override
+  String get updateViewWhatsNew => 'Was ist neu?';
+
+  @override
+  String get updateDownload => 'Update herunterladen';
+
+  @override
+  String get updateInstall => 'Installieren';
+
+  @override
+  String get updateOpenDownload => 'Download öffnen';
+
+  @override
+  String get updateNotNow => 'Später';
+
+  @override
+  String get updateInstallerPermissionTitle =>
+      'Habiter darf dieses Update installieren';
+
+  @override
+  String get updateInstallerPermissionBody =>
+      'Android fragt einmal, ob Habiter geprüfte APK-Updates öffnen darf. Du kannst diese Freigabe jederzeit entziehen.';
+
+  @override
+  String get updateOpenSettings => 'Android-Einstellungen öffnen';
+
+  @override
+  String get updateHistoryTitle => 'Release-Verlauf';
+
+  @override
+  String get updateStorageTitle => 'Update-Speicher';
+
+  @override
+  String updateStorageUsage(String metadata, String downloads) {
+    return 'Metadaten: $metadata · Downloads: $downloads';
+  }
+
+  @override
+  String get updateClearDownloads => 'Downloads löschen';
+
+  @override
+  String get updateClearCache => 'Manifest-Cache leeren';
+
+  @override
+  String get updatePrivacyNote =>
+      'Prüfungen enthalten keine Nutzerkennung und erzeugen keine Analytics.';
+
+  @override
+  String get updateOfflineMandatoryWarning =>
+      'Ein Pflichtupdate wartet. Habiter bleibt offline nutzbar und prüft erneut, sobald du online bist.';
+
+  @override
+  String get updateMandatoryTitle => 'Update erforderlich';
+
+  @override
+  String get updateMandatoryBody =>
+      'Eine verifizierte Frist ist abgelaufen. Installiere das Update, um Habiter online weiterzuverwenden.';
+
+  @override
+  String updateMandatoryCountdown(int hours) {
+    return 'Erforderlich in $hours Stunden';
+  }
+
+  @override
+  String get releaseStorySuccessTitle => 'Update installiert';
+
+  @override
+  String get releaseStorySuccessBody =>
+      'Habiter ist mit den neuesten Verbesserungen bereit.';
+
+  @override
+  String get releaseStoryContinue => 'Weiter zu Habiter';
+
+  @override
+  String get releaseStoryDetails => 'Details nach Version';
+
+  @override
+  String get releaseStoryAdded => 'Neu';
+
+  @override
+  String get releaseStoryChanged => 'Geändert';
+
+  @override
+  String get releaseStoryFixed => 'Behoben';
+
+  @override
+  String get releaseStorySecurity => 'Sicherheit';
+
+  @override
+  String releaseStoryFallbackHeadline(String version) {
+    return 'Habiter $version';
+  }
+
+  @override
+  String get releaseStoryFallbackSummary =>
+      'Eine neue Habiter-Version ist bereit.';
+
+  @override
+  String get updateUnsupported =>
+      'Updates sind auf dieser Plattform noch nicht verfügbar.';
 }

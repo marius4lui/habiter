@@ -9,11 +9,13 @@ final class AppRouter {
     required this.primaryBuilder,
     required this.settingsBuilder,
     required this.appLockBuilder,
+    required this.updatesBuilder,
   });
 
   final PrimaryRouteBuilder primaryBuilder;
   final WidgetBuilder settingsBuilder;
   final WidgetBuilder appLockBuilder;
+  final WidgetBuilder updatesBuilder;
 
   List<Route<void>> initialRoutes(String location) => <Route<void>>[
     routeFor(RouteSettings(name: location)),
@@ -26,6 +28,7 @@ final class AppRouter {
       builder: (context) => switch (route) {
         AppRoute.settings => settingsBuilder(context),
         AppRoute.appLock => appLockBuilder(context),
+        AppRoute.updates => updatesBuilder(context),
         _ => primaryBuilder(context, route),
       },
     );

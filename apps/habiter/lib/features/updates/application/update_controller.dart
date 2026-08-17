@@ -52,6 +52,13 @@ final class UpdateController extends ChangeNotifier {
   UpdateManifest? get manifest => _manifest;
   List<UpdateRelease> get upgradeReleases => _upgradeReleases;
   bool get initialized => _initialized;
+  bool get canCheck => !const {
+    UpdatePhase.checking,
+    UpdatePhase.downloading,
+    UpdatePhase.verifying,
+    UpdatePhase.ready,
+    UpdatePhase.installing,
+  }.contains(_state.phase);
   bool get mandatoryEnforced => _mandatoryEnforced;
   bool get hasExpiredMandatoryCandidate =>
       _state.candidate?.release.isMandatoryAt(_clock.now()) == true;
@@ -95,13 +102,12 @@ final class UpdateController extends ChangeNotifier {
     }
     if (previous < runtime.buildNumber) {
       final manifest = _manifest;
-      if (manifest != null) {
-        _upgradeReleases = _selector.releasesBetween(
-          manifest: manifest,
-          previousBuild: previous,
-          currentBuild: runtime.buildNumber,
-        );
-      }
+      if (manifest == null) return;
+      _upgradeReleases = _selector.releasesBetween(
+        manifest: manifest,
+        previousBuild: previous,
+        currentBuild: runtime.buildNumber,
+      );
       await _platform.cleanupAfterUpgrade(runtime.buildNumber);
       _local = _local.copyWith(
         previousAppBuild: runtime.buildNumber,
@@ -157,13 +163,7 @@ final class UpdateController extends ChangeNotifier {
   }
 
   Future<void> check(UpdateCheckTrigger trigger) async {
-    if (!_initialized ||
-        _checking ||
-        const {
-          UpdatePhase.downloading,
-          UpdatePhase.verifying,
-          UpdatePhase.installing,
-        }.contains(_state.phase)) {
+    if (!_initialized || _checking || !canCheck) {
       return;
     }
     if (!_policy.shouldCheck(
@@ -196,6 +196,7 @@ final class UpdateController extends ChangeNotifier {
       }
       final verified = await _verifier.verify(envelopeJson);
       _manifest = verified.manifest;
+      await _reconcileUpgrade();
       final checkedAt = _clock.now().toUtc();
       _local = _local.copyWith(
         cachedEnvelope: envelopeJson,
@@ -206,6 +207,7 @@ final class UpdateController extends ChangeNotifier {
       _applyCandidate(verifiedOnline: true);
       final candidate = _state.candidate;
       if (candidate != null &&
+          _runtime?.supportsDirectInstall == true &&
           _policy.shouldAutoDownload(
             profile: profile,
             isOnline: true,

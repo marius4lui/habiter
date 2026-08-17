@@ -10,9 +10,18 @@ final class MethodChannelUpdatePlatformGateway
     implements UpdatePlatformGateway {
   const MethodChannelUpdatePlatformGateway({
     MethodChannel channel = const MethodChannel('com.habiter.app/updates'),
-  }) : _channel = channel;
+    TargetPlatform? platformOverride,
+    bool? webOverride,
+    Future<bool> Function(Uri)? externalUrlLauncher,
+  }) : _channel = channel,
+       _platformOverride = platformOverride,
+       _webOverride = webOverride,
+       _externalUrlLauncher = externalUrlLauncher;
 
   final MethodChannel _channel;
+  final TargetPlatform? _platformOverride;
+  final bool? _webOverride;
+  final Future<bool> Function(Uri)? _externalUrlLauncher;
 
   @override
   Future<UpdateRuntimeInfo> runtimeInfo() async {
@@ -153,10 +162,16 @@ final class MethodChannelUpdatePlatformGateway
           ? UpdateInstallResult.externalOpened
           : UpdateInstallResult.unavailable;
     }
-    return await launchUrl(artifact.url, mode: LaunchMode.externalApplication)
+    final opened = await (_externalUrlLauncher ?? _launchExternal)(
+      artifact.url,
+    );
+    return opened
         ? UpdateInstallResult.externalOpened
         : UpdateInstallResult.unavailable;
   }
+
+  Future<bool> _launchExternal(Uri uri) =>
+      launchUrl(uri, mode: LaunchMode.externalApplication);
 
   @override
   Future<int> storedDownloadBytes() async {
@@ -171,16 +186,16 @@ final class MethodChannelUpdatePlatformGateway
       'currentBuild': currentBuild,
     });
   }
-}
 
-String get _platformName {
-  if (kIsWeb) return 'web';
-  return switch (defaultTargetPlatform) {
-    TargetPlatform.android => 'android',
-    TargetPlatform.iOS => 'ios',
-    TargetPlatform.windows => 'windows',
-    TargetPlatform.linux => 'linux',
-    TargetPlatform.macOS => 'macos',
-    TargetPlatform.fuchsia => 'unknown',
-  };
+  String get _platformName {
+    if (_webOverride ?? kIsWeb) return 'web';
+    return switch (_platformOverride ?? defaultTargetPlatform) {
+      TargetPlatform.android => 'android',
+      TargetPlatform.iOS => 'ios',
+      TargetPlatform.windows => 'windows',
+      TargetPlatform.linux => 'linux',
+      TargetPlatform.macOS => 'macos',
+      TargetPlatform.fuchsia => 'unknown',
+    };
+  }
 }

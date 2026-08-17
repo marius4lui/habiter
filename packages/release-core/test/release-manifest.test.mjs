@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
-import { generateKeyPairSync } from "node:crypto";
+import { createHash, generateKeyPairSync } from "node:crypto";
 import { test } from "node:test";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import {
   assertTagMatches,
   compareVersions,
+  enrichRelease,
   finalizeRelease,
   manifestPayloadBytes,
   parseRawPublicKeyRing,
@@ -103,6 +106,37 @@ test("localized highlights may reference only declared release media", async () 
     }
   };
   await assert.rejects(validateManifest(invalid, schema), /Unknown media id missing/);
+});
+
+test("release enrichment hashes and publishes declared story media", async (context) => {
+  const directory = await mkdtemp(path.join(tmpdir(), "habiter-release-media-"));
+  context.after(() => rm(directory, { recursive: true, force: true }));
+  const manifest = await readJson(manifestPath);
+  const release = structuredClone(manifest.releases[0]);
+  release.artifacts = [release.artifacts[0]];
+  release.media = [{ id: "update-center", fileName: "update-center.webp", mimeType: "image/webp" }];
+  release.presentation.de.highlights[0].mediaId = "update-center";
+  release.presentation.en.highlights[0].mediaId = "update-center";
+  const artifactBytes = Buffer.from("signed-apk-fixture");
+  const mediaBytes = Buffer.from("verified-webp-fixture");
+  await writeFile(path.join(directory, release.artifacts[0].fileName), artifactBytes);
+  await writeFile(path.join(directory, release.media[0].fileName), mediaBytes);
+
+  const enriched = await enrichRelease({
+    release,
+    artifactDirectory: directory,
+    repository: "example/habiter",
+    publishedAt: "2026-08-17T12:00:00Z"
+  });
+
+  assert.equal(enriched.status, "published");
+  assert.equal(enriched.media[0].size, mediaBytes.length);
+  assert.equal(enriched.media[0].sha256, createHash("sha256").update(mediaBytes).digest("hex"));
+  assert.equal(
+    enriched.media[0].url,
+    "https://github.com/example/habiter/releases/download/v1.5.0/update-center.webp"
+  );
+  assert.equal(enriched.artifacts[0].size, artifactBytes.length);
 });
 
 test("signed manifests are deterministic, published-only and tamper evident", async () => {

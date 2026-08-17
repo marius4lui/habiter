@@ -101,6 +101,67 @@ void main() {
     },
   );
 
+  test(
+    'automatic downloads never launch an external Store or browser',
+    () async {
+      final fixture = await signed([
+        releaseJson(build: 10500, channel: 'stable'),
+      ]);
+      final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+      final platform = FakeUpdatePlatform(
+        buildNumber: 10400,
+        supportsDirectInstall: false,
+      );
+      final controller = await controllerFor(
+        envelope: fixture.envelope,
+        publicKey: fixture.publicKey,
+        platform: platform,
+        clock: clock,
+        local: UpdateLocalState(
+          profile: UpdateProfile.balanced,
+          previousAppBuild: 10400,
+          lastCheckedAt: clock.now(),
+        ),
+      );
+
+      await controller.check(UpdateCheckTrigger.manual);
+
+      expect(controller.state.phase, UpdatePhase.available);
+      expect(platform.enqueueCalls, 0);
+      expect(platform.openExternalCalls, 0);
+      controller.dispose();
+    },
+  );
+
+  test(
+    'Balanced automatically queues a direct download when unmetered',
+    () async {
+      final fixture = await signed([
+        releaseJson(build: 10500, channel: 'stable'),
+      ]);
+      final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+      final platform = FakeUpdatePlatform(buildNumber: 10400);
+      final controller = await controllerFor(
+        envelope: fixture.envelope,
+        publicKey: fixture.publicKey,
+        platform: platform,
+        clock: clock,
+        local: UpdateLocalState(
+          profile: UpdateProfile.balanced,
+          previousAppBuild: 10400,
+          lastCheckedAt: clock.now(),
+        ),
+      );
+
+      await controller.check(UpdateCheckTrigger.manual);
+
+      expect(controller.state.phase, UpdatePhase.downloading);
+      expect(platform.enqueueCalls, 1);
+      expect(platform.lastAllowMetered, isFalse);
+      controller.dispose();
+    },
+  );
+
   test('mandatory mode requires a successful online verification', () async {
     final fixture = await signed([
       releaseJson(
@@ -187,6 +248,11 @@ void main() {
       await controller.pollDownload();
       expect(controller.state.phase, UpdatePhase.ready);
       expect(platform.verifyCalls, 1);
+
+      await controller.check(UpdateCheckTrigger.manual);
+      expect(controller.state.phase, UpdatePhase.ready);
+      expect(controller.canCheck, isFalse);
+      expect(await controller.install(), UpdateInstallResult.launched);
       controller.dispose();
     },
   );
@@ -314,18 +380,52 @@ void main() {
     expect(controller.shouldShowUpgradeStory, isTrue);
     controller.dispose();
   });
+
+  test(
+    'upgrade story waits for a verified manifest instead of being lost',
+    () async {
+      final fixture = await signed([
+        releaseJson(build: 10500, channel: 'stable'),
+        releaseJson(build: 10400, channel: 'stable'),
+      ]);
+      final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+      final controller = await controllerFor(
+        envelope: fixture.envelope,
+        publicKey: fixture.publicKey,
+        platform: FakeUpdatePlatform(buildNumber: 10500),
+        clock: clock,
+        local: UpdateLocalState(
+          profile: UpdateProfile.saver,
+          previousAppBuild: 10400,
+          lastCheckedAt: clock.now(),
+        ),
+      );
+      expect(controller.upgradeReleases, isEmpty);
+
+      await controller.check(UpdateCheckTrigger.manual);
+
+      expect(controller.upgradeReleases.map((release) => release.buildNumber), [
+        10500,
+      ]);
+      controller.dispose();
+    },
+  );
 }
 
 final class FakeUpdatePlatform implements UpdatePlatformGateway {
-  FakeUpdatePlatform({required int buildNumber})
-    : info = UpdateRuntimeInfo(
-        platform: 'android',
-        version: '1.4.0',
-        buildNumber: buildNumber,
-        supportsUpdates: true,
-        supportsDirectInstall: true,
-        androidDistribution: AndroidDistribution.direct,
-      );
+  FakeUpdatePlatform({
+    required int buildNumber,
+    bool supportsDirectInstall = true,
+  }) : info = UpdateRuntimeInfo(
+         platform: 'android',
+         version: '1.4.0',
+         buildNumber: buildNumber,
+         supportsUpdates: true,
+         supportsDirectInstall: supportsDirectInstall,
+         androidDistribution: supportsDirectInstall
+             ? AndroidDistribution.direct
+             : AndroidDistribution.play,
+       );
 
   final UpdateRuntimeInfo info;
   UpdateNetworkStatus network = const UpdateNetworkStatus(
@@ -342,6 +442,8 @@ final class FakeUpdatePlatform implements UpdatePlatformGateway {
   int enqueueCalls = 0;
   int verifyCalls = 0;
   int removeCalls = 0;
+  int openExternalCalls = 0;
+  bool? lastAllowMetered;
   Object? installError;
   Object? enqueueError;
 
@@ -358,6 +460,7 @@ final class FakeUpdatePlatform implements UpdatePlatformGateway {
     required bool allowMetered,
   }) async {
     enqueueCalls += 1;
+    lastAllowMetered = allowMetered;
     if (enqueueError case final error?) throw error;
     return '42';
   }
@@ -378,8 +481,10 @@ final class FakeUpdatePlatform implements UpdatePlatformGateway {
   Future<void> openInstallerPermission() async {}
 
   @override
-  Future<UpdateInstallResult> openExternal(UpdateCandidate candidate) async =>
-      UpdateInstallResult.externalOpened;
+  Future<UpdateInstallResult> openExternal(UpdateCandidate candidate) async {
+    openExternalCalls += 1;
+    return UpdateInstallResult.externalOpened;
+  }
 
   @override
   Future<void> removeDownload(String downloadId) async {

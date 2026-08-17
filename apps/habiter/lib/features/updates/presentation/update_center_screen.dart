@@ -141,9 +141,9 @@ final class _StatusCard extends StatelessWidget {
             children: [
               FilledButton.icon(
                 key: const Key('check-for-updates'),
-                onPressed: state.phase == UpdatePhase.checking
-                    ? null
-                    : () => controller.check(UpdateCheckTrigger.manual),
+                onPressed: controller.canCheck
+                    ? () => controller.check(UpdateCheckTrigger.manual)
+                    : null,
                 icon: const Icon(Icons.refresh_rounded),
                 label: Text(context.l10n.updateCheckNow),
               ),

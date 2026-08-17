@@ -257,6 +257,7 @@ class MainActivity: FlutterActivity() {
     private fun stopMonitoringService() {
         val prefs = getSharedPreferences("app_lock", Context.MODE_PRIVATE)
         prefs.edit().putBoolean("is_enabled", false).apply()
+        BlockingOverlay.dismiss()
         
         val intent = Intent(this, AppMonitorService::class.java)
         stopService(intent)
@@ -270,6 +271,7 @@ class MainActivity: FlutterActivity() {
         prefs.edit()
             .putStringSet("locked_packages", lockedPackages.toSet())
             .apply()
+        BlockingOverlay.reconcileLockedPackages(lockedPackages.toSet())
     }
 
     private fun notifyHabitsComplete(complete: Boolean) {

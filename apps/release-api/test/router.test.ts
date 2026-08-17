@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createHandler } from "../src/router";
-import type { ReleaseManifest } from "../src/types/releases";
+import type { ReleaseManifest, SignedManifestEnvelope } from "../src/types/releases";
 
 const manifest: ReleaseManifest = {
   schemaVersion: 1,
@@ -33,10 +33,28 @@ const manifest: ReleaseManifest = {
 };
 
 const env = { ENVIRONMENT: "development", WEBSITE_URL: "https://habiter.dev/#download" } as Env;
-const handler = createHandler(manifest);
+const envelope: SignedManifestEnvelope = {
+  schemaVersion: 1,
+  keyId: "test-2026-01",
+  algorithm: "ed25519",
+  payload: "eyJzY2hlbWFWZXJzaW9uIjoxLCJyZWxlYXNlcyI6W119",
+  signature: "a".repeat(86)
+};
+const handler = createHandler(manifest, envelope);
 const call = (path: string, headers?: HeadersInit) => handler(new Request(`https://get.habiter.dev${path}`, { headers }), env);
 
 describe("release API", () => {
+  it("serves the immutable signed bytes through an ETag-aware envelope", async () => {
+    const response = await call("/api/v1/manifest");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toContain("s-maxage");
+    expect(await response.json()).toEqual(envelope);
+
+    const cached = await call("/api/v1/manifest", { "if-none-match": response.headers.get("etag")! });
+    expect(cached.status).toBe(304);
+    expect(await cached.text()).toBe("");
+  });
+
   it("serves health and paginated release summaries", async () => {
     expect(await (await call("/health")).json()).toMatchObject({ status: "ok", environment: "development" });
     const response = await call("/api/v1/releases?page=1&limit=1");

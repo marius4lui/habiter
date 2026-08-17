@@ -100,7 +100,7 @@ export function signManifestEnvelope({ manifest, keyId, privateKey }) {
     throw new Error("Invalid manifest signing key id");
   }
   const payload = manifestPayloadBytes(manifest);
-  const key = createPrivateKey(privateKey);
+  const key = privateKey?.type === "private" ? privateKey : createPrivateKey(privateKey);
   if (key.asymmetricKeyType !== "ed25519") throw new Error("Manifest signing key must use Ed25519");
   return {
     schemaVersion: 1,
@@ -123,7 +123,7 @@ export function verifyManifestEnvelope(envelope, publicKeyRing) {
   }
   const publicKey = publicKeyRing[envelope.keyId];
   if (!publicKey) throw new Error(`Unknown manifest signing key: ${envelope.keyId}`);
-  const key = createPublicKey(publicKey);
+  const key = publicKey?.type === "public" ? publicKey : createPublicKey(publicKey);
   if (key.asymmetricKeyType !== "ed25519") throw new Error("Manifest verification key must use Ed25519");
   const payload = Buffer.from(envelope.payload, "base64url");
   const signature = Buffer.from(envelope.signature, "base64url");

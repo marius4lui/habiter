@@ -2,6 +2,76 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.4.2",
+      "buildNumber": 10402,
+      "channel": "beta",
+      "status": "published",
+      "publishedAt": "2026-08-17T19:01:39+02:00",
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [],
+        "changed": [
+          "App, Habit-Speicher, Reminder, App Lock und Android-Widget gleichen ihren Zustand bei Foreground- und Background-Wechseln in einer festen Reihenfolge ab."
+        ],
+        "fixed": [
+          "Im Android-Widget ausgeführte Completion- und Undo-Aktionen erscheinen nach dem Öffnen oder Fortsetzen der App ohne manuellen Hard-Refresh.",
+          "Parallel eintreffende Widget-Aktionen und App-Resume-Ereignisse konvergieren anhand persistierter State-Revisionen auf den neuesten beobachteten Zustand.",
+          "Schnelle Lifecycle-Wechsel führen nicht mehr zu überlappenden Reminder- oder Widget-Synchronisationen."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.2-android-universal.apk",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.2/habiter-1.4.2-android-universal.apk",
+          "sha256": "a3f88e9fee866c6c229aa25ba9da01bd3259a1771799d203dbb1e766f78c282a",
+          "size": 62702207,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.2-android-playstore.aab",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.2/habiter-1.4.2-android-playstore.aab",
+          "sha256": "a90b8582b74179855b142e8ecc8c0c7a2b7b2deb152f584a42bf6fd19034a073",
+          "size": 61286650,
+          "distribution": "play"
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.2-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.2/habiter-1.4.2-windows-x64.zip",
+          "sha256": "006ca895ced42a5fc04fefaec4cb12e39d82eeb29b7f08ac012321dd4a3b849e",
+          "size": 14359079
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.2-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.2/habiter-1.4.2-linux-x64.tar.gz",
+          "sha256": "51234b79ce28215d9dfe18e7c804f0c5fc768b893d1f0a11a885dedaacf296cf",
+          "size": 11635281
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.2-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.2/habiter-1.4.2-macos-universal.zip",
+          "sha256": "2d85b5326b68073468e21cd3508f56e91824b598fcdc7b59986e514e6195203d",
+          "size": 20468994
+        }
+      ]
+    },
+    {
       "version": "1.4.1",
       "buildNumber": 10401,
       "channel": "beta",

@@ -321,8 +321,15 @@ jobs:
           CHANNEL: ${{ needs.validate.outputs.channel }}
         run: |
           curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/health"
-          curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/api/v1/manifest" \
-            | jq --exit-status '.schemaVersion == 1 and .algorithm == "ed25519" and (.payload | length > 0) and (.signature | length > 0)'
+          for ATTEMPT in {1..30}; do
+            CACHE_BUST="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${ATTEMPT}"
+            if curl --silent --show-error --fail "$RELEASE_API_BASE_URL/api/v1/manifest?cache_bust=$CACHE_BUST" \
+              | jq --exit-status '.schemaVersion == 1 and .algorithm == "ed25519" and (.payload | length > 0) and (.signature | length > 0)'; then
+              break
+            fi
+            if [ "$ATTEMPT" = 30 ]; then echo "Manifest endpoint did not converge" >&2; exit 1; fi
+            sleep 3
+          done
           for ATTEMPT in {1..30}; do
             CACHE_BUST="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${ATTEMPT}"
             if curl --silent --show-error --fail "$RELEASE_API_BASE_URL/api/v1/releases/$VERSION?cache_bust=$CACHE_BUST" \

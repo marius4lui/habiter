@@ -405,17 +405,67 @@ private fun ProgressSegments(state: HabiterWidgetState) {
 
 @Composable
 private fun CompletedState(state: HabiterWidgetState, layout: HabiterWidgetLayout) {
-    Column(
-        modifier = GlanceModifier.fillMaxSize().padding(if (layout == HabiterWidgetLayout.COMPACT) 10.dp else 20.dp),
-        verticalAlignment = Alignment.Vertical.CenterVertically,
-        horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
-    ) {
-        Text("✓", style = TextStyle(color = HabiterWidgetTheme.success, fontSize = if (layout == HabiterWidgetLayout.COMPACT) 22.sp else 38.sp, fontWeight = FontWeight.Bold))
-        if (layout != HabiterWidgetLayout.COMPACT) {
-            Spacer(GlanceModifier.height(8.dp))
-            Text(if (state.isGerman) "Alles für heute erledigt." else "Everything for today is done.", maxLines = 2, style = titleStyle(17))
+    val completionLayout = HabiterWidgetCompletionLayout.forLayout(layout)
+    val message = if (state.isGerman) "Alles für heute erledigt." else "Everything for today is done."
+    val modifier = GlanceModifier
+        .fillMaxSize()
+        .padding(
+            horizontal = completionLayout.horizontalPaddingDp.dp,
+            vertical = completionLayout.verticalPaddingDp.dp,
+        )
+
+    when (completionLayout.settledArrangement) {
+        HabiterWidgetCompletionArrangement.ICON_ONLY -> Box(
+            modifier = modifier,
+            contentAlignment = Alignment.Center,
+        ) {
+            SettledCompletionIcon(completionLayout)
+        }
+
+        HabiterWidgetCompletionArrangement.INLINE -> Row(
+            modifier = modifier,
+            verticalAlignment = Alignment.Vertical.CenterVertically,
+        ) {
+            SettledCompletionIcon(completionLayout)
+            Spacer(GlanceModifier.width(10.dp))
+            Text(
+                message,
+                modifier = GlanceModifier.defaultWeight(),
+                maxLines = completionLayout.settledMessageMaxLines,
+                style = titleStyle(completionLayout.settledMessageSizeSp),
+            )
+        }
+
+        HabiterWidgetCompletionArrangement.STACKED -> Column(
+            modifier = modifier,
+            verticalAlignment = Alignment.Vertical.CenterVertically,
+            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+        ) {
+            SettledCompletionIcon(completionLayout)
+            Spacer(
+                GlanceModifier.height(
+                    if (layout == HabiterWidgetLayout.COMPACT_SQUARE) 4.dp else 8.dp,
+                ),
+            )
+            Text(
+                message,
+                maxLines = completionLayout.settledMessageMaxLines,
+                style = titleStyle(completionLayout.settledMessageSizeSp),
+            )
         }
     }
+}
+
+@Composable
+private fun SettledCompletionIcon(layout: HabiterWidgetCompletionLayout) {
+    Text(
+        "✓",
+        style = TextStyle(
+            color = HabiterWidgetTheme.success,
+            fontSize = layout.settledIconSizeSp.sp,
+            fontWeight = FontWeight.Bold,
+        ),
+    )
 }
 
 @Composable

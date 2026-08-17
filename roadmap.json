@@ -81,6 +81,27 @@
       "note": "The beta is intended to stabilize through 18 Aug before inclusion in the next stable release."
     },
     {
+      "version": "1.4.4",
+      "title": "Linux startup stability",
+      "status": "planned",
+      "channel": "stable",
+      "target": "Before v1.5.0 release-candidate completion",
+      "issues": [21],
+      "summary": ["Fix the Linux startup crash caused by unguarded Home Widget initialization."],
+      "scope": [
+        "Guard Home Widget initialization on Linux.",
+        "Cover the affected startup path with a regression test.",
+        "Keep the patch focused; do not include widget redesign or broader architecture work."
+      ],
+      "rationale": {
+        "title": "Reason for separate patch release",
+        "items": [
+          "The crash blocks Linux users from starting Habiter.",
+          "The focused fix can be verified and shipped independently before v1.5.0."
+        ]
+      }
+    },
+    {
       "version": "1.5.0",
       "title": "Premium automatic update system",
       "status": "planned",
@@ -106,10 +127,28 @@
     },
     {
       "version": "1.6.0",
+      "title": "Distribution and installers",
+      "status": "planned",
+      "channel": "stable",
+      "target": "After v1.5.0 is stable",
+      "issues": [22],
+      "summary": [
+        "Deliver repository-backed installers and a reliable, documented desktop installation experience."
+      ],
+      "scope": [
+        "Serve repository-backed shell and PowerShell installers through the Release API.",
+        "Add checksum-verified, user-scoped installation for Linux, Windows and macOS.",
+        "Provide explicit smart-download routing and maintained platform and distro installation documentation.",
+        "Cover installers, routing and documentation with CI validation."
+      ],
+      "goal": "Make desktop distribution trustworthy and maintainable without expanding v1.5.0's update-client scope."
+    },
+    {
+      "version": "1.7.0",
       "title": "Habit Experience and Onboarding v3",
       "status": "planned",
       "channel": "stable",
-      "target": "21–22 Aug 2026",
+      "target": "After v1.6.0",
       "issues": [6, 7, 8],
       "summary": [
         "Improve habit schedule understanding.",
@@ -151,11 +190,11 @@
       "goal": "Avoid multiple independent implementations of schedule and reminder behavior."
     },
     {
-      "version": "1.7.0",
+      "version": "1.8.0",
       "title": "Persistent Habiter Runtime",
       "status": "planned",
       "channel": "stable",
-      "target": "22–24 Aug 2026",
+      "target": "After v1.7.0",
       "issues": [10],
       "summary": ["Introduce a shared background runtime for adaptive reminders and future focus features."],
       "scope": [
@@ -173,11 +212,11 @@
       ]
     },
     {
-      "version": "1.8.0",
+      "version": "1.9.0",
       "title": "App Block 2.0",
       "status": "planned",
       "channel": "stable",
-      "target": "24–31 Aug 2026",
+      "target": "After v1.8.0",
       "issues": [12],
       "summary": ["Add local distraction discovery and habit-based app blocking."],
       "scope": [
@@ -189,18 +228,43 @@
         "Schedule-aware blocking rules.",
         "Overlay education and blocking experience."
       ],
-      "dependencies": [
-        "#8 schedule semantics.",
-        "#11 state reconciliation.",
-        "#10 persistent runtime."
-      ],
+      "dependencies": ["#8 schedule semantics.", "#11 state reconciliation.", "#10 persistent runtime."],
       "goal": "Build App Block on stable foundations instead of duplicating runtime, schedule or lifecycle logic."
+    },
+    {
+      "version": "1.10.0",
+      "title": "Responsive app shell",
+      "status": "planned",
+      "channel": "stable",
+      "target": "After v1.9.0",
+      "issues": [26],
+      "summary": ["Optimize Habiter for desktop, tablets and compact touch displays through one responsive layout system."],
+      "scope": [
+        "Unify breakpoints and adaptive shell primitives.",
+        "Cover compact displays, tablet portrait and landscape, and desktop interaction patterns.",
+        "Add responsive layout and text-scaling regression coverage."
+      ],
+      "goal": "Improve every core flow across form factors without duplicating product logic."
+    },
+    {
+      "version": "1.11.0",
+      "title": "Pro-Widget Settings",
+      "status": "planned",
+      "channel": "stable",
+      "target": "After v1.10.0",
+      "issues": [20],
+      "summary": ["Make every placed Habiter widget configurable with clear basic controls and advanced customization."],
+      "scope": [
+        "Persist configuration per widget instance.",
+        "Deliver focused basic display and interaction settings.",
+        "Add optional advanced customization without compromising the default experience."
+      ]
     }
   ],
   "versioning": {
     "patch": {
       "usedFor": ["Bugs.", "Reliability fixes.", "Small UX corrections."],
-      "example": "`1.4.1`, `1.4.2`, `1.4.3`"
+      "example": "`1.4.1`, `1.4.2`, `1.4.3`, `1.4.4`"
     },
     "minor": {
       "usedFor": [

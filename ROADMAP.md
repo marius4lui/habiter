@@ -95,6 +95,27 @@ Stable testing required:
 
 ## Planned releases
 
+### v1.4.4 — Linux startup stability
+
+**Channel:** Stable
+
+**Target:** Before v1.5.0 release-candidate completion
+
+**Issue:** #21
+
+Scope:
+
+- Guard Home Widget initialization on Linux.
+- Cover the affected startup path with a regression test.
+- Keep the patch focused; do not include widget redesign or broader architecture work.
+
+Reason for separate patch release:
+
+- The crash blocks Linux users from starting Habiter.
+- The focused fix can be verified and shipped independently before v1.5.0.
+
+---
+
 ### v1.5.0 — Premium automatic update system
 
 **Channel:** Stable
@@ -122,11 +143,32 @@ Stable testing required:
 
 ---
 
-### v1.6.0 — Habit Experience and Onboarding v3
+### v1.6.0 — Distribution and installers
 
 **Channel:** Stable
 
-**Target:** 21–22 Aug 2026
+**Target:** After v1.5.0 is stable
+
+**Issue:** #22
+
+Scope:
+
+- Serve repository-backed shell and PowerShell installers through the Release API.
+- Add checksum-verified, user-scoped installation for Linux, Windows and macOS.
+- Provide explicit smart-download routing and maintained platform and distro installation documentation.
+- Cover installers, routing and documentation with CI validation.
+
+Goal:
+
+Make desktop distribution trustworthy and maintainable without expanding v1.5.0's update-client scope.
+
+---
+
+### v1.7.0 — Habit Experience and Onboarding v3
+
+**Channel:** Stable
+
+**Target:** After v1.6.0
 
 **Issues:** #6, #7, #8
 
@@ -154,11 +196,11 @@ Avoid multiple independent implementations of schedule and reminder behavior.
 
 ---
 
-### v1.7.0 — Persistent Habiter Runtime
+### v1.8.0 — Persistent Habiter Runtime
 
 **Channel:** Stable
 
-**Target:** 22–24 Aug 2026
+**Target:** After v1.7.0
 
 **Issue:** #10
 
@@ -179,11 +221,11 @@ Stable testing required:
 
 ---
 
-### v1.8.0 — App Block 2.0
+### v1.9.0 — App Block 2.0
 
 **Channel:** Stable
 
-**Target:** 24–31 Aug 2026
+**Target:** After v1.8.0
 
 **Issue:** #12
 
@@ -209,6 +251,42 @@ Build App Block on stable foundations instead of duplicating runtime, schedule o
 
 ---
 
+### v1.10.0 — Responsive app shell
+
+**Channel:** Stable
+
+**Target:** After v1.9.0
+
+**Issue:** #26
+
+Scope:
+
+- Unify breakpoints and adaptive shell primitives.
+- Cover compact displays, tablet portrait and landscape, and desktop interaction patterns.
+- Add responsive layout and text-scaling regression coverage.
+
+Goal:
+
+Improve every core flow across form factors without duplicating product logic.
+
+---
+
+### v1.11.0 — Pro-Widget Settings
+
+**Channel:** Stable
+
+**Target:** After v1.10.0
+
+**Issue:** #20
+
+Scope:
+
+- Persist configuration per widget instance.
+- Deliver focused basic display and interaction settings.
+- Add optional advanced customization without compromising the default experience.
+
+---
+
 ## Versioning rules
 
 ### Patch releases
@@ -219,7 +297,7 @@ Used for:
 - Reliability fixes.
 - Small UX corrections.
 
-Example: `1.4.1`, `1.4.2`, `1.4.3`.
+Example: `1.4.1`, `1.4.2`, `1.4.3`, `1.4.4`.
 
 ### Minor releases
 

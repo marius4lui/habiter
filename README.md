@@ -130,23 +130,39 @@ A concise view of the released baseline and upcoming product milestones.
 
 ### Upcoming
 
+**v1.4.4 — Linux startup stability (Stable)**
+
+- Fix the Linux startup crash caused by unguarded Home Widget initialization.
+
 **v1.5.0 — Premium automatic update system (Stable)**
 
 - Deliver a signed, localized update experience with safe direct Android downloads and user-controlled installation.
 
-**v1.6.0 — Habit Experience and Onboarding v3 (Stable)**
+**v1.6.0 — Distribution and installers (Stable)**
+
+- Deliver repository-backed installers and a reliable, documented desktop installation experience.
+
+**v1.7.0 — Habit Experience and Onboarding v3 (Stable)**
 
 - Improve habit schedule understanding.
 - Improve onboarding navigation.
 - Align reminder creation flows.
 
-**v1.7.0 — Persistent Habiter Runtime (Stable)**
+**v1.8.0 — Persistent Habiter Runtime (Stable)**
 
 - Introduce a shared background runtime for adaptive reminders and future focus features.
 
-**v1.8.0 — App Block 2.0 (Stable)**
+**v1.9.0 — App Block 2.0 (Stable)**
 
 - Add local distraction discovery and habit-based app blocking.
+
+**v1.10.0 — Responsive app shell (Stable)**
+
+- Optimize Habiter for desktop, tablets and compact touch displays through one responsive layout system.
+
+**v1.11.0 — Pro-Widget Settings (Stable)**
+
+- Make every placed Habiter widget configurable with clear basic controls and advanced customization.
 
 See the detailed [`ROADMAP.md`](ROADMAP.md) for targets, issues, scope, dependencies, and versioning rules.
 <!-- roadmap:end -->

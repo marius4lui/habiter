@@ -125,9 +125,9 @@ A concise view of the released baseline and upcoming product milestones.
 
 ### Upcoming
 
-**v1.5.0 — Automatic update client (Stable)**
+**v1.5.0 — Premium automatic update system (Stable)**
 
-- Add the client update experience on top of the existing Release API.
+- Deliver a signed, localized update experience with safe direct Android downloads and user-controlled installation.
 
 **v1.6.0 — Habit Experience and Onboarding v3 (Stable)**
 

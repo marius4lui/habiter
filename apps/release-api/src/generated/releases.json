@@ -181,6 +181,72 @@
       ]
     },
     {
+      "version": "1.4.4",
+      "buildNumber": 10404,
+      "channel": "beta",
+      "status": "published",
+      "publishedAt": "2026-08-17T21:20:54+02:00",
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [],
+        "changed": [],
+        "fixed": [
+          "Linux, Windows und macOS überspringen nicht unterstützte Home-Widget-Aufrufe, sodass die Desktop-App ohne MissingPluginException startet."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.4-android-universal.apk",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.4/habiter-1.4.4-android-universal.apk",
+          "sha256": "6d5c9b229bd0cd16ab746128151886a49604879c56af18fbee243ffa03e2bf5d",
+          "size": 62717740,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.4-android-playstore.aab",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.4/habiter-1.4.4-android-playstore.aab",
+          "sha256": "14bf4987d1159d3491afbb29b7378fce327f52da401439c3932310c84d985897",
+          "size": 61303917,
+          "distribution": "play"
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.4-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.4/habiter-1.4.4-windows-x64.zip",
+          "sha256": "da2053bd55f6fae2a8ce097fa70b662b67c0efd3e1f431f965b8f1aa711c73f4",
+          "size": 14354326
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.4-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.4/habiter-1.4.4-linux-x64.tar.gz",
+          "sha256": "61e0366f79e27e5ab36a7d0db7c15980a2b4f4f823eb05be1a0809bc32f9915b",
+          "size": 11632910
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.4-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.4/habiter-1.4.4-macos-universal.zip",
+          "sha256": "b0e89e2e18efe4021a90197960db35c5f20989726bdad6f47f1cc72cd6bc8db1",
+          "size": 20468218
+        }
+      ]
+    },
+    {
       "version": "1.4.3",
       "buildNumber": 10403,
       "channel": "beta",

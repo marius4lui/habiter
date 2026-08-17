@@ -42,6 +42,14 @@ class HabitProvider extends ChangeNotifier {
     ReminderCoordinator? reminderCoordinator,
     Future<bool> Function()? requestReminderPermission,
     Future<void> Function()? synchronizeWidget,
+    Future<void> Function({
+      required Iterable<Habit> habits,
+      required Iterable<HabitEntry> entries,
+      required bool processActions,
+      required bool refreshTimeZone,
+    })?
+    reconcileRuntime,
+    Future<void> Function(Duration duration)? delay,
   }) {
     _clock = clock;
     _ids = ids;
@@ -80,6 +88,8 @@ class HabitProvider extends ChangeNotifier {
     _requestReminderPermission =
         requestReminderPermission ?? _requestNativeReminderPermission;
     _synchronizeWidget = synchronizeWidget;
+    _reconcileRuntime = reconcileRuntime;
+    _delay = delay ?? Future<void>.delayed;
     _habitsController.addListener(notifyListeners);
     _historyController.addListener(notifyListeners);
   }
@@ -94,7 +104,22 @@ class HabitProvider extends ChangeNotifier {
   late final Clock _clock;
   late final IdGenerator _ids;
   late final Future<bool> Function() _requestReminderPermission;
+  late final Future<void> Function(Duration duration) _delay;
   Future<void> Function()? _synchronizeWidget;
+  Future<void> Function({
+    required Iterable<Habit> habits,
+    required Iterable<HabitEntry> entries,
+    required bool processActions,
+    required bool refreshTimeZone,
+  })?
+  _reconcileRuntime;
+  Future<void>? _externalReconciliation;
+  bool _externalReconciliationRequested = false;
+  bool _externalProcessReminderActions = false;
+  bool _externalRefreshTimeZone = false;
+
+  static const _externalStateSettleDelay = Duration(milliseconds: 50);
+  static const _maximumExternalReconciliationPasses = 3;
 
   List<Habit> get habits => _habitsController.state.habits;
   List<HabitEntry> get habitEntries => _historyController.state.entries;
@@ -167,7 +192,72 @@ class HabitProvider extends ChangeNotifier {
   Future<void> refresh() => load();
 
   Future<void> _reloadHabitState() async {
-    await Future.wait([_habitsController.load(), _historyController.load()]);
+    _replaceHabitState(await _repository.load());
+    await syncWidget();
+  }
+
+  void _replaceHabitState(HabitRepositorySnapshot snapshot) {
+    _habitsController.replaceSnapshot(snapshot, notify: false);
+    _historyController.replaceSnapshot(snapshot, notify: false);
+    notifyListeners();
+  }
+
+  Future<void> reconcileExternalHabitState({
+    bool processReminderActions = true,
+    bool refreshTimeZone = true,
+  }) {
+    _externalReconciliationRequested = true;
+    _externalProcessReminderActions |= processReminderActions;
+    _externalRefreshTimeZone |= refreshTimeZone;
+    final active = _externalReconciliation;
+    if (active != null) return active;
+    final operation = _drainExternalReconciliations();
+    _externalReconciliation = operation;
+    return operation.whenComplete(() {
+      if (identical(_externalReconciliation, operation)) {
+        _externalReconciliation = null;
+      }
+    });
+  }
+
+  Future<void> _drainExternalReconciliations() async {
+    while (_externalReconciliationRequested) {
+      final processActions = _externalProcessReminderActions;
+      final refreshTimeZone = _externalRefreshTimeZone;
+      _externalReconciliationRequested = false;
+      _externalProcessReminderActions = false;
+      _externalRefreshTimeZone = false;
+      await _reconcileExternalHabitStateOnce(
+        processReminderActions: processActions,
+        refreshTimeZone: refreshTimeZone,
+      );
+    }
+  }
+
+  Future<void> _reconcileExternalHabitStateOnce({
+    required bool processReminderActions,
+    required bool refreshTimeZone,
+  }) async {
+    var snapshot = await _repository.load();
+    for (var pass = 0; pass < _maximumExternalReconciliationPasses; pass++) {
+      _replaceHabitState(snapshot);
+      await reconcileReminders(
+        processActions: processReminderActions,
+        refreshTimeZone: refreshTimeZone,
+      );
+      await syncWidget();
+      await _delay(_externalStateSettleDelay);
+      final latest = await _repository.load();
+      if (latest.revision == snapshot.revision) return;
+      snapshot = latest;
+      processReminderActions = false;
+      refreshTimeZone = false;
+    }
+
+    // Apply the newest observed state even if writes kept arriving throughout
+    // every bounded stabilization pass.
+    _replaceHabitState(snapshot);
+    await reconcileReminders();
     await syncWidget();
   }
 
@@ -437,6 +527,16 @@ class HabitProvider extends ChangeNotifier {
     bool processActions = false,
     bool refreshTimeZone = false,
   }) async {
+    final reconcileRuntime = _reconcileRuntime;
+    if (reconcileRuntime != null) {
+      await reconcileRuntime(
+        habits: habits,
+        entries: habitEntries,
+        processActions: processActions,
+        refreshTimeZone: refreshTimeZone,
+      );
+      return;
+    }
     if (refreshTimeZone) await NotificationService.instance.refreshTimeZone();
     await _reminders.synchronize(
       habits: habits,

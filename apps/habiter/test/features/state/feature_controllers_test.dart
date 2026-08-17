@@ -3,6 +3,7 @@ import 'package:habiter/core/application/feature_status.dart';
 import 'package:habiter/core/ids/id_generator.dart';
 import 'package:habiter/core/time/clock.dart';
 import 'package:habiter/features/analytics/application/analytics_controller.dart';
+import 'package:habiter/features/habits/application/habit_repository.dart';
 import 'package:habiter/features/habits/application/habits_controller.dart';
 import 'package:habiter/features/habits/data/key_value_habit_repository.dart';
 import 'package:habiter/features/history/application/history_controller.dart';
@@ -108,6 +109,37 @@ void main() {
     expect(history.state.status, FeatureStatus.ready);
     expect(history.state.entries, hasLength(1));
     expect(stats.totalCompletions, 1);
+  });
+
+  test('repository revisions advance with every committed mutation', () async {
+    final repository = KeyValueHabitRepository(InMemoryKeyValueStore());
+
+    expect((await repository.load()).revision, 0);
+    await repository.transact((draft) => draft.upsertHabit(_habit(now)));
+    expect((await repository.load()).revision, 1);
+    await repository.transact((draft) => draft.upsertEntry(_entry(now)));
+    expect((await repository.load()).revision, 2);
+  });
+
+  test('controllers can hydrate one coherent repository snapshot', () async {
+    final repository = KeyValueHabitRepository(InMemoryKeyValueStore());
+    final habits = HabitsController(
+      repository: repository,
+      ids: _Ids(<String>[]),
+      clock: _Clock(now),
+    );
+    final history = HistoryController(repository);
+    final snapshot = HabitRepositorySnapshot(
+      habits: <Habit>[_habit(now)],
+      entries: <HabitEntry>[_entry(now)],
+      revision: 7,
+    );
+
+    habits.replaceSnapshot(snapshot, notify: false);
+    history.replaceSnapshot(snapshot, notify: false);
+
+    expect(habits.state.habits.single.id, 'habit-1');
+    expect(history.state.entries.single.habitId, 'habit-1');
   });
 }
 

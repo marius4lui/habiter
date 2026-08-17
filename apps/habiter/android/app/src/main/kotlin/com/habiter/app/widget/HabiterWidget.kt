@@ -185,7 +185,7 @@ private fun CompletionSummary(
         Text(completion.habitName, maxLines = 1, style = titleStyle(layout.titleSizeSp))
         if (layout.showTransientStatus) {
             Text(
-                if (state.isGerman) "Erledigt" else "Completed",
+                HabiterWidgetCompletionCopy.status(state.isGerman),
                 maxLines = 1,
                 style = mutedStyle(layout.statusSizeSp),
             )
@@ -206,11 +206,10 @@ private fun CompletionUndoControl(
             .cornerRadius(14.dp)
             .clickable(onClick = action)
             .semantics {
-                contentDescription = if (state.isGerman) {
-                    "${completion.habitName} rückgängig machen"
-                } else {
-                    "Undo ${completion.habitName}"
-                }
+                contentDescription = HabiterWidgetCompletionCopy.undoDescription(
+                    habitName = completion.habitName,
+                    isGerman = state.isGerman,
+                )
             }
             .padding(
                 horizontal = if (layout.showFullUndoLabel) 12.dp else 10.dp,
@@ -219,7 +218,10 @@ private fun CompletionUndoControl(
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            if (!layout.showFullUndoLabel) "↶" else if (state.isGerman) "Rückgängig" else "Undo",
+            HabiterWidgetCompletionCopy.undoLabel(
+                isGerman = state.isGerman,
+                full = layout.showFullUndoLabel,
+            ),
             maxLines = 1,
             style = titleStyle(layout.statusSizeSp),
         )
@@ -406,7 +408,7 @@ private fun ProgressSegments(state: HabiterWidgetState) {
 @Composable
 private fun CompletedState(state: HabiterWidgetState, layout: HabiterWidgetLayout) {
     val completionLayout = HabiterWidgetCompletionLayout.forLayout(layout)
-    val message = if (state.isGerman) "Alles für heute erledigt." else "Everything for today is done."
+    val message = HabiterWidgetCompletionCopy.settledMessage(state.isGerman)
     val modifier = GlanceModifier
         .fillMaxSize()
         .padding(

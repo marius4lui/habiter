@@ -89,6 +89,36 @@ class HabiterWidgetStateTest {
     }
 
     @Test
+    fun `completion copy is localized without losing compact undo affordance`() {
+        assertEquals("Erledigt", HabiterWidgetCompletionCopy.status(isGerman = true))
+        assertEquals("Completed", HabiterWidgetCompletionCopy.status(isGerman = false))
+        assertEquals("Rückgängig", HabiterWidgetCompletionCopy.undoLabel(isGerman = true, full = true))
+        assertEquals("Undo", HabiterWidgetCompletionCopy.undoLabel(isGerman = false, full = true))
+        assertEquals("↶", HabiterWidgetCompletionCopy.undoLabel(isGerman = true, full = false))
+        assertEquals("↶", HabiterWidgetCompletionCopy.undoLabel(isGerman = false, full = false))
+    }
+
+    @Test
+    fun `undo semantics name the completed habit in both locales`() {
+        assertEquals(
+            "Abendroutine rückgängig machen",
+            HabiterWidgetCompletionCopy.undoDescription("Abendroutine", isGerman = true),
+        )
+        assertEquals(
+            "Undo Evening routine",
+            HabiterWidgetCompletionCopy.undoDescription("Evening routine", isGerman = false),
+        )
+        assertEquals(
+            "Alles für heute erledigt.",
+            HabiterWidgetCompletionCopy.settledMessage(isGerman = true),
+        )
+        assertEquals(
+            "Everything for today is done.",
+            HabiterWidgetCompletionCopy.settledMessage(isGerman = false),
+        )
+    }
+
+    @Test
     fun `widget launch reuses the root activity instead of stacking it`() {
         assertTrue(habiterWidgetLaunchFlags and Intent.FLAG_ACTIVITY_CLEAR_TOP != 0)
         assertTrue(habiterWidgetLaunchFlags and Intent.FLAG_ACTIVITY_SINGLE_TOP != 0)

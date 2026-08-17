@@ -53,6 +53,7 @@ function validate(data) {
     versions.add(release.version);
     assertString(release.title, `${path}.title`);
     assert(["released", "planned"].includes(release.status), `${path}.status must be released or planned`);
+    assert(["stable", "beta"].includes(release.channel), `${path}.channel must be stable or beta`);
     assertStringList(release.summary, `${path}.summary`);
     if (release.status === "planned") assertString(release.target, `${path}.target`);
     if (release.issues !== undefined) {
@@ -120,6 +121,7 @@ function renderDetailed(data) {
 function renderReleaseGroup(releases) {
   return releases.flatMap((release, index) => {
     const lines = [`### v${release.version} — ${release.title}`, ""];
+    lines.push(`**Channel:** ${channelLabel(release.channel)}`, "");
     if (release.statusText) lines.push(release.statusText, "");
     if (release.target) lines.push(`**Target:** ${release.target}`, "");
     if (release.issues?.length) {
@@ -167,11 +169,15 @@ function renderSummary(data) {
     if (releases.length === 0) continue;
     lines.push(`### ${title}`, "");
     for (const release of releases) {
-      lines.push(`**v${release.version} — ${release.title}**`, "", ...renderList(release.summary));
+      lines.push(`**v${release.version} — ${release.title} (${channelLabel(release.channel)})**`, "", ...renderList(release.summary));
     }
   }
   lines.push("See the detailed [`ROADMAP.md`](ROADMAP.md) for targets, issues, scope, dependencies, and versioning rules.");
   return lines.join("\n").trim();
+}
+
+function channelLabel(channel) {
+  return channel === "beta" ? "Beta" : "Stable";
 }
 
 function renderList(items) {

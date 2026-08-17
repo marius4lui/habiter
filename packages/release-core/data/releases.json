@@ -5,8 +5,8 @@
       "version": "1.5.0",
       "buildNumber": 10500,
       "channel": "stable",
-      "status": "draft",
-      "publishedAt": null,
+      "status": "published",
+      "publishedAt": "2026-08-17T21:52:57+02:00",
       "minimumSupportedVersion": "1.0.0",
       "mandatoryAfter": null,
       "notes": {
@@ -136,32 +136,47 @@
           "architecture": "universal",
           "fileName": "habiter-1.5.0-android-universal.apk",
           "signed": true,
-          "distribution": "direct"
+          "distribution": "direct",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.5.0/habiter-1.5.0-android-universal.apk",
+          "sha256": "70b2e85392f1a0b8dfe023dd1ec6cae917b99b8bda1b3ec8a96705c499281932",
+          "size": 63754656
         },
         {
           "platform": "android",
           "architecture": "universal",
           "fileName": "habiter-1.5.0-android-playstore.aab",
           "signed": true,
-          "distribution": "play"
+          "distribution": "play",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.5.0/habiter-1.5.0-android-playstore.aab",
+          "sha256": "4204fe16b8dc46ed214477542594c4160655c103c100a101676a542fc3228391",
+          "size": 62204913
         },
         {
           "platform": "windows",
           "architecture": "x64",
           "fileName": "habiter-1.5.0-windows-x64.zip",
-          "signed": false
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.5.0/habiter-1.5.0-windows-x64.zip",
+          "sha256": "bd9dfe0031a6bc48b724c81ce90a38147733a51583d4ce2fa969d3b74835ad06",
+          "size": 14535299
         },
         {
           "platform": "linux",
           "architecture": "x64",
           "fileName": "habiter-1.5.0-linux-x64.tar.gz",
-          "signed": false
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.5.0/habiter-1.5.0-linux-x64.tar.gz",
+          "sha256": "360e24cffa0a069ceb86a6700856166115b794336445431592a2c09e0450f194",
+          "size": 11820885
         },
         {
           "platform": "macos",
           "architecture": "universal",
           "fileName": "habiter-1.5.0-macos-universal.zip",
-          "signed": false
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.5.0/habiter-1.5.0-macos-universal.zip",
+          "sha256": "8ecd42695218670f57a2a857b5aa800507e018c561f178434e1339ee41d65b5d",
+          "size": 20827939
         }
       ]
     },

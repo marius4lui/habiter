@@ -2,6 +2,55 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.4.4",
+      "buildNumber": 10404,
+      "channel": "beta",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [],
+        "changed": [],
+        "fixed": [
+          "Linux, Windows und macOS überspringen nicht unterstützte Home-Widget-Aufrufe, sodass die Desktop-App ohne MissingPluginException startet."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.4-android-universal.apk",
+          "signed": true
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.4-android-playstore.aab",
+          "signed": true
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.4-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.4-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.4-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.4.3",
       "buildNumber": 10403,
       "channel": "beta",

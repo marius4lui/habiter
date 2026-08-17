@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
@@ -22,6 +21,7 @@ import 'features/widgets/application/widget_app_lock_state_resolver.dart';
 import 'features/widgets/application/widget_sync_controller.dart';
 import 'features/widgets/application/widget_lifecycle_coordinator.dart';
 import 'features/widgets/data/android_widget_bridge.dart';
+import 'features/widgets/domain/home_widget_platform.dart';
 import 'features/widgets/domain/widget_bridge.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n.dart';
@@ -37,7 +37,7 @@ import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (!kIsWeb) {
+  if (supportsHomeWidget) {
     await HomeWidget.registerInteractivityCallback(
       habiterWidgetBackgroundCallback,
     );
@@ -200,7 +200,7 @@ class _HabiterAppState extends State<HabiterApp> {
   @override
   void initState() {
     super.initState();
-    if (kIsWeb) return;
+    if (!supportsHomeWidget) return;
     _widgetLaunchSubscription = HomeWidget.widgetClicked.listen(
       (_) => _openTodayFromWidget(),
     );

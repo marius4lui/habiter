@@ -1,6 +1,7 @@
 import 'package:home_widget/home_widget.dart';
 import 'package:flutter/services.dart';
 
+import '../domain/home_widget_platform.dart';
 import '../domain/widget_bridge.dart';
 import '../domain/widget_snapshot.dart';
 
@@ -15,6 +16,7 @@ final class AndroidWidgetBridge implements WidgetBridge {
 
   @override
   Future<void> publish(WidgetSnapshot snapshot) async {
+    if (!supportsHomeWidget) return;
     final saved = await HomeWidget.saveWidgetData<String>(
       snapshotKey,
       snapshot.toJson(),
@@ -24,18 +26,25 @@ final class AndroidWidgetBridge implements WidgetBridge {
   }
 
   @override
-  Future<void> updateAll() => HomeWidget.updateWidget(
-    name: receiverName,
-    qualifiedAndroidName: qualifiedReceiverName,
-  );
+  Future<void> updateAll() async {
+    if (!supportsHomeWidget) return;
+    await HomeWidget.updateWidget(
+      name: receiverName,
+      qualifiedAndroidName: qualifiedReceiverName,
+    );
+  }
 
   @override
-  Future<bool> hasInstalledWidgets() async =>
-      await _pinChannel.invokeMethod<bool>('hasInstalledWidgets') ?? false;
+  Future<bool> hasInstalledWidgets() async {
+    if (!supportsHomeWidget) return false;
+    return await _pinChannel.invokeMethod<bool>('hasInstalledWidgets') ?? false;
+  }
 
   @override
-  Future<bool> isPinningSupported() async =>
-      await _pinChannel.invokeMethod<bool>('isSupported') ?? false;
+  Future<bool> isPinningSupported() async {
+    if (!supportsHomeWidget) return false;
+    return await _pinChannel.invokeMethod<bool>('isSupported') ?? false;
+  }
 
   @override
   Future<WidgetPinResult> requestPin() async {

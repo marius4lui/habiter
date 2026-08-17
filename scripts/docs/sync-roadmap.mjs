@@ -2,40 +2,201 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 const root = new URL("../../", import.meta.url);
+const sourceUrl = new URL("roadmap.json", root);
 const roadmapUrl = new URL("ROADMAP.md", root);
 const readmeUrl = new URL("README.md", root);
 const startMarker = "<!-- roadmap:start -->";
 const endMarker = "<!-- roadmap:end -->";
 const checkOnly = process.argv.includes("--check");
 
-const [roadmapSource, readmeSource] = await Promise.all([
-  readFile(roadmapUrl, "utf8"),
-  readFile(readmeUrl, "utf8"),
-]);
+const source = JSON.parse(await readFile(sourceUrl, "utf8"));
+validate(source);
 
-const start = readmeSource.indexOf(startMarker);
-const end = readmeSource.indexOf(endMarker);
+const detailedRoadmap = `${renderDetailed(source)}\n`;
+const readmeRoadmap = renderSummary(source);
+const readmeSource = await readFile(readmeUrl, "utf8");
+const updatedReadme = replaceMarkedBlock(readmeSource, readmeRoadmap);
+const currentRoadmap = await readFile(roadmapUrl, "utf8").catch(() => "");
 
-if (start === -1 || end === -1 || end < start) {
-  throw new Error("README.md must contain one ordered roadmap marker pair.");
-}
-if (readmeSource.indexOf(startMarker, start + startMarker.length) !== -1 ||
-    readmeSource.indexOf(endMarker, end + endMarker.length) !== -1) {
-  throw new Error("README.md must contain exactly one roadmap marker pair.");
-}
+const staleFiles = [];
+if (currentRoadmap !== detailedRoadmap) staleFiles.push("ROADMAP.md");
+if (readmeSource !== updatedReadme) staleFiles.push("README.md");
 
-const roadmap = roadmapSource.trim();
-const generated = `${startMarker}\n${roadmap}\n${endMarker}`;
-const current = readmeSource.slice(start, end + endMarker.length);
-
-if (current === generated) {
-  console.log("README roadmap is up to date.");
-} else if (checkOnly) {
-  console.error("README roadmap is stale. Run `pnpm roadmap:sync` and commit the result.");
-  process.exitCode = 1;
+if (checkOnly) {
+  if (staleFiles.length === 0) {
+    console.log("Generated roadmap documentation is up to date.");
+  } else {
+    console.error(`${staleFiles.join(", ")} stale. Run \`pnpm roadmap:sync\` and commit the result.`);
+    process.exitCode = 1;
+  }
 } else {
-  const updated = `${readmeSource.slice(0, start)}${generated}${readmeSource.slice(end + endMarker.length)}`;
-  await writeFile(readmeUrl, updated);
-  console.log("Synced ROADMAP.md into README.md.");
+  await Promise.all([
+    writeFile(roadmapUrl, detailedRoadmap),
+    writeFile(readmeUrl, updatedReadme),
+  ]);
+  console.log("Generated ROADMAP.md and the README roadmap summary from roadmap.json.");
 }
 
+function validate(data) {
+  assert(data && typeof data === "object" && !Array.isArray(data), "root must be an object");
+  assert(data.schemaVersion === 1, "schemaVersion must be 1");
+  assertString(data.title, "title");
+  assertString(data.description, "description");
+  assert(Array.isArray(data.releases) && data.releases.length > 0, "releases must be a non-empty array");
+
+  const versions = new Set();
+  for (const [index, release] of data.releases.entries()) {
+    const path = `releases[${index}]`;
+    assertString(release.version, `${path}.version`);
+    assert(/^\d+\.\d+\.\d+$/.test(release.version), `${path}.version must use semantic versioning`);
+    assert(!versions.has(release.version), `${path}.version must be unique`);
+    versions.add(release.version);
+    assertString(release.title, `${path}.title`);
+    assert(["released", "planned"].includes(release.status), `${path}.status must be released or planned`);
+    assertStringList(release.summary, `${path}.summary`);
+    if (release.status === "planned") assertString(release.target, `${path}.target`);
+    if (release.issues !== undefined) {
+      assert(Array.isArray(release.issues), `${path}.issues must be an array`);
+      assert(release.issues.every((issue) => Number.isInteger(issue) && issue > 0), `${path}.issues must contain positive integers`);
+      assert(new Set(release.issues).size === release.issues.length, `${path}.issues must be unique`);
+    }
+    for (const key of ["scope", "testing", "dependencies"]) {
+      if (release[key] !== undefined) assertStringList(release[key], `${path}.${key}`);
+    }
+    for (const key of ["statusText", "note", "goal"]) {
+      if (release[key] !== undefined) assertString(release[key], `${path}.${key}`);
+    }
+    if (release.rationale !== undefined) {
+      assertString(release.rationale.title, `${path}.rationale.title`);
+      assertStringList(release.rationale.items, `${path}.rationale.items`);
+    }
+    if (release.implementationOrder !== undefined) {
+      assert(Array.isArray(release.implementationOrder) && release.implementationOrder.length > 0, `${path}.implementationOrder must be a non-empty array`);
+      release.implementationOrder.forEach((step, stepIndex) => {
+        assert(Number.isInteger(step.issue) && step.issue > 0, `${path}.implementationOrder[${stepIndex}].issue must be a positive integer`);
+        assertString(step.title, `${path}.implementationOrder[${stepIndex}].title`);
+        assertStringList(step.items, `${path}.implementationOrder[${stepIndex}].items`);
+      });
+    }
+  }
+
+  for (const type of ["patch", "minor"]) {
+    assertStringList(data.versioning?.[type]?.usedFor, `versioning.${type}.usedFor`);
+    assertString(data.versioning[type].example, `versioning.${type}.example`);
+  }
+  assertString(data.versioning?.major?.description, "versioning.major.description");
+}
+
+function renderDetailed(data) {
+  const released = data.releases.filter((release) => release.status === "released");
+  const planned = data.releases.filter((release) => release.status === "planned");
+  const lines = [
+    "<!-- Generated from roadmap.json. Do not edit this file directly. -->",
+    `## ${data.title}`,
+    "",
+    data.description,
+    "",
+    "## Released",
+    "",
+    ...renderReleaseGroup(released),
+    "---",
+    "",
+    "## Planned releases",
+    "",
+    ...renderReleaseGroup(planned),
+    "---",
+    "",
+    "## Versioning rules",
+    "",
+    ...renderVersioning("Patch releases", data.versioning.patch),
+    ...renderVersioning("Minor releases", data.versioning.minor),
+    "### Major releases",
+    "",
+    data.versioning.major.description,
+  ];
+  return lines.join("\n").trim();
+}
+
+function renderReleaseGroup(releases) {
+  return releases.flatMap((release, index) => {
+    const lines = [`### v${release.version} — ${release.title}`, ""];
+    if (release.statusText) lines.push(release.statusText, "");
+    if (release.target) lines.push(`**Target:** ${release.target}`, "");
+    if (release.issues?.length) {
+      const label = release.issues.length === 1 ? "Issue" : "Issues";
+      lines.push(`**${label}:** ${release.issues.map((issue) => `#${issue}`).join(", ")}`, "");
+    }
+    if (release.status === "released") lines.push(...renderList(release.summary));
+    if (release.scope) lines.push("Scope:", "", ...renderList(release.scope));
+    if (release.rationale) lines.push(`${release.rationale.title}:`, "", ...renderList(release.rationale.items));
+    if (release.note) lines.push("Note:", "", release.note, "");
+    if (release.implementationOrder) {
+      lines.push("Implementation order:", "");
+      release.implementationOrder.forEach((step, stepIndex) => {
+        lines.push(`${stepIndex + 1}. #${step.issue} — ${step.title}`);
+        lines.push(...step.items.map((item) => `   - ${item}`), "");
+      });
+    }
+    if (release.testing) lines.push("Stable testing required:", "", ...renderList(release.testing));
+    if (release.dependencies) lines.push("Dependencies:", "", ...renderList(release.dependencies));
+    if (release.goal) lines.push("Goal:", "", release.goal, "");
+    if (index < releases.length - 1) lines.push("---", "");
+    return lines;
+  });
+}
+
+function renderVersioning(title, entry) {
+  return [
+    `### ${title}`,
+    "",
+    "Used for:",
+    "",
+    ...renderList(entry.usedFor),
+    `Example: ${entry.example}.`,
+    "",
+  ];
+}
+
+function renderSummary(data) {
+  const groups = [
+    ["Released", data.releases.filter((release) => release.status === "released")],
+    ["Upcoming", data.releases.filter((release) => release.status === "planned")],
+  ];
+  const lines = ["## Roadmap", "", "A concise view of the released baseline and upcoming product milestones.", ""];
+  for (const [title, releases] of groups) {
+    if (releases.length === 0) continue;
+    lines.push(`### ${title}`, "");
+    for (const release of releases) {
+      lines.push(`**v${release.version} — ${release.title}**`, "", ...renderList(release.summary));
+    }
+  }
+  lines.push("See the detailed [`ROADMAP.md`](ROADMAP.md) for targets, issues, scope, dependencies, and versioning rules.");
+  return lines.join("\n").trim();
+}
+
+function renderList(items) {
+  return [...items.map((item) => `- ${item}`), ""];
+}
+
+function replaceMarkedBlock(source, content) {
+  const start = source.indexOf(startMarker);
+  const end = source.indexOf(endMarker);
+  assert(start !== -1 && end !== -1 && end > start, "README.md must contain one ordered roadmap marker pair");
+  assert(source.indexOf(startMarker, start + startMarker.length) === -1, "README.md must contain exactly one roadmap start marker");
+  assert(source.indexOf(endMarker, end + endMarker.length) === -1, "README.md must contain exactly one roadmap end marker");
+  const generated = `${startMarker}\n${content}\n${endMarker}`;
+  return `${source.slice(0, start)}${generated}${source.slice(end + endMarker.length)}`;
+}
+
+function assertString(value, path) {
+  assert(typeof value === "string" && value.trim().length > 0, `${path} must be a non-empty string`);
+}
+
+function assertStringList(value, path) {
+  assert(Array.isArray(value) && value.length > 0, `${path} must be a non-empty array`);
+  value.forEach((item, index) => assertString(item, `${path}[${index}]`));
+}
+
+function assert(condition, message) {
+  if (!condition) throw new Error(`Invalid roadmap.json: ${message}.`);
+}

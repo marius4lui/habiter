@@ -1,4 +1,5 @@
 export type Platform = "android" | "windows" | "linux" | "macos" | "ios" | "web";
+export type ReleaseChannel = "stable" | "beta";
 
 export interface ReleaseArtifact {
   platform: Platform;
@@ -20,7 +21,7 @@ export interface ReleaseNotes {
 export interface Release {
   version: string;
   buildNumber: number;
-  channel: "stable" | "beta";
+  channel: ReleaseChannel;
   status: "draft" | "published";
   publishedAt: string | null;
   minimumSupportedVersion: string;

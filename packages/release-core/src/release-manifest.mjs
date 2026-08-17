@@ -90,6 +90,53 @@ export function renderNotes(release) {
   return `${sections.join("\n\n")}\n`;
 }
 
+export function finalizeRelease(manifest, runtimeManifest, version) {
+  const source = manifest.releases.find((release) => release.version === version);
+  if (!source) throw new Error(`Unknown release version: ${version}`);
+
+  const published = runtimeManifest.releases.find((release) => release.version === version);
+  if (!published || published.status !== "published" || published.publishedAt === null) {
+    throw new Error(`Runtime metadata for ${version} is not published`);
+  }
+  if (published.buildNumber !== source.buildNumber) {
+    throw new Error(`Runtime build number for ${version} does not match the manifest`);
+  }
+
+  const runtimeArtifacts = new Map(published.artifacts.map((artifact) => [artifact.fileName, artifact]));
+  const artifacts = source.artifacts.map((artifact) => {
+    const runtimeArtifact = runtimeArtifacts.get(artifact.fileName);
+    if (!runtimeArtifact?.url || !runtimeArtifact.sha256 || !runtimeArtifact.size) {
+      throw new Error(`Runtime metadata is incomplete for ${artifact.fileName}`);
+    }
+    if (
+      runtimeArtifact.platform !== artifact.platform
+      || runtimeArtifact.architecture !== artifact.architecture
+      || runtimeArtifact.signed !== artifact.signed
+    ) {
+      throw new Error(`Runtime artifact contract does not match for ${artifact.fileName}`);
+    }
+    return {
+      ...artifact,
+      url: runtimeArtifact.url,
+      sha256: runtimeArtifact.sha256,
+      size: runtimeArtifact.size
+    };
+  });
+  if (runtimeArtifacts.size !== artifacts.length) {
+    throw new Error(`Runtime artifact set does not match for ${version}`);
+  }
+
+  return {
+    ...manifest,
+    releases: manifest.releases.map((release) => release.version === version ? {
+      ...release,
+      status: "published",
+      publishedAt: published.publishedAt,
+      artifacts
+    } : release)
+  };
+}
+
 export async function enrichRelease({ release, artifactDirectory, repository, publishedAt }) {
   const artifacts = [];
   for (const artifact of release.artifacts) {

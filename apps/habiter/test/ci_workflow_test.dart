@@ -74,5 +74,29 @@ void main() {
       expect(quality, contains('name: Worker, Release and Website Quality'));
       expect(quality, contains('quality-summary:'));
     });
+
+    test('release publishing preserves stable and beta channels', () {
+      final release = workflow('release.yml').readAsStringSync();
+
+      expect(
+        release,
+        contains('channel: \${{ steps.version.outputs.channel }}'),
+      );
+      expect(release, contains('PRERELEASE_ARGS+=(--prerelease)'));
+      expect(
+        release,
+        contains(
+          'gh release edit "\$TAG" --draft=false --prerelease --latest=false',
+        ),
+      );
+      expect(
+        release,
+        contains(
+          'gh release edit "\$TAG" --draft=false --prerelease=false --latest',
+        ),
+      );
+      expect(release, contains('scripts/release/finalize-manifest.mjs'));
+      expect(release, contains('git push origin HEAD:main'));
+    });
   });
 }

@@ -33,6 +33,26 @@ test("tag, pubspec version and build number must agree", async () => {
   assert.throws(() => assertTagMatches({ tag: "v0.0.0", pubspec, manifest }), /does not match/);
 });
 
+test("the v1.5 bootstrap candidate carries the complete update experience contract", async () => {
+  const manifest = await readJson(manifestPath);
+  const release = manifest.releases.find((item) => item.version === "1.5.0");
+  assert.equal(release?.buildNumber, 10500);
+  assert.equal(release?.channel, "stable");
+  assert.equal(release?.status, "draft");
+  assert.deepEqual(Object.keys(release?.presentation ?? {}).sort(), ["de", "en"]);
+  assert.equal(release?.presentation.de.highlights.length, 5);
+  assert.equal(release?.presentation.en.highlights.length, 5);
+  assert.deepEqual(
+    release?.artifacts.filter((item) => item.platform === "android").map((item) => item.distribution).sort(),
+    ["direct", "play"]
+  );
+  assert.deepEqual(
+    new Set(release?.artifacts.map((item) => item.platform)),
+    new Set(["android", "windows", "linux", "macos"])
+  );
+  assert.equal(publishedManifest(manifest).releases.some((item) => item.version === "1.5.0"), false);
+});
+
 test("version comparison is numeric and release notes are deterministic", async () => {
   const manifest = await readJson(manifestPath);
   const notes = renderNotes(manifest.releases[0]);
@@ -54,7 +74,8 @@ test("published assets require HTTPS and complete integrity metadata", async () 
   const manifest = await readJson(manifestPath);
   const schema = await readJson(schemaPath);
   const unsafe = structuredClone(manifest);
-  unsafe.releases[0].artifacts[0].url = "http://example.com/habiter.apk";
+  const publishedIndex = unsafe.releases.findIndex((release) => release.status === "published");
+  unsafe.releases[publishedIndex].artifacts[0].url = "http://example.com/habiter.apk";
   await assert.rejects(validateManifest(unsafe, schema), /must use HTTPS/);
 
   const missingDistribution = structuredClone(manifest);

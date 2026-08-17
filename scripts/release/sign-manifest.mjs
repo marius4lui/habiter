@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 import { generateKeyPairSync } from "node:crypto";
 import { writeFile } from "node:fs/promises";
-import { readJson, signManifestEnvelope } from "../../packages/release-core/src/release-manifest.mjs";
+import {
+  readJson,
+  signManifestEnvelope,
+  validateManifest
+} from "../../packages/release-core/src/release-manifest.mjs";
 
 const [input, output, ...flags] = process.argv.slice(2);
 if (!input || !output) {
@@ -22,6 +26,8 @@ if (encodedKey && keyId) {
 }
 
 const manifest = await readJson(input);
+const schema = await readJson(new URL("../../packages/release-core/schema/releases.schema.json", import.meta.url));
+await validateManifest(manifest, schema);
 const envelope = signManifestEnvelope({ manifest, keyId, privateKey });
 await writeFile(output, `${JSON.stringify(envelope, null, 2)}\n`);
 console.log(`Signed ${manifest.releases.length} release(s) with ${keyId}.`);

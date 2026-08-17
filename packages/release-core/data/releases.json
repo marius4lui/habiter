@@ -2,6 +2,170 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.5.0",
+      "buildNumber": 10500,
+      "channel": "stable",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Das neue Update-Center bündelt Kanal, Prüfprofil, Status, Release-Verlauf und belegten Download-Speicher.",
+          "Android-Direct-Builds laden passende Updates nach dem gewählten Profil fortsetzbar herunter und übergeben sie erst nach vollständiger Prüfung an den Systeminstaller.",
+          "Lokalisierte Release Stories zeigen vor und nach einem Upgrade bis zu fünf Highlights sowie zusammengeführte Details übersprungener Versionen."
+        ],
+        "changed": [
+          "Stable verwendet ausschließlich Stable-Releases; Beta vergleicht Stable und Beta und wählt ohne Downgrade den höchsten verfügbaren Build.",
+          "Pflichtfristen werden nur nach erfolgreicher Online-Verifikation durchgesetzt; offline bleibt Habiter mit einer permanenten Warnung nutzbar.",
+          "Desktop öffnet verifizierte Release-Downloads im Browser, während iOS und Web in v1.5 keinen Self-Updater aktivieren."
+        ],
+        "fixed": [],
+        "security": [
+          "Release-Manifeste werden als exakte JSON-Bytes mit Ed25519 signiert und anhand eines rotationsfähigen Public-Key-Rings geprüft.",
+          "Direkte Android-APKs müssen HTTPS, erwartete Größe, SHA-256, Paketname, höheren Build und dasselbe Signaturzertifikat wie die installierte App erfüllen."
+        ]
+      },
+      "presentation": {
+        "de": {
+          "headline": "Updates, denen du vertrauen kannst",
+          "summary": "Habiter lädt neue Versionen sicher im Hintergrund, erklärt jede Änderung und lässt den Installationsschritt immer bei dir.",
+          "highlights": [
+            {
+              "id": "verified-downloads",
+              "title": "Lückenlos verifiziert",
+              "description": "Signatur, HTTPS, Dateigröße, SHA-256 und Android-Zertifikat müssen stimmen, bevor der Installer die APK sieht.",
+              "icon": "security"
+            },
+            {
+              "id": "smart-profiles",
+              "title": "Dein Tempo",
+              "description": "Sofort, Ausgewogen oder Sparsam steuern Prüfintervall, Netztyp und automatischen Download.",
+              "icon": "speed"
+            },
+            {
+              "id": "update-center",
+              "title": "Alles an einem Ort",
+              "description": "Kanal, Status, Verlauf, Speicher und die manuelle Prüfung leben im neuen Update-Center.",
+              "icon": "design"
+            },
+            {
+              "id": "release-stories",
+              "title": "Neuigkeiten mit Kontext",
+              "description": "Immersive Stories zeigen Highlights vor dem Download und fassen übersprungene Releases nach dem Upgrade zusammen.",
+              "icon": "history"
+            },
+            {
+              "id": "offline-safe",
+              "title": "Offline bleibt offen",
+              "description": "Eine Pflichtsperre entsteht nur nach einer aktuellen, erfolgreichen Online-Prüfung; Netzfehler sperren deine Habits nie weg.",
+              "icon": "security"
+            }
+          ],
+          "changes": {
+            "added": [
+              "Update-Center mit Stable/Beta-Kanal, drei Prüfprofilen, Verlauf und Speicherverwaltung.",
+              "Fortsetzbare Android-Downloads, Bereit-Benachrichtigung und geführter Systeminstaller.",
+              "Lokalisierte Release Stories vor und nach Upgrades."
+            ],
+            "changed": [
+              "Der App-Start beginnt Update-Prüfungen erst nach Bootstrap und Onboarding und wartet nie auf das Netzwerk.",
+              "Store-Builds leiten ausschließlich zum Store weiter; Desktop-Builds öffnen den passenden Download im Browser."
+            ],
+            "fixed": [],
+            "security": [
+              "Ed25519-signierte Manifeste und vollständige APK-Integritäts- sowie Signerprüfung schützen den Update-Pfad."
+            ]
+          }
+        },
+        "en": {
+          "headline": "Updates you can trust",
+          "summary": "Habiter downloads new versions safely in the background, explains every change, and always leaves installation in your hands.",
+          "highlights": [
+            {
+              "id": "verified-downloads",
+              "title": "Verified end to end",
+              "description": "Signature, HTTPS, file size, SHA-256, and the Android certificate must match before the installer sees an APK.",
+              "icon": "security"
+            },
+            {
+              "id": "smart-profiles",
+              "title": "Your pace",
+              "description": "Immediate, Balanced, or Saver controls check intervals, network use, and automatic downloads.",
+              "icon": "speed"
+            },
+            {
+              "id": "update-center",
+              "title": "Everything in one place",
+              "description": "Track, status, history, storage, and manual checks now live in the new Update Center.",
+              "icon": "design"
+            },
+            {
+              "id": "release-stories",
+              "title": "What's new, with context",
+              "description": "Immersive stories introduce highlights before download and combine skipped releases after an upgrade.",
+              "icon": "history"
+            },
+            {
+              "id": "offline-safe",
+              "title": "Offline stays open",
+              "description": "A required-update lock starts only after a fresh successful online check, so network failures never lock away your habits.",
+              "icon": "security"
+            }
+          ],
+          "changes": {
+            "added": [
+              "Update Center with Stable/Beta tracks, three check profiles, history, and storage controls.",
+              "Resumable Android downloads, a ready notification, and a guided system installer.",
+              "Localized release stories before and after upgrades."
+            ],
+            "changed": [
+              "Update checks start only after bootstrap and onboarding and never make app startup wait for the network.",
+              "Store builds route exclusively to the store while desktop builds open the matching browser download."
+            ],
+            "fixed": [],
+            "security": [
+              "Ed25519-signed manifests plus complete APK integrity and signer verification protect the update path."
+            ]
+          }
+        }
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.5.0-android-universal.apk",
+          "signed": true,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.5.0-android-playstore.aab",
+          "signed": true,
+          "distribution": "play"
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.5.0-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.5.0-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.5.0-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.4.2",
       "buildNumber": 10402,
       "channel": "beta",

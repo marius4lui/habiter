@@ -8,6 +8,8 @@ Use the [smart download page](https://get.habiter.dev/download) to select the cu
 
 ::: info Platform status
 Android releases are signed. Windows, Linux, and macOS packages have verified checksums; Windows and macOS code signing is still planned. iOS CI artifacts are unsigned and require manual signing. The web build is validated but is not the primary distribution format.
+
+Starting with Habiter 1.5, the direct Android build can download a newer signed APK in the background and hand it to Android's system installer. Habiter never installs an update silently. Store builds stay on the Store path, desktop builds open the matching download in the browser, and iOS/web do not self-update in 1.5. If you are upgrading from a version older than 1.5, install 1.5 once through the download page or Store; automatic updates are available after that bootstrap upgrade.
 :::
 
 ### Build from Source

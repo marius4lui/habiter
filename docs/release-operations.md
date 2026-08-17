@@ -29,16 +29,23 @@ ANDROID_KEY_ALIAS
 ANDROID_KEY_PASSWORD
 CLOUDFLARE_API_TOKEN
 CLOUDFLARE_ACCOUNT_ID
+RELEASE_MANIFEST_PRIVATE_KEY_BASE64
 ```
 
 Repository variables:
 
 ```text
 ANDROID_CERT_SHA256
+HABITER_UPDATE_PUBLIC_KEYS
 RELEASE_API_BASE_URL=https://get.habiter.dev
+RELEASE_MANIFEST_KEY_ID
 ```
 
 The Cloudflare token should be restricted to Workers Scripts edit access for the intended account. Secret values are passed through stdin to `gh secret set`; never place them in command arguments, workflow variables or the repository.
+
+`RELEASE_MANIFEST_PRIVATE_KEY_BASE64` is the Base64-encoded PKCS#8 PEM for an Ed25519 private key. It exists only as a GitHub environment secret and must never be committed, printed by CI, embedded in an application build or copied into Cloudflare runtime configuration. `RELEASE_MANIFEST_KEY_ID` is a stable identifier such as `release-2026-01`. `HABITER_UPDATE_PUBLIC_KEYS` is a JSON object from key ID to the unpadded Base64URL encoding of the 32-byte raw Ed25519 public key, for example `{"release-2026-01":"<public-key>"}`. Release builds fail if the active signing key is absent from that ring.
+
+Generate signing material on a trusted offline workstation, back up the private key encrypted, and inject only the encoded private PEM into the GitHub production environment. Keep the current and next public key in the client for an overlap release before rotating the server key. Remove an old public key only after every supported client trusts the replacement. Preview deployments deliberately use a throwaway key and cannot be trusted by production clients.
 
 ## Android signing and recovery
 
@@ -67,6 +74,14 @@ pnpm exec wrangler rollback --env production
 
 After configuring the custom domain, set `RELEASE_API_BASE_URL` so deployment and release workflows smoke-test `/health` and the release routes on `get.habiter.dev`.
 
+## Automatic-update release assets
+
+Android is built in two flavors with the same application ID. `direct` produces a signed universal APK with the installer permission and FileProvider; `store` produces an AAB without either direct-install capability. The release workflow verifies both artifacts against `ANDROID_CERT_SHA256`. The build flavor is authoritative, while the detected Android install source is an additional safeguard: a Store-installed build never receives a direct APK.
+
+Optional story images belong in `packages/release-core/media/<version>/` and must be declared by file name, MIME type and ID in the matching draft. The publish job copies them beside the platform artifacts, calculates size and SHA-256, adds their immutable GitHub Release URLs to the runtime manifest and signs those exact manifest bytes. Missing or corrupt client-side media falls back to the declared icon without affecting the update itself.
+
+Habiter 1.5.0 is the bootstrap release for this updater. Clients older than 1.5 must install it once through the existing download page, GitHub Release or store flow. Automatic checks and direct downloads begin only after 1.5 is running. Publish 1.5 first as Preview/RC; promote it to Stable only after the physical-device matrix below succeeds.
+
 ## Manual gates
 
 The following manual checks remain part of the stable-release checklist:
@@ -76,6 +91,8 @@ The following manual checks remain part of the stable-release checklist:
 - Exercise Android reminders, notification actions and App Lock on physical hardware.
 - Confirm the unsigned status and user guidance for Windows and macOS downloads.
 - Complete the OAuth and import/export scenarios from the release-candidate checklist.
+- Install 1.5 manually over the latest pre-1.5 direct APK, then install a newer RC through the in-app flow and confirm signer continuity.
+- Verify Direct and Store routing, Wi-Fi and metered downloads, denied unknown-app permission, interrupted download/process restart, offline expired mandatory deadline and the single ready notification on physical Android devices.
 
 The current Flutter build reports a future Kotlin Gradle Plugin migration warning. It does not invalidate v1, but it must be resolved before upgrading to a Flutter release that removes KGP compatibility.
 

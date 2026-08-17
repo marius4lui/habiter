@@ -64,15 +64,15 @@ Reason before larger features:
 
 ---
 
-## Planned releases
-
 ### v1.4.3 — App Block overlay stability
 
-**Channel:** Stable
+**Channel:** Beta
 
-**Target:** 18 Aug 2026
+Released to the beta channel for stabilization before the next stable release.
 
 **Issue:** #18
+
+- Keep App Block UI scoped to the currently blocked foreground app and align it with Habiter's product language.
 
 Scope:
 
@@ -83,7 +83,7 @@ Scope:
 
 Note:
 
-Implementation is planned for 17 Aug 2026, followed by stabilization through 18 Aug and inclusion in the next stable release. This roadmap entry does not publish a release.
+The beta is intended to stabilize through 18 Aug before inclusion in the next stable release.
 
 Stable testing required:
 
@@ -92,6 +92,8 @@ Stable testing required:
 - Gesture navigation, large font scale, rotation and rapid app switching.
 
 ---
+
+## Planned releases
 
 ### v1.5.0 — Automatic update client
 

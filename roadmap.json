@@ -62,9 +62,9 @@
     {
       "version": "1.4.3",
       "title": "App Block overlay stability",
-      "status": "planned",
-      "channel": "stable",
-      "target": "18 Aug 2026",
+      "status": "released",
+      "channel": "beta",
+      "statusText": "Released to the beta channel for stabilization before the next stable release.",
       "issues": [18],
       "summary": ["Keep App Block UI scoped to the currently blocked foreground app and align it with Habiter's product language."],
       "scope": [
@@ -78,7 +78,7 @@
         "Habit completion, permission revocation, App Block disablement and service shutdown.",
         "Gesture navigation, large font scale, rotation and rapid app switching."
       ],
-      "note": "Implementation is planned for 17 Aug 2026, followed by stabilization through 18 Aug and inclusion in the next stable release. This roadmap entry does not publish a release."
+      "note": "The beta is intended to stabilize through 18 Aug before inclusion in the next stable release."
     },
     {
       "version": "1.5.0",

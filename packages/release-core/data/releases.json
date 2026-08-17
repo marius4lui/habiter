@@ -2,6 +2,59 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.4.3",
+      "buildNumber": 10403,
+      "channel": "beta",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [],
+        "changed": [
+          "App Block zeigt eine ruhige Habiter-Oberfläche mit konkretem Habit-CTA, klarer Homescreen-Aktion und responsivem Layout für Insets, Landscape und große Schrift."
+        ],
+        "fixed": [
+          "Das Blocking-Overlay verschwindet automatisch, sobald die blockierte App den Vordergrund verliert, statt über Launcher oder anderen Apps liegen zu bleiben.",
+          "Beim direkten Wechsel zwischen blockierten Apps werden App-Name und offene Habits aktualisiert, ohne veralteten Overlay-Inhalt beizubehalten.",
+          "Habit-Abschluss, App-Block-Deaktivierung, Permission-Verlust, Screen-off und Service-Shutdown entfernen ein vorhandenes Overlay zuverlässig."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.3-android-universal.apk",
+          "signed": true
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.3-android-playstore.aab",
+          "signed": true
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.3-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.3-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.3-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.4.2",
       "buildNumber": 10402,
       "channel": "beta",

@@ -125,6 +125,10 @@ A concise view of the released baseline and upcoming product milestones.
 
 ### Upcoming
 
+**v1.4.3 — App Block overlay stability (Stable)**
+
+- Keep App Block UI scoped to the currently blocked foreground app and align it with Habiter's product language.
+
 **v1.5.0 — Automatic update client (Stable)**
 
 - Add the client update experience on top of the existing Release API.

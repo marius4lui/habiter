@@ -66,6 +66,33 @@ Reason before larger features:
 
 ## Planned releases
 
+### v1.4.3 — App Block overlay stability
+
+**Channel:** Stable
+
+**Target:** 18 Aug 2026
+
+**Issue:** #18
+
+Scope:
+
+- Dismiss the blocking overlay when the blocked app loses the foreground or App Block becomes inactive.
+- Refresh content when the foreground changes between blocked apps.
+- Replace the punitive lock treatment with a calm, action-oriented Habiter layout.
+- Keep actions, system insets, large text and compact or landscape displays usable.
+
+Note:
+
+Implementation is planned for 17 Aug 2026, followed by stabilization through 18 Aug and inclusion in the next stable release. This roadmap entry does not publish a release.
+
+Stable testing required:
+
+- Foreground transitions between blocked apps, allowed apps and the launcher.
+- Habit completion, permission revocation, App Block disablement and service shutdown.
+- Gesture navigation, large font scale, rotation and rapid app switching.
+
+---
+
 ### v1.5.0 — Automatic update client
 
 **Channel:** Stable
@@ -182,7 +209,7 @@ Used for:
 - Reliability fixes.
 - Small UX corrections.
 
-Example: `1.4.1`, `1.4.2`.
+Example: `1.4.1`, `1.4.2`, `1.4.3`.
 
 ### Minor releases
 

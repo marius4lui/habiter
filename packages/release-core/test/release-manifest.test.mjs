@@ -37,12 +37,12 @@ test("tag, pubspec version and build number must agree", async () => {
   assert.throws(() => assertTagMatches({ tag: "v0.0.0", pubspec, manifest }), /does not match/);
 });
 
-test("the v1.5 bootstrap candidate carries the complete update experience contract", async () => {
+test("the published v1.5 release carries the complete update experience contract", async () => {
   const manifest = await readJson(manifestPath);
   const release = manifest.releases.find((item) => item.version === "1.5.0");
   assert.equal(release?.buildNumber, 10500);
   assert.equal(release?.channel, "stable");
-  assert.equal(release?.status, "draft");
+  assert.equal(release?.status, "published");
   assert.deepEqual(Object.keys(release?.presentation ?? {}).sort(), ["de", "en"]);
   assert.equal(release?.presentation.de.highlights.length, 5);
   assert.equal(release?.presentation.en.highlights.length, 5);
@@ -54,7 +54,7 @@ test("the v1.5 bootstrap candidate carries the complete update experience contra
     new Set(release?.artifacts.map((item) => item.platform)),
     new Set(["android", "windows", "linux", "macos"])
   );
-  assert.equal(publishedManifest(manifest).releases.some((item) => item.version === "1.5.0"), false);
+  assert.equal(publishedManifest(manifest).releases.some((item) => item.version === "1.5.0"), true);
 });
 
 test("version comparison is numeric and release notes are deterministic", async () => {

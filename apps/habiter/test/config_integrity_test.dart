@@ -33,6 +33,15 @@ void main() {
       );
     });
 
+    test('release builds can access the update service', () {
+      final content = File(
+        'android/app/src/main/AndroidManifest.xml',
+      ).readAsStringSync();
+
+      expect(content, contains('android.permission.INTERNET'));
+      expect(content, contains('android.permission.ACCESS_NETWORK_STATE'));
+    });
+
     test('direct and store update flavors have isolated installer access', () {
       final buildFile = File('android/app/build.gradle.kts').readAsStringSync();
       final mainManifest = File(

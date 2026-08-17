@@ -6,4 +6,22 @@
     <string name="update_ready_body">Habiter %1$s wurde geprüft und ist bereit.</string>
     <string name="habiter_widget_name">Habiter</string>
     <string name="habiter_widget_description">Sieh deine heutigen Habits und erledige den nächsten Schritt direkt vom Homescreen.</string>
+    <string name="app_lock_brand">HABITER</string>
+    <string name="app_lock_paused_title">%1$s ist pausiert</string>
+    <string name="app_lock_status_generic">Deine offenen Habits sind der nächste Schritt</string>
+    <plurals name="app_lock_habits_until_release">
+        <item quantity="one">Noch 1 Habit bis zur Freigabe</item>
+        <item quantity="other">Noch %1$d Habits bis zur Freigabe</item>
+    </plurals>
+    <string name="app_lock_generic_habit">Deine Habits für heute</string>
+    <string name="app_lock_habit_open_today">Heute · noch offen</string>
+    <plurals name="app_lock_more_habits">
+        <item quantity="one">+%1$d weiteres Habit</item>
+        <item quantity="other">+%1$d weitere Habits</item>
+    </plurals>
+    <string name="app_lock_rationale">Du hast %1$s bis nach deinen heutigen Habits pausiert.</string>
+    <string name="app_lock_open_single_habit">%1$s in Habiter öffnen</string>
+    <string name="app_lock_open_habits">Offene Habits in Habiter öffnen</string>
+    <string name="app_lock_go_home">Zum Homescreen</string>
+    <string name="app_lock_generic_app_name">Diese App</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.habiter.app
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -19,4 +20,77 @@ class AppLockPolicyTest {
         assertTrue(AppLockPolicy.ACTIVE_POLL_INTERVAL_MS >= 500L)
         assertTrue(AppLockPolicy.IDLE_POLL_INTERVAL_MS >= AppLockPolicy.ACTIVE_POLL_INTERVAL_MS)
     }
+
+    @Test
+    fun blockedForegroundAppShowsItsPackage() {
+        assertEquals(
+            BlockingUiState.Visible("app.blocked.a"),
+            resolve(foregroundPackage = "app.blocked.a"),
+        )
+    }
+
+    @Test
+    fun launcherOrUnblockedAppDismissesTheBlockingUi() {
+        assertEquals(BlockingUiState.Hidden, resolve(foregroundPackage = "launcher"))
+        assertEquals(BlockingUiState.Hidden, resolve(foregroundPackage = "app.allowed"))
+        assertEquals(BlockingUiState.Hidden, resolve(foregroundPackage = null))
+        assertEquals(
+            BlockingUiState.Hidden,
+            AppLockPolicy.blockingUiState(
+                enabled = true,
+                hasUsageAccess = true,
+                hasOverlayAccess = true,
+                habitsComplete = false,
+                foregroundPackage = "app.blocked.a",
+                lockedPackages = emptySet(),
+            ),
+        )
+    }
+
+    @Test
+    fun switchingBetweenBlockedAppsUpdatesTheVisiblePackage() {
+        assertEquals(
+            BlockingUiState.Visible("app.blocked.a"),
+            resolve(foregroundPackage = "app.blocked.a"),
+        )
+        assertEquals(
+            BlockingUiState.Visible("app.blocked.b"),
+            resolve(foregroundPackage = "app.blocked.b"),
+        )
+    }
+
+    @Test
+    fun completedHabitsDisabledFeatureOrRevokedPermissionDismissesTheUi() {
+        assertEquals(
+            BlockingUiState.Hidden,
+            resolve(foregroundPackage = "app.blocked.a", habitsComplete = true),
+        )
+        assertEquals(
+            BlockingUiState.Hidden,
+            resolve(foregroundPackage = "app.blocked.a", enabled = false),
+        )
+        assertEquals(
+            BlockingUiState.Hidden,
+            resolve(foregroundPackage = "app.blocked.a", hasUsageAccess = false),
+        )
+        assertEquals(
+            BlockingUiState.Hidden,
+            resolve(foregroundPackage = "app.blocked.a", hasOverlayAccess = false),
+        )
+    }
+
+    private fun resolve(
+        foregroundPackage: String?,
+        enabled: Boolean = true,
+        hasUsageAccess: Boolean = true,
+        hasOverlayAccess: Boolean = true,
+        habitsComplete: Boolean = false,
+    ) = AppLockPolicy.blockingUiState(
+        enabled = enabled,
+        hasUsageAccess = hasUsageAccess,
+        hasOverlayAccess = hasOverlayAccess,
+        habitsComplete = habitsComplete,
+        foregroundPackage = foregroundPackage,
+        lockedPackages = setOf("app.blocked.a", "app.blocked.b"),
+    )
 }

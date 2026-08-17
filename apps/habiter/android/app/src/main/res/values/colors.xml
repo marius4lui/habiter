@@ -6,4 +6,14 @@
     <color name="widget_on_surface">#17211C</color>
     <color name="widget_on_surface_muted">#53635A</color>
     <color name="widget_success">#1D6B4B</color>
+
+    <color name="app_lock_scrim">#D9141E19</color>
+    <color name="app_lock_surface">#FFFBF5</color>
+    <color name="app_lock_surface_variant">#EDF4EF</color>
+    <color name="app_lock_primary">#285943</color>
+    <color name="app_lock_primary_pressed">#527763</color>
+    <color name="app_lock_on_primary">#FFFFFF</color>
+    <color name="app_lock_on_surface">#17211C</color>
+    <color name="app_lock_on_surface_muted">#53635A</color>
+    <color name="app_lock_outline">#C8D5CD</color>
 </resources>

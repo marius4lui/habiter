@@ -181,6 +181,76 @@
       ]
     },
     {
+      "version": "1.4.3",
+      "buildNumber": 10403,
+      "channel": "beta",
+      "status": "published",
+      "publishedAt": "2026-08-17T19:45:55+02:00",
+      "minimumSupportedVersion": "1.0.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [],
+        "changed": [
+          "App Block zeigt eine ruhige Habiter-Oberfläche mit konkretem Habit-CTA, klarer Homescreen-Aktion und responsivem Layout für Insets, Landscape und große Schrift."
+        ],
+        "fixed": [
+          "Das Blocking-Overlay verschwindet automatisch, sobald die blockierte App den Vordergrund verliert, statt über Launcher oder anderen Apps liegen zu bleiben.",
+          "Beim direkten Wechsel zwischen blockierten Apps werden App-Name und offene Habits aktualisiert, ohne veralteten Overlay-Inhalt beizubehalten.",
+          "Habit-Abschluss, App-Block-Deaktivierung, Permission-Verlust, Screen-off und Service-Shutdown entfernen ein vorhandenes Overlay zuverlässig."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.3-android-universal.apk",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.3/habiter-1.4.3-android-universal.apk",
+          "sha256": "563629fa273e5dd530880ff707222bfc5498a8bed3182af6d8f106be3433ff84",
+          "size": 62717740,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.3-android-playstore.aab",
+          "signed": true,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.3/habiter-1.4.3-android-playstore.aab",
+          "sha256": "e63d0edea7da93cf0ba805736eaefc8b032ce3c89ee95c13eaa8dc8709bcc2a3",
+          "size": 61303324,
+          "distribution": "play"
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.3-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.3/habiter-1.4.3-windows-x64.zip",
+          "sha256": "f4ce78f93ecb60a57e110ae805aa1f3d503bb354b4be2d20b94433eb3926f961",
+          "size": 14359081
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "fileName": "habiter-1.4.3-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.3/habiter-1.4.3-linux-x64.tar.gz",
+          "sha256": "a81cb1e90b5f33182e70865df0f713a4f2ae92cf39e2252a4b103527e960fc08",
+          "size": 11635192
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "fileName": "habiter-1.4.3-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.4.3/habiter-1.4.3-macos-universal.zip",
+          "sha256": "2556bf9f26abf069296176050473d7d1b57f1f77b4477a0c93aef8e6d77602d5",
+          "size": 20469000
+        }
+      ]
+    },
+    {
       "version": "1.4.2",
       "buildNumber": 10402,
       "channel": "beta",

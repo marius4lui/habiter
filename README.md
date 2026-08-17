@@ -124,6 +124,10 @@ A concise view of the released baseline and upcoming product milestones.
 
 - Improve state synchronization between app, widgets and background actions.
 
+**v1.4.3 — App Block overlay stability (Beta)**
+
+- Keep App Block UI scoped to the currently blocked foreground app and align it with Habiter's product language.
+
 ### Upcoming
 
 **v1.5.0 — Premium automatic update system (Stable)**

@@ -1,10 +1,13 @@
 export type Platform = "android" | "windows" | "linux" | "macos" | "ios" | "web";
 export type ReleaseChannel = "stable" | "beta";
 export type AndroidDistribution = "direct" | "play";
+export type ArtifactFormat = "apk" | "aab" | "zip" | "tar.gz" | "appimage" | "appbundle" | "web";
 
 export interface ReleaseArtifact {
   platform: Platform;
   architecture: string;
+  format?: ArtifactFormat;
+  primary?: boolean;
   fileName: string;
   signed: boolean;
   distribution?: AndroidDistribution;

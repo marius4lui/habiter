@@ -27,7 +27,7 @@ const manifest: ReleaseManifest = {
     notes: { added: ["v1"], changed: [], fixed: [], security: [] },
     artifacts: [
       { platform: "android", architecture: "universal", fileName: "habiter.apk", signed: true, url: "https://example.com/habiter.apk", sha256: "a".repeat(64), size: 10 },
-      { platform: "windows", architecture: "x64", fileName: "habiter.zip", signed: false, url: "https://example.com/habiter.zip", sha256: "b".repeat(64), size: 10 }
+      { platform: "windows", architecture: "x64", format: "zip", primary: true, fileName: "habiter.zip", signed: false, url: "https://example.com/habiter.zip", sha256: "b".repeat(64), size: 10 }
     ]
   }]
 };
@@ -71,6 +71,33 @@ describe("release API", () => {
   it("computes update availability", async () => {
     const response = await call("/api/v1/update/android?version=0.9.0&build=9000");
     expect(await response.json()).toMatchObject({ updateAvailable: true, target: { version: "1.0.0", buildNumber: 10000 } });
+  });
+
+  it("resolves a complete primary desktop install artifact", async () => {
+    const response = await call("/api/v1/install/windows/amd64?channel=stable");
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      version: "1.0.0",
+      channel: "stable",
+      platform: "windows",
+      architecture: "x64",
+      artifact: {
+        format: "zip",
+        fileName: "habiter.zip",
+        url: "https://example.com/habiter.zip",
+        sha256: "b".repeat(64),
+        size: 10,
+        signed: false
+      },
+      docsUrl: "https://docs.habiter.dev/install/windows"
+    });
+  });
+
+  it("fails closed for unsupported or ambiguous install artifacts", async () => {
+    expect((await call("/api/v1/install/windows/sparc")).status).toBe(404);
+    expect((await call("/api/v1/install/linux/x64?distro=unknown")).status).toBe(404);
+    expect((await call("/api/v1/install/windows/x64?version=latest")).status).toBe(400);
+    expect((await call("/api/v1/install/windows/x64?channel=beta")).status).toBe(404);
   });
 
   it("detects platforms and accepts deterministic overrides", async () => {

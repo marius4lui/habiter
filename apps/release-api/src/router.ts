@@ -1,5 +1,5 @@
 import { apiError, json, withCache } from "./responses/http";
-import { defaultArchitecture, detectPlatform, parsePlatform } from "./services/platform";
+import { defaultArchitecture, detectPlatform, parseArchitecture, parseDistro, parsePlatform } from "./services/platform";
 import { ReleaseService } from "./services/release-service";
 import type { ReleaseChannel, ReleaseManifest, SignedManifestEnvelope } from "./types/releases";
 
@@ -97,6 +97,41 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
       if (channel === null) return apiError(requestId, 400, "invalid_channel", "channel must be stable or beta");
       const result = releases.checkUpdate(platform, version, build, channel, new Date());
       return result ? withCache(json(result), shortCache) : apiError(requestId, 404, "release_not_found", "No published release exists for this channel");
+    }
+
+    if (segments[2] === "install" && segments[3] && segments[4] && segments.length === 5) {
+      const platform = parsePlatform(segments[3]);
+      const architecture = parseArchitecture(segments[4]);
+      if (!platform || platform === "android" || !architecture) {
+        return apiError(requestId, 404, "install_target_not_supported", "Install target is not supported");
+      }
+      const channel = releaseChannel(url.searchParams.get("channel"));
+      if (channel === null) return apiError(requestId, 400, "invalid_channel", "channel must be stable or beta");
+      const version = url.searchParams.get("version") ?? undefined;
+      if (version && !/^\d+\.\d+\.\d+$/.test(version)) {
+        return apiError(requestId, 400, "invalid_version", "version must be semantic version X.Y.Z");
+      }
+      const distro = platform === "linux" ? parseDistro(url.searchParams.get("distro")) : undefined;
+      const resolved = releases.resolveInstall(platform, architecture, channel, version);
+      if (!resolved) return apiError(requestId, 404, "artifact_not_found", "No unambiguous primary install artifact exists");
+      const { release, artifact } = resolved;
+      const docsPath = platform === "linux" ? `linux/${distro}` : platform;
+      return withCache(json({
+        version: release.version,
+        channel,
+        platform,
+        architecture,
+        ...(distro ? { distro } : {}),
+        artifact: {
+          format: artifact.format,
+          fileName: artifact.fileName,
+          url: artifact.url,
+          sha256: artifact.sha256,
+          size: artifact.size,
+          signed: artifact.signed
+        },
+        docsUrl: `https://docs.habiter.dev/install/${docsPath}`
+      }), shortCache);
     }
 
     if (segments[2] === "download" && segments[3] && segments.length <= 5) {

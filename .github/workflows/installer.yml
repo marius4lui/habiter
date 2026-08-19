@@ -1,0 +1,118 @@
+name: Desktop Installer Contract
+
+on:
+  push:
+    paths:
+      - 'scripts/install/**'
+      - 'scripts/release/package-linux-appimage.sh'
+      - 'packaging/linux/**'
+      - 'apps/release-api/**'
+      - 'packages/release-core/**'
+      - 'docs/install/**'
+      - 'docs/.vitepress/**'
+      - '.github/workflows/installer.yml'
+      - '.github/workflows/release.yml'
+  pull_request:
+    paths:
+      - 'scripts/install/**'
+      - 'scripts/release/package-linux-appimage.sh'
+      - 'packaging/linux/**'
+      - 'apps/release-api/**'
+      - 'packages/release-core/**'
+      - 'docs/install/**'
+      - 'docs/.vitepress/**'
+      - '.github/workflows/installer.yml'
+      - '.github/workflows/release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: installer-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shell:
+    name: Shell syntax, lint and fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - run: shellcheck -s sh scripts/install/install.sh scripts/install/test/*.sh scripts/release/package-linux-appimage.sh
+      - run: sh -n scripts/install/install.sh scripts/release/package-linux-appimage.sh
+      - run: sh scripts/install/test/install-sh.test.sh
+
+  linux-distros:
+    name: Detect ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu 24.04
+            image: ubuntu:24.04
+            expected: ubuntu
+          - name: Debian 12
+            image: debian:12
+            expected: debian
+          - name: Fedora 42
+            image: fedora:42
+            expected: fedora
+          - name: Arch Linux
+            image: archlinux:latest
+            expected: arch
+          - name: openSUSE Leap 15
+            image: opensuse/leap:15
+            expected: opensuse
+    steps:
+      - uses: actions/checkout@v4
+      - run: >-
+          docker run --rm
+          -v "$PWD:/repo:ro"
+          -w /repo
+          ${{ matrix.image }}
+          sh scripts/install/test/container-detection.test.sh ${{ matrix.expected }}
+
+  macos:
+    name: macOS shell installer
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh -n scripts/install/install.sh
+      - run: sh scripts/install/test/install-sh.test.sh
+
+  windows:
+    name: Windows PowerShell installer
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - shell: powershell
+        run: powershell.exe -NoProfile -File scripts/install/test/install-ps1.test.ps1
+      - shell: pwsh
+        run: pwsh -NoProfile -File scripts/install/test/install-ps1.test.ps1
+
+  contract:
+    name: Resolver, release metadata and docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.1'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm release:validate && pnpm release:test
+      - run: pnpm --filter @habiter/release-api types
+      - run: pnpm --filter @habiter/release-api check
+      - run: node scripts/install/test/validate-docs.mjs
+      - working-directory: docs
+        run: npm ci && npm run docs:build

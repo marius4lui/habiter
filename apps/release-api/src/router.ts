@@ -5,6 +5,7 @@ import type { ReleaseChannel, ReleaseManifest, SignedManifestEnvelope } from "./
 
 const shortCache = "public, max-age=60, s-maxage=300";
 const immutableCache = "public, max-age=86400, s-maxage=31536000, immutable";
+const semanticVersion = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 
 function positiveInteger(value: string | null, fallback: number, maximum: number): number | null {
   if (value === null) return fallback;
@@ -96,8 +97,11 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
     if (segments[2] === "update" && segments[3] && segments.length === 4) {
       const platform = parsePlatform(segments[3]);
       const version = url.searchParams.get("version");
-      const build = positiveInteger(url.searchParams.get("build"), 0, Number.MAX_SAFE_INTEGER);
-      if (!platform || !version || build === null) return apiError(requestId, 400, "invalid_update_request", "platform, version and build are required");
+      const buildValue = url.searchParams.get("build");
+      const build = positiveInteger(buildValue, 0, Number.MAX_SAFE_INTEGER);
+      if (!platform || !version || !semanticVersion.test(version) || buildValue === null || build === null) {
+        return apiError(requestId, 400, "invalid_update_request", "platform, semantic version and positive build are required");
+      }
       const channel = releaseChannel(url.searchParams.get("channel"));
       if (channel === null) return apiError(requestId, 400, "invalid_channel", "channel must be stable or beta");
       const result = releases.checkUpdate(platform, version, build, channel, new Date());

@@ -71,6 +71,21 @@ describe("release API", () => {
   it("computes update availability", async () => {
     const response = await call("/api/v1/update/android?version=0.9.0&build=9000");
     expect(await response.json()).toMatchObject({ updateAvailable: true, target: { version: "1.0.0", buildNumber: 10000 } });
+
+    const beta = await call("/api/v1/update/android?version=1.0.0&build=10000&channel=beta");
+    expect(await beta.json()).toMatchObject({ download: "/api/v1/download/android?channel=beta" });
+  });
+
+  it("rejects incomplete or malformed update coordinates", async () => {
+    for (const path of [
+      "/api/v1/update/android?version=1.0.0",
+      "/api/v1/update/android?version=current&build=10000",
+      "/api/v1/update/android?version=1.0.0&build=0",
+    ]) {
+      const response = await call(path);
+      expect(response.status).toBe(400);
+      expect(await response.json()).toMatchObject({ error: { code: "invalid_update_request" } });
+    }
   });
 
   it("detects platforms and accepts deterministic overrides", async () => {

@@ -1119,6 +1119,69 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get onboardingRhythmExplainerDailyTitle => 'Every day can count once.';
+
+  @override
+  String onboardingRhythmExplainerFlexibleTitle(int count) {
+    return '$count× per week means $count different days.';
+  }
+
+  @override
+  String get onboardingRhythmExplainerFixedTitle =>
+      'Only your chosen weekdays count.';
+
+  @override
+  String get onboardingRhythmExplainerDailyBody =>
+      'A completion counts once per calendar day. Your week runs Monday–Sunday.';
+
+  @override
+  String get onboardingRhythmExplainerFlexibleBody =>
+      'You do not need fixed weekdays. Any different days from Monday–Sunday count—even consecutive days.';
+
+  @override
+  String get onboardingRhythmExplainerFixedBody =>
+      'The highlighted weekdays are your habit days. Each date can count once.';
+
+  @override
+  String get onboardingRhythmWeekLabel => 'THIS WEEK';
+
+  @override
+  String onboardingRhythmProgress(int completed, int target) {
+    return '$completed / $target';
+  }
+
+  @override
+  String onboardingRhythmProgressSemantics(int completed, int target) {
+    return '$completed of $target days selected';
+  }
+
+  @override
+  String get onboardingRhythmDaySelected => 'selected';
+
+  @override
+  String get onboardingRhythmDayNotSelected => 'not selected';
+
+  @override
+  String get onboardingRhythmDayUnavailable => 'not part of this schedule';
+
+  @override
+  String get onboardingRhythmTryPrompt =>
+      'Tap a day to see how it changes this week.';
+
+  @override
+  String get onboardingRhythmFactDifferentDays => 'One date counts once';
+
+  @override
+  String get onboardingRhythmFactMondayReset => 'Monday–Sunday';
+
+  @override
+  String get onboardingRhythmFactConsecutive => 'Consecutive days count';
+
+  @override
+  String get onboardingRhythmInvalid =>
+      'This rhythm could not be displayed. Go back and choose it again.';
+
+  @override
   String get onboardingReminderTitle => 'When should Habiter help?';
 
   @override

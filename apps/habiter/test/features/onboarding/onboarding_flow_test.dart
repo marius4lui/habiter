@@ -109,6 +109,57 @@ void main() {
     expect(find.text('Instrument üben'), findsOneWidget);
     expect(find.text('Eigenes Habit erstellen'), findsOneWidget);
   });
+
+  testWidgets('actual rhythm demo requires interaction before continuing', (
+    tester,
+  ) async {
+    final controller = OnboardingController(
+      repository: KeyValueOnboardingRepository(InMemoryKeyValueStore()),
+      ids: FakeIdGenerator(const <String>['habit-1']),
+      clock: FakeClock(DateTime.utc(2026, 8, 16)),
+    );
+    addTearDown(controller.dispose);
+    await controller.initialize(hasExistingHabits: false);
+    await controller.start();
+    await controller.selectIntent(OnboardingIntent.learning);
+    await controller.selectHabit(
+      OnboardingHabitDraft(
+        name: 'Lesen',
+        category: 'Learning',
+        icon: '📚',
+        color: '#7B61A8',
+        frequency: HabitFrequency.weekly,
+        targetCount: 3,
+      ),
+    );
+    await controller.configureRhythm(controller.state.habitDraft!);
+
+    await tester.pumpWidget(_app(controller));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('3× pro Woche heißt: 3 verschiedene Tage.'),
+      findsOneWidget,
+    );
+    expect(find.text('Drei Tage hintereinander? Völlig okay.'), findsNothing);
+    final understand = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Verstanden'),
+    );
+    expect(understand.onPressed, isNull);
+
+    await tester.tap(find.byKey(const ValueKey('week-demo-day-1')));
+    await tester.pump();
+    expect(
+      tester
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Verstanden'))
+          .onPressed,
+      isNotNull,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Verstanden'));
+    await tester.pumpAndSettle();
+
+    expect(controller.state.currentStep, OnboardingStep.reminderModel);
+  });
 }
 
 Widget _app(OnboardingController controller) => MultiProvider(

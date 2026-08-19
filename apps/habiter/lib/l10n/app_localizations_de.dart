@@ -1130,6 +1130,71 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get onboardingRhythmExplainerDailyTitle =>
+      'Jeder Tag kann einmal zählen.';
+
+  @override
+  String onboardingRhythmExplainerFlexibleTitle(int count) {
+    return '$count× pro Woche heißt: $count verschiedene Tage.';
+  }
+
+  @override
+  String get onboardingRhythmExplainerFixedTitle =>
+      'Nur deine gewählten Wochentage zählen.';
+
+  @override
+  String get onboardingRhythmExplainerDailyBody =>
+      'Ein Abschluss zählt pro Kalendertag einmal. Deine Woche läuft von Montag bis Sonntag.';
+
+  @override
+  String get onboardingRhythmExplainerFlexibleBody =>
+      'Du brauchst keine festen Wochentage. Beliebige verschiedene Tage von Montag bis Sonntag zählen – auch direkt hintereinander.';
+
+  @override
+  String get onboardingRhythmExplainerFixedBody =>
+      'Die hervorgehobenen Wochentage sind deine Habit-Tage. Jedes Datum kann einmal zählen.';
+
+  @override
+  String get onboardingRhythmWeekLabel => 'DIESE WOCHE';
+
+  @override
+  String onboardingRhythmProgress(int completed, int target) {
+    return '$completed / $target';
+  }
+
+  @override
+  String onboardingRhythmProgressSemantics(int completed, int target) {
+    return '$completed von $target Tagen ausgewählt';
+  }
+
+  @override
+  String get onboardingRhythmDaySelected => 'ausgewählt';
+
+  @override
+  String get onboardingRhythmDayNotSelected => 'nicht ausgewählt';
+
+  @override
+  String get onboardingRhythmDayUnavailable => 'nicht Teil dieses Rhythmus';
+
+  @override
+  String get onboardingRhythmTryPrompt =>
+      'Tippe einen Tag an und sieh, wie sich diese Woche verändert.';
+
+  @override
+  String get onboardingRhythmFactDifferentDays => 'Ein Datum zählt einmal';
+
+  @override
+  String get onboardingRhythmFactMondayReset => 'Montag bis Sonntag';
+
+  @override
+  String get onboardingRhythmFactConsecutive =>
+      'Aufeinanderfolgende Tage zählen';
+
+  @override
+  String get onboardingRhythmInvalid =>
+      'Dieser Rhythmus konnte nicht angezeigt werden. Gehe zurück und wähle ihn erneut.';
+
+  @override
   String get onboardingReminderTitle => 'Wann soll Habiter helfen?';
 
   @override

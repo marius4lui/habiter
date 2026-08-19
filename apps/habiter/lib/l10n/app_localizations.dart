@@ -2096,6 +2096,108 @@ abstract class AppLocalizations {
   /// **'{count}× pro Woche'**
   String onboardingTimesPerWeek(int count);
 
+  /// No description provided for @onboardingRhythmExplainerDailyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Jeder Tag kann einmal zählen.'**
+  String get onboardingRhythmExplainerDailyTitle;
+
+  /// No description provided for @onboardingRhythmExplainerFlexibleTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'{count}× pro Woche heißt: {count} verschiedene Tage.'**
+  String onboardingRhythmExplainerFlexibleTitle(int count);
+
+  /// No description provided for @onboardingRhythmExplainerFixedTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur deine gewählten Wochentage zählen.'**
+  String get onboardingRhythmExplainerFixedTitle;
+
+  /// No description provided for @onboardingRhythmExplainerDailyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Abschluss zählt pro Kalendertag einmal. Deine Woche läuft von Montag bis Sonntag.'**
+  String get onboardingRhythmExplainerDailyBody;
+
+  /// No description provided for @onboardingRhythmExplainerFlexibleBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Du brauchst keine festen Wochentage. Beliebige verschiedene Tage von Montag bis Sonntag zählen – auch direkt hintereinander.'**
+  String get onboardingRhythmExplainerFlexibleBody;
+
+  /// No description provided for @onboardingRhythmExplainerFixedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die hervorgehobenen Wochentage sind deine Habit-Tage. Jedes Datum kann einmal zählen.'**
+  String get onboardingRhythmExplainerFixedBody;
+
+  /// No description provided for @onboardingRhythmWeekLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'DIESE WOCHE'**
+  String get onboardingRhythmWeekLabel;
+
+  /// No description provided for @onboardingRhythmProgress.
+  ///
+  /// In de, this message translates to:
+  /// **'{completed} / {target}'**
+  String onboardingRhythmProgress(int completed, int target);
+
+  /// No description provided for @onboardingRhythmProgressSemantics.
+  ///
+  /// In de, this message translates to:
+  /// **'{completed} von {target} Tagen ausgewählt'**
+  String onboardingRhythmProgressSemantics(int completed, int target);
+
+  /// No description provided for @onboardingRhythmDaySelected.
+  ///
+  /// In de, this message translates to:
+  /// **'ausgewählt'**
+  String get onboardingRhythmDaySelected;
+
+  /// No description provided for @onboardingRhythmDayNotSelected.
+  ///
+  /// In de, this message translates to:
+  /// **'nicht ausgewählt'**
+  String get onboardingRhythmDayNotSelected;
+
+  /// No description provided for @onboardingRhythmDayUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'nicht Teil dieses Rhythmus'**
+  String get onboardingRhythmDayUnavailable;
+
+  /// No description provided for @onboardingRhythmTryPrompt.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe einen Tag an und sieh, wie sich diese Woche verändert.'**
+  String get onboardingRhythmTryPrompt;
+
+  /// No description provided for @onboardingRhythmFactDifferentDays.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Datum zählt einmal'**
+  String get onboardingRhythmFactDifferentDays;
+
+  /// No description provided for @onboardingRhythmFactMondayReset.
+  ///
+  /// In de, this message translates to:
+  /// **'Montag bis Sonntag'**
+  String get onboardingRhythmFactMondayReset;
+
+  /// No description provided for @onboardingRhythmFactConsecutive.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufeinanderfolgende Tage zählen'**
+  String get onboardingRhythmFactConsecutive;
+
+  /// No description provided for @onboardingRhythmInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Rhythmus konnte nicht angezeigt werden. Gehe zurück und wähle ihn erneut.'**
+  String get onboardingRhythmInvalid;
+
   /// No description provided for @onboardingReminderTitle.
   ///
   /// In de, this message translates to:

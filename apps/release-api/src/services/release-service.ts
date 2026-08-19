@@ -52,7 +52,7 @@ export class ReleaseService {
   installArtifact(release: Release, platform: Platform, architecture: string): ReleaseArtifact | null {
     const matches = release.artifacts.filter((artifact) =>
       artifact.platform === platform
-      && artifact.architecture === architecture
+      && (artifact.architecture === architecture || (platform === "macos" && artifact.architecture === "universal"))
       && artifact.primary === true
       && artifact.format
       && artifact.url

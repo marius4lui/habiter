@@ -27,7 +27,9 @@ const manifest: ReleaseManifest = {
     notes: { added: ["v1"], changed: [], fixed: [], security: [] },
     artifacts: [
       { platform: "android", architecture: "universal", fileName: "habiter.apk", signed: true, url: "https://example.com/habiter.apk", sha256: "a".repeat(64), size: 10 },
-      { platform: "windows", architecture: "x64", format: "zip", primary: true, fileName: "habiter.zip", signed: false, url: "https://example.com/habiter.zip", sha256: "b".repeat(64), size: 10 }
+      { platform: "windows", architecture: "x64", format: "zip", primary: true, fileName: "habiter.zip", signed: false, url: "https://example.com/habiter.zip", sha256: "b".repeat(64), size: 10 },
+      { platform: "linux", architecture: "x64", format: "appimage", primary: true, fileName: "Habiter.AppImage", signed: false, url: "https://example.com/Habiter.AppImage", sha256: "d".repeat(64), size: 20 },
+      { platform: "macos", architecture: "universal", format: "zip", primary: true, fileName: "Habiter-macos.zip", signed: false, url: "https://example.com/Habiter-macos.zip", sha256: "e".repeat(64), size: 30 }
     ]
   }]
 };
@@ -126,9 +128,24 @@ describe("release API", () => {
 
   it("fails closed for unsupported or ambiguous install artifacts", async () => {
     expect((await call("/api/v1/install/windows/sparc")).status).toBe(404);
-    expect((await call("/api/v1/install/linux/x64?distro=unknown")).status).toBe(404);
+    expect(await (await call("/api/v1/install/linux/x64?distro=unknown")).json()).toMatchObject({ distro: "generic", artifact: { format: "appimage" } });
     expect((await call("/api/v1/install/windows/x64?version=latest")).status).toBe(400);
     expect((await call("/api/v1/install/windows/x64?channel=beta")).status).toBe(404);
+
+    const ambiguousManifest = structuredClone(manifest);
+    const duplicate = structuredClone(ambiguousManifest.releases[1]!.artifacts.find((item) => item.platform === "windows")!);
+    duplicate.fileName = "habiter-other.zip";
+    ambiguousManifest.releases[1]!.artifacts.push(duplicate);
+    const ambiguous = createHandler(ambiguousManifest, envelope, installerFetcher);
+    expect((await ambiguous(new Request("https://get.habiter.dev/api/v1/install/windows/x64"), env)).status).toBe(404);
+  });
+
+  it("maps CPU-specific macOS requests to the universal artifact", async () => {
+    for (const architecture of ["arm64", "x64"]) {
+      const response = await call(`/api/v1/install/macos/${architecture}`);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ architecture, artifact: { fileName: "Habiter-macos.zip" } });
+    }
   });
 
   it("keeps Android direct downloads while routing desktop browsers to install guides", async () => {

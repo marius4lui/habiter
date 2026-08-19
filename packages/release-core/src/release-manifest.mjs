@@ -42,10 +42,21 @@ export async function validateManifest(manifest, schema) {
       throw new Error(`Draft release ${release.version} must not set publishedAt`);
     }
     const artifactKeys = new Set();
+    const primaryInstallerKeys = new Set();
     for (const artifact of release.artifacts) {
       const key = `${artifact.platform}:${artifact.architecture}:${artifact.fileName}`;
       if (artifactKeys.has(key)) throw new Error(`Duplicate artifact: ${key}`);
       artifactKeys.add(key);
+      if (artifact.primary === true) {
+        if (!artifact.format) {
+          throw new Error(`Primary artifact requires a format: ${artifact.fileName}`);
+        }
+        const primaryKey = `${artifact.platform}:${artifact.architecture}`;
+        if (primaryInstallerKeys.has(primaryKey)) {
+          throw new Error(`Ambiguous primary artifact: ${primaryKey}`);
+        }
+        primaryInstallerKeys.add(primaryKey);
+      }
       if (artifact.platform === "android" && !artifact.signed) {
         throw new Error(`Android artifact must be signed: ${artifact.fileName}`);
       }
@@ -201,6 +212,8 @@ export function finalizeRelease(manifest, runtimeManifest, version) {
       || runtimeArtifact.architecture !== artifact.architecture
       || runtimeArtifact.signed !== artifact.signed
       || runtimeArtifact.distribution !== artifact.distribution
+      || runtimeArtifact.format !== artifact.format
+      || runtimeArtifact.primary !== artifact.primary
     ) {
       throw new Error(`Runtime artifact contract does not match for ${artifact.fileName}`);
     }

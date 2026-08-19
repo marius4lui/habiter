@@ -57,7 +57,7 @@ Exactly 20 batches are allowed. A batch is `VERIFIED` only after its listed focu
 | 02 | VERIFIED | `feat(habits): add canonical schedule progress` | 13/13 schedule and progress tests pass; distinct dates, Monday-Sunday, undo, pause, daily and fixed weekdays covered. |
 | 03 | VERIFIED | `refactor(progress): share weekly semantics across app` | 17/17 Today and Analytics tests pass; target reached, undo, duplicate dates and Monday reset covered. |
 | 04 | VERIFIED | `fix(reminders): honor flexible weekly progress` | 35/35 planner, domain and coordinator tests pass; arbitrary days, target suppression, undo, pause, custom days and Monday reset covered. |
-| 05 | PENDING | - | Legacy fixed planner weekly matrix. |
+| 05 | VERIFIED | `fix(reminders): align fixed weekly planning` | 25/25 fixed and dynamic planner tests pass; legacy API accepts completed occurrences and shares target, undo and reset semantics. |
 | 06 | PENDING | - | Onboarding v2-to-v3 migration and progress tests. |
 | 07 | PENDING | - | Nested navigator, manual back, system back, resume tests. |
 | 08 | PENDING | - | Presentation mapper unit tests for all schedules. |

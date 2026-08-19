@@ -6,6 +6,7 @@ import '../../../core/platform/notification_gateway.dart';
 import '../../../core/time/local_date.dart';
 import '../../../models/habit.dart';
 import '../../habits/domain/habit_schedule.dart';
+import '../../habits/domain/habit_schedule_progress.dart';
 import '../domain/reminder_plan.dart';
 import '../domain/reminder_payload.dart';
 import '../infrastructure/device_time_zone_service.dart';
@@ -59,6 +60,7 @@ abstract final class ReminderPlanner {
     required Iterable<Habit> habits,
     required LocalDate start,
     required tz.Location location,
+    Set<String> completedOccurrences = const <String>{},
     int horizonDays = 90,
     int capacity = 64,
   }) {
@@ -77,16 +79,21 @@ abstract final class ReminderPlanner {
       } on FormatException {
         continue;
       }
-      final weeklyCounts = <LocalDate, int>{};
+      final completedDates = _completedDatesForHabit(
+        completedOccurrences,
+        habit.id,
+      );
       for (var offset = 0; offset < horizonDays; offset++) {
         final date = start.addDays(offset);
-        if (habit.isPausedOn(date.toString())) continue;
-        if (schedule is TimesPerWeekSchedule) {
-          final week = date.addDays(1 - date.weekday);
-          final count = weeklyCounts[week] ?? 0;
-          if (count >= schedule.target) continue;
-          weeklyCounts[week] = count + 1;
-        } else if (!schedule.isAvailableOn(date)) {
+        final progress = HabitScheduleProgress.evaluate(
+          schedule: schedule,
+          focusDate: date,
+          completedDates: completedDates,
+          isInactiveOn: (candidate) =>
+              HabitScheduleProgress.isHabitInactiveOn(habit, candidate),
+        );
+        if (!progress.isContributionAvailableOn(date) ||
+            completedDates.contains(date)) {
           continue;
         }
         planned.add(
@@ -109,6 +116,23 @@ abstract final class ReminderPlanner {
       return time != 0 ? time : left.logicalKey.compareTo(right.logicalKey);
     });
     return List<PlannedReminder>.unmodifiable(planned.take(capacity));
+  }
+
+  static Set<LocalDate> _completedDatesForHabit(
+    Set<String> completedOccurrences,
+    String habitId,
+  ) {
+    final prefix = '$habitId@';
+    final dates = <LocalDate>{};
+    for (final occurrence in completedOccurrences) {
+      if (!occurrence.startsWith(prefix)) continue;
+      try {
+        dates.add(LocalDate.parse(occurrence.substring(prefix.length)));
+      } on FormatException {
+        continue;
+      }
+    }
+    return dates;
   }
 
   static (int, int)? _parseTime(String value) {

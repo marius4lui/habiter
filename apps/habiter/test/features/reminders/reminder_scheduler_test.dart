@@ -33,13 +33,47 @@ void main() {
 
       expect(plan.where((item) => item.habit.id == 'daily'), hasLength(7));
       expect(plan.where((item) => item.habit.id == 'custom'), hasLength(2));
-      expect(plan.where((item) => item.habit.id == 'weekly'), hasLength(2));
+      expect(plan.where((item) => item.habit.id == 'weekly'), hasLength(7));
       expect(
         plan.map((item) => item.logicalKey).toSet(),
         hasLength(plan.length),
       );
     },
   );
+
+  test('legacy fixed planner reconciles flexible weekly progress', () {
+    final habit = _habit('weekly', HabitFrequency.weekly, target: 3);
+    final reached = ReminderPlanner.plan(
+      habits: <Habit>[habit],
+      start: LocalDate(2026, 8, 17),
+      location: tz.UTC,
+      completedOccurrences: <String>{
+        'weekly@2026-08-17',
+        'weekly@2026-08-18',
+        'weekly@2026-08-19',
+      },
+      horizonDays: 8,
+    );
+    final reopened = ReminderPlanner.plan(
+      habits: <Habit>[habit],
+      start: LocalDate(2026, 8, 17),
+      location: tz.UTC,
+      completedOccurrences: <String>{'weekly@2026-08-17', 'weekly@2026-08-18'},
+      horizonDays: 8,
+    );
+
+    expect(reached.map((item) => item.occurrence), <LocalDate>[
+      LocalDate(2026, 8, 24),
+    ]);
+    expect(reopened.map((item) => item.occurrence), <LocalDate>[
+      LocalDate(2026, 8, 19),
+      LocalDate(2026, 8, 20),
+      LocalDate(2026, 8, 21),
+      LocalDate(2026, 8, 22),
+      LocalDate(2026, 8, 23),
+      LocalDate(2026, 8, 24),
+    ]);
+  });
 
   test('planner respects lifecycle and the iOS pending capacity', () {
     final plan = ReminderPlanner.plan(

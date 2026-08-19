@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "packages": {
+    "com.instagram.android": { "category": "social", "prior": "high" },
+    "com.zhiliaoapp.musically": { "category": "short_video", "prior": "high" },
+    "com.google.android.youtube": { "category": "video", "prior": "medium" },
+    "com.reddit.frontpage": { "category": "forums", "prior": "medium" },
+    "com.twitter.android": { "category": "social", "prior": "high" },
+    "com.facebook.katana": { "category": "social", "prior": "high" },
+    "com.snapchat.android": { "category": "social", "prior": "high" },
+    "com.netflix.mediaclient": { "category": "streaming", "prior": "medium" },
+    "com.amazon.mShop.android.shopping": { "category": "shopping", "prior": "low" }
+  }
+}

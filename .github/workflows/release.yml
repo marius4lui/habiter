@@ -161,7 +161,7 @@ jobs:
         working-directory: apps/habiter
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libwebkit2gtk-4.1-dev libsecret-1-dev
+      - run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libwebkit2gtk-4.1-dev libsecret-1-dev libfuse2
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.44.8'
@@ -176,11 +176,20 @@ jobs:
           flutter build linux --release --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
       - env:
           VERSION: ${{ needs.validate.outputs.version }}
-        run: tar -C build/linux/x64/release/bundle -czf "habiter-$VERSION-linux-x64.tar.gz" .
+        run: |
+          tar -C build/linux/x64/release/bundle -czf "habiter-$VERSION-linux-x64.tar.gz" .
+          curl --fail --location --proto '=https' --tlsv1.2 \
+            --output "$RUNNER_TEMP/appimagetool" \
+            https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod 755 "$RUNNER_TEMP/appimagetool"
+          APPIMAGETOOL="$RUNNER_TEMP/appimagetool" \
+            ../../scripts/release/package-linux-appimage.sh build/linux/x64/release/bundle "$VERSION" .
       - uses: actions/upload-artifact@v4
         with:
           name: release-linux
-          path: apps/habiter/habiter-*-linux-x64.tar.gz
+          path: |
+            apps/habiter/habiter-*-linux-x64.tar.gz
+            apps/habiter/Habiter-*-x86_64.AppImage
           if-no-files-found: error
 
   windows:
@@ -240,7 +249,10 @@ jobs:
           flutter build macos --release --dart-define="HABITER_UPDATE_PUBLIC_KEYS=$HABITER_UPDATE_PUBLIC_KEYS"
       - env:
           VERSION: ${{ needs.validate.outputs.version }}
-        run: ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/habiter.app "habiter-$VERSION-macos-universal.zip"
+        run: |
+          rm -rf "$RUNNER_TEMP/Habiter.app"
+          ditto build/macos/Build/Products/Release/habiter.app "$RUNNER_TEMP/Habiter.app"
+          ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/Habiter.app" "habiter-$VERSION-macos-universal.zip"
       - uses: actions/upload-artifact@v4
         with:
           name: release-macos
@@ -281,6 +293,20 @@ jobs:
           node scripts/release/enrich-artifacts.mjs "$VERSION" artifacts runtime-releases.json
           (cd artifacts && sha256sum * > "habiter-$VERSION-checksums.txt")
           cp runtime-releases.json artifacts/releases.json
+      - name: Block publication on installer contract regressions
+        env:
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          sh -n scripts/install/install.sh
+          sh scripts/install/test/install-sh.test.sh
+          pnpm --filter @habiter/release-api types
+          pnpm --filter @habiter/release-api check
+          jq --exit-status --arg version "$VERSION" '
+            .releases[] | select(.version == $version) |
+            [.artifacts[] | select(.primary == true) |
+              (.format != null and .url != null and .sha256 != null and .size > 0)] as $checks |
+            ($checks | length) >= 3 and ($checks | all)
+          ' runtime-releases.json
       - name: Create draft release with every asset
         env:
           GH_TOKEN: ${{ github.token }}

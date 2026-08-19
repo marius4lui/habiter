@@ -2,7 +2,7 @@ package com.habiter.app.widget
 
 import android.content.Context
 
-object HabiterWidgetAppLockSynchronizer {
+internal object HabiterWidgetAppLockSynchronizer {
     private const val HOME_WIDGET_PREFERENCES = "HomeWidgetPreferences"
     private const val APP_LOCK_PREFERENCES = "app_lock"
     private const val COMPLETE_KEY = "habits_complete"

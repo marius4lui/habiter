@@ -1,9 +1,7 @@
 import {
   createHash,
   createPrivateKey,
-  createPublicKey,
-  sign,
-  verify
+  sign
 } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
@@ -86,14 +84,14 @@ function assertPublishedAsset(asset, label) {
   if (url.protocol !== "https:") throw new Error(`Published asset must use HTTPS: ${label}`);
 }
 
-export function publishedManifest(manifest) {
+function publishedManifest(manifest) {
   return {
     schemaVersion: manifest.schemaVersion,
     releases: manifest.releases.filter((release) => release.status === "published")
   };
 }
 
-export function manifestPayloadBytes(manifest) {
+function manifestPayloadBytes(manifest) {
   return Buffer.from(JSON.stringify(publishedManifest(manifest)), "utf8");
 }
 
@@ -113,30 +111,6 @@ export function signManifestEnvelope({ manifest, keyId, privateKey }) {
   };
 }
 
-export function verifyManifestEnvelope(envelope, publicKeyRing) {
-  if (
-    envelope?.schemaVersion !== 1
-    || envelope.algorithm !== "ed25519"
-    || typeof envelope.keyId !== "string"
-    || typeof envelope.payload !== "string"
-    || typeof envelope.signature !== "string"
-  ) {
-    throw new Error("Invalid signed manifest envelope");
-  }
-  const publicKey = publicKeyRing[envelope.keyId];
-  if (!publicKey) throw new Error(`Unknown manifest signing key: ${envelope.keyId}`);
-  const key = publicKey?.type === "public" ? publicKey : createPublicKey(publicKey);
-  if (key.asymmetricKeyType !== "ed25519") throw new Error("Manifest verification key must use Ed25519");
-  const payload = Buffer.from(envelope.payload, "base64url");
-  const signature = Buffer.from(envelope.signature, "base64url");
-  if (!verify(null, payload, key, signature)) throw new Error("Manifest signature verification failed");
-  const manifest = JSON.parse(payload.toString("utf8"));
-  if (manifest.releases?.some((release) => release.status !== "published")) {
-    throw new Error("Signed manifest contains an unpublished release");
-  }
-  return { manifest, payload };
-}
-
 export function parsePubspecVersion(contents) {
   const match = contents.match(/^version:\s*([^+\s]+)\+(\d+)\s*$/m);
   if (!match || !semverPattern.test(match[1])) throw new Error("Invalid or missing pubspec version");
@@ -153,15 +127,6 @@ export function assertTagMatches({ tag, pubspec, manifest }) {
     throw new Error(`Build number ${pubspec.buildNumber} does not match manifest ${release.buildNumber}`);
   }
   return release;
-}
-
-export function compareVersions(left, right) {
-  const a = left.split(".").map(Number);
-  const b = right.split(".").map(Number);
-  for (let index = 0; index < 3; index += 1) {
-    if (a[index] !== b[index]) return a[index] - b[index];
-  }
-  return 0;
 }
 
 export function renderNotes(release) {

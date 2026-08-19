@@ -89,4 +89,24 @@ describe("release API", () => {
     expect(invalidChannel.status).toBe(400);
     expect(await invalidChannel.json()).toMatchObject({ error: { code: "invalid_channel" } });
   });
+
+  it("does not expose arbitrary release subpaths", async () => {
+    expect((await call("/api/v1/releases/1.0.0/private")).status).toBe(404);
+    expect((await call("/api/v1/releases/1.0.0/downloads/extra")).status).toBe(404);
+  });
+
+  it("includes a request ID when the signed manifest is unavailable", async () => {
+    const response = await createHandler(manifest)(
+      new Request("https://get.habiter.dev/api/v1/manifest"),
+      env,
+    );
+    expect(response.status).toBe(503);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toMatchObject({
+      error: {
+        code: "manifest_unavailable",
+        requestId: expect.any(String),
+      },
+    });
+  });
 });

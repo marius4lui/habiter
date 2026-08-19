@@ -18,11 +18,12 @@ function releaseChannel(value: string | null): ReleaseChannel | null {
   return value === "stable" || value === "beta" ? value : null;
 }
 
-function manifestResponse(request: Request, envelope: SignedManifestEnvelope | undefined): Response {
-  if (!envelope) return new Response(JSON.stringify({ error: { code: "manifest_unavailable", message: "Signed manifest is unavailable" } }), {
-    status: 503,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" }
-  });
+function manifestResponse(request: Request, envelope: SignedManifestEnvelope | undefined, requestId: string): Response {
+  if (!envelope) {
+    const response = apiError(requestId, 503, "manifest_unavailable", "Signed manifest is unavailable");
+    response.headers.set("cache-control", "no-store");
+    return response;
+  }
   const etag = `"${envelope.keyId}.${envelope.signature.slice(0, 32)}"`;
   if (request.headers.get("if-none-match") === etag) {
     return new Response(null, { status: 304, headers: { etag, "cache-control": shortCache } });
@@ -60,7 +61,7 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
     }
 
     if (segments[2] === "manifest" && segments.length === 3) {
-      return manifestResponse(request, envelope);
+      return manifestResponse(request, envelope, requestId);
     }
 
     if (segments[2] === "releases" && segments.length === 3) {
@@ -81,7 +82,11 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
         : apiError(requestId, 404, "release_not_found", "No published release exists for this channel");
     }
 
-    if (segments[2] === "releases" && segments[3] && segments.length >= 4) {
+    if (
+      segments[2] === "releases"
+      && segments[3]
+      && (segments.length === 4 || (segments.length === 5 && segments[4] === "downloads"))
+    ) {
       const release = releases.find(segments[3]);
       if (!release) return apiError(requestId, 404, "release_not_found", "Release not found");
       const payload = segments[4] === "downloads" ? { version: release.version, artifacts: release.artifacts } : release;

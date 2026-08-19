@@ -1,4 +1,6 @@
 import '../../../models/locked_app.dart';
+import 'app_block_candidate.dart';
+import 'app_block_projection.dart';
 
 enum AppLockFailureKind {
   unsupported,
@@ -38,6 +40,8 @@ abstract interface class AppLockGateway {
 
   Future<AppLockResult<List<LockedApp>>> installedApps();
 
+  Future<AppLockResult<List<AppUsageRecord>>> recentUsage();
+
   Future<AppLockResult<AppLockPermissionSnapshot>> permissions();
 
   Future<AppLockResult<void>> requestUsageAccess();
@@ -54,6 +58,10 @@ abstract interface class AppLockGateway {
     required bool complete,
     required List<String> incompleteHabitNames,
   });
+
+  Future<AppLockResult<void>> publishProjections(
+    AppBlockProjectionSnapshot snapshot,
+  );
 
   Future<AppLockResult<bool>> isBatteryOptimized();
 

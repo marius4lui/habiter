@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/features/app_lock/domain/app_lock_gateway.dart';
+import 'package:habiter/features/app_lock/domain/app_block_projection.dart';
 import 'package:habiter/features/app_lock/infrastructure/method_channel_app_lock_gateway.dart';
 
 void main() {
@@ -25,6 +26,14 @@ void main() {
                 'iconBytes': <int>[1, 2],
               },
             ],
+            'getRecentUsage' => <Map<String, Object?>>[
+              <String, Object?>{
+                'packageName': 'org.example.app',
+                'appName': 'Example',
+                'foregroundMilliseconds': 120000,
+                'lastUsedMilliseconds': 1787133600000,
+              },
+            ],
             'hasUsageStatsPermission' || 'hasOverlayPermission' => true,
             'startMonitoring' => true,
             'isBatteryOptimized' => false,
@@ -40,6 +49,7 @@ void main() {
       (await gateway.installedApps() as AppLockSuccess).value,
       hasLength(1),
     );
+    expect((await gateway.recentUsage() as AppLockSuccess).value, hasLength(1));
     final permissions =
         (await gateway.permissions()
                 as AppLockSuccess<AppLockPermissionSnapshot>)
@@ -54,17 +64,22 @@ void main() {
       complete: false,
       incompleteHabitNames: <String>['Walk'],
     );
+    await gateway.publishProjections(
+      AppBlockProjectionSnapshot(const <AppBlockGateProjection>[]),
+    );
     await gateway.stop();
 
     expect(
       calls.map((call) => call.method),
       containsAll(<String>[
         'getInstalledApps',
+        'getRecentUsage',
         'hasUsageStatsPermission',
         'hasOverlayPermission',
         'startMonitoring',
         'updateIncompleteHabits',
         'habitsIncomplete',
+        'updateGateProjections',
         'stopMonitoring',
       ]),
     );

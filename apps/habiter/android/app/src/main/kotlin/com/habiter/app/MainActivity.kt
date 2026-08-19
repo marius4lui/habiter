@@ -1,6 +1,7 @@
 package com.habiter.app
 
 import android.app.AppOpsManager
+import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -41,6 +42,9 @@ class MainActivity: FlutterActivity() {
                 "getInstalledApps" -> {
                     val apps = getInstalledNonSystemApps()
                     result.success(apps)
+                }
+                "getRecentUsage" -> {
+                    result.success(getRecentUsage())
                 }
                 "hasUsageStatsPermission" -> {
                     result.success(hasUsageStatsPermission())
@@ -90,6 +94,11 @@ class MainActivity: FlutterActivity() {
                     updateIncompleteHabits(habitNames)
                     result.success(null)
                 }
+                "updateGateProjections" -> {
+                    val projections = call.argument<List<Map<String, Any?>>>("projections") ?: emptyList()
+                    updateGateProjections(projections)
+                    result.success(null)
+                }
                 else -> {
                     result.notImplemented()
                 }
@@ -136,10 +145,11 @@ class MainActivity: FlutterActivity() {
         }
         
         for (appInfo in packages) {
-            // Skip system apps
+            // Skip system apps and packages the user cannot launch.
             if ((appInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0) continue
             // Skip our own app
             if (appInfo.packageName == packageName) continue
+            if (pm.getLaunchIntentForPackage(appInfo.packageName) == null) continue
             
             try {
                 val appName = pm.getApplicationLabel(appInfo).toString()
@@ -157,6 +167,27 @@ class MainActivity: FlutterActivity() {
         }
         
         return apps.sortedBy { (it["appName"] as String).lowercase() }
+    }
+
+    private fun getRecentUsage(): List<Map<String, Any?>> {
+        if (!hasUsageStatsPermission()) return emptyList()
+        val now = System.currentTimeMillis()
+        val start = now - 7L * 24L * 60L * 60L * 1000L
+        val manager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val launchable = getInstalledNonSystemApps().associateBy {
+            it["packageName"] as String
+        }
+        return manager.queryAndAggregateUsageStats(start, now).values
+            .filter { it.totalTimeInForeground > 0L && launchable.containsKey(it.packageName) }
+            .map { stats ->
+                mapOf(
+                    "packageName" to stats.packageName,
+                    "appName" to launchable[stats.packageName]?.get("appName"),
+                    "foregroundMilliseconds" to stats.totalTimeInForeground,
+                    "lastUsedMilliseconds" to stats.lastTimeUsed,
+                )
+            }
+            .sortedByDescending { (it["foregroundMilliseconds"] as Long) }
     }
 
     private fun drawableToBytes(drawable: Drawable): ByteArray? {
@@ -306,5 +337,32 @@ class MainActivity: FlutterActivity() {
         prefs.edit()
             .putStringSet("incomplete_habits", habitNames.toSet())
             .apply()
+    }
+
+    private fun updateGateProjections(projections: List<Map<String, Any?>>) {
+        val prefs = getSharedPreferences("app_lock", Context.MODE_PRIVATE)
+        val previous = prefs.getStringSet("projected_packages", emptySet()) ?: emptySet()
+        val editor = prefs.edit()
+        previous.forEach { editor.remove("projection_blockers_$it") }
+
+        val projected = mutableSetOf<String>()
+        val blocked = mutableSetOf<String>()
+        projections.forEach { projection ->
+            val packageName = projection["packageName"] as? String ?: return@forEach
+            projected += packageName
+            if (projection["blocked"] == true) {
+                blocked += packageName
+                val blockers = (projection["blockers"] as? List<*>)
+                    ?.mapNotNull { (it as? Map<*, *>)?.get("name") as? String }
+                    ?.toSet()
+                    ?: emptySet()
+                editor.putStringSet("projection_blockers_$packageName", blockers)
+            }
+        }
+        editor
+            .putStringSet("projected_packages", projected)
+            .putStringSet("projected_blocked_packages", blocked)
+            .apply()
+        BlockingOverlay.reconcileLockedPackages(blocked)
     }
 }

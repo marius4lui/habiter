@@ -15,16 +15,14 @@ object AppLockPolicy {
         enabled: Boolean,
         hasUsageAccess: Boolean,
         hasOverlayAccess: Boolean,
-        habitsComplete: Boolean,
         foregroundPackage: String?,
-        lockedPackages: Set<String>,
+        blockedPackages: Set<String>,
     ): BlockingUiState {
         val shouldShow = enabled &&
             hasUsageAccess &&
             hasOverlayAccess &&
-            !habitsComplete &&
             foregroundPackage != null &&
-            foregroundPackage in lockedPackages
+            foregroundPackage in blockedPackages
         return if (shouldShow) {
             BlockingUiState.Visible(requireNotNull(foregroundPackage))
         } else {

@@ -63,7 +63,7 @@ Exactly 20 batches are allowed. A batch is `VERIFIED` only after its listed focu
 | 08 | VERIFIED | `feat(onboarding): map canonical schedule education` | 13 mapper and canonical schedule tests pass; daily, flexible, fixed, immutability and typed invalid-draft fallbacks are covered. |
 | 09 | VERIFIED | `feat(onboarding): add interactive schedule demo` | 4 widget tests pass for consecutive days, undo, fixed-day disabling, keyboard/Semantics, DE labels, 320 dp, 200% text and reduced motion. |
 | 10 | VERIFIED | `feat(onboarding): teach the selected rhythm` | 13 focused tests pass; the actual schedule renders, interaction gates continuation, routing reaches reminder education, and the provider-free demo performs no product writes. |
-| 11 | PENDING | - | Reminder timeline Done/Later/reset widget tests. |
+| 11 | VERIFIED | `feat(onboarding): add reminder timing simulation` | 4 widget tests pass; Done changes only demo progress and hides the occurrence, Later adds 30 minutes without progress, reset, keyboard, Semantics, dark/320 dp/200% and reduced motion are covered. |
 | 12 | PENDING | - | Reminder model routing and no-side-effect tests. |
 | 13 | PENDING | - | Permission timing, copy guardrails, balanced defaults. |
 | 14 | PENDING | - | Combined screen, dynamic preview, pin flow regressions. |

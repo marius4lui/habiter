@@ -3,7 +3,10 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname "$0")/../../.." && pwd)
 INSTALLER="$ROOT/scripts/install/install.sh"
 FIXTURES="$ROOT/scripts/install/test/os-release"
-HABITER_TEST_MODE=functions . "$INSTALLER"
+HABITER_TEST_MODE=functions
+export HABITER_TEST_MODE
+. "$INSTALLER"
+unset HABITER_TEST_MODE
 
 assert_eq() { [ "$1" = "$2" ] || { echo "expected '$2', got '$1'" >&2; exit 1; }; }
 assert_eq "$(normalize_arch x86_64)" x64

@@ -45,10 +45,17 @@ void main() {
     );
     await restarted.initialize(hasExistingHabits: false);
 
-    expect(restarted.state.currentStep, OnboardingStep.reminder);
+    expect(restarted.state.currentStep, OnboardingStep.rhythmExplainer);
     expect(restarted.state.intent, OnboardingIntent.learning);
     expect(restarted.state.habitDraft?.name, 'Read');
     expect(restarted.state.habitDraft?.customDays, <int>[1, 3, 5]);
+
+    await restarted.confirmRhythmUnderstanding();
+    expect(restarted.state.currentStep, OnboardingStep.reminderModel);
+    await restarted.confirmReminderModel();
+    expect(restarted.state.currentStep, OnboardingStep.reminder);
+    await restarted.back();
+    expect(restarted.state.currentStep, OnboardingStep.reminderModel);
   });
 
   test('back navigation keeps the draft and reserved id is stable', () async {

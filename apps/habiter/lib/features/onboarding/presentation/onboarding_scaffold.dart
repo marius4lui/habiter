@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/design_system/tokens.dart';
 import '../../../l10n/l10n.dart';
+import '../application/onboarding_state.dart';
 
 class OnboardingScaffold extends StatelessWidget {
   const OnboardingScaffold({
@@ -15,7 +16,7 @@ class OnboardingScaffold extends StatelessWidget {
     this.onBack,
   });
 
-  final int step;
+  final OnboardingStep step;
   final String title;
   final String? subtitle;
   final Widget body;
@@ -26,6 +27,7 @@ class OnboardingScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final stepIndex = OnboardingProgress.indexOf(step);
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -54,11 +56,14 @@ class OnboardingScaffold extends StatelessWidget {
                   ),
                   Expanded(
                     child: Semantics(
-                      label: context.l10n.onboardingStepProgress(step, 8),
+                      label: context.l10n.onboardingStepProgress(
+                        stepIndex,
+                        OnboardingProgress.total,
+                      ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(HabiterRadius.pill),
                         child: LinearProgressIndicator(
-                          value: step / 8,
+                          value: stepIndex / OnboardingProgress.total,
                           minHeight: 6,
                           backgroundColor:
                               theme.colorScheme.surfaceContainerHighest,

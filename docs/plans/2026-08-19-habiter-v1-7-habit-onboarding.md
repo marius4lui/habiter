@@ -59,7 +59,7 @@ Exactly 20 batches are allowed. A batch is `VERIFIED` only after its listed focu
 | 04 | VERIFIED | `fix(reminders): honor flexible weekly progress` | 35/35 planner, domain and coordinator tests pass; arbitrary days, target suppression, undo, pause, custom days and Monday reset covered. |
 | 05 | VERIFIED | `fix(reminders): align fixed weekly planning` | 25/25 fixed and dynamic planner tests pass; legacy API accepts completed occurrences and shares target, undo and reset semantics. |
 | 06 | VERIFIED | `feat(onboarding): migrate persisted flow to v3` | 14 state, controller, flow and Smart tests pass serially; explicit v2 mapping, persisted rewrite, nine-step order and resume covered. |
-| 07 | PENDING | - | Nested navigator, manual back, system back, resume tests. |
+| 07 | VERIFIED | `fix(onboarding): give steps real navigation history` | Nested navigator restores resumable history; manual and system back are covered by 15 serial onboarding tests and targeted analysis. |
 | 08 | PENDING | - | Presentation mapper unit tests for all schedules. |
 | 09 | PENDING | - | Week demo interaction and semantics widget tests. |
 | 10 | PENDING | - | Rhythm explainer routing and read-only behavior tests. |

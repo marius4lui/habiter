@@ -16,7 +16,7 @@ class IntentStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => OnboardingScaffold(
-    step: 2,
+    step: OnboardingStep.intent,
     title: context.l10n.onboardingIntentTitle,
     subtitle: context.l10n.onboardingIntentBody,
     onBack: controller.back,

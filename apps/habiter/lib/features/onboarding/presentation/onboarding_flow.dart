@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/design_system/motion.dart';
+import '../../widgets/domain/widget_bridge.dart';
 import '../application/onboarding_controller.dart';
 import '../application/onboarding_state.dart';
-import '../../widgets/domain/widget_bridge.dart';
 import 'onboarding_scaffold.dart';
 import 'steps/first_habit_step.dart';
 import 'steps/habit_ready_step.dart';
@@ -15,29 +17,51 @@ import 'steps/welcome_step.dart';
 import 'steps/widget_intro_step.dart';
 import 'steps/widget_pin_step.dart';
 
-class OnboardingFlow extends StatelessWidget {
+class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({super.key});
+
+  @override
+  State<OnboardingFlow> createState() => _OnboardingFlowState();
+}
+
+class _OnboardingFlowState extends State<OnboardingFlow> {
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<OnboardingController>();
-    final step = controller.state.currentStep;
-    return AnimatedSwitcher(
-      duration: HabiterMotion.standard.duration(reduced: context.reduceMotion),
-      switchInCurve: HabiterMotion.standard.curve,
-      switchOutCurve: Curves.easeIn,
-      transitionBuilder: (child, animation) => FadeTransition(
-        opacity: animation,
-        child: SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0.04, 0),
-            end: Offset.zero,
-          ).animate(animation),
-          child: child,
-        ),
-      ),
-      child: _step(context, controller, step),
+    final currentStep = controller.state.currentStep;
+    final duration = HabiterMotion.standard.duration(
+      reduced: context.reduceMotion,
     );
+    final pages = <Page<void>>[
+      for (final step in OnboardingProgress.through(currentStep))
+        _OnboardingPage(
+          key: ValueKey<OnboardingStep>(step),
+          name: '/onboarding/${step.name}',
+          duration: duration,
+          child: KeyedSubtree(
+            key: ValueKey<String>('onboarding-page-${step.name}'),
+            child: _step(context, controller, step),
+          ),
+        ),
+    ];
+
+    return NavigatorPopHandler<void>(
+      onPopWithResult: (_) => _navigatorKey.currentState?.pop(),
+      child: Navigator(
+        key: _navigatorKey,
+        pages: pages,
+        onDidRemovePage: (page) => _didRemovePage(controller, page),
+      ),
+    );
+  }
+
+  void _didRemovePage(OnboardingController controller, Page<Object?> page) {
+    final key = page.key;
+    if (key is! ValueKey<OnboardingStep>) return;
+    if (controller.state.currentStep != key.value) return;
+    unawaited(controller.back());
   }
 
   Widget _step(
@@ -46,59 +70,36 @@ class OnboardingFlow extends StatelessWidget {
     OnboardingStep step,
   ) {
     if (step == OnboardingStep.welcome || step == OnboardingStep.notStarted) {
-      return WelcomeStep(
-        key: const ValueKey<OnboardingStep>(OnboardingStep.welcome),
-        controller: controller,
-      );
+      return WelcomeStep(controller: controller);
     }
     if (step == OnboardingStep.intent) {
-      return IntentStep(
-        key: const ValueKey<OnboardingStep>(OnboardingStep.intent),
-        controller: controller,
-      );
+      return IntentStep(controller: controller);
     }
     if (step == OnboardingStep.firstHabit) {
-      return FirstHabitStep(
-        key: const ValueKey<OnboardingStep>(OnboardingStep.firstHabit),
-        controller: controller,
-      );
+      return FirstHabitStep(controller: controller);
     }
     if (step == OnboardingStep.rhythm && controller.state.habitDraft != null) {
-      return RhythmStep(
-        key: const ValueKey<OnboardingStep>(OnboardingStep.rhythm),
-        controller: controller,
-      );
+      return RhythmStep(controller: controller);
     }
     if (step == OnboardingStep.reminder &&
         controller.state.habitDraft != null) {
-      return ReminderStep(
-        key: const ValueKey<OnboardingStep>(OnboardingStep.reminder),
-        controller: controller,
-      );
+      return ReminderStep(controller: controller);
     }
     if (step == OnboardingStep.habitReady &&
         controller.state.habitDraft != null) {
-      return HabitReadyStep(
-        key: const ValueKey<OnboardingStep>(OnboardingStep.habitReady),
-        controller: controller,
-      );
+      return HabitReadyStep(controller: controller);
     }
     if (step == OnboardingStep.widgetIntro) {
-      return WidgetIntroStep(
-        key: const ValueKey<OnboardingStep>(OnboardingStep.widgetIntro),
-        controller: controller,
-      );
+      return WidgetIntroStep(controller: controller);
     }
     if (step == OnboardingStep.widgetPin) {
       return WidgetPinStep(
-        key: const ValueKey<OnboardingStep>(OnboardingStep.widgetPin),
         controller: controller,
         bridge: context.read<WidgetBridge>(),
       );
     }
     return OnboardingScaffold(
-      key: ValueKey<OnboardingStep>(step),
-      step: _progress(step),
+      step: step,
       title: _title(step),
       subtitle: 'Your setup is saved automatically.',
       onBack: controller.back,
@@ -112,21 +113,12 @@ class OnboardingFlow extends StatelessWidget {
     );
   }
 
-  int _progress(OnboardingStep step) => switch (step) {
-    OnboardingStep.intent => 2,
-    OnboardingStep.firstHabit => 3,
-    OnboardingStep.rhythm => 4,
-    OnboardingStep.reminder => 5,
-    OnboardingStep.habitReady => 6,
-    OnboardingStep.widgetIntro => 7,
-    OnboardingStep.widgetPin => 8,
-    _ => 1,
-  };
-
   String _title(OnboardingStep step) => switch (step) {
     OnboardingStep.intent => 'What would you like to strengthen?',
     OnboardingStep.firstHabit => 'Start with something small.',
     OnboardingStep.rhythm => 'How often does this fit your life?',
+    OnboardingStep.rhythmExplainer => 'How your habit counts.',
+    OnboardingStep.reminderModel => 'Reminders help with timing.',
     OnboardingStep.reminder => 'Would you like a reminder?',
     OnboardingStep.habitReady => 'Your first habit is ready.',
     OnboardingStep.widgetIntro => 'Habiter belongs on your home screen.',
@@ -138,10 +130,45 @@ class OnboardingFlow extends StatelessWidget {
     OnboardingStep.intent => Icons.explore_rounded,
     OnboardingStep.firstHabit => Icons.add_task_rounded,
     OnboardingStep.rhythm => Icons.calendar_month_rounded,
+    OnboardingStep.rhythmExplainer => Icons.calendar_view_week_rounded,
+    OnboardingStep.reminderModel => Icons.schedule_rounded,
     OnboardingStep.reminder => Icons.notifications_none_rounded,
     OnboardingStep.habitReady => Icons.check_circle_rounded,
     OnboardingStep.widgetIntro => Icons.widgets_rounded,
     OnboardingStep.widgetPin => Icons.add_to_home_screen_rounded,
     _ => Icons.eco_rounded,
   };
+}
+
+final class _OnboardingPage extends Page<void> {
+  const _OnboardingPage({
+    required super.key,
+    required super.name,
+    required this.duration,
+    required this.child,
+  });
+
+  final Duration duration;
+  final Widget child;
+
+  @override
+  Route<void> createRoute(BuildContext context) => PageRouteBuilder<void>(
+    settings: this,
+    transitionDuration: duration,
+    reverseTransitionDuration: duration,
+    pageBuilder: (_, _, _) => child,
+    transitionsBuilder: (_, animation, _, child) => FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: Tween<Offset>(begin: const Offset(0.04, 0), end: Offset.zero)
+            .animate(
+              CurvedAnimation(
+                parent: animation,
+                curve: HabiterMotion.standard.curve,
+              ),
+            ),
+        child: child,
+      ),
+    ),
+  );
 }

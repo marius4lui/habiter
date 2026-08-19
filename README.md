@@ -12,9 +12,9 @@ A polished, local-first habit tracker for mobile, desktop, and web — built wit
 [![Platform builds](https://github.com/marius4lui/habiter/actions/workflows/platform-builds.yml/badge.svg?branch=main)](https://github.com/marius4lui/habiter/actions/workflows/platform-builds.yml)
 [![Release API](https://github.com/marius4lui/habiter/actions/workflows/worker-deploy.yml/badge.svg?branch=main)](https://github.com/marius4lui/habiter/actions/workflows/worker-deploy.yml)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44.8-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Version](https://img.shields.io/badge/version-1.4.0-6C63FF)](apps/habiter/pubspec.yaml)
+[![Latest release](https://img.shields.io/github/v/release/marius4lui/habiter?sort=semver&label=release&color=6C63FF)](https://github.com/marius4lui/habiter/releases/latest)
 
-[Website](https://habiter.dev) · [Download](https://get.habiter.dev/download) · [Documentation](docs/) · [Release API](https://get.habiter.dev/health)
+[Website](https://habiter.dev) · [Download](https://get.habiter.dev/download) · [Documentation](https://docs.habiter.dev) · [Release API](https://docs.habiter.dev/api/release-api)
 
 </div>
 
@@ -231,12 +231,15 @@ Open `http://localhost:3000`. Use `pnpm website:check` for the complete website 
 | `GET /api/v1/releases` | Paginated published releases |
 | `GET /api/v1/releases/latest` | Latest release for a channel |
 | `GET /api/v1/releases/:version` | One concrete release |
+| `GET /api/v1/releases/:version/downloads` | Artifacts for one concrete release |
 | `GET /api/v1/manifest` | ETag-aware Ed25519-signed update manifest envelope |
 | `GET /api/v1/update/:platform` | Version and build update decision |
-| `GET /api/v1/download/:platform` | Latest platform download |
+| `GET /api/v1/download/:platform/:architecture?` | Latest matching platform download |
 | `GET /download` | User-Agent-aware download redirect |
 
 Concrete release responses are immutable; latest, update, and download decisions use short cache windows. Errors share a stable JSON contract with a request ID.
+
+See the [complete Release API reference](https://docs.habiter.dev/api/release-api) for parameters, schemas, status codes, caching, redirects, and verification guidance.
 
 ## Delivery model
 

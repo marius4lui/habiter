@@ -37,7 +37,7 @@ Delivery is controlled by the operating system. Battery policy and manufacturer 
 
 - **App Lock:** Android only; requires Usage Access, overlay access, and a foreground service. It fails open if access is missing.
 - **Trusted updates:** Direct Android builds verify signed release metadata and the complete APK before opening Android's installer. Stable/Beta tracks, three download profiles, release stories, history and storage controls live in the Update Center. Desktop opens verified release links in the browser; iOS and web do not self-update in v1.5.
-- **Home-screen widgets:** native availability and interaction behavior depend on the platform.
+- **Home-screen widgets:** the interactive native widget and pinning flow are currently Android-only.
 - **Reminders:** supported through platform notification APIs, subject to OS delivery policy.
 - **Desktop/web:** core tracking works; mobile-only integrations may be unavailable.
 

@@ -1,6 +1,6 @@
-# Habiter 1A release-candidate evidence
+# Release verification checklist
 
-This document records reproducible release-candidate gates. It is not a release announcement and authorizes no deployment or publication.
+Use this checklist for every release candidate. It records reproducible gates; it is not a release announcement and authorizes no deployment or publication.
 
 ## Required gates
 
@@ -8,8 +8,8 @@ This document records reproducible release-candidate gates. It is not a release 
 |---|---|---|
 | Flutter | `dart format --output=none --set-exit-if-changed .`, `flutter analyze --fatal-infos`, `flutter test --coverage` | Flutter 3.44.8 in CI |
 | Platforms | Android, web, Linux, macOS, Windows, unsigned iOS release builds | GitHub matrix runners |
-| Landing | frozen install, lint, TypeScript, `pnpm test`, production build | Node 24 / pnpm 11 |
-| Docs | `npm ci`, `npm run docs:build` | Node 24 |
+| Workspace | `pnpm install --frozen-lockfile`, roadmap, release-core, Worker, and website checks from `quality.yml` | Node 24 / pnpm 11 |
+| Docs | `npm ci`, `npm run docs:check` | Node 24 |
 | Security | Gitleaks plus explicit secret/reference scans | full Git history in CI |
 
 ## Manual device gates
@@ -19,7 +19,7 @@ This document records reproducible release-candidate gates. It is not a release 
 - Verify Classly-compatible OAuth against a trusted public HTTPS test server supporting PKCE.
 - Confirm import preview, collision choice, backup creation, cancellation, and recovery from a deliberately corrupt file.
 
-## v1.5 update-system gates
+## Update-system gates
 
 The Android build job runs both native unit-test variants and validates the
 actual merged manifests with `scripts/android/verify-update-flavors.sh`.
@@ -36,6 +36,6 @@ isolation.
 - Exercise an expired mandatory deadline once with a successful online verification and once offline. Online must show the non-dismissible update screen; offline must preserve app access with a permanent warning until verification succeeds.
 - Check the Update Center and release stories in German and English, light and dark themes, reduced motion, large text, compact phones and a wide desktop window.
 
-Habiter 1.5 is the bootstrap version for automatic updates, so the first installation from an older client remains manual. Stable publication is blocked until this matrix and the normal RC gates pass.
+Habiter 1.5 is the bootstrap version for automatic updates, so the first installation from an older client remains manual. Every stable publication is blocked until this matrix and the normal release-candidate gates pass.
 
 Any unavailable or failing gate remains a release blocker and must be reported in the pull request rather than waived silently.

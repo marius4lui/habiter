@@ -45,10 +45,24 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
     }
 
     if (url.pathname === "/download") {
-      const platform = parsePlatform(url.searchParams.get("platform")) ?? detectPlatform(request.headers.get("user-agent") ?? "");
-      if (!platform) return Response.redirect(env.WEBSITE_URL, 302);
       const channel = releaseChannel(url.searchParams.get("channel"));
       if (channel === null) return apiError(requestId, 400, "invalid_channel", "channel must be stable or beta");
+      const explicitPlatform = url.searchParams.has("platform");
+      const platform = explicitPlatform
+        ? parsePlatform(url.searchParams.get("platform"))
+        : detectPlatform(request.headers.get("user-agent") ?? "");
+      const docsBase = "https://github.com/marius4lui/habiter";
+      if (!platform) return Response.redirect(`${docsBase}/blob/main/docs/install/README.md`, 302);
+      if (platform === "windows" || platform === "macos") {
+        return Response.redirect(`${docsBase}/blob/main/docs/install/${platform}.md`, 302);
+      }
+      if (platform === "linux") {
+        if (!url.searchParams.has("distro")) {
+          return Response.redirect(`${docsBase}/tree/main/docs/install/linux`, 302);
+        }
+        const distro = parseDistro(url.searchParams.get("distro"));
+        return Response.redirect(`${docsBase}/blob/main/docs/install/linux/${distro}.md`, 302);
+      }
       const architecture = url.searchParams.get("arch") ?? defaultArchitecture(platform);
       const target = new URL(`/api/v1/download/${platform}/${architecture}`, url);
       if (url.searchParams.has("channel")) target.searchParams.set("channel", channel);

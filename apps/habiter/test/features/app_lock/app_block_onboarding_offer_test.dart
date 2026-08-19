@@ -104,12 +104,13 @@ void main() {
         ],
       );
       final controller = _controller(gateway);
+      final finished = <AppBlockOnboardingResult>[];
       await tester.pumpWidget(
         MaterialApp(
           home: AppBlockOnboardingFlow(
             controller: controller,
             habits: <Habit>[_habit('read', 'Read')],
-            onFinished: (_) {},
+            onFinished: finished.add,
           ),
         ),
       );
@@ -140,6 +141,27 @@ void main() {
             .habitIds,
         <String>{'read'},
       );
+      expect(
+        find.text('Daily · unlocks after today’s completion'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byKey(const Key('app-block-behavior-continue')));
+      await tester.pumpAndSettle();
+      expect(gateway.overlayRequests, 0);
+      await tester.tap(find.byKey(const Key('app-block-request-overlay')));
+      await tester.pump();
+      expect(gateway.overlayRequests, 1);
+
+      gateway.overlay = true;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.text('Ready to protect your focus'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('app-block-activate')));
+      await tester.pumpAndSettle();
+      expect(finished, <AppBlockOnboardingResult>[
+        AppBlockOnboardingResult.enabled,
+      ]);
     },
   );
 }
@@ -176,9 +198,11 @@ final class _Gateway implements AppLockGateway {
   });
 
   bool usageAccess;
+  bool overlay = false;
   final List<LockedApp> apps;
   final List<AppUsageRecord> usage;
   int usageRequests = 0;
+  int overlayRequests = 0;
 
   @override
   bool get isSupported => true;
@@ -191,7 +215,7 @@ final class _Gateway implements AppLockGateway {
   @override
   Future<AppLockResult<AppLockPermissionSnapshot>> permissions() async =>
       AppLockSuccess<AppLockPermissionSnapshot>(
-        AppLockPermissionSnapshot(usageAccess: usageAccess, overlay: false),
+        AppLockPermissionSnapshot(usageAccess: usageAccess, overlay: overlay),
       );
   @override
   Future<AppLockResult<void>> requestUsageAccess() async {
@@ -200,8 +224,11 @@ final class _Gateway implements AppLockGateway {
   }
 
   @override
-  Future<AppLockResult<void>> requestOverlay() async =>
-      const AppLockSuccess<void>(null);
+  Future<AppLockResult<void>> requestOverlay() async {
+    overlayRequests += 1;
+    return const AppLockSuccess<void>(null);
+  }
+
   @override
   Future<AppLockResult<void>> publishProjections(
     AppBlockProjectionSnapshot snapshot,

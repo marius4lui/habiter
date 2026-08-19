@@ -17,17 +17,20 @@ final class AppBlockOnboardingController extends ChangeNotifier {
     AppBlockRecommendationService recommendations =
         const AppBlockRecommendationService(),
     DateTime Function()? now,
+    Future<bool> Function(List<AppBlockRule> rules)? activate,
   }) : _repository = repository,
        _gateway = gateway,
        _loadCatalog = loadCatalog,
        _recommendations = recommendations,
-       _now = now ?? DateTime.now;
+       _now = now ?? DateTime.now,
+       _activate = activate ?? _defaultActivate;
 
   final AppBlockOnboardingRepository _repository;
   final AppLockGateway _gateway;
   final Future<LocalDistractionCatalog> Function() _loadCatalog;
   final AppBlockRecommendationService _recommendations;
   final DateTime Function() _now;
+  final Future<bool> Function(List<AppBlockRule> rules) _activate;
 
   AppBlockOnboardingState _state = const AppBlockOnboardingState();
   List<AppBlockCandidate> _candidates = const <AppBlockCandidate>[];
@@ -154,7 +157,18 @@ final class AppBlockOnboardingController extends ChangeNotifier {
       _move(AppBlockOnboardingStage.behaviorEducation);
   Future<void> showOverlayEducation() =>
       _move(AppBlockOnboardingStage.overlayEducation);
-  Future<void> complete() => _move(AppBlockOnboardingStage.completed);
+  Future<void> complete() async {
+    _loading = true;
+    notifyListeners();
+    final activated = await _activate(_state.rules);
+    _loading = false;
+    if (activated) {
+      await _move(AppBlockOnboardingStage.completed);
+    } else {
+      _diagnostic = 'App Block could not be activated. Check both permissions.';
+      notifyListeners();
+    }
+  }
 
   Future<void> _move(AppBlockOnboardingStage stage) =>
       _replace(_state.copyWith(stage: stage));
@@ -165,3 +179,5 @@ final class AppBlockOnboardingController extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+Future<bool> _defaultActivate(List<AppBlockRule> rules) async => true;

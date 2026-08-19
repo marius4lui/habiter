@@ -5,10 +5,13 @@ import '../../../../models/habit.dart';
 import '../../application/app_block_onboarding_controller.dart';
 import '../../application/app_block_onboarding_state.dart';
 import 'app_block_offer_page.dart';
+import 'app_block_behavior_page.dart';
+import 'app_block_review_page.dart';
 import 'app_habit_binding_page.dart';
 import 'app_block_reconsider_page.dart';
 import 'distraction_analysis_page.dart';
 import 'distraction_selection_page.dart';
+import 'overlay_education_page.dart';
 import 'usage_access_education_page.dart';
 
 final class AppBlockOnboardingFlow extends StatefulWidget {
@@ -92,6 +95,20 @@ final class _AppBlockOnboardingFlowState extends State<AppBlockOnboardingFlow>
           ),
           AppBlockOnboardingStage.binding => AppHabitBindingPage(
             key: const ValueKey('binding'),
+            controller: widget.controller,
+            habits: widget.habits,
+          ),
+          AppBlockOnboardingStage.behaviorEducation => AppBlockBehaviorPage(
+            key: const ValueKey('behavior-education'),
+            controller: widget.controller,
+            habits: widget.habits,
+          ),
+          AppBlockOnboardingStage.overlayEducation => OverlayEducationPage(
+            key: const ValueKey('overlay-education'),
+            controller: widget.controller,
+          ),
+          AppBlockOnboardingStage.review => AppBlockReviewPage(
+            key: const ValueKey('review'),
             controller: widget.controller,
             habits: widget.habits,
           ),

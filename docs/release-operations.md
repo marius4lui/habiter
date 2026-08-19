@@ -18,6 +18,8 @@ After the API smoke tests pass, the workflow finalizes the matching manifest ent
 
 The Release API defaults to `stable`. Beta clients opt in explicitly with `?channel=beta` on list, latest, update and download routes. Unknown channel values are rejected instead of being treated as an empty channel.
 
+The [Release API reference](/api/release-api) is the HTTP contract. The [manifest and signature reference](/api/release-manifest) defines schemas, publication invariants, client verification, and key rotation.
+
 ## GitHub configuration
 
 Repository secrets:

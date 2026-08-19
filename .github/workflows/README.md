@@ -11,4 +11,4 @@ The repository intentionally has six workflows:
 
 Direct pushes to `main` are allowed. Application publication still requires an explicit `v<major>.<minor>.<patch>` tag. Worker previews upload aliased versions to the shared `habiter-release-api-preview` Worker and never use production data or the production environment.
 
-Required repository secrets and variables are documented in `docs/release-operations.md`.
+Required repository secrets and variables are documented in `docs/release-operations.md`. Public routes and response schemas are documented in `docs/api/release-api.md`; local and CI commands are mapped in `docs/dev/testing.md`.

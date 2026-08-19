@@ -75,6 +75,15 @@ void main() {
       expect(quality, contains('quality-summary:'));
     });
 
+    test('documentation workflows enforce the complete docs contract', () {
+      final quality = workflow('quality.yml').readAsStringSync();
+      final deploy = workflow('docs-deploy.yml').readAsStringSync();
+
+      expect(quality, contains('npm run docs:check'));
+      expect(deploy, contains('npm run docs:check'));
+      expect(deploy, contains("'scripts/docs/validate.mjs'"));
+    });
+
     test('release publishing preserves stable and beta channels', () {
       final release = workflow('release.yml').readAsStringSync();
 

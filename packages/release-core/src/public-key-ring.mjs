@@ -1,3 +1,7 @@
+/**
+ * Parses the client key-ring environment value and enforces canonical raw
+ * Ed25519 public keys plus the presence of the active signing key.
+ */
 export function parseRawPublicKeyRing(encoded, requiredKeyId) {
   let ring;
   try {

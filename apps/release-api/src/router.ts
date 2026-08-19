@@ -7,6 +7,20 @@ const shortCache = "public, max-age=60, s-maxage=300";
 const immutableCache = "public, max-age=86400, s-maxage=31536000, immutable";
 const semanticVersion = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 
+/** Route templates that must stay aligned with the published OpenAPI document. */
+export const releaseApiContractPaths = {
+  health: "/health",
+  downloadSelector: "/download",
+  manifest: "/api/v1/manifest",
+  releases: "/api/v1/releases",
+  latestRelease: "/api/v1/releases/latest",
+  release: "/api/v1/releases/{version}",
+  releaseDownloads: "/api/v1/releases/{version}/downloads",
+  update: "/api/v1/update/{platform}",
+  download: "/api/v1/download/{platform}",
+  downloadArchitecture: "/api/v1/download/{platform}/{architecture}",
+} as const;
+
 function positiveInteger(value: string | null, fallback: number, maximum: number): number | null {
   if (value === null) return fallback;
   if (!/^\d+$/.test(value)) return null;
@@ -34,6 +48,7 @@ function manifestResponse(request: Request, envelope: SignedManifestEnvelope | u
   return withCache(response, shortCache);
 }
 
+/** Builds the complete read-only HTTP handler from immutable release data. */
 export function createHandler(manifest: ReleaseManifest, envelope?: SignedManifestEnvelope) {
   const releases = new ReleaseService(manifest);
 
@@ -42,11 +57,11 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
     const url = new URL(request.url);
     const segments = url.pathname.split("/").filter(Boolean);
 
-    if (url.pathname === "/health") {
+    if (url.pathname === releaseApiContractPaths.health) {
       return json({ status: "ok", environment: env.ENVIRONMENT, requestId });
     }
 
-    if (url.pathname === "/download") {
+    if (url.pathname === releaseApiContractPaths.downloadSelector) {
       const platform = parsePlatform(url.searchParams.get("platform")) ?? detectPlatform(request.headers.get("user-agent") ?? "");
       if (!platform) return Response.redirect(env.WEBSITE_URL, 302);
       const channel = releaseChannel(url.searchParams.get("channel"));

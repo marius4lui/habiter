@@ -26,12 +26,16 @@
 
 Delivery is controlled by the operating system. Battery policy and manufacturer customizations can delay reminders; Habiter does not promise exact delivery.
 
+See [Reminders](/guide/reminders) for modes, calibration, permissions, local learning, actions, and troubleshooting.
+
 ## Data control
 
 - No account is required for core tracking.
 - Versioned JSON export/import includes preview, collision handling, and recovery backup.
 - Classly-compatible OAuth and remote AI remain disabled until configured.
 - Sensitive integration credentials use platform-secure storage where available.
+
+See [Data and privacy](/guide/data-and-privacy) for storage categories, export/import behavior, optional network boundaries, credentials, and deletion scope.
 
 ## Platform-specific features
 
@@ -40,6 +44,8 @@ Delivery is controlled by the operating system. Battery policy and manufacturer 
 - **Home-screen widgets:** the interactive native widget and pinning flow are currently Android-only.
 - **Reminders:** supported through platform notification APIs, subject to OS delivery policy.
 - **Desktop/web:** core tracking works; mobile-only integrations may be unavailable.
+
+See [Updates](/guide/updates) for tracks, download profiles, signed metadata, platform behavior, and offline safety.
 
 ## Accessibility and localization
 

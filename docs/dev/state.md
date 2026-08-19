@@ -39,3 +39,5 @@ Domain code uses `LocalDate` and injected clocks rather than ad-hoc `DateTime.no
 - Controller/use-case tests use fake clocks, repositories, and gateways.
 - Widget tests cover responsive layouts, semantics, completion/undo, and key navigation flows.
 - Platform integrations retain manual physical-device gates where emulators cannot prove OS behavior.
+
+The [testing and quality guide](/dev/testing) maps each boundary to its focused and repository-wide gates.

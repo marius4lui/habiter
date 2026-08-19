@@ -17,7 +17,7 @@ Use this checklist for every release candidate. It records reproducible gates; i
 - Verify reminder delivery and actions when foregrounded, backgrounded, and terminated across a DST boundary.
 - Verify Android App Lock permission denial, service restart, midnight recovery, and battery-policy messaging on a physical device.
 - Verify Classly-compatible OAuth against a trusted public HTTPS test server supporting PKCE.
-- Confirm import preview, collision choice, backup creation, cancellation, and recovery from a deliberately corrupt file.
+- Confirm pasted-JSON import preview, keep-existing collision behavior, clipboard recovery backup, cancellation, and rejection of deliberately corrupt JSON.
 
 ## Update-system gates
 

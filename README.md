@@ -198,19 +198,27 @@ flutter run
 ```bash
 # Flutter
 cd apps/habiter
+flutter pub get --enforce-lockfile
+flutter gen-l10n
 dart format --output=none --set-exit-if-changed .
 flutter analyze --fatal-infos
-flutter test
+flutter test --coverage
 
 # Worker, release tooling, and website
 cd ../..
 pnpm install --frozen-lockfile
+pnpm roadmap:check
 pnpm release:validate
 pnpm release:test
 pnpm website:check
 pnpm --filter @habiter/release-api types
 pnpm --filter @habiter/release-api check
 pnpm --filter @habiter/release-api deploy:dry
+
+# Documentation
+cd docs
+npm ci
+npm run docs:check
 ```
 
 ### Run the website

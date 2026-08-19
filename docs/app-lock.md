@@ -38,3 +38,5 @@ reviewed against the applicable store policy before distribution.
 - Gesture navigation, rotation, landscape, and 200 percent font scaling.
 
 No claim is made that every OEM will preserve the service indefinitely.
+
+The serialized Flutter/native boundary is documented under [Platform-channel contracts](/dev/platform-contracts#app-lock).

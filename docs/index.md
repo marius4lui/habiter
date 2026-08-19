@@ -44,7 +44,11 @@ features:
 
 - [Install Habiter and create your first habit](/guide/getting-started)
 - [Explore schedules, analytics, reminders, backup, and integrations](/guide/features)
+- [Configure reminders and understand delivery limits](/guide/reminders)
+- [Understand signed updates and platform behavior](/guide/updates)
+- [Review local data, exports, credentials, and deletion](/guide/data-and-privacy)
 - [Understand the Android-only App Lock safety model](/guide/app-lock)
 - [Build, test, and contribute to the repository](/dev/architecture)
+- [Integrate with the complete Release API](/api/release-api)
 
 Habiter requires no account for core tracking. Habits, completion history, settings, analytics, and coaching remain on the device unless you deliberately export data or configure an optional integration.

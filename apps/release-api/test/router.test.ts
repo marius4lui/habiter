@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createHandler } from "../src/router";
+import openApi from "../../../docs/public/release-api.openapi.json";
+import { createHandler, releaseApiContractPaths } from "../src/router";
 import type { ReleaseManifest, SignedManifestEnvelope } from "../src/types/releases";
 
 const manifest: ReleaseManifest = {
@@ -44,6 +45,12 @@ const handler = createHandler(manifest, envelope);
 const call = (path: string, headers?: HeadersInit) => handler(new Request(`https://get.habiter.dev${path}`, { headers }), env);
 
 describe("release API", () => {
+  it("publishes every supported route in OpenAPI", () => {
+    expect(Object.keys(openApi.paths).sort()).toEqual(
+      Object.values(releaseApiContractPaths).sort(),
+    );
+  });
+
   it("serves the immutable signed bytes through an ETag-aware envelope", async () => {
     const response = await call("/api/v1/manifest");
     expect(response.status).toBe(200);

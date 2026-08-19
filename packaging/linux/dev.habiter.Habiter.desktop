@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Habiter
+Comment=Build habits that last
+Exec=habiter
+Icon=dev.habiter.Habiter
+Terminal=false
+Categories=Utility;Office;
+StartupWMClass=dev.habiter.Habiter

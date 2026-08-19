@@ -93,15 +93,15 @@ Stable testing required:
 
 ---
 
-## Planned releases
-
 ### v1.4.4 — Linux startup stability
 
 **Channel:** Stable
 
-**Target:** Before v1.5.0 release-candidate completion
+Released as a focused stable patch.
 
 **Issue:** #21
+
+- Fix the Linux startup crash caused by unguarded Home Widget initialization.
 
 Scope:
 
@@ -120,7 +120,9 @@ Reason for separate patch release:
 
 **Channel:** Stable
 
-**Target:** After successful RC and real-device testing
+Released as the stable automatic-update baseline.
+
+- Deliver a signed, localized update experience with safe direct Android downloads and user-controlled installation.
 
 Scope:
 
@@ -142,6 +144,25 @@ Stable testing required:
 - Real-device direct upgrade, store routing, metered and unmetered networks, installer denial, offline mandatory mode and process recovery.
 
 ---
+
+### v1.5.1 — Android update-check reliability
+
+**Channel:** Stable
+
+Released as a focused stable follow-up to v1.5.0.
+
+- Use a constrained native Android transport for signed release-manifest checks.
+- Preserve the existing desktop transport for Linux, Windows and macOS.
+- Expose the underlying update-check failure instead of only a generic status.
+
+Scope:
+
+- Fix Android update checks on custom ROMs where the Dart runtime cannot resolve the manifest host.
+- Restrict the native transport to HTTPS, no redirects, bounded response size and bounded connection and read timeouts.
+
+---
+
+## Planned releases
 
 ### v1.6.0 — Distribution and installers
 

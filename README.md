@@ -128,8 +128,6 @@ A concise view of the released baseline and upcoming product milestones.
 
 - Keep App Block UI scoped to the currently blocked foreground app and align it with Habiter's product language.
 
-### Upcoming
-
 **v1.4.4 — Linux startup stability (Stable)**
 
 - Fix the Linux startup crash caused by unguarded Home Widget initialization.
@@ -137,6 +135,14 @@ A concise view of the released baseline and upcoming product milestones.
 **v1.5.0 — Premium automatic update system (Stable)**
 
 - Deliver a signed, localized update experience with safe direct Android downloads and user-controlled installation.
+
+**v1.5.1 — Android update-check reliability (Stable)**
+
+- Use a constrained native Android transport for signed release-manifest checks.
+- Preserve the existing desktop transport for Linux, Windows and macOS.
+- Expose the underlying update-check failure instead of only a generic status.
+
+### Upcoming
 
 **v1.6.0 — Distribution and installers (Stable)**
 

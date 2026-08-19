@@ -1,6 +1,6 @@
 # App Block Onboarding Architecture and Implementation Plan
 
-**Status:** implementation plan  
+**Status:** implemented by Issue #12
 **Date:** 2026-08-17  
 **Scope:** Android App Block onboarding, local distraction discovery, App↔Habit rules, schedule-aware gate evaluation, and activation UX
 

@@ -5,6 +5,12 @@ import 'package:provider/provider.dart';
 
 import '../core/design_system/components.dart';
 import '../core/design_system/tokens.dart';
+import '../core/persistence/shared_preferences_key_value_store.dart';
+import '../features/app_lock/application/app_block_onboarding_controller.dart';
+import '../features/app_lock/infrastructure/app_block_onboarding_repository.dart';
+import '../features/app_lock/infrastructure/local_distraction_catalog.dart';
+import '../features/app_lock/infrastructure/method_channel_app_lock_gateway.dart';
+import '../features/app_lock/presentation/onboarding/app_block_onboarding_flow.dart';
 import '../l10n/l10n.dart';
 import '../models/locked_app.dart';
 import '../providers/app_lock_provider.dart';
@@ -35,6 +41,29 @@ class _AppLockScreenState extends State<AppLockScreen> {
     final provider = context.read<AppLockProvider>();
     await provider.load();
     if (provider.hasAllPermissions) await provider.loadInstalledApps();
+  }
+
+  Future<void> _openGuidedSetup() async {
+    final provider = context.read<AppLockProvider>();
+    final controller = AppBlockOnboardingController(
+      repository: KeyValueAppBlockOnboardingRepository(
+        SharedPreferencesKeyValueStore(),
+      ),
+      gateway: const MethodChannelAppLockGateway(),
+      loadCatalog: LocalDistractionCatalog.load,
+      activate: provider.configureRules,
+    );
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (routeContext) => AppBlockOnboardingFlow(
+          controller: controller,
+          habits: provider.availableActiveHabits,
+          onFinished: (_) => Navigator.of(routeContext).pop(),
+        ),
+      ),
+    );
+    controller.dispose();
+    if (mounted) await _refresh();
   }
 
   @override
@@ -72,6 +101,13 @@ class _AppLockScreenState extends State<AppLockScreen> {
                       body: context.l10n.androidOnlyDesc,
                     )
                   else ...[
+                    FilledButton.tonalIcon(
+                      key: const Key('open-app-block-onboarding'),
+                      onPressed: _openGuidedSetup,
+                      icon: const Icon(Icons.auto_awesome_rounded),
+                      label: const Text('Guided App Block setup'),
+                    ),
+                    const SizedBox(height: HabiterSpace.lg),
                     _StatusOverview(provider: provider),
                     if (provider.error case final error?) ...[
                       const SizedBox(height: HabiterSpace.sm2),

@@ -59,10 +59,9 @@ AppBlockOnboardingController _controller(
 );
 
 final class _Gateway implements AppLockGateway {
-  _Gateway({this.usageAccess = false, this.overlay = false});
+  _Gateway({this.usageAccess = false});
 
   final bool usageAccess;
-  final bool overlay;
 
   @override
   bool get isSupported => true;
@@ -87,7 +86,7 @@ final class _Gateway implements AppLockGateway {
   @override
   Future<AppLockResult<AppLockPermissionSnapshot>> permissions() async =>
       AppLockSuccess<AppLockPermissionSnapshot>(
-        AppLockPermissionSnapshot(usageAccess: usageAccess, overlay: overlay),
+        AppLockPermissionSnapshot(usageAccess: usageAccess, overlay: false),
       );
 
   @override

@@ -5,8 +5,8 @@ import '../models/habit.dart';
 import '../models/locked_app.dart';
 import '../features/app_lock/domain/app_lock_gateway.dart';
 import '../features/app_lock/domain/app_block_rule.dart';
+import '../features/app_lock/application/app_block_gate_projector.dart';
 import '../features/app_lock/infrastructure/method_channel_app_lock_gateway.dart';
-import '../features/today/application/today_query.dart';
 import '../services/storage_service.dart';
 
 /// Provider for managing app lock state and logic
@@ -17,6 +17,7 @@ class AppLockProvider extends ChangeNotifier {
 
   final AppLockGateway _gateway;
   final Clock _clock;
+  final AppBlockGateProjector _projector = const AppBlockGateProjector();
 
   AppLockConfig _config = const AppLockConfig();
   List<LockedApp> _availableApps = [];
@@ -226,6 +227,22 @@ class AppLockProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> configureRules(List<AppBlockRule> rules) async {
+    if (rules.isEmpty || !hasAllPermissions) {
+      _error = 'Choose at least one app and grant both permissions first.';
+      notifyListeners();
+      return false;
+    }
+    _error = null;
+    _config = AppBlockConfig(isEnabled: true, rules: rules);
+    await StorageService.saveAppLockConfig(_config);
+    await _syncHabitCompletionState();
+    if (!_config.isEnabled) return false;
+    await _saveAndSync();
+    notifyListeners();
+    return _config.isEnabled && _error == null;
+  }
+
   /// Save config and sync with native service
   Future<void> _saveAndSync() async {
     await StorageService.saveAppLockConfig(_config);
@@ -262,31 +279,20 @@ class AppLockProvider extends ChangeNotifier {
   Future<void> _syncHabitCompletionState() async {
     if (!_config.isEnabled) return;
 
-    final snapshot = TodayQuery.forDate(
+    final snapshot = _projector.project(
+      config: _config,
+      permissions: AppLockPermissionSnapshot(
+        usageAccess: _hasUsageStatsPermission,
+        overlay: _hasOverlayPermission,
+      ),
       date: LocalDate.fromDateTime(_clock.now()),
       habits: _lastHabits,
       entries: _lastEntries,
+      installedPackages: _availableApps.isEmpty
+          ? null
+          : _availableApps.map((app) => app.packageName).toSet(),
     );
-    final List<String> incompleteHabitNames;
-    if (_config.lockUntilAllHabitsComplete) {
-      incompleteHabitNames = snapshot.pending
-          .map((habit) => habit.name)
-          .toList(growable: false);
-    } else {
-      final requiredIds = (_config.requiredHabitIds ?? const <String>[])
-          .toSet();
-      incompleteHabitNames = snapshot.pending
-          .where((habit) => requiredIds.contains(habit.id))
-          .map((habit) => habit.name)
-          .toList(growable: false);
-    }
-    final habitsComplete = incompleteHabitNames.isEmpty;
-
-    // Update incomplete habits for overlay display
-    final result = await _gateway.syncCompletion(
-      complete: habitsComplete,
-      incompleteHabitNames: incompleteHabitNames,
-    );
+    final result = await _gateway.publishProjections(snapshot);
     if (result case AppLockFailure<void>(:final safeMessage)) {
       _error = safeMessage;
       _config = _config.copyWith(isEnabled: false);
@@ -295,6 +301,8 @@ class AppLockProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> refreshProjection() => _syncHabitCompletionState();
 }
 
 final class _AppLockSafeException implements Exception {

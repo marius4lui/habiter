@@ -33,22 +33,31 @@ final class _AppHabitBindingPageState extends State<AppHabitBindingPage> {
     body: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        RadioListTile<bool>(
-          key: const Key('app-block-binding-general'),
-          value: true,
-          groupValue: _general,
-          onChanged: (_) => setState(() => _general = true),
-          title: const Text('My focus in general'),
-          subtitle: const Text(
-            'All habits relevant today can gate these apps.',
-          ),
+        SegmentedButton<bool>(
+          segments: const <ButtonSegment<bool>>[
+            ButtonSegment<bool>(
+              value: true,
+              label: Text('General focus'),
+              icon: Icon(Icons.all_inclusive_rounded),
+            ),
+            ButtonSegment<bool>(
+              value: false,
+              label: Text(
+                'Specific habits',
+                key: Key('app-block-binding-specific'),
+              ),
+              icon: Icon(Icons.checklist_rounded),
+            ),
+          ],
+          selected: <bool>{_general},
+          onSelectionChanged: (selection) =>
+              setState(() => _general = selection.single),
         ),
-        RadioListTile<bool>(
-          key: const Key('app-block-binding-specific'),
-          value: false,
-          groupValue: _general,
-          onChanged: (_) => setState(() => _general = false),
-          title: const Text('Specific habits'),
+        const SizedBox(height: 8),
+        Text(
+          _general
+              ? 'All habits relevant today can gate these apps.'
+              : 'Only the habits you choose below can gate these apps.',
         ),
         if (!_general)
           Wrap(

@@ -59,7 +59,12 @@ final class AppBlockBehaviorPage extends StatelessWidget {
   }
 
   String _scheduleLabel(Habit habit) {
-    final schedule = LegacyHabitScheduleMapper.fromHabit(habit);
+    final HabitSchedule schedule;
+    try {
+      schedule = LegacyHabitScheduleMapper.fromHabit(habit);
+    } on FormatException {
+      return 'Schedule unavailable · does not block';
+    }
     return switch (schedule) {
       DailySchedule() => 'Daily · unlocks after today’s completion',
       WeekdaySchedule(:final weekdays) =>

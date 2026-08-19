@@ -222,7 +222,10 @@ final class _AppLockGateway implements AppLockGateway {
   @override
   Future<AppLockResult<void>> publishProjections(
     AppBlockProjectionSnapshot snapshot,
-  ) async => const AppLockSuccess<void>(null);
+  ) async {
+    completionStates.add(snapshot.blocked.isEmpty);
+    return const AppLockSuccess<void>(null);
+  }
 
   @override
   Future<AppLockResult<void>> updatePackages(List<String> packageNames) async =>

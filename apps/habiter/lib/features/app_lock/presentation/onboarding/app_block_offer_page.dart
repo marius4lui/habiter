@@ -70,14 +70,14 @@ final class _ProtectionIllustration extends StatelessWidget {
                   child: const _Tile('Feed'),
                 ),
               ),
-              Positioned(
+              const Positioned(
                 right: 10,
                 child: Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: const <Widget>[
+                      children: <Widget>[
                         Icon(Icons.menu_book_rounded),
                         SizedBox(height: 8),
                         Text('Read for 10 min'),

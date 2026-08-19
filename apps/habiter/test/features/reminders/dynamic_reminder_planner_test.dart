@@ -50,6 +50,134 @@ void main() {
     );
   });
 
+  test('flexible weekly planning never invents the first target weekdays', () {
+    final habit = _habit(
+      'weekly',
+      frequency: HabitFrequency.weekly,
+      targetCount: 3,
+    );
+    final policy = HabitReminderPolicy.fixedTimes(
+      habitId: habit.id,
+      times: const <LocalTime>[LocalTime(9, 0)],
+      now: now,
+    );
+
+    final openWeek = planner.plan(
+      _input(
+        now: now,
+        date: date,
+        habits: <Habit>[habit],
+        policies: <HabitReminderPolicy>[policy],
+        horizonDays: 7,
+      ),
+    );
+    final reached = planner.plan(
+      _input(
+        now: now,
+        date: date,
+        habits: <Habit>[habit],
+        policies: <HabitReminderPolicy>[policy],
+        completed: <String>{
+          'weekly@2026-08-17',
+          'weekly@2026-08-18',
+          'weekly@2026-08-19',
+        },
+        horizonDays: 7,
+      ),
+    );
+    final reopened = planner.plan(
+      _input(
+        now: now,
+        date: date,
+        habits: <Habit>[habit],
+        policies: <HabitReminderPolicy>[policy],
+        completed: <String>{'weekly@2026-08-17', 'weekly@2026-08-18'},
+        horizonDays: 7,
+      ),
+    );
+
+    expect(openWeek.reminders.map((item) => item.occurrence), <LocalDate>[
+      for (var offset = 0; offset < 7; offset++) date.addDays(offset),
+    ]);
+    expect(reached.reminders, isEmpty);
+    expect(reopened.reminders.map((item) => item.occurrence), <LocalDate>[
+      LocalDate(2026, 8, 19),
+      LocalDate(2026, 8, 20),
+      LocalDate(2026, 8, 21),
+      LocalDate(2026, 8, 22),
+      LocalDate(2026, 8, 23),
+    ]);
+  });
+
+  test(
+    'flexible weekly progress resets on Monday and ignores paused dates',
+    () {
+      final habit = _habit(
+        'weekly',
+        frequency: HabitFrequency.weekly,
+        targetCount: 2,
+        pauses: <HabitPause>[
+          HabitPause(
+            startedAt: DateTime.utc(2026, 8, 18),
+            endedAt: DateTime.utc(2026, 8, 19),
+          ),
+        ],
+      );
+      final policy = HabitReminderPolicy.fixedTimes(
+        habitId: habit.id,
+        times: const <LocalTime>[LocalTime(9, 0)],
+        now: now,
+      );
+      final result = planner.plan(
+        _input(
+          now: now,
+          date: date,
+          habits: <Habit>[habit],
+          policies: <HabitReminderPolicy>[policy],
+          completed: <String>{'weekly@2026-08-17', 'weekly@2026-08-18'},
+          horizonDays: 8,
+        ),
+      );
+
+      expect(result.reminders.map((item) => item.occurrence), <LocalDate>[
+        LocalDate(2026, 8, 19),
+        LocalDate(2026, 8, 20),
+        LocalDate(2026, 8, 21),
+        LocalDate(2026, 8, 22),
+        LocalDate(2026, 8, 23),
+        LocalDate(2026, 8, 24),
+      ]);
+    },
+  );
+
+  test('custom schedules remain limited to selected weekdays', () {
+    final habit = _habit(
+      'custom',
+      frequency: HabitFrequency.custom,
+      customDays: <int>{DateTime.monday, DateTime.friday},
+    );
+    final result = planner.plan(
+      _input(
+        now: now,
+        date: date,
+        habits: <Habit>[habit],
+        policies: <HabitReminderPolicy>[
+          HabitReminderPolicy.fixedTimes(
+            habitId: habit.id,
+            times: const <LocalTime>[LocalTime(9, 0)],
+            now: now,
+          ),
+        ],
+        horizonDays: 7,
+      ),
+    );
+
+    expect(result.reminders.map((item) => item.occurrence), <LocalDate>[
+      LocalDate(2026, 8, 17),
+      LocalDate(2026, 8, 21),
+    ]);
+  });
+
   test(
     'random mode is deterministic and respects count, window and spacing',
     () {
@@ -589,14 +717,23 @@ DynamicReminderPlanInput _input({
   horizonDays: horizonDays,
 );
 
-Habit _habit(String id, {String category = 'Health'}) => Habit(
+Habit _habit(
+  String id, {
+  String category = 'Health',
+  HabitFrequency frequency = HabitFrequency.daily,
+  int targetCount = 1,
+  Set<int>? customDays,
+  List<HabitPause> pauses = const <HabitPause>[],
+}) => Habit(
   id: id,
   name: id,
   color: '#000000',
   icon: 'H',
-  frequency: HabitFrequency.daily,
-  targetCount: 1,
+  frequency: frequency,
+  targetCount: targetCount,
   category: category,
+  customDays: customDays?.toList(),
   createdAt: DateTime.utc(2026, 8, 1),
   isActive: true,
+  pauses: pauses,
 );

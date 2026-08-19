@@ -6,6 +6,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../../../core/time/local_date.dart';
 import '../../../models/habit.dart';
 import '../../habits/domain/habit_schedule.dart';
+import '../../habits/domain/habit_schedule_progress.dart';
 import '../domain/availability_profile.dart';
 import '../domain/calibration_session.dart';
 import '../domain/local_time.dart';
@@ -92,10 +93,10 @@ final class DynamicReminderPlanner {
       profiles[habit.id] = computation;
       final schedule = _scheduleFor(habit);
       if (schedule == null) continue;
-      final weeklyCounts = <LocalDate, int>{};
+      final completedDates = _completedDatesForHabit(input, habit.id);
       for (var offset = 0; offset < input.horizonDays; offset++) {
         final date = input.start.addDays(offset);
-        if (!_isHabitDay(habit, schedule, date, weeklyCounts)) continue;
+        if (!_isHabitDay(habit, schedule, date, completedDates)) continue;
         if (input.completedOccurrences.contains(
           '${habit.id}@${date.toString()}',
         )) {
@@ -778,17 +779,33 @@ final class DynamicReminderPlanner {
     Habit habit,
     HabitSchedule schedule,
     LocalDate date,
-    Map<LocalDate, int> weeklyCounts,
+    Set<LocalDate> completedDates,
   ) {
-    if (habit.isPausedOn(date.toString())) return false;
-    if (schedule is TimesPerWeekSchedule) {
-      final week = date.addDays(1 - date.weekday);
-      final count = weeklyCounts[week] ?? 0;
-      if (count >= schedule.target) return false;
-      weeklyCounts[week] = count + 1;
-      return true;
+    final progress = HabitScheduleProgress.evaluate(
+      schedule: schedule,
+      focusDate: date,
+      completedDates: completedDates,
+      isInactiveOn: (candidate) =>
+          HabitScheduleProgress.isHabitInactiveOn(habit, candidate),
+    );
+    return progress.isContributionAvailableOn(date);
+  }
+
+  Set<LocalDate> _completedDatesForHabit(
+    DynamicReminderPlanInput input,
+    String habitId,
+  ) {
+    final prefix = '$habitId@';
+    final dates = <LocalDate>{};
+    for (final occurrence in input.completedOccurrences) {
+      if (!occurrence.startsWith(prefix)) continue;
+      try {
+        dates.add(LocalDate.parse(occurrence.substring(prefix.length)));
+      } on FormatException {
+        continue;
+      }
     }
-    return schedule.isAvailableOn(date);
+    return dates;
   }
 
   HabitSchedule? _scheduleFor(Habit habit) {

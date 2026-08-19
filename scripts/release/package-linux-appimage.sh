@@ -5,7 +5,7 @@ set -eu
 BUNDLE_DIR=$1
 VERSION=$2
 OUTPUT_DIR=$3
-ROOT=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
+ROOT=$(CDPATH='' cd -- "$(dirname "$0")/../.." && pwd)
 APPIMAGETOOL=${APPIMAGETOOL:-appimagetool}
 
 printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "invalid version" >&2; exit 2; }
@@ -24,9 +24,11 @@ cp "$ROOT/packaging/linux/dev.habiter.Habiter.desktop" "$APP_DIR/usr/share/appli
 cp "$ROOT/packaging/linux/dev.habiter.Habiter.appdata.xml" "$APP_DIR/usr/share/metainfo/dev.habiter.Habiter.appdata.xml"
 cp "$ROOT/apps/habiter/assets/images/app_icon.png" "$APP_DIR/dev.habiter.Habiter.png"
 cp "$ROOT/apps/habiter/assets/images/app_icon.png" "$APP_DIR/usr/share/icons/hicolor/512x512/apps/dev.habiter.Habiter.png"
-printf '%s\n' '#!/bin/sh' 'HERE=$(CDPATH= cd -- "$(dirname "$0")" && pwd)' 'exec "$HERE/usr/lib/habiter/habiter" "$@"' > "$APP_DIR/AppRun"
+cp "$ROOT/packaging/linux/AppRun" "$APP_DIR/AppRun"
 chmod 755 "$APP_DIR/AppRun" "$APP_DIR/usr/lib/habiter/habiter"
 ln -s ../lib/habiter/habiter "$APP_DIR/usr/bin/habiter"
 
-ARCH=x86_64 VERSION="$VERSION" "$APPIMAGETOOL" "$APP_DIR" "$OUTPUT_DIR/Habiter-$VERSION-x86_64.AppImage"
+ARCH=x86_64
+export ARCH VERSION
+"$APPIMAGETOOL" "$APP_DIR" "$OUTPUT_DIR/Habiter-$VERSION-x86_64.AppImage"
 [ -s "$OUTPUT_DIR/Habiter-$VERSION-x86_64.AppImage" ] || { echo "AppImage was not produced" >&2; exit 1; }

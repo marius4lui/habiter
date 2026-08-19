@@ -1,10 +1,11 @@
 #!/bin/sh
 set -eu
-ROOT=$(CDPATH= cd -- "$(dirname "$0")/../../.." && pwd)
+ROOT=$(CDPATH='' cd -- "$(dirname "$0")/../../.." && pwd)
 INSTALLER="$ROOT/scripts/install/install.sh"
 FIXTURES="$ROOT/scripts/install/test/os-release"
 HABITER_TEST_MODE=functions
 export HABITER_TEST_MODE
+# shellcheck source=../install.sh
 . "$INSTALLER"
 unset HABITER_TEST_MODE
 

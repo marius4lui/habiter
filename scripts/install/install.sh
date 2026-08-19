@@ -60,7 +60,10 @@ normalize_arch() {
 normalize_distro() {
   id=$1; like=$2
   case "$id" in
-    ubuntu|linuxmint|pop|debian) say "$( [ "$id" = debian ] && say debian || say ubuntu )"; return ;;
+    ubuntu|linuxmint|pop|debian)
+      if [ "$id" = debian ]; then say debian; else say ubuntu; fi
+      return
+      ;;
     fedora|rhel|centos) say fedora; return ;;
     arch|manjaro|endeavouros) say arch; return ;;
     opensuse*|sles) say opensuse; return ;;
@@ -84,7 +87,9 @@ detect_system() {
     Darwin) OS=macos ;;
     *) die "unsupported operating system: $raw_os" ;;
   esac
-  [ "$OS" != macos ] || ARCH=$( [ "$ARCH" = arm64 ] && say arm64 || say x64 )
+  if [ "$OS" = macos ]; then
+    if [ "$ARCH" = arm64 ]; then ARCH=arm64; else ARCH=x64; fi
+  fi
 }
 
 json_string() { printf '%s' "$1" | sed -n "s/.*\"$2\":\"\([^\"]*\)\".*/\1/p"; }
@@ -165,8 +170,9 @@ main() {
     curl -fL --proto '=https' --tlsv1.2 -o "$TMP_DIR/$FILE_NAME" "$DOWNLOAD_URL"
     say "[4/7] Verifying SHA-256"; verify_sha256 "$TMP_DIR/$FILE_NAME"; say "      OK  $SHA256"
   fi
-  [ "$OS" = linux ] && install_linux || install_macos
-  say "[6/7] Desktop integration"; [ "$NO_DESKTOP" -eq 0 ] && say "      enabled" || say "      skipped"
+  if [ "$OS" = linux ]; then install_linux; else install_macos; fi
+  say "[6/7] Desktop integration"
+  if [ "$NO_DESKTOP" -eq 0 ]; then say "      enabled"; else say "      skipped"; fi
   say "[7/7] Done"; say "      Version: $RELEASE_VERSION"; say "      Destination: ${FINAL_PATH:-$destination}"; say "      Run: habiter"
 }
 

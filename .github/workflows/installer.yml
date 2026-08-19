@@ -40,8 +40,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt-get update && sudo apt-get install -y shellcheck
-      - run: shellcheck -s sh scripts/install/install.sh scripts/install/test/*.sh scripts/release/package-linux-appimage.sh
-      - run: sh -n scripts/install/install.sh scripts/release/package-linux-appimage.sh
+      - run: shellcheck -s sh scripts/install/install.sh scripts/install/test/*.sh scripts/release/package-linux-appimage.sh packaging/linux/AppRun
+      - run: sh -n scripts/install/install.sh scripts/release/package-linux-appimage.sh packaging/linux/AppRun
       - run: sh scripts/install/test/install-sh.test.sh
 
   linux-distros:

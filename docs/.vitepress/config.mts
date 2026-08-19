@@ -45,7 +45,9 @@ export default defineConfig({
           text: 'API Reference',
           items: [
             { text: 'Release API', link: '/api/release-api' },
-            { text: 'Manifest and Signatures', link: '/api/release-manifest' }
+            { text: 'Manifest and Signatures', link: '/api/release-manifest' },
+            { text: 'Classly Compatibility', link: '/api/classly-compatible' },
+            { text: 'Backup JSON Format', link: '/api/backup-format' }
           ]
         }
       ],

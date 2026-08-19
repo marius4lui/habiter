@@ -37,6 +37,8 @@ Non-secret endpoint URLs, enablement flags, and sync timestamps can use ordinary
 
 Open **Settings → Data & privacy** to copy a versioned JSON backup. Treat the clipboard contents and any file you create from them as sensitive because they can contain habit names and history.
 
+See the [Backup JSON format](/api/backup-format) for every field, compatibility rules, and the machine-readable schema.
+
 Import follows a staged flow:
 
 1. parse and validate without mutating storage;

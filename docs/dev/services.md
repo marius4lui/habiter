@@ -33,9 +33,13 @@ Profile formation uses no network, location, contacts, calendar, or sensor data.
 
 `DataPortabilityService` produces versioned JSON, validates imports, previews conflicts, and creates the pre-import recovery payload. The Settings presentation currently copies exports and recovery data to the clipboard and accepts pasted JSON for imports. `PlatformFileAdapter` reserves a future file-selection boundary, but only the unsupported implementation exists and it is not wired into the user flow. Import parsers must reject malformed or incompatible data before mutating storage.
 
+Any portable field or import-policy change must update the [Backup JSON format](/api/backup-format), its JSON Schema, and round-trip/rejection tests.
+
 ## Classly-compatible integration
 
 The integration validates a public HTTPS endpoint and uses OAuth with PKCE. Tokens belong in secure platform storage, never SharedPreferences, logs, diagnostics, or source control. Sync is an explicit optional boundary and must tolerate network failure without affecting core tracking.
+
+The [Classly-compatible API](/api/classly-compatible) is intentionally minimal. Do not add client routes or response models until a shipped flow consumes them; update the human and OpenAPI references with any contract change.
 
 ## Widgets
 
@@ -49,4 +53,4 @@ Widget snapshots are deliberately smaller than the application model. The bridge
 4. Test success, unavailable platform, permission denial, timeout, malformed response, and retry.
 5. Document privacy, platform, and manual QA implications.
 
-Serialized Flutter/native calls must also update the [platform-channel contract](/dev/platform-contracts). Network routes and manifest fields must update the [Release API](/api/release-api) or [release manifest](/api/release-manifest) reference. User-visible storage and transmission changes must update [Data and privacy](/guide/data-and-privacy).
+Serialized Flutter/native calls must also update the [platform-channel contract](/dev/platform-contracts). Network routes and manifest fields must update the relevant [Release API](/api/release-api), [release manifest](/api/release-manifest), or [Classly-compatible API](/api/classly-compatible) reference. User-visible storage and transmission changes must update [Data and privacy](/guide/data-and-privacy).

@@ -50,5 +50,7 @@ features:
 - [Understand the Android-only App Lock safety model](/guide/app-lock)
 - [Build, test, and contribute to the repository](/dev/architecture)
 - [Integrate with the complete Release API](/api/release-api)
+- [Implement a Classly-compatible sync service](/api/classly-compatible)
+- [Inspect the portable backup JSON contract](/api/backup-format)
 
 Habiter requires no account for core tracking. Habits, completion history, settings, analytics, and coaching remain on the device unless you deliberately export data or configure an optional integration.

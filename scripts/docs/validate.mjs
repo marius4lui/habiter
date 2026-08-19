@@ -90,28 +90,31 @@ assert.equal(
   "OpenAPI operationId values must be unique.",
 );
 
-function resolveReference(reference) {
+function resolveReference(document, reference) {
   assert.match(reference, /^#\//, `Only local OpenAPI references are allowed: ${reference}`);
   return reference
     .slice(2)
     .split("/")
     .map((part) => part.replaceAll("~1", "/").replaceAll("~0", "~"))
-    .reduce((value, part) => value?.[part], openApi);
+    .reduce((value, part) => value?.[part], document);
 }
 
-function validateReferences(value) {
+function validateReferences(document, value) {
   if (Array.isArray(value)) {
-    for (const item of value) validateReferences(item);
+    for (const item of value) validateReferences(document, item);
     return;
   }
   if (value === null || typeof value !== "object") return;
   if (typeof value.$ref === "string") {
-    assert.ok(resolveReference(value.$ref), `Unresolved OpenAPI reference: ${value.$ref}`);
+    assert.ok(
+      resolveReference(document, value.$ref),
+      `Unresolved local reference: ${value.$ref}`,
+    );
   }
-  for (const nested of Object.values(value)) validateReferences(nested);
+  for (const nested of Object.values(value)) validateReferences(document, nested);
 }
 
-validateReferences(openApi);
+validateReferences(openApi, openApi);
 assert.deepEqual(
   openApi.components.schemas.ApiError.required,
   ["code", "message", "requestId"],
@@ -129,6 +132,59 @@ for (const path of expectedPaths) {
   );
 }
 
+const classlyOpenApi = JSON.parse(
+  await readFile(
+    new URL("docs/public/classly-compatible.openapi.json", root),
+    "utf8",
+  ),
+);
+assert.equal(classlyOpenApi.openapi, "3.1.0");
+const expectedClasslyPaths = [
+  "/api/events",
+  "/api/oauth/authorize",
+  "/api/oauth/token",
+].sort();
+assert.deepEqual(
+  Object.keys(classlyOpenApi.paths).sort(),
+  expectedClasslyPaths,
+  "The Classly compatibility contract must expose only routes Habiter consumes.",
+);
+validateReferences(classlyOpenApi, classlyOpenApi);
+
+const classlyReference = await readFile(
+  new URL("docs/api/classly-compatible.md", root),
+  "utf8",
+);
+for (const path of expectedClasslyPaths) {
+  assert.ok(
+    classlyReference.includes(path),
+    `The human-readable Classly reference is missing ${path}.`,
+  );
+}
+
+const backupSchema = JSON.parse(
+  await readFile(new URL("docs/public/habiter-backup.schema.json", root), "utf8"),
+);
+assert.equal(backupSchema.$schema, "https://json-schema.org/draft/2020-12/schema");
+assert.equal(backupSchema.properties.schemaVersion.const, 1);
+assert.deepEqual(
+  backupSchema.required,
+  ["schemaVersion", "exportedAt", "habits", "entries", "settings"],
+  "The backup schema must describe every top-level exporter field.",
+);
+validateReferences(backupSchema, backupSchema);
+
+const backupReference = await readFile(
+  new URL("docs/api/backup-format.md", root),
+  "utf8",
+);
+for (const field of backupSchema.required) {
+  assert.ok(
+    backupReference.includes(`\`${field}\``),
+    `The human-readable backup reference is missing ${field}.`,
+  );
+}
+
 const vitePressConfig = await readFile(
   new URL("docs/.vitepress/config.mts", root),
   "utf8",
@@ -136,6 +192,8 @@ const vitePressConfig = await readFile(
 for (const link of [
   "/api/release-api",
   "/api/release-manifest",
+  "/api/classly-compatible",
+  "/api/backup-format",
   "/dev/platform-contracts",
   "/dev/testing",
   "/guide/data-and-privacy",
@@ -153,5 +211,5 @@ assert.doesNotMatch(
 );
 
 console.log(
-  `Documentation contract is valid (${markdownFiles.length} Markdown files, ${expectedPaths.length} API paths).`,
+  `Documentation contract is valid (${markdownFiles.length} Markdown files, ${expectedPaths.length} Release API paths, ${expectedClasslyPaths.length} integration paths).`,
 );

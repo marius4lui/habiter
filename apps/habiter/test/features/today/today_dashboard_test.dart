@@ -46,6 +46,44 @@ void main() {
     expect(snapshot.progress, 0.5);
   });
 
+  test(
+    'flexible weekly target stops being pending after three distinct days',
+    () {
+      final thursday = LocalDate(2026, 8, 20);
+      final habit = _habit('weekly', HabitFrequency.weekly, target: 3);
+      final entries = <HabitEntry>[
+        _entry('weekly', '2026-08-17'),
+        _entry('weekly', '2026-08-18'),
+        _entry('weekly', '2026-08-19'),
+        _entry('weekly', '2026-08-19'),
+      ];
+
+      final reached = TodayQuery.forDate(
+        date: thursday,
+        habits: <Habit>[habit],
+        entries: entries,
+      );
+      final reopened = TodayQuery.forDate(
+        date: thursday,
+        habits: <Habit>[habit],
+        entries: entries.take(2),
+      );
+      final nextMonday = TodayQuery.forDate(
+        date: LocalDate(2026, 8, 24),
+        habits: <Habit>[habit],
+        entries: entries,
+      );
+
+      expect(reached.scheduled, isEmpty);
+      expect(reached.progressFor('weekly')!.completed, 3);
+      expect(reached.progressFor('weekly')!.targetReached, isTrue);
+      expect(reopened.pending.single.id, 'weekly');
+      expect(reopened.progressFor('weekly')!.remaining, 1);
+      expect(nextMonday.pending.single.id, 'weekly');
+      expect(nextMonday.progressFor('weekly')!.completed, 0);
+    },
+  );
+
   testWidgets('progress card survives 320px and 200 percent text scaling', (
     tester,
   ) async {

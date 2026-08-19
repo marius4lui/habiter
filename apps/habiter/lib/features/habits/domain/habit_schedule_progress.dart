@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import '../../../core/time/local_date.dart';
+import '../../../models/habit.dart';
 import 'habit_schedule.dart';
 
 typedef HabitDatePredicate = bool Function(LocalDate date);
@@ -56,6 +57,27 @@ final class HabitScheduleProgress {
     );
   }
 
+  factory HabitScheduleProgress.forHabit({
+    required Habit habit,
+    required LocalDate focusDate,
+    Iterable<LocalDate> completedDates = const <LocalDate>[],
+    LocalDate? activeFrom,
+    LocalDate? activeThrough,
+  }) {
+    return HabitScheduleProgress.evaluate(
+      schedule: LegacyHabitScheduleMapper.fromHabit(habit),
+      focusDate: focusDate,
+      completedDates: completedDates,
+      isInactiveOn: (date) {
+        if (activeFrom != null && date.compareTo(activeFrom) < 0) return true;
+        if (activeThrough != null && date.compareTo(activeThrough) > 0) {
+          return true;
+        }
+        return isHabitInactiveOn(habit, date);
+      },
+    );
+  }
+
   final HabitSchedule schedule;
   final LocalDate weekStart;
   final LocalDate weekEnd;
@@ -79,5 +101,16 @@ final class HabitScheduleProgress {
     if (_isInactiveOn(date) || !schedule.isAvailableOn(date)) return false;
     if (schedule is! TimesPerWeekSchedule) return true;
     return isCompletedOn(date) || !targetReached;
+  }
+
+  static bool isHabitInactiveOn(Habit habit, LocalDate date) {
+    if (habit.isPausedOn(date.toString())) return true;
+    final archivedAt = habit.archivedAt;
+    if (archivedAt == null) return false;
+    final archiveDate = LocalDate.fromDateTime(archivedAt);
+    if (date.compareTo(archiveDate) < 0) return false;
+    final restoredAt = habit.restoredAt;
+    return restoredAt == null ||
+        date.compareTo(LocalDate.fromDateTime(restoredAt)) < 0;
   }
 }

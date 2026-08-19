@@ -52,6 +52,34 @@ void main() {
     expect(metrics.currentStreak, 1);
   });
 
+  test('times-per-week shares distinct dates and Monday reset semantics', () {
+    final metrics = HabitMetricCalculator.calculate(
+      habit: _habit(
+        frequency: HabitFrequency.weekly,
+        targetCount: 3,
+        createdAt: DateTime.utc(2026, 8, 17),
+      ),
+      entries: <HabitEntry>[
+        _entry('2026-08-17'),
+        _entry('2026-08-18'),
+        _entry('2026-08-19'),
+        _entry('2026-08-19'),
+        _entry('2026-08-24'),
+      ],
+      through: LocalDate(2026, 8, 24),
+    );
+
+    expect(metrics.weeks, hasLength(2));
+    expect(metrics.weeks.first.weekStart, LocalDate(2026, 8, 17));
+    expect(metrics.weeks.first.scheduled, 3);
+    expect(metrics.weeks.first.completed, 3);
+    expect(metrics.weeks.last.weekStart, LocalDate(2026, 8, 24));
+    expect(metrics.weeks.last.scheduled, 1);
+    expect(metrics.weeks.last.completed, 1);
+    expect(metrics.scheduled, 4);
+    expect(metrics.completed, 4);
+  });
+
   test('weekday metrics remain deterministic across leap day and timezone', () {
     final metrics = HabitMetricCalculator.calculate(
       habit: _habit(

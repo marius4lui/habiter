@@ -54,6 +54,33 @@ void main() {
     );
   });
 
+  test('event parsing requires only fields consumed by Habiter', () async {
+    final client = ClasslyClient(
+      baseUrl: 'https://school.example',
+      token: 'token',
+      httpClient: MockClient(
+        (_) async => http.Response(
+          jsonEncode({
+            'events': [
+              {
+                'id': 'event-42',
+                'type': 'homework',
+                'title': 'Worksheet',
+                'date': '2026-08-21T00:00:00Z',
+              },
+            ],
+          }),
+          200,
+        ),
+      ),
+    );
+
+    final event = (await client.fetchEvents()).single;
+    expect(event.id, 'event-42');
+    expect(event.title, 'Worksheet');
+    expect(event.subjectName, isNull);
+  });
+
   test('source metadata survives JSON and unknown future fields', () {
     final habit = Habit(
       id: 'habit-1',

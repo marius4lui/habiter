@@ -1,6 +1,7 @@
 import { apiError, json, withCache } from "./responses/http";
 import { defaultArchitecture, detectPlatform, parseArchitecture, parseDistro, parsePlatform } from "./services/platform";
 import { ReleaseService } from "./services/release-service";
+import { repositoryInstaller, type InstallerFetcher } from "./services/installer-source";
 import type { ReleaseChannel, ReleaseManifest, SignedManifestEnvelope } from "./types/releases";
 
 const shortCache = "public, max-age=60, s-maxage=300";
@@ -32,7 +33,7 @@ function manifestResponse(request: Request, envelope: SignedManifestEnvelope | u
   return withCache(response, shortCache);
 }
 
-export function createHandler(manifest: ReleaseManifest, envelope?: SignedManifestEnvelope) {
+export function createHandler(manifest: ReleaseManifest, envelope?: SignedManifestEnvelope, installerFetcher: InstallerFetcher = fetch) {
   const releases = new ReleaseService(manifest);
 
   return async function handle(request: Request, env: Env): Promise<Response> {
@@ -42,6 +43,17 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
 
     if (url.pathname === "/health") {
       return json({ status: "ok", environment: env.ENVIRONMENT, requestId });
+    }
+
+    if (url.pathname === "/install.sh" || url.pathname === "/install.ps1") {
+      try {
+        return (await repositoryInstaller(url.pathname, request, installerFetcher))!;
+      } catch {
+        return new Response("Installer source is unavailable.\n", {
+          status: 503,
+          headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
+        });
+      }
     }
 
     if (url.pathname === "/download") {

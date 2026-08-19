@@ -40,7 +40,11 @@ const envelope: SignedManifestEnvelope = {
   payload: "eyJzY2hlbWFWZXJzaW9uIjoxLCJyZWxlYXNlcyI6W119",
   signature: "a".repeat(86)
 };
-const handler = createHandler(manifest, envelope);
+const installerFetcher = async (input: string) => new Response(
+  input.endsWith("install.sh") ? "#!/bin/sh\necho Habiter\n" : "# Habiter PowerShell installer\nWrite-Output Habiter\n",
+  { headers: { "content-type": "text/plain", etag: '"installer-test"' } }
+);
+const handler = createHandler(manifest, envelope, installerFetcher);
 const call = (path: string, headers?: HeadersInit) => handler(new Request(`https://get.habiter.dev${path}`, { headers }), env);
 
 describe("release API", () => {
@@ -71,6 +75,33 @@ describe("release API", () => {
   it("computes update availability", async () => {
     const response = await call("/api/v1/update/android?version=0.9.0&build=9000");
     expect(await response.json()).toMatchObject({ updateAvailable: true, target: { version: "1.0.0", buildNumber: 10000 } });
+  });
+
+  it("serves only allow-listed repository installers with executable-safe headers", async () => {
+    const shell = await call("/install.sh");
+    expect(shell.status).toBe(200);
+    expect(shell.headers.get("content-type")).toContain("shellscript");
+    expect(shell.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(shell.headers.get("x-habiter-installer-source")).toBe("repository");
+    expect(shell.headers.get("cache-control")).toContain("s-maxage=300");
+    expect(await shell.text()).toContain("#!/bin/sh");
+
+    const powershell = await call("/install.ps1");
+    expect(powershell.status).toBe(200);
+    expect(await powershell.text()).toContain("Habiter PowerShell installer");
+    expect((await call("/install.sh/other")).status).toBe(404);
+  });
+
+  it("fails closed when repository content is unavailable or HTML", async () => {
+    const unavailable = createHandler(manifest, envelope, async () => new Response("missing", { status: 404 }));
+    const missing = await unavailable(new Request("https://get.habiter.dev/install.sh"), env);
+    expect(missing.status).toBe(503);
+    expect(missing.headers.get("cache-control")).toBe("no-store");
+
+    const html = createHandler(manifest, envelope, async () => new Response("<html>error</html>", { headers: { "content-type": "text/html" } }));
+    const rejected = await html(new Request("https://get.habiter.dev/install.ps1"), env);
+    expect(rejected.status).toBe(502);
+    expect(rejected.headers.get("content-type")).toContain("text/plain");
   });
 
   it("resolves a complete primary desktop install artifact", async () => {

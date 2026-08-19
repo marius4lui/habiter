@@ -4,11 +4,13 @@ import 'package:habiter/features/app_lock/application/app_block_onboarding_contr
 import 'package:habiter/features/app_lock/application/app_block_onboarding_state.dart';
 import 'package:habiter/features/app_lock/domain/app_block_candidate.dart';
 import 'package:habiter/features/app_lock/domain/app_block_projection.dart';
+import 'package:habiter/features/app_lock/domain/app_block_rule.dart';
 import 'package:habiter/features/app_lock/domain/app_lock_gateway.dart';
 import 'package:habiter/features/app_lock/infrastructure/app_block_onboarding_repository.dart';
 import 'package:habiter/features/app_lock/infrastructure/local_distraction_catalog.dart';
 import 'package:habiter/features/app_lock/presentation/onboarding/app_block_onboarding_flow.dart';
 import 'package:habiter/models/locked_app.dart';
+import 'package:habiter/models/habit.dart';
 
 import '../../support/fakes/in_memory_key_value_store.dart';
 
@@ -82,6 +84,64 @@ void main() {
     );
     expect(opacity.opacity, 1);
   });
+
+  testWidgets(
+    'recommendations start unselected and bulk habit binding persists',
+    (tester) async {
+      final now = DateTime(2026, 8, 19);
+      final gateway = _Gateway(
+        usageAccess: true,
+        apps: const <LockedApp>[
+          LockedApp(packageName: 'social.example', appName: 'Social'),
+        ],
+        usage: <AppUsageRecord>[
+          AppUsageRecord(
+            packageName: 'social.example',
+            appName: 'Social',
+            foregroundDuration: const Duration(hours: 2),
+            lastUsed: now,
+          ),
+        ],
+      );
+      final controller = _controller(gateway);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: AppBlockOnboardingFlow(
+            controller: controller,
+            habits: <Habit>[_habit('read', 'Read')],
+            onFinished: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('app-block-accept-offer')));
+      await controller.reconcilePermissions();
+      await tester.pumpAndSettle();
+
+      final tile = tester.widget<CheckboxListTile>(
+        find.byKey(const Key('app-block-app-social.example')),
+      );
+      expect(tile.value, isFalse);
+      await tester.tap(find.byKey(const Key('app-block-app-social.example')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('app-block-confirm-selection')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('app-block-binding-specific')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('app-block-habit-read')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('app-block-confirm-bindings')));
+      await tester.pumpAndSettle();
+
+      expect(controller.state.stage, AppBlockOnboardingStage.behaviorEducation);
+      expect(
+        (controller.state.rules.single.requirement as HabitRequirement)
+            .habitIds,
+        <String>{'read'},
+      );
+    },
+  );
 }
 
 Widget _app(
@@ -109,17 +169,25 @@ AppBlockOnboardingController _controller(AppLockGateway gateway) =>
     );
 
 final class _Gateway implements AppLockGateway {
-  bool usageAccess = false;
+  _Gateway({
+    this.usageAccess = false,
+    this.apps = const <LockedApp>[],
+    this.usage = const <AppUsageRecord>[],
+  });
+
+  bool usageAccess;
+  final List<LockedApp> apps;
+  final List<AppUsageRecord> usage;
   int usageRequests = 0;
 
   @override
   bool get isSupported => true;
   @override
   Future<AppLockResult<List<LockedApp>>> installedApps() async =>
-      const AppLockSuccess<List<LockedApp>>(<LockedApp>[]);
+      AppLockSuccess<List<LockedApp>>(apps);
   @override
   Future<AppLockResult<List<AppUsageRecord>>> recentUsage() async =>
-      const AppLockSuccess<List<AppUsageRecord>>(<AppUsageRecord>[]);
+      AppLockSuccess<List<AppUsageRecord>>(usage);
   @override
   Future<AppLockResult<AppLockPermissionSnapshot>> permissions() async =>
       AppLockSuccess<AppLockPermissionSnapshot>(
@@ -158,3 +226,15 @@ final class _Gateway implements AppLockGateway {
   Future<AppLockResult<void>> openBatterySettings() async =>
       const AppLockSuccess<void>(null);
 }
+
+Habit _habit(String id, String name) => Habit(
+  id: id,
+  name: name,
+  color: '#000000',
+  icon: 'x',
+  frequency: HabitFrequency.daily,
+  targetCount: 1,
+  category: 'Test',
+  createdAt: DateTime(2026, 1, 1),
+  isActive: true,
+);

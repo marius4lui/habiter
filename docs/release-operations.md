@@ -74,6 +74,36 @@ pnpm exec wrangler rollback --env production
 
 After configuring the custom domain, set `RELEASE_API_BASE_URL` so deployment and release workflows smoke-test `/health` and the release routes on `get.habiter.dev`.
 
+## Desktop installer delivery and rollback
+
+The only installer source files are `scripts/install/install.sh` and `scripts/install/install.ps1`. The Worker routes `/install.sh` and `/install.ps1` to fixed raw repository URLs on `main`; it has no generic path or upstream URL parameter. Successful responses use explicit text MIME types, `nosniff`, the repository-source marker, and `public, max-age=60, s-maxage=300`. Upstream errors, redirects, HTML, or a missing script marker fail closed as non-executable plain text with `no-store`.
+
+Installers never derive release file names. They call `/api/v1/install/<platform>/<architecture>` with stable/beta, optional version, and Linux distro. The resolver selects exactly one artifact marked `primary: true` with an explicit `format`, HTTPS URL, SHA-256, and size. Ambiguity or incomplete metadata is a 404, not array-order fallback. A macOS `universal` artifact may satisfy an `arm64` or `x64` request. Linux browser requests without an explicit distro go to the chooser because a browser cannot reliably identify Fedora, Arch, Ubuntu, Debian, or openSUSE.
+
+The stable tag workflow blocks publication until script/API tests pass and at least three complete primary desktop artifacts exist. Linux publishes both the primary AppImage and the complete Flutter tar bundle. Windows and macOS archives retain the complete application bundle. `.github/workflows/installer.yml` separately checks ShellCheck/syntax, deterministic distro fixtures and containers, macOS, Windows PowerShell, resolver/proxy behavior, release metadata, documentation links, and the VitePress build.
+
+Smoke test a Worker preview or production endpoint without executing a script:
+
+```bash
+curl --fail --dump-header - https://get.habiter.dev/install.sh --output /tmp/habiter-install.sh
+head -n 1 /tmp/habiter-install.sh
+sh -n /tmp/habiter-install.sh
+curl --fail 'https://get.habiter.dev/api/v1/install/linux/x64?channel=stable&distro=fedora' | jq .
+curl --head 'https://get.habiter.dev/download?platform=linux&distro=fedora'
+```
+
+Expected headers include the correct `Content-Type`, `X-Content-Type-Options: nosniff`, `X-Habiter-Installer-Source: repository`, cache policy, and—when supplied upstream—an ETag. Resolver output must match the enriched GitHub Release URL, size, and SHA-256.
+
+To roll back a script regression:
+
+1. Revert or fix only the affected repository script and validate both installer workflows.
+2. Merge the correction to `main`; no Worker deployment is required when the proxy contract is unchanged.
+3. Wait for revalidation (at most the documented shared-cache interval) or purge only the two installer URLs if an emergency requires it.
+4. Fetch both endpoints, validate markers/syntax and inspect headers without piping them to a shell.
+5. Exercise `--dry-run` and one isolated user-scoped test install before declaring recovery.
+
+If the resolver/proxy contract itself regressed, revert the Worker change, let `worker-deploy.yml` publish the known-good version, and use Wrangler version rollback only when the normal revert cannot recover production quickly. Never work around a bad resolver by hard-coding a release URL or checksum into an installer.
+
 ## Automatic-update release assets
 
 Android is built in two flavors with the same application ID. `direct` produces a signed universal APK with the installer permission and FileProvider; `store` produces an AAB without either direct-install capability. The build and release workflows inspect the merged manifests with `scripts/android/verify-update-flavors.sh`, and the release workflow verifies both artifacts against `ANDROID_CERT_SHA256`. The build flavor is authoritative, while the detected Android install source is an additional safeguard: a Store-installed build never receives a direct APK.

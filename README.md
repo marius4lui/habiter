@@ -73,7 +73,7 @@ Responsive screens are tested at narrow widths and large text sizes. The interfa
 
 ## Download
 
-The smart download endpoint detects Android, Windows, Linux, or macOS and redirects to the matching artifact. Platform and architecture can also be selected explicitly through query parameters.
+The smart download endpoint sends Android to the signed direct artifact and desktop users to maintained platform instructions. Linux distribution routing is used only when an explicit distro hint exists; the local installer performs authoritative detection from `/etc/os-release`.
 
 <div align="center">
 
@@ -82,6 +82,16 @@ The smart download endpoint detects Android, Windows, Linux, or macOS and redire
 `https://get.habiter.dev/download`
 
 </div>
+
+Checksum-verifying user-scoped installers and manual instructions are available in the [installation guide](docs/install/README.md):
+
+```sh
+curl -fsSL https://get.habiter.dev/install.sh | sh
+```
+
+```powershell
+irm https://get.habiter.dev/install.ps1 | iex
+```
 
 ## Repository
 
@@ -234,7 +244,10 @@ Open `http://localhost:3000`. Use `pnpm website:check` for the complete website 
 | `GET /api/v1/manifest` | ETag-aware Ed25519-signed update manifest envelope |
 | `GET /api/v1/update/:platform` | Version and build update decision |
 | `GET /api/v1/download/:platform` | Latest platform download |
-| `GET /download` | User-Agent-aware download redirect |
+| `GET /api/v1/install/:platform/:architecture` | Complete primary installer artifact contract |
+| `GET /install.sh` | Allow-listed repository POSIX installer |
+| `GET /install.ps1` | Allow-listed repository PowerShell installer |
+| `GET /download` | Explicit platform/distro or broad User-Agent smart route |
 
 Concrete release responses are immutable; latest, update, and download decisions use short cache windows. Errors share a stable JSON contract with a request ID.
 

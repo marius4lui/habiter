@@ -5,7 +5,7 @@ INSTALLER="$ROOT/scripts/install/install.sh"
 FIXTURES="$ROOT/scripts/install/test/os-release"
 HABITER_TEST_MODE=functions
 export HABITER_TEST_MODE
-# shellcheck source=../install.sh
+# shellcheck source=scripts/install/install.sh
 . "$INSTALLER"
 unset HABITER_TEST_MODE
 

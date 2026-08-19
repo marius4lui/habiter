@@ -4,6 +4,7 @@ import '../core/time/local_date.dart';
 import '../models/habit.dart';
 import '../models/locked_app.dart';
 import '../features/app_lock/domain/app_lock_gateway.dart';
+import '../features/app_lock/domain/app_block_rule.dart';
 import '../features/app_lock/infrastructure/method_channel_app_lock_gateway.dart';
 import '../features/today/application/today_query.dart';
 import '../services/storage_service.dart';
@@ -153,7 +154,26 @@ class AppLockProvider extends ChangeNotifier {
     _availableApps[index] = app.copyWith(isLocked: !app.isLocked);
 
     // Update config
-    _config = _config.copyWith(lockedApps: _availableApps);
+    final existing = <String, AppBlockRule>{
+      for (final rule in _config.rules) rule.packageName: rule,
+    };
+    _config = _config.copyWith(
+      rules: _availableApps
+          .where((candidate) => candidate.isLocked)
+          .map(
+            (candidate) =>
+                existing[candidate.packageName]?.copyWith(
+                  appName: candidate.appName,
+                  enabled: true,
+                ) ??
+                AppBlockRule(
+                  packageName: candidate.packageName,
+                  appName: candidate.appName,
+                  requirement: const GeneralRequirement(),
+                ),
+          )
+          .toList(growable: false),
+    );
     await _saveAndSync();
     await _syncHabitCompletionState();
     notifyListeners();
@@ -174,7 +194,17 @@ class AppLockProvider extends ChangeNotifier {
 
   /// Set whether all habits must be complete or specific ones
   Future<void> setLockUntilAllHabitsComplete(bool value) async {
-    _config = _config.copyWith(lockUntilAllHabitsComplete: value);
+    _config = _config.copyWith(
+      rules: _config.rules
+          .map(
+            (rule) => rule.copyWith(
+              requirement: value
+                  ? const GeneralRequirement()
+                  : HabitRequirement(const <String>[]),
+            ),
+          )
+          .toList(growable: false),
+    );
     await _saveAndSync();
     await _syncHabitCompletionState();
     notifyListeners();
@@ -182,7 +212,15 @@ class AppLockProvider extends ChangeNotifier {
 
   /// Set specific habit IDs that must be completed
   Future<void> setRequiredHabitIds(List<String>? habitIds) async {
-    _config = _config.copyWith(requiredHabitIds: habitIds);
+    _config = _config.copyWith(
+      rules: _config.rules
+          .map(
+            (rule) => rule.copyWith(
+              requirement: HabitRequirement(habitIds ?? const <String>[]),
+            ),
+          )
+          .toList(growable: false),
+    );
     await _saveAndSync();
     await _syncHabitCompletionState();
     notifyListeners();

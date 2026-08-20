@@ -1094,11 +1094,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get onboardingIntentOther => 'Etwas anderes';
 
   @override
-  String get onboardingFirstHabitTitle => 'Starte mit etwas Kleinem.';
+  String get onboardingFirstHabitTitle => 'Dein erster\nkleiner Schritt.';
 
   @override
   String get onboardingFirstHabitBody =>
-      'Wähle etwas aus oder erstelle dein eigenes Habit.';
+      'Wähle eine Idee oder gib deinem Habit einen eigenen Namen.';
 
   @override
   String get onboardingCustomHabitName => 'Gib deinem Habit einen Namen';

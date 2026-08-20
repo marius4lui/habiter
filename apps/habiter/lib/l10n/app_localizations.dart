@@ -2033,13 +2033,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingFirstHabitTitle.
   ///
   /// In de, this message translates to:
-  /// **'Starte mit etwas Kleinem.'**
+  /// **'Dein erster\nkleiner Schritt.'**
   String get onboardingFirstHabitTitle;
 
   /// No description provided for @onboardingFirstHabitBody.
   ///
   /// In de, this message translates to:
-  /// **'Wähle etwas aus oder erstelle dein eigenes Habit.'**
+  /// **'Wähle eine Idee oder gib deinem Habit einen eigenen Namen.'**
   String get onboardingFirstHabitBody;
 
   /// No description provided for @onboardingCustomHabitName.

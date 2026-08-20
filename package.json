@@ -3,6 +3,7 @@
   "private": true,
   "packageManager": "pnpm@11.21.0",
   "scripts": {
+    "docs:check": "npm --prefix docs run docs:check",
     "roadmap:sync": "node scripts/docs/sync-roadmap.mjs",
     "roadmap:check": "node scripts/docs/sync-roadmap.mjs --check",
     "release:validate": "pnpm --filter @habiter/release-core validate",

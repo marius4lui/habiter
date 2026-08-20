@@ -1,0 +1,640 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Habiter Release API",
+    "version": "1.0.0",
+    "description": "Read-only release metadata, signed update manifests, update decisions, and artifact redirects for Habiter."
+  },
+  "servers": [
+    {
+      "url": "https://get.habiter.dev",
+      "description": "Production"
+    }
+  ],
+  "tags": [
+    { "name": "Service" },
+    { "name": "Releases" },
+    { "name": "Updates" },
+    { "name": "Downloads" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Check service health",
+        "tags": ["Service"],
+        "responses": {
+          "200": {
+            "description": "Worker is available.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Health" }
+              }
+            }
+          },
+          "default": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/download": {
+      "get": {
+        "operationId": "selectDownload",
+        "summary": "Select a download from query parameters or User-Agent",
+        "tags": ["Downloads"],
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": { "$ref": "#/components/schemas/DistributionPlatform" }
+          },
+          {
+            "name": "arch",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "minLength": 1 }
+          },
+          { "$ref": "#/components/parameters/Channel" }
+        ],
+        "responses": {
+          "302": { "$ref": "#/components/responses/Redirect" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "default": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/v1/manifest": {
+      "get": {
+        "operationId": "getSignedManifest",
+        "summary": "Get the signed published-release manifest",
+        "tags": ["Updates"],
+        "parameters": [
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Exact ETag from an earlier manifest response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed manifest envelope.",
+            "headers": {
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SignedManifestEnvelope" }
+              }
+            }
+          },
+          "304": {
+            "description": "The envelope matches If-None-Match.",
+            "headers": {
+              "ETag": { "$ref": "#/components/headers/ETag" },
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" }
+            }
+          },
+          "503": {
+            "description": "No signed manifest is loaded.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Always no-store.",
+                "schema": { "type": "string", "const": "no-store" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "default": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/v1/releases": {
+      "get": {
+        "operationId": "listReleases",
+        "summary": "List published releases",
+        "tags": ["Releases"],
+        "parameters": [
+          { "$ref": "#/components/parameters/Channel" },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100000, "default": 1 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of release summaries.",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReleaseList" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "default": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/v1/releases/latest": {
+      "get": {
+        "operationId": "getLatestRelease",
+        "summary": "Get the newest published release in a channel",
+        "tags": ["Releases"],
+        "parameters": [
+          { "$ref": "#/components/parameters/Channel" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Complete release object.",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Release" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "default": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/v1/releases/{version}": {
+      "get": {
+        "operationId": "getRelease",
+        "summary": "Get one concrete published release",
+        "tags": ["Releases"],
+        "parameters": [
+          { "$ref": "#/components/parameters/Version" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Immutable release object.",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Release" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "default": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/v1/releases/{version}/downloads": {
+      "get": {
+        "operationId": "getReleaseDownloads",
+        "summary": "Get artifacts for one concrete published release",
+        "tags": ["Releases", "Downloads"],
+        "parameters": [
+          { "$ref": "#/components/parameters/Version" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Immutable artifact inventory.",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReleaseDownloads" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "default": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/v1/update/{platform}": {
+      "get": {
+        "operationId": "checkForUpdate",
+        "summary": "Compare a client coordinate with the latest release",
+        "tags": ["Updates"],
+        "parameters": [
+          { "$ref": "#/components/parameters/Platform" },
+          {
+            "name": "version",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/SemVer" }
+          },
+          {
+            "name": "build",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "minimum": 1 }
+          },
+          { "$ref": "#/components/parameters/Channel" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deterministic update decision.",
+            "headers": {
+              "Cache-Control": { "$ref": "#/components/headers/CacheControl" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UpdateDecision" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "default": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/v1/download/{platform}": {
+      "get": {
+        "operationId": "downloadForDefaultArchitecture",
+        "summary": "Redirect to the latest artifact for a platform default architecture",
+        "tags": ["Downloads"],
+        "parameters": [
+          { "$ref": "#/components/parameters/Platform" },
+          { "$ref": "#/components/parameters/Channel" }
+        ],
+        "responses": {
+          "302": { "$ref": "#/components/responses/Redirect" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "default": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/v1/download/{platform}/{architecture}": {
+      "get": {
+        "operationId": "downloadForArchitecture",
+        "summary": "Redirect to the latest artifact for a platform and architecture",
+        "tags": ["Downloads"],
+        "parameters": [
+          { "$ref": "#/components/parameters/Platform" },
+          {
+            "name": "architecture",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "minLength": 1 }
+          },
+          { "$ref": "#/components/parameters/Channel" }
+        ],
+        "responses": {
+          "302": { "$ref": "#/components/responses/Redirect" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "default": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "Channel": {
+        "name": "channel",
+        "in": "query",
+        "required": false,
+        "schema": { "$ref": "#/components/schemas/ReleaseChannel" }
+      },
+      "Platform": {
+        "name": "platform",
+        "in": "path",
+        "required": true,
+        "schema": { "$ref": "#/components/schemas/DistributionPlatform" }
+      },
+      "Version": {
+        "name": "version",
+        "in": "path",
+        "required": true,
+        "schema": { "$ref": "#/components/schemas/SemVer" }
+      }
+    },
+    "headers": {
+      "CacheControl": {
+        "description": "Response cache policy.",
+        "schema": { "type": "string" }
+      },
+      "ETag": {
+        "description": "Opaque signed-manifest validator.",
+        "schema": { "type": "string" }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Request parameters are invalid.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Route, release, platform, or artifact is not available.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "InternalError": {
+        "description": "Unexpected request failure.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "Redirect": {
+        "description": "Temporary redirect to a versioned route, website fallback, store, or immutable artifact.",
+        "headers": {
+          "Location": {
+            "required": true,
+            "description": "Absolute redirect target.",
+            "schema": { "type": "string", "format": "uri" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "SemVer": {
+        "type": "string",
+        "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+        "examples": ["1.5.1"]
+      },
+      "ReleaseChannel": {
+        "type": "string",
+        "enum": ["stable", "beta"],
+        "default": "stable"
+      },
+      "DistributionPlatform": {
+        "type": "string",
+        "enum": ["android", "windows", "linux", "macos"]
+      },
+      "ArtifactPlatform": {
+        "type": "string",
+        "enum": ["android", "windows", "linux", "macos", "ios", "web"]
+      },
+      "Health": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status", "environment", "requestId"],
+        "properties": {
+          "status": { "type": "string", "const": "ok" },
+          "environment": { "type": "string" },
+          "requestId": { "type": "string", "format": "uuid" }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message", "requestId"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "invalid_pagination",
+              "invalid_channel",
+              "invalid_update_request",
+              "not_found",
+              "release_not_found",
+              "platform_not_supported",
+              "artifact_not_found",
+              "manifest_unavailable",
+              "internal_error"
+            ]
+          },
+          "message": { "type": "string" },
+          "requestId": { "type": "string", "format": "uuid" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["error"],
+        "properties": {
+          "error": { "$ref": "#/components/schemas/ApiError" }
+        }
+      },
+      "ReleaseSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["version", "buildNumber", "channel", "publishedAt"],
+        "properties": {
+          "version": { "$ref": "#/components/schemas/SemVer" },
+          "buildNumber": { "type": "integer", "minimum": 1 },
+          "channel": { "$ref": "#/components/schemas/ReleaseChannel" },
+          "publishedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ReleaseList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["page", "limit", "total", "releases"],
+        "properties": {
+          "page": { "type": "integer", "minimum": 1 },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 100 },
+          "total": { "type": "integer", "minimum": 0 },
+          "releases": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ReleaseSummary" }
+          }
+        }
+      },
+      "ReleaseNotes": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["added", "changed", "fixed", "security"],
+        "properties": {
+          "added": { "$ref": "#/components/schemas/NoteList" },
+          "changed": { "$ref": "#/components/schemas/NoteList" },
+          "fixed": { "$ref": "#/components/schemas/NoteList" },
+          "security": { "$ref": "#/components/schemas/NoteList" }
+        }
+      },
+      "NoteList": {
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 }
+      },
+      "ReleaseHighlight": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "description", "icon"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "title": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "icon": { "type": "string", "minLength": 1 },
+          "mediaId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+        }
+      },
+      "LocalizedReleasePresentation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["headline", "summary", "highlights", "changes"],
+        "properties": {
+          "headline": { "type": "string", "minLength": 1 },
+          "summary": { "type": "string", "minLength": 1 },
+          "highlights": {
+            "type": "array",
+            "maxItems": 5,
+            "items": { "$ref": "#/components/schemas/ReleaseHighlight" }
+          },
+          "changes": { "$ref": "#/components/schemas/ReleaseNotes" }
+        }
+      },
+      "ReleasePresentation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["de", "en"],
+        "properties": {
+          "de": { "$ref": "#/components/schemas/LocalizedReleasePresentation" },
+          "en": { "$ref": "#/components/schemas/LocalizedReleasePresentation" }
+        }
+      },
+      "ReleaseMedia": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "fileName", "mimeType", "url", "sha256", "size"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "fileName": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]+$" },
+          "mimeType": { "type": "string", "enum": ["image/avif", "image/jpeg", "image/png", "image/webp"] },
+          "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "size": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "ReleaseArtifact": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["platform", "architecture", "fileName", "signed", "url", "sha256", "size"],
+        "properties": {
+          "platform": { "$ref": "#/components/schemas/ArtifactPlatform" },
+          "architecture": { "type": "string", "minLength": 1 },
+          "fileName": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]+$" },
+          "signed": { "type": "boolean" },
+          "distribution": { "type": "string", "enum": ["direct", "play"] },
+          "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "size": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "Release": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "version",
+          "buildNumber",
+          "channel",
+          "status",
+          "publishedAt",
+          "minimumSupportedVersion",
+          "mandatoryAfter",
+          "notes",
+          "artifacts"
+        ],
+        "properties": {
+          "version": { "$ref": "#/components/schemas/SemVer" },
+          "buildNumber": { "type": "integer", "minimum": 1 },
+          "channel": { "$ref": "#/components/schemas/ReleaseChannel" },
+          "status": { "type": "string", "const": "published" },
+          "publishedAt": { "type": "string", "format": "date-time" },
+          "minimumSupportedVersion": { "$ref": "#/components/schemas/SemVer" },
+          "mandatoryAfter": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ]
+          },
+          "notes": { "$ref": "#/components/schemas/ReleaseNotes" },
+          "presentation": { "$ref": "#/components/schemas/ReleasePresentation" },
+          "media": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ReleaseMedia" }
+          },
+          "artifacts": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/components/schemas/ReleaseArtifact" }
+          }
+        }
+      },
+      "ReleaseDownloads": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["version", "artifacts"],
+        "properties": {
+          "version": { "$ref": "#/components/schemas/SemVer" },
+          "artifacts": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/components/schemas/ReleaseArtifact" }
+          }
+        }
+      },
+      "SignedManifestEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["schemaVersion", "keyId", "algorithm", "payload", "signature"],
+        "properties": {
+          "schemaVersion": { "type": "integer", "const": 1 },
+          "keyId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]+$" },
+          "algorithm": { "type": "string", "const": "ed25519" },
+          "payload": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" },
+          "signature": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" }
+        }
+      },
+      "UpdateCoordinate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["version", "buildNumber"],
+        "properties": {
+          "version": { "$ref": "#/components/schemas/SemVer" },
+          "buildNumber": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "UpdateDecision": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "platform",
+          "updateAvailable",
+          "mandatory",
+          "current",
+          "target",
+          "minimumSupportedVersion",
+          "download"
+        ],
+        "properties": {
+          "platform": { "$ref": "#/components/schemas/DistributionPlatform" },
+          "updateAvailable": { "type": "boolean" },
+          "mandatory": { "type": "boolean" },
+          "current": { "$ref": "#/components/schemas/UpdateCoordinate" },
+          "target": { "$ref": "#/components/schemas/UpdateCoordinate" },
+          "minimumSupportedVersion": { "$ref": "#/components/schemas/SemVer" },
+          "download": { "type": "string", "format": "uri-reference" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Habiter Classly-compatible Service Contract",
+    "version": "1.0.0",
+    "description": "The minimal remote API consumed by Habiter's optional Classly-compatible integration."
+  },
+  "servers": [
+    {
+      "url": "https://school.example",
+      "description": "A user-selected, public HTTPS service origin"
+    }
+  ],
+  "paths": {
+    "/api/oauth/authorize": {
+      "get": {
+        "operationId": "authorizeHabiter",
+        "summary": "Authorize Habiter with OAuth 2.0 and PKCE",
+        "parameters": [
+          { "$ref": "#/components/parameters/ClientId" },
+          { "$ref": "#/components/parameters/RedirectUri" },
+          { "$ref": "#/components/parameters/ResponseType" },
+          { "$ref": "#/components/parameters/Scope" },
+          { "$ref": "#/components/parameters/State" },
+          { "$ref": "#/components/parameters/CodeChallenge" },
+          { "$ref": "#/components/parameters/CodeChallengeMethod" }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to the supplied redirect URI with code and state query parameters.",
+            "headers": {
+              "Location": {
+                "required": true,
+                "schema": { "type": "string", "format": "uri" }
+              }
+            }
+          },
+          "default": { "$ref": "#/components/responses/OAuthFailure" }
+        }
+      }
+    },
+    "/api/oauth/token": {
+      "post": {
+        "operationId": "exchangeHabiterAuthorizationCode",
+        "summary": "Exchange an authorization code and PKCE verifier",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "$ref": "#/components/schemas/TokenRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Access token issued.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TokenResponse" }
+              }
+            }
+          },
+          "default": { "$ref": "#/components/responses/OAuthFailure" }
+        }
+      }
+    },
+    "/api/events": {
+      "get": {
+        "operationId": "listHabiterEvents",
+        "summary": "List full or incrementally updated events",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "minimum": 1 },
+            "description": "Maximum requested event count. Habiter currently sends 500 during sync."
+          },
+          {
+            "name": "updated_since",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" },
+            "description": "Omitted for a full sync and supplied for an incremental sync."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event collection returned.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EventsResponse" }
+              }
+            }
+          },
+          "default": {
+            "description": "Authentication, authorization, validation, or service failure. Habiter does not consume the response body."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer" }
+    },
+    "parameters": {
+      "ClientId": {
+        "name": "client_id",
+        "in": "query",
+        "required": true,
+        "schema": { "type": "string", "const": "habiter-app" }
+      },
+      "RedirectUri": {
+        "name": "redirect_uri",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": ["habiter://auth/callback", "http://localhost:43823/callback"]
+        }
+      },
+      "ResponseType": {
+        "name": "response_type",
+        "in": "query",
+        "required": true,
+        "schema": { "type": "string", "const": "code" }
+      },
+      "Scope": {
+        "name": "scope",
+        "in": "query",
+        "required": true,
+        "schema": { "type": "string", "const": "read:events" }
+      },
+      "State": {
+        "name": "state",
+        "in": "query",
+        "required": true,
+        "schema": { "type": "string", "minLength": 1 }
+      },
+      "CodeChallenge": {
+        "name": "code_challenge",
+        "in": "query",
+        "required": true,
+        "schema": { "type": "string", "minLength": 1 }
+      },
+      "CodeChallengeMethod": {
+        "name": "code_challenge_method",
+        "in": "query",
+        "required": true,
+        "schema": { "type": "string", "const": "S256" }
+      }
+    },
+    "responses": {
+      "OAuthFailure": {
+        "description": "OAuth authorization or token exchange failed. Error representation is service-defined."
+      }
+    },
+    "schemas": {
+      "TokenRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["grant_type", "code", "client_id", "redirect_uri", "code_verifier"],
+        "properties": {
+          "grant_type": { "type": "string", "const": "authorization_code" },
+          "code": { "type": "string", "minLength": 1 },
+          "client_id": { "type": "string", "const": "habiter-app" },
+          "redirect_uri": {
+            "type": "string",
+            "enum": ["habiter://auth/callback", "http://localhost:43823/callback"]
+          },
+          "code_verifier": { "type": "string", "minLength": 1 }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "required": ["access_token"],
+        "properties": {
+          "access_token": { "type": "string", "minLength": 1 },
+          "token_type": { "type": "string" },
+          "scope": { "type": "string" },
+          "expires_in": { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": true
+      },
+      "EventsResponse": {
+        "type": "object",
+        "required": ["events"],
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Event" }
+          }
+        },
+        "additionalProperties": true
+      },
+      "Event": {
+        "type": "object",
+        "required": ["id", "type"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string" },
+          "subject_name": { "type": ["string", "null"] },
+          "title": { "type": ["string", "null"] },
+          "date": { "type": ["string", "null"], "format": "date-time" },
+          "created_at": { "type": ["string", "null"], "format": "date-time" }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

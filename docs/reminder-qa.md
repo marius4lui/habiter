@@ -22,3 +22,5 @@ descriptions.
   terminated actions on physical hardware.
 - Delivery time remains subject to operating-system scheduling and power policy;
   the app does not claim exact delivery or universal OEM reliability.
+
+User behavior, permission guidance, privacy, and troubleshooting are documented in [Reminders](/guide/reminders). The native time-zone and settings methods are documented in [Platform-channel contracts](/dev/platform-contracts).

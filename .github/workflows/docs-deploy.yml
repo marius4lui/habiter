@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
+      - 'scripts/docs/validate.mjs'
       - '.github/workflows/docs-deploy.yml'
   workflow_dispatch:
 
@@ -30,7 +31,7 @@ jobs:
           cache-dependency-path: docs/package-lock.json
       - run: npm ci
         working-directory: docs
-      - run: npm run docs:build
+      - run: npm run docs:check
         working-directory: docs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

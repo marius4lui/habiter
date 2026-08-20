@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "exports": "./src/release-manifest.mjs",
   "scripts": {
     "validate": "node ../../scripts/release/validate.mjs",
     "test": "node --test test/*.test.mjs",

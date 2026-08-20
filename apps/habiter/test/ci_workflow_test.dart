@@ -11,6 +11,7 @@ void main() {
     'worker-preview.yml',
     'release.yml',
     'docs-deploy.yml',
+    'installer.yml',
   };
 
   final repositoryRoot = Directory.current.parent.parent;
@@ -25,7 +26,7 @@ void main() {
       }
     });
 
-    test('uses the six intentional custom workflows', () {
+    test('uses the seven intentional custom workflows', () {
       final actual = Directory('${repositoryRoot.path}/.github/workflows')
           .listSync()
           .whereType<File>()
@@ -73,6 +74,15 @@ void main() {
       expect(quality, contains('name: Flutter Quality'));
       expect(quality, contains('name: Worker, Release and Website Quality'));
       expect(quality, contains('quality-summary:'));
+    });
+
+    test('documentation workflows enforce the complete docs contract', () {
+      final quality = workflow('quality.yml').readAsStringSync();
+      final deploy = workflow('docs-deploy.yml').readAsStringSync();
+
+      expect(quality, contains('npm run docs:check'));
+      expect(deploy, contains('npm run docs:check'));
+      expect(deploy, contains("'scripts/docs/validate.mjs'"));
     });
 
     test('release publishing preserves stable and beta channels', () {

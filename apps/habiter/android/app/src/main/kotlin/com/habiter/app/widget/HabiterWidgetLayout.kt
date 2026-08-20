@@ -1,6 +1,6 @@
 package com.habiter.app.widget
 
-enum class HabiterWidgetLayout {
+internal enum class HabiterWidgetLayout {
     COMPACT,
     COMPACT_SQUARE,
     WIDE,

@@ -36,6 +36,12 @@ void main() {
       service.importJson('{"schemaVersion":99,"habits":[],"entries":[]}'),
       throwsFormatException,
     );
+    await expectLater(
+      service.importJson(
+        '{"schemaVersion":1,"habits":[{"id":7}],"entries":[]}',
+      ),
+      throwsFormatException,
+    );
     expect((await repository.load()).habits.single.id, 'safe');
   });
 

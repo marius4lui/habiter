@@ -10,7 +10,7 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
-class HabiterWidgetPinPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
+internal class HabiterWidgetPinPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     private lateinit var context: Context
     private lateinit var channel: MethodChannel
 

@@ -1,6 +1,6 @@
 package com.habiter.app
 
-object AppLockPolicy {
+internal object AppLockPolicy {
     const val ACTIVE_POLL_INTERVAL_MS = 750L
     const val IDLE_POLL_INTERVAL_MS = 3_000L
 
@@ -31,7 +31,7 @@ object AppLockPolicy {
     }
 }
 
-sealed interface BlockingUiState {
+internal sealed interface BlockingUiState {
     data object Hidden : BlockingUiState
 
     data class Visible(val blockedPackage: String) : BlockingUiState

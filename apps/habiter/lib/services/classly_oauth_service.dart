@@ -9,20 +9,22 @@ import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import '../features/integrations/classly/classly_endpoint.dart';
 import 'classly_client.dart';
 
-typedef OAuthLauncher =
-    Future<String> Function(String authorizationUrl, String callbackScheme);
-
+/// Runs the OAuth 2.0 authorization-code flow with PKCE for Classly sync.
 class ClasslyOAuthService {
-  ClasslyOAuthService({OAuthLauncher? launcher, Random? random})
-    : _launcher = launcher ?? _launch,
-      _random = random ?? Random.secure();
+  ClasslyOAuthService({
+    Future<String> Function(String authorizationUrl, String callbackScheme)?
+    launcher,
+    Random? random,
+  }) : _launcher = launcher ?? _launch,
+       _random = random ?? Random.secure();
 
   static const String clientId = 'habiter-app';
   static const String _mobileRedirectScheme = 'habiter';
   static const String _mobileRedirectUri = 'habiter://auth/callback';
   static const String _desktopCallbackPath = '/callback';
 
-  final OAuthLauncher _launcher;
+  final Future<String> Function(String authorizationUrl, String callbackScheme)
+  _launcher;
   final Random _random;
 
   static bool get _isDesktop =>

@@ -1,6 +1,6 @@
 # Architecture
 
-Habiter is a local-first monorepo. The Flutter app is organized feature-first while legacy screens and services are migrated behind explicit domain and infrastructure boundaries.
+Habiter is a local-first monorepo. The Flutter app is organized feature-first, with remaining compatibility screens and services isolated behind explicit domain and infrastructure boundaries.
 
 ## Repository map
 
@@ -57,6 +57,14 @@ Persistence uses versioned envelopes and migration logic over key-value storage.
 - **Remote AI:** experimental and opt-in; local deterministic coaching is the default.
 - **Release API:** a Cloudflare Worker backed by the reviewed release manifest.
 
+The HTTP surface is specified in the [Release API reference](/api/release-api). Flutter/native message shapes are specified in [Platform-channel contracts](/dev/platform-contracts). These boundary documents must change in the same commit as an incompatible implementation change.
+
+## Public and internal surfaces
+
+Habiter is an application, not a published Dart or Kotlin SDK. Public HTTP routes are limited to the documented Release API. Repository packages are marked private, and release-core intentionally has no package export entry point.
+
+Within the application, Dart declarations remain visible only where cross-file imports require them; file-local helpers use `_` names. Android implementation classes that are not framework components are `internal`. Activities, services, receivers, widgets, and callbacks referenced by Android or Glance must retain the visibility required for platform instantiation.
+
 ## Design system
 
 The canonical mobile primitives live in `core/design_system/`: semantic colors, Material 3 themes, spacing and breakpoints, shared components, motion, and haptics. User-facing text belongs in both ARB localization files.
@@ -73,4 +81,4 @@ flutter analyze --fatal-infos
 flutter test
 ```
 
-From the repository root, install the pinned pnpm dependencies and run the release, Worker, website, and roadmap checks described in the root README. Documentation has its own [build and deployment guide](/dev/documentation).
+From the repository root, install the pinned pnpm dependencies and run the release, Worker, website, and roadmap checks described in the [testing guide](/dev/testing). Documentation has its own [authoring and deployment guide](/dev/documentation).

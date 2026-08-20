@@ -68,6 +68,9 @@ class AdaptiveAppShell extends StatelessWidget {
   }
 
   Widget _compact(BuildContext context) {
+    if (selected == AppRoute.today) {
+      return Scaffold(backgroundColor: Colors.transparent, body: child);
+    }
     final l10n = AppLocalizations.of(context);
     final todayLabel = l10n?.today ?? 'Today';
     final analyticsLabel = l10n?.analytics ?? 'Analytics';

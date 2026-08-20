@@ -32,8 +32,12 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await pumpAt(const Size(320, 720));
-    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
     expect(find.byType(NavigationRail), findsNothing);
+
+    await tester.pumpWidget(_fixture(selected: AppRoute.analytics));
+    await tester.pump();
+    expect(find.byType(NavigationBar), findsOneWidget);
 
     await pumpAt(const Size(1200, 800));
     expect(find.byType(NavigationRail), findsOneWidget);
@@ -42,7 +46,12 @@ void main() {
 
   testWidgets('keyboard shortcuts select primary destinations', (tester) async {
     var selected = AppRoute.today;
-    await tester.pumpWidget(_fixture(onSelected: (route) => selected = route));
+    await tester.pumpWidget(
+      _fixture(
+        selected: AppRoute.analytics,
+        onSelected: (route) => selected = route,
+      ),
+    );
 
     await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
     await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
@@ -61,7 +70,12 @@ void main() {
     tester,
   ) async {
     var selected = AppRoute.today;
-    await tester.pumpWidget(_fixture(onSelected: (route) => selected = route));
+    await tester.pumpWidget(
+      _fixture(
+        selected: AppRoute.analytics,
+        onSelected: (route) => selected = route,
+      ),
+    );
 
     final navigationBar = tester.widget<NavigationBar>(
       find.byType(NavigationBar),
@@ -79,10 +93,10 @@ void main() {
       BorderRadius.circular(HabiterRadius.pill),
     );
 
-    await tester.tap(find.text('Analytics'));
+    await tester.tap(find.text('Today'));
     await tester.pump();
 
-    expect(selected, AppRoute.analytics);
+    expect(selected, AppRoute.today);
 
     await tester.tap(find.text('Rhythm'));
     await tester.pump();
@@ -112,10 +126,7 @@ void main() {
       isTrue,
     );
     expect(find.byType(BackButton), findsNothing);
-    expect(
-      tester.widget<AppBar>(find.byType(AppBar)).automaticallyImplyLeading,
-      isFalse,
-    );
+    expect(find.byType(AppBar), findsNothing);
   });
 
   testWidgets('secondary routes pop back to the primary shell', (tester) async {
@@ -147,11 +158,18 @@ void main() {
   });
 }
 
-Widget _fixture({ValueChanged<AppRoute>? onSelected}) =>
-    MaterialApp(home: _fixtureShell(onSelected: onSelected));
+Widget _fixture({
+  AppRoute selected = AppRoute.today,
+  ValueChanged<AppRoute>? onSelected,
+}) => MaterialApp(
+  home: _fixtureShell(selected: selected, onSelected: onSelected),
+);
 
-Widget _fixtureShell({ValueChanged<AppRoute>? onSelected}) => AdaptiveAppShell(
-  selected: AppRoute.today,
+Widget _fixtureShell({
+  AppRoute selected = AppRoute.today,
+  ValueChanged<AppRoute>? onSelected,
+}) => AdaptiveAppShell(
+  selected: selected,
   onSelected: onSelected ?? (_) {},
   onOpenSettings: () {},
   onOpenAppLock: () {},

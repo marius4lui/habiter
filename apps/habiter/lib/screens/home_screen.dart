@@ -1,19 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../app/navigation/app_route.dart';
 import '../core/design_system/components.dart';
 import '../core/design_system/haptics.dart';
-import '../core/design_system/motion.dart';
-import '../core/design_system/tokens.dart';
 import '../core/time/local_date.dart';
+import '../features/home/application/habit_hub_model.dart';
+import '../features/home/presentation/habit_navigation_wheel.dart';
 import '../features/history/presentation/habit_lifecycle_panel.dart';
-import '../features/habits/presentation/templates/habit_template.dart';
-import '../features/onboarding/presentation/onboarding_empty_state.dart';
-import '../features/onboarding/application/onboarding_controller.dart';
-import '../features/onboarding/application/onboarding_state.dart';
-import '../features/widgets/domain/widget_bridge.dart';
-import '../features/widgets/presentation/widget_promotion_card.dart';
 import '../features/today/application/today_query.dart';
 import '../l10n/l10n.dart';
 import '../models/habit.dart';
@@ -22,114 +19,176 @@ import '../widgets/add_habit_sheet.dart';
 import '../widgets/habit_detail_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.onOpenDestination});
+
+  final ValueChanged<HabitHubDestination>? onOpenDestination;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _showCompleted = false;
-  final ScrollController _scrollController = ScrollController();
-  bool _fabExtended = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_updateFab);
-  }
-
-  @override
-  void dispose() {
-    _scrollController
-      ..removeListener(_updateFab)
-      ..dispose();
-    super.dispose();
-  }
-
-  void _updateFab() {
-    final extended =
-        !_scrollController.hasClients || _scrollController.offset < 28;
-    if (extended != _fabExtended) setState(() => _fabExtended = extended);
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<HabitProvider>();
-    if (provider.loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (provider.error != null) return _LoadError(onRetry: provider.refresh);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final latest = latestActiveHabit(provider.habits);
+    final accent = latest?.color.asHabiterColor ?? const Color(0xff72b9aa);
+    final overlay = dark
+        ? SystemUiOverlayStyle.light
+        : SystemUiOverlayStyle.dark;
 
-    final date = LocalDate.fromDateTime(DateTime.now());
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlay.copyWith(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarContrastEnforced: false,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: _HubBackground(
+          accent: accent,
+          dark: dark,
+          child: switch ((provider.loading, provider.error)) {
+            (true, _) => const Center(child: CircularProgressIndicator()),
+            (false, final String error) => _LoadError(
+              message: error,
+              onRetry: provider.refresh,
+            ),
+            _ => _content(provider, latest),
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _content(HabitProvider provider, Habit? latest) {
+    final date = LocalDate.fromDateTime(provider.reminderNow);
     final snapshot = TodayQuery.forDate(
       date: date,
       habits: provider.habits,
       entries: provider.habitEntries,
     );
-    final onboarding = context.watch<OnboardingController?>();
-    final showWidgetPromotion =
-        onboarding?.state.isComplete == true &&
-        onboarding?.state.widgetPromotionState == WidgetPromotionState.pending;
+    final inactiveCount = provider.habits
+        .where((habit) => !habit.isActive)
+        .length;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      floatingActionButton: KeyedSubtree(
-        key: const Key('add-habit-fab'),
-        child: AnimatedSwitcher(
-          duration: HabiterMotion.standard.duration(
-            reduced: context.reduceMotion,
-          ),
-          child: _fabExtended
-              ? FloatingActionButton.extended(
-                  key: const ValueKey('extended-add-fab'),
-                  heroTag: 'add-habit',
-                  onPressed: () => _openEditor(context),
-                  icon: const Icon(Icons.add_rounded),
-                  label: Text(context.l10n.addHabit),
-                )
-              : FloatingActionButton.small(
-                  key: const ValueKey('compact-add-fab'),
-                  heroTag: 'add-habit',
-                  tooltip: context.l10n.addHabit,
-                  onPressed: () => _openEditor(context),
-                  child: const Icon(Icons.add_rounded),
-                ),
-        ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: provider.refresh,
-        child: CustomScrollView(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: HabiterContent(
-                maxWidth: HabiterSize.wideContentMax,
-                child: _TodayContent(
-                  snapshot: snapshot,
-                  allHabits: provider.habits,
-                  showCompleted: _showCompleted,
-                  onToggleCompleted: () =>
-                      setState(() => _showCompleted = !_showCompleted),
-                  onCreateHabit: () => _openEditor(context),
-                  onComplete: (habit) => _complete(provider, habit, date),
-                  onOpen: (habit, completed) =>
-                      _openDetails(provider, habit, completed, date.toString()),
-                  promotion: showWidgetPromotion
-                      ? WidgetPromotionCard(
-                          bridge: context.read<WidgetBridge>(),
-                          onDismiss: onboarding!.dismissWidgetPromotion,
-                          onPinned: onboarding.markWidgetPinned,
-                        )
-                      : null,
+    return SafeArea(
+      bottom: false,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final short = constraints.maxHeight < 680;
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _TopActions(
+                  leadingLabel: inactiveCount > 0
+                      ? context.l10n.pausedArchivedCount(inactiveCount)
+                      : context.l10n.appLock,
+                  leadingIcon: inactiveCount > 0
+                      ? Icons.history_rounded
+                      : Icons.lock_outline_rounded,
+                  leadingKey: Key(
+                    inactiveCount > 0
+                        ? 'hub-inactive-habits-action'
+                        : 'hub-app-lock-action',
+                  ),
+                  onOpenLeading: inactiveCount > 0
+                      ? () => _openLifecycle(provider)
+                      : () => _activate(HabitHubDestination.appLock),
+                  onOpenSettings: () => _activate(HabitHubDestination.settings),
                 ),
               ),
-            ),
-          ],
-        ),
+              Positioned(
+                top: short ? 58 : 72,
+                left: 20,
+                right: 20,
+                bottom: short ? 226 : 244,
+                child: SingleChildScrollView(
+                  key: const Key('habit-hub-hero-scroll'),
+                  physics: const ClampingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: (constraints.maxHeight - (short ? 284 : 316))
+                          .clamp(0, double.infinity),
+                    ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 560),
+                        child: latest == null
+                            ? _EmptyHabitHero(
+                                onCreate: () => _openEditor(context),
+                              )
+                            : _LatestHabitHero(
+                                habit: latest,
+                                status: _statusFor(latest, snapshot),
+                                onOpen: () => _openDetails(
+                                  provider,
+                                  latest,
+                                  snapshot.completed.any(
+                                    (habit) => habit.id == latest.id,
+                                  ),
+                                  date.toString(),
+                                ),
+                                onComplete:
+                                    snapshot.pending.any(
+                                      (habit) => habit.id == latest.id,
+                                    )
+                                    ? () => _complete(provider, latest, date)
+                                    : null,
+                              ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: constraints.maxWidth <= 340 ? -24 : -12,
+                child: HabitNavigationWheel(onOpen: _activate),
+              ),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  _HabitTodayStatus _statusFor(Habit habit, TodaySnapshot snapshot) {
+    if (snapshot.completed.any((item) => item.id == habit.id)) {
+      return _HabitTodayStatus.completed;
+    }
+    if (snapshot.pending.any((item) => item.id == habit.id)) {
+      return _HabitTodayStatus.open;
+    }
+    return _HabitTodayStatus.notPlanned;
+  }
+
+  void _activate(HabitHubDestination destination) {
+    if (destination == HabitHubDestination.createHabit) {
+      _openEditor(context);
+      return;
+    }
+    if (widget.onOpenDestination case final callback?) {
+      callback(destination);
+      return;
+    }
+    final route = switch (destination) {
+      HabitHubDestination.today => AppRoute.today,
+      HabitHubDestination.analytics => AppRoute.analytics,
+      HabitHubDestination.appLock => AppRoute.appLock,
+      HabitHubDestination.rhythm => AppRoute.rhythm,
+      HabitHubDestination.updates => AppRoute.updates,
+      HabitHubDestination.settings => AppRoute.settings,
+      HabitHubDestination.createHabit => AppRoute.today,
+    };
+    if (route == AppRoute.today) return;
+    Navigator.of(context).pushNamed(AppRouteCodec.encode(route));
   }
 
   Future<void> _complete(
@@ -169,6 +228,23 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _openLifecycle(HabitProvider provider) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) => SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+        child: HabitLifecyclePanel(
+          habits: provider.habits,
+          onResume: provider.resumeHabit,
+          onRestore: provider.restoreHabit,
+          onDelete: provider.deleteHabit,
+        ),
+      ),
+    );
+  }
+
   void _openDetails(
     HabitProvider provider,
     Habit habit,
@@ -195,522 +271,390 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _TodayContent extends StatelessWidget {
-  const _TodayContent({
-    required this.snapshot,
-    required this.allHabits,
-    required this.showCompleted,
-    required this.onToggleCompleted,
-    required this.onCreateHabit,
-    required this.onComplete,
-    required this.onOpen,
-    this.promotion,
+enum _HabitTodayStatus { open, completed, notPlanned }
+
+class _HubBackground extends StatelessWidget {
+  const _HubBackground({
+    required this.accent,
+    required this.dark,
+    required this.child,
   });
 
-  final TodaySnapshot snapshot;
-  final List<Habit> allHabits;
-  final bool showCompleted;
-  final VoidCallback onToggleCompleted;
-  final VoidCallback onCreateHabit;
-  final ValueChanged<Habit> onComplete;
-  final void Function(Habit habit, bool completed) onOpen;
-  final Widget? promotion;
+  final Color accent;
+  final bool dark;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final date = DateFormat.yMMMMEEEEd(
-      Localizations.localeOf(context).toLanguageTag(),
-    ).format(now);
-    final greeting = now.hour < 12
-        ? context.l10n.goodMorning
-        : now.hour < 17
-        ? context.l10n.goodAfternoon
-        : context.l10n.goodEvening;
-
-    if (allHabits.isEmpty) {
-      return Column(
-        children: [
-          HabiterPageIntro(
-            eyebrow: date,
-            title: greeting,
-            subtitle: context.l10n.todaySubtitle,
-          ),
-          const SizedBox(height: HabiterSpace.xl),
-          OnboardingEmptyState(onCreateHabit: onCreateHabit),
-        ],
-      );
-    }
-
-    final next = snapshot.pending.firstOrNull;
-    final primary = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        AnimatedSwitcher(
-          duration: HabiterMotion.standard.duration(
-            reduced: context.reduceMotion,
-          ),
-          child: next == null
-              ? snapshot.scheduled.isEmpty
-                    ? const _NothingScheduledState(
-                        key: ValueKey('nothing-scheduled-state'),
-                      )
-                    : const _CompletionState(key: ValueKey('complete-state'))
-              : _NextHabitHero(
-                  key: ValueKey('next-${next.id}'),
-                  habit: next,
-                  onComplete: () => onComplete(next),
-                  onOpen: () => onOpen(next, false),
-                ),
-        ),
-        if (snapshot.pending.length > 1) ...[
-          const SizedBox(height: HabiterSpace.xl),
-          HabiterSectionHeader(
-            title: context.l10n.remainingToday,
-            subtitle: context.l10n.remainingCount(snapshot.pending.length - 1),
-          ),
-          const SizedBox(height: HabiterSpace.sm2),
-          for (final habit in snapshot.pending.skip(1)) ...[
-            _HabitRow(
-              habit: habit,
-              onComplete: () => onComplete(habit),
-              onOpen: () => onOpen(habit, false),
+    final colors = dark
+        ? <Color>[
+            Color.alphaBlend(
+              accent.withValues(alpha: .08),
+              const Color(0xff18312e),
             ),
-            const SizedBox(height: HabiterSpace.sm),
-          ],
-        ],
-      ],
-    );
-    final secondary = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (snapshot.completed.isNotEmpty)
-          _CompletedPanel(
-            habits: snapshot.completed,
-            expanded: showCompleted,
-            onToggle: onToggleCompleted,
-            onOpen: (habit) => onOpen(habit, true),
-          ),
-        if (snapshot.completed.isNotEmpty)
-          const SizedBox(height: HabiterSpace.sm2),
-        HabitLifecyclePanel(
-          habits: allHabits,
-          onResume: context.read<HabitProvider>().resumeHabit,
-          onRestore: context.read<HabitProvider>().restoreHabit,
-          onDelete: context.read<HabitProvider>().deleteHabit,
+            const Color(0xff393127),
+            const Color(0xff3c292e),
+          ]
+        : <Color>[
+            Color.alphaBlend(
+              accent.withValues(alpha: .08),
+              const Color(0xffc5e9df),
+            ),
+            const Color(0xffffd18d),
+            const Color(0xffdfacaa),
+          ];
+    return DecoratedBox(
+      key: const Key('habit-hub-background'),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          stops: const <double>[0, .62, 1],
+          colors: colors,
         ),
-      ],
-    );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        HabiterPageIntro(
-          eyebrow: date,
-          title: greeting,
-          subtitle: context.l10n.todaySubtitle,
-        ),
-        const SizedBox(height: HabiterSpace.lg),
-        if (promotion != null) ...[
-          promotion!,
-          const SizedBox(height: HabiterSpace.lg),
-        ],
-        if (snapshot.scheduled.isNotEmpty) ...[
-          _ProgressSummary(snapshot: snapshot),
-          const SizedBox(height: HabiterSpace.lg),
-        ],
-        LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth < HabiterSize.expandedBreakpoint) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  primary,
-                  const SizedBox(height: HabiterSpace.lg),
-                  secondary,
-                ],
-              );
-            }
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(flex: 3, child: primary),
-                const SizedBox(width: HabiterSpace.lg),
-                Expanded(flex: 2, child: secondary),
-              ],
-            );
-          },
-        ),
-      ],
+      ),
+      child: child,
     );
   }
 }
 
-class _ProgressSummary extends StatelessWidget {
-  const _ProgressSummary({required this.snapshot});
-  final TodaySnapshot snapshot;
+class _TopActions extends StatelessWidget {
+  const _TopActions({
+    required this.leadingLabel,
+    required this.leadingIcon,
+    required this.leadingKey,
+    required this.onOpenLeading,
+    required this.onOpenSettings,
+  });
+
+  final String leadingLabel;
+  final IconData leadingIcon;
+  final Key leadingKey;
+  final VoidCallback onOpenLeading;
+  final VoidCallback onOpenSettings;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _RoundAction(
+          key: leadingKey,
+          label: leadingLabel,
+          icon: leadingIcon,
+          onPressed: onOpenLeading,
+        ),
+        _RoundAction(
+          key: const Key('hub-settings-action'),
+          label: context.l10n.settings,
+          icon: Icons.person_outline_rounded,
+          onPressed: onOpenSettings,
+        ),
+      ],
+    ),
+  );
+}
+
+class _RoundAction extends StatelessWidget {
+  const _RoundAction({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final complete = snapshot.completed.length;
-    final total = snapshot.scheduled.length;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Semantics(
-      container: true,
-      label: context.l10n.habitsCompleted(complete, total),
-      value: '${(snapshot.progress * 100).round()}%',
-      child: HabiterSurface(
-        padding: const EdgeInsets.all(HabiterSpace.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    context.l10n.dailyProgress,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                Text(
-                  '$complete / $total',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelLarge?.copyWith(color: scheme.primary),
-                ),
-              ],
+      button: true,
+      label: label,
+      child: Tooltip(
+        message: label,
+        child: Material(
+          color: dark
+              ? Colors.white.withValues(alpha: .12)
+              : Colors.white.withValues(alpha: .58),
+          shape: CircleBorder(
+            side: BorderSide(
+              color: dark
+                  ? Colors.white.withValues(alpha: .16)
+                  : Colors.white.withValues(alpha: .68),
             ),
-            const SizedBox(height: HabiterSpace.sm2),
-            TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: snapshot.progress),
-              duration: HabiterMotion.emphasized.duration(
-                reduced: context.reduceMotion,
-              ),
-              curve: HabiterMotion.emphasized.curve,
-              builder: (_, value, __) => LinearProgressIndicator(
-                value: value,
-                minHeight: 8,
-                borderRadius: BorderRadius.circular(HabiterRadius.pill),
-                backgroundColor: scheme.primary.withValues(alpha: .12),
+          ),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onPressed,
+            child: SizedBox.square(
+              dimension: 50,
+              child: Icon(
+                icon,
+                size: 24,
+                color: dark ? const Color(0xfff7f1e8) : const Color(0xff151515),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _NextHabitHero extends StatelessWidget {
-  const _NextHabitHero({
-    super.key,
+class _LatestHabitHero extends StatelessWidget {
+  const _LatestHabitHero({
     required this.habit,
-    required this.onComplete,
+    required this.status,
     required this.onOpen,
+    required this.onComplete,
   });
 
   final Habit habit;
-  final VoidCallback onComplete;
+  final _HabitTodayStatus status;
   final VoidCallback onOpen;
+  final VoidCallback? onComplete;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final accent = habit.color.asHabiterColor;
-    return Semantics(
-      container: true,
-      label: context.l10n.nextUp,
-      child: Material(
-        color: Color.alphaBlend(
-          accent.withValues(
-            alpha: theme.brightness == Brightness.dark ? .14 : .09,
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = dark ? const Color(0xfffbf4ea) : const Color(0xff111111);
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final width = MediaQuery.sizeOf(context).width;
+    final nameSize = textScale >= 1.75
+        ? 27.0
+        : width <= 340
+        ? 38.0
+        : 44.0;
+    final statusLabel = switch (status) {
+      _HabitTodayStatus.open => context.l10n.habitHubTodayOpen,
+      _HabitTodayStatus.completed => context.l10n.completedToday,
+      _HabitTodayStatus.notPlanned => context.l10n.habitHubNotPlanned,
+    };
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          context.l10n.habitHubLatestHabit.toUpperCase(),
+          style: TextStyle(
+            color: foreground.withValues(alpha: .62),
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 2.1,
           ),
-          theme.colorScheme.surfaceContainerLow,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(HabiterRadius.prominent),
-          side: BorderSide(color: accent.withValues(alpha: .28)),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
+        const SizedBox(height: 14),
+        Semantics(
+          button: true,
+          label: context.l10n.openHabit(habit.name),
           onTap: onOpen,
-          child: Padding(
-            padding: const EdgeInsets.all(HabiterSpace.lg),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
+            onTap: onOpen,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  context.l10n.nextUp.toUpperCase(),
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: accent,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1,
+                  habit.icon,
+                  key: const Key('latest-habit-icon'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: textScale > 1.5 ? 38 : 48),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  habit.name,
+                  key: const Key('latest-habit-name'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: foreground,
+                    fontSize: nameSize,
+                    height: .98,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1.6,
                   ),
                 ),
-                const SizedBox(height: HabiterSpace.md),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _HabitIcon(habit: habit, size: 56),
-                    const SizedBox(width: HabiterSpace.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            habit.name,
-                            style: theme.textTheme.headlineMedium,
-                          ),
-                          const SizedBox(height: HabiterSpace.xs),
-                          Text(
-                            _habitMeta(context, habit),
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 10,
+          runSpacing: 8,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: dark
+                    ? Colors.black.withValues(alpha: .18)
+                    : Colors.white.withValues(alpha: .48),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: dark
+                      ? Colors.white.withValues(alpha: .14)
+                      : Colors.white.withValues(alpha: .62),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 9,
+                ),
+                child: MediaQuery.withClampedTextScaling(
+                  maxScaleFactor: 1.5,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: switch (status) {
+                            _HabitTodayStatus.open => const Color(0xff1c6b55),
+                            _HabitTodayStatus.completed => const Color(
+                              0xff39784f,
                             ),
-                          ),
-                        ],
+                            _HabitTodayStatus.notPlanned =>
+                              foreground.withValues(alpha: .46),
+                          },
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        statusLabel,
+                        key: const Key('latest-habit-status'),
+                        style: TextStyle(
+                          color: foreground,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (onComplete case final complete?)
+              Semantics(
+                button: true,
+                label: context.l10n.completeHabit(habit.name),
+                child: Tooltip(
+                  message: context.l10n.completeHabit(habit.name),
+                  child: Material(
+                    key: const Key('latest-habit-complete'),
+                    color: foreground,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: complete,
+                      child: SizedBox.square(
+                        dimension: 50,
+                        child: Icon(
+                          Icons.check_rounded,
+                          color: dark ? const Color(0xff192724) : Colors.white,
+                        ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: HabiterSpace.lg),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: onComplete,
-                    icon: const Icon(Icons.check_rounded),
-                    label: Text(context.l10n.markAsComplete),
                   ),
                 ),
-              ],
-            ),
-          ),
+              ),
+          ],
         ),
-      ),
+      ],
     );
   }
 }
 
-class _HabitRow extends StatelessWidget {
-  const _HabitRow({
-    required this.habit,
-    required this.onComplete,
-    required this.onOpen,
-  });
-  final Habit habit;
-  final VoidCallback onComplete;
-  final VoidCallback onOpen;
+class _EmptyHabitHero extends StatelessWidget {
+  const _EmptyHabitHero({required this.onCreate});
 
-  @override
-  Widget build(BuildContext context) => HabiterSurface(
-    onTap: onOpen,
-    child: Row(
-      children: [
-        _HabitIcon(habit: habit),
-        const SizedBox(width: HabiterSpace.sm2),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(habit.name, style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 2),
-              Text(
-                _habitMeta(context, habit),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-        IconButton.filledTonal(
-          tooltip: context.l10n.completeHabit(habit.name),
-          onPressed: onComplete,
-          icon: const Icon(Icons.check_rounded),
-        ),
-      ],
-    ),
-  );
-}
-
-class _HabitIcon extends StatelessWidget {
-  const _HabitIcon({required this.habit, this.size = 48});
-  final Habit habit;
-  final double size;
+  final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
-    final color = habit.color.asHabiterColor;
-    return Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: .15),
-        borderRadius: BorderRadius.circular(size * .3),
-      ),
-      child: Text(habit.icon, style: TextStyle(fontSize: size * .45)),
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = dark ? const Color(0xfffbf4ea) : const Color(0xff111111);
+    final scale = MediaQuery.textScalerOf(context).scale(1);
+    return Column(
+      key: const Key('habit-hub-empty-state'),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.eco_outlined,
+          color: foreground,
+          size: scale > 1.5 ? 40 : 48,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          context.l10n.habitHubEmptyTitle,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: foreground,
+            fontSize: scale > 1.5 ? 26 : 38,
+            height: 1,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -1.2,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          context.l10n.habitHubEmptyBody,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: foreground.withValues(alpha: .72),
+            fontSize: 15,
+            height: 1.35,
+          ),
+        ),
+        const SizedBox(height: 22),
+        FilledButton.icon(
+          key: const Key('create-first-habit'),
+          style: FilledButton.styleFrom(
+            backgroundColor: foreground,
+            foregroundColor: dark ? const Color(0xff192724) : Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+          ),
+          onPressed: onCreate,
+          icon: const Icon(Icons.add_rounded),
+          label: Text(context.l10n.createHabit),
+        ),
+      ],
     );
   }
-}
-
-class _CompletedPanel extends StatelessWidget {
-  const _CompletedPanel({
-    required this.habits,
-    required this.expanded,
-    required this.onToggle,
-    required this.onOpen,
-  });
-  final List<Habit> habits;
-  final bool expanded;
-  final VoidCallback onToggle;
-  final ValueChanged<Habit> onOpen;
-
-  @override
-  Widget build(BuildContext context) => HabiterSurface(
-    padding: EdgeInsets.zero,
-    child: Column(
-      children: [
-        ListTile(
-          onTap: onToggle,
-          leading: Icon(
-            Icons.check_circle_outline,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          title: Text(context.l10n.completedToday),
-          subtitle: Text(context.l10n.todayCompleted(habits.length)),
-          trailing: AnimatedRotation(
-            turns: expanded ? .5 : 0,
-            duration: HabiterMotion.quick.duration(
-              reduced: context.reduceMotion,
-            ),
-            child: const Icon(Icons.expand_more_rounded),
-          ),
-        ),
-        AnimatedSize(
-          duration: HabiterMotion.standard.duration(
-            reduced: context.reduceMotion,
-          ),
-          child: expanded
-              ? Column(
-                  children: [
-                    const Divider(height: 1),
-                    for (final habit in habits)
-                      ListTile(
-                        onTap: () => onOpen(habit),
-                        leading: Text(
-                          habit.icon,
-                          style: const TextStyle(fontSize: 22),
-                        ),
-                        title: Text(habit.name),
-                        trailing: const Icon(Icons.check_rounded),
-                      ),
-                  ],
-                )
-              : const SizedBox(width: double.infinity),
-        ),
-      ],
-    ),
-  );
-}
-
-class _CompletionState extends StatelessWidget {
-  const _CompletionState({super.key});
-
-  @override
-  Widget build(BuildContext context) => HabiterSurface(
-    padding: const EdgeInsets.all(HabiterSpace.lg),
-    child: Row(
-      children: [
-        Icon(
-          Icons.check_circle_rounded,
-          color: Theme.of(context).colorScheme.primary,
-          size: 34,
-        ),
-        const SizedBox(width: HabiterSpace.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                context.l10n.allHabitsCompleted,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: HabiterSpace.xs),
-              Text(
-                context.l10n.completedQuietly,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _NothingScheduledState extends StatelessWidget {
-  const _NothingScheduledState({super.key});
-
-  @override
-  Widget build(BuildContext context) => HabiterSurface(
-    padding: const EdgeInsets.all(HabiterSpace.lg),
-    child: Row(
-      children: [
-        Icon(
-          Icons.wb_sunny_outlined,
-          color: Theme.of(context).colorScheme.primary,
-          size: 34,
-        ),
-        const SizedBox(width: HabiterSpace.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                context.l10n.nothingScheduledTitle,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: HabiterSpace.xs),
-              Text(
-                context.l10n.nothingScheduledBody,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
 }
 
 class _LoadError extends StatelessWidget {
-  const _LoadError({required this.onRetry});
+  const _LoadError({required this.message, required this.onRetry});
+
+  final String message;
   final Future<void> Function() onRetry;
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: HabiterEmptyState(
-      icon: Icons.sync_problem_outlined,
-      title: context.l10n.bootstrapErrorTitle,
-      body: context.l10n.permissionRequiredDesc,
-      action: FilledButton.icon(
-        onPressed: onRetry,
-        icon: const Icon(Icons.refresh),
-        label: Text(context.l10n.retry),
+  Widget build(BuildContext context) => SafeArea(
+    child: Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.sync_problem_rounded, size: 42),
+            const SizedBox(height: 12),
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: Text(context.l10n.retry),
+            ),
+          ],
+        ),
       ),
     ),
   );
-}
-
-String _habitMeta(BuildContext context, Habit habit) {
-  final schedule = switch (habit.frequency) {
-    HabitFrequency.daily => context.l10n.daily,
-    HabitFrequency.weekly => context.l10n.perWeek(habit.targetCount),
-    HabitFrequency.custom => context.l10n.onDays,
-  };
-  return '${localizedHabitCategory(context.l10n, habit.category)} · $schedule';
 }

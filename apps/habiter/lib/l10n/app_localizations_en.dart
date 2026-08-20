@@ -1063,21 +1063,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyStarterExamples => 'Water · Read · Walk · Meditate';
 
   @override
-  String get onboardingWelcomeTitle => 'Habits that stay visible.';
+  String get onboardingWelcomeTitle => 'Small steps.\nReal change.';
 
   @override
   String get onboardingWelcomeBody =>
-      'Habiter makes your next step clear — without pressure or complicated systems.';
+      'Habiter keeps what matters in view — clearly, calmly, one day at a time.';
 
   @override
   String get onboardingGetStarted => 'Get started';
 
   @override
-  String get onboardingIntentTitle => 'What would you like to strengthen?';
+  String get onboardingIntentTitle => 'What should\ngrow?';
 
   @override
   String get onboardingIntentBody =>
-      'This only helps us put useful starting ideas first.';
+      'Choose a direction. You can change everything later.';
 
   @override
   String get onboardingIntentOther => 'Something else';

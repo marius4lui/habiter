@@ -7,6 +7,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../habits/presentation/templates/habit_template.dart';
 import '../../application/onboarding_controller.dart';
 import '../../application/onboarding_state.dart';
+import '../components/habit_illustration.dart';
 import '../onboarding_scaffold.dart';
 
 class IntentStep extends StatelessWidget {
@@ -20,49 +21,35 @@ class IntentStep extends StatelessWidget {
     title: context.l10n.onboardingIntentTitle,
     subtitle: context.l10n.onboardingIntentBody,
     onBack: controller.back,
-    body: GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 240,
-        mainAxisExtent: MediaQuery.textScalerOf(context).scale(1) > 1.3
-            ? 148
-            : 104,
-        crossAxisSpacing: HabiterSpace.sm,
-        mainAxisSpacing: HabiterSpace.sm,
-      ),
-      itemCount: OnboardingIntent.values.length,
-      itemBuilder: (context, index) {
-        final intent = OnboardingIntent.values[index];
-        return Semantics(
-          button: true,
-          selected: controller.state.intent == intent,
-          child: Card(
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: () async {
-                await context.read<HapticGateway>().selection();
-                await controller.selectIntent(intent);
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(HabiterSpace.md),
-                child: Row(
-                  children: <Widget>[
-                    Icon(_icon(intent), size: 30),
-                    const SizedBox(width: HabiterSpace.sm),
-                    Expanded(
-                      child: Text(
-                        _label(context, intent),
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                  ],
-                ),
+    body: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        HabitIllustration(
+          kind: HabitIllustrationKind.footsteps,
+          step: OnboardingStep.intent,
+          semanticLabel: context.l10n.onboardingIntentTitle,
+          height: 142,
+        ),
+        const SizedBox(height: HabiterSpace.md),
+        Wrap(
+          key: const ValueKey<String>('onboarding-intent-choices'),
+          spacing: HabiterSpace.sm,
+          runSpacing: HabiterSpace.sm,
+          children: <Widget>[
+            for (var index = 0; index < OnboardingIntent.values.length; index++)
+              _IntentChoice(
+                index: index,
+                label: _label(context, OnboardingIntent.values[index]),
+                selected:
+                    controller.state.intent == OnboardingIntent.values[index],
+                onTap: () async {
+                  await context.read<HapticGateway>().selection();
+                  await controller.selectIntent(OnboardingIntent.values[index]);
+                },
               ),
-            ),
-          ),
-        );
-      },
+          ],
+        ),
+      ],
     ),
   );
 
@@ -98,15 +85,73 @@ class IntentStep extends StatelessWidget {
         ),
         OnboardingIntent.other => context.l10n.onboardingIntentOther,
       };
+}
 
-  IconData _icon(OnboardingIntent intent) => switch (intent) {
-    OnboardingIntent.health => Icons.favorite_rounded,
-    OnboardingIntent.fitness => Icons.fitness_center_rounded,
-    OnboardingIntent.mindfulness => Icons.self_improvement_rounded,
-    OnboardingIntent.learning => Icons.menu_book_rounded,
-    OnboardingIntent.productivity => Icons.bolt_rounded,
-    OnboardingIntent.home => Icons.home_rounded,
-    OnboardingIntent.finance => Icons.savings_rounded,
-    OnboardingIntent.other => Icons.auto_awesome_rounded,
-  };
+class _IntentChoice extends StatelessWidget {
+  const _IntentChoice({
+    required this.index,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final int index;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: Material(
+        color: selected ? scheme.primary : scheme.surfaceContainer,
+        shape: StadiumBorder(
+          side: BorderSide(
+            color: scheme.primary.withValues(alpha: selected ? 1 : 0.22),
+            width: selected ? 2 : 1,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const StadiumBorder(),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 52),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: HabiterSpace.md,
+                vertical: HabiterSpace.sm,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    '${index + 1}'.padLeft(2, '0'),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: selected
+                          ? scheme.onPrimary.withValues(alpha: 0.72)
+                          : scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(width: HabiterSpace.sm),
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: selected ? scheme.onPrimary : scheme.onSurface,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

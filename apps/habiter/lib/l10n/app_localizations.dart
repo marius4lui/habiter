@@ -1997,13 +1997,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingWelcomeTitle.
   ///
   /// In de, this message translates to:
-  /// **'Gewohnheiten, die sichtbar bleiben.'**
+  /// **'Kleine Schritte.\nEchte Veränderung.'**
   String get onboardingWelcomeTitle;
 
   /// No description provided for @onboardingWelcomeBody.
   ///
   /// In de, this message translates to:
-  /// **'Habiter macht deinen nächsten Schritt klar – ohne Druck, ohne komplizierte Systeme.'**
+  /// **'Habiter hält fest, was dir wichtig ist – klar, ruhig und Tag für Tag.'**
   String get onboardingWelcomeBody;
 
   /// No description provided for @onboardingGetStarted.
@@ -2015,13 +2015,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingIntentTitle.
   ///
   /// In de, this message translates to:
-  /// **'Was möchtest du gerade stärken?'**
+  /// **'Was soll\nwachsen?'**
   String get onboardingIntentTitle;
 
   /// No description provided for @onboardingIntentBody.
   ///
   /// In de, this message translates to:
-  /// **'Damit zeigen wir dir passende Startideen zuerst.'**
+  /// **'Wähle eine Richtung. Du kannst später alles ändern.'**
   String get onboardingIntentBody;
 
   /// No description provided for @onboardingIntentOther.

@@ -2336,6 +2336,18 @@ abstract class AppLocalizations {
   /// **'Einrichtungsschritt {step} von {total}'**
   String onboardingStepProgress(int step, int total);
 
+  /// No description provided for @onboardingStateUnavailableTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kurz zurück.'**
+  String get onboardingStateUnavailableTitle;
+
+  /// No description provided for @onboardingStateUnavailableBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Schritt konnte nicht geladen werden. Gehe zurück und versuche ihn erneut.'**
+  String get onboardingStateUnavailableBody;
+
   /// No description provided for @onboardingWidgetIntroTitle.
   ///
   /// In de, this message translates to:

@@ -479,6 +479,8 @@
   "onboardingSaving": "Setting up your habit…",
   "onboardingStepProgress": "Setup step {step} of {total}",
   "@onboardingStepProgress": {"placeholders": {"step": {"type": "int"}, "total": {"type": "int"}}},
+  "onboardingStateUnavailableTitle": "One step back.",
+  "onboardingStateUnavailableBody": "This step could not be loaded. Go back and try it again.",
   "onboardingWidgetIntroTitle": "Your habit.\nRight in view.",
   "onboardingWidgetIntroBody": "See your next step and check it off without opening the app.",
   "onboardingWidgetResponsive": "Fits compact, wide, and large home screen spaces.",

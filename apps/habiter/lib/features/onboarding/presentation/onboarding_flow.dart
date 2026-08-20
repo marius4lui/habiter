@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/design_system/motion.dart';
+import '../../../l10n/l10n.dart';
 import '../../widgets/domain/widget_bridge.dart';
 import '../application/onboarding_controller.dart';
 import '../application/onboarding_state.dart';
+import 'components/habit_illustration.dart';
 import 'onboarding_scaffold.dart';
 import 'steps/first_habit_step.dart';
 import 'steps/habit_ready_step.dart';
@@ -110,44 +112,17 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     }
     return OnboardingScaffold(
       step: step,
-      title: _title(step),
-      subtitle: 'Your setup is saved automatically.',
+      title: context.l10n.onboardingStateUnavailableTitle,
+      subtitle: context.l10n.onboardingStateUnavailableBody,
       onBack: controller.back,
-      body: Center(
-        child: Icon(
-          _icon(step),
-          size: 72,
-          color: Theme.of(context).colorScheme.primary,
-        ),
+      body: HabitIllustration(
+        kind: HabitIllustrationKind.sprout,
+        step: step,
+        semanticLabel: context.l10n.onboardingStateUnavailableTitle,
+        height: 190,
       ),
     );
   }
-
-  String _title(OnboardingStep step) => switch (step) {
-    OnboardingStep.intent => 'What would you like to strengthen?',
-    OnboardingStep.firstHabit => 'Start with something small.',
-    OnboardingStep.rhythm => 'How often does this fit your life?',
-    OnboardingStep.rhythmExplainer => 'How your habit counts.',
-    OnboardingStep.reminderModel => 'Reminders help with timing.',
-    OnboardingStep.reminder => 'Would you like a reminder?',
-    OnboardingStep.habitReady => 'Your first habit is ready.',
-    OnboardingStep.widgetIntro => 'Habiter belongs on your home screen.',
-    OnboardingStep.widgetPin => 'Add the widget',
-    _ => 'Habiter',
-  };
-
-  IconData _icon(OnboardingStep step) => switch (step) {
-    OnboardingStep.intent => Icons.explore_rounded,
-    OnboardingStep.firstHabit => Icons.add_task_rounded,
-    OnboardingStep.rhythm => Icons.calendar_month_rounded,
-    OnboardingStep.rhythmExplainer => Icons.calendar_view_week_rounded,
-    OnboardingStep.reminderModel => Icons.schedule_rounded,
-    OnboardingStep.reminder => Icons.notifications_none_rounded,
-    OnboardingStep.habitReady => Icons.check_circle_rounded,
-    OnboardingStep.widgetIntro => Icons.widgets_rounded,
-    OnboardingStep.widgetPin => Icons.add_to_home_screen_rounded,
-    _ => Icons.eco_rounded,
-  };
 }
 
 final class _OnboardingPage extends Page<void> {

@@ -7,7 +7,11 @@ import 'package:habiter/l10n/app_localizations.dart';
 import 'package:habiter/theme/app_theme.dart';
 
 void main() {
-  for (final size in const <Size>[Size(320, 720), Size(900, 900)]) {
+  for (final size in const <Size>[
+    Size(320, 720),
+    Size(412, 915),
+    Size(900, 900),
+  ]) {
     testWidgets('editorial scaffold fits ${size.width.toInt()}dp canvas', (
       tester,
     ) async {
@@ -42,9 +46,25 @@ void main() {
     expect(find.text('Continue'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('editorial scaffold uses theme colors in high contrast', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app(highContrast: true));
+
+    final scaffold = tester.widget<Scaffold>(
+      find.byKey(const ValueKey<String>('onboarding-editorial-canvas')),
+    );
+    expect(scaffold.backgroundColor, buildAppTheme().colorScheme.surface);
+    expect(tester.takeException(), isNull);
+  });
 }
 
-Widget _app({bool dark = false, double textScale = 1}) => MaterialApp(
+Widget _app({
+  bool dark = false,
+  double textScale = 1,
+  bool highContrast = false,
+}) => MaterialApp(
   locale: const Locale('en'),
   theme: buildAppTheme(),
   darkTheme: buildDarkTheme(),
@@ -57,9 +77,10 @@ Widget _app({bool dark = false, double textScale = 1}) => MaterialApp(
     GlobalCupertinoLocalizations.delegate,
   ],
   builder: (context, child) => MediaQuery(
-    data: MediaQuery.of(
-      context,
-    ).copyWith(textScaler: TextScaler.linear(textScale)),
+    data: MediaQuery.of(context).copyWith(
+      textScaler: TextScaler.linear(textScale),
+      highContrast: highContrast,
+    ),
     child: child!,
   ),
   home: OnboardingScaffold(

@@ -73,6 +73,19 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('widget preview stops animating with reduced motion', (
+    tester,
+  ) async {
+    final controller = await _controllerAtWidgetIntro();
+    await tester.pumpWidget(
+      _app(controller, const _FakeWidgetBridge(), disableAnimations: true),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.binding.hasScheduledFrame, isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final state in const <(WidgetPinResult, String)>[
     (WidgetPinResult.declined, 'Kein Problem.'),
     (
@@ -169,6 +182,7 @@ Widget _app(
   WidgetBridge bridge, {
   double textScale = 1,
   ThemeMode themeMode = ThemeMode.light,
+  bool disableAnimations = false,
 }) => MultiProvider(
   providers: [
     ChangeNotifierProvider<OnboardingController>.value(value: controller),
@@ -180,9 +194,10 @@ Widget _app(
   child: MaterialApp(
     locale: const Locale('de'),
     builder: (context, child) => MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: TextScaler.linear(textScale)),
+      data: MediaQuery.of(context).copyWith(
+        textScaler: TextScaler.linear(textScale),
+        disableAnimations: disableAnimations,
+      ),
       child: child!,
     ),
     theme: buildAppTheme(),

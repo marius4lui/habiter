@@ -1277,6 +1277,13 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get onboardingStateUnavailableTitle => 'Kurz zurück.';
+
+  @override
+  String get onboardingStateUnavailableBody =>
+      'Dieser Schritt konnte nicht geladen werden. Gehe zurück und versuche ihn erneut.';
+
+  @override
   String get onboardingWidgetIntroTitle => 'Dein Habit.\nDirekt im Blick.';
 
   @override

@@ -1264,6 +1264,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get onboardingStateUnavailableTitle => 'One step back.';
+
+  @override
+  String get onboardingStateUnavailableBody =>
+      'This step could not be loaded. Go back and try it again.';
+
+  @override
   String get onboardingWidgetIntroTitle => 'Your habit.\nRight in view.';
 
   @override

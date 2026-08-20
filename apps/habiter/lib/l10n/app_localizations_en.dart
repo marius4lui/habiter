@@ -1182,11 +1182,37 @@ class AppLocalizationsEn extends AppLocalizations {
       'This rhythm could not be displayed. Go back and choose it again.';
 
   @override
-  String get onboardingReminderTitle => 'When should Habiter help?';
+  String get onboardingReminderEducationTitle => 'One nudge.\nTwo choices.';
+
+  @override
+  String get onboardingReminderEducationBody =>
+      'Try how Done and Later change your progress.';
+
+  @override
+  String get onboardingReminderQuestion => 'Does now work for you?';
+
+  @override
+  String get onboardingReminderResetDemo => 'Try it again';
+
+  @override
+  String get onboardingReminderDoneExplanation =>
+      'Marked done. Your progress changes immediately.';
+
+  @override
+  String get onboardingReminderLaterExplanation =>
+      'Your progress stays the same. The demo moves 30 minutes ahead.';
+
+  @override
+  String onboardingReminderProgressSemantics(int completed, int target) {
+    return '$completed of $target habit days completed';
+  }
+
+  @override
+  String get onboardingReminderTitle => 'Reminders.\nOnly if you want.';
 
   @override
   String get onboardingReminderBody =>
-      'Smart reminders are optional. We explain everything before asking for notification permission.';
+      'Smart reminders are optional. We only ask for permission after your choice.';
 
   @override
   String get onboardingNoReminder => 'Without a reminder';

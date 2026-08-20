@@ -75,61 +75,16 @@ class _ReminderTimelineDemoState extends State<ReminderTimelineDemo> {
       explicitChildNodes: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: colors.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(HabiterRadius.card),
-          border: Border.all(color: colors.outlineVariant),
+          color: colors.surfaceContainer,
+          borderRadius: BorderRadius.circular(HabiterRadius.prominent),
+          border: Border.all(color: colors.primary.withValues(alpha: 0.16)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(HabiterSpace.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.habitIcon, style: const TextStyle(fontSize: 30)),
-                  const SizedBox(width: HabiterSpace.sm2),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.habitName,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        Text(
-                          widget.scheduleLabel,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Semantics(
-                    key: const ValueKey<String>('reminder-demo-progress'),
-                    container: true,
-                    label: widget.progressSemanticsBuilder(
-                      _completed,
-                      widget.target,
-                    ),
-                    excludeSemantics: true,
-                    child: AnimatedDefaultTextStyle(
-                      duration: HabiterMotion.quick.duration(
-                        reduced: reducedMotion,
-                      ),
-                      curve: HabiterMotion.quick.curve,
-                      style:
-                          Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: colors.primary,
-                            fontWeight: FontWeight.w700,
-                          ) ??
-                          const TextStyle(),
-                      child: Text(
-                        widget.progressLabelBuilder(_completed, widget.target),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              _habitHeader(context, reducedMotion),
               const SizedBox(height: HabiterSpace.lg),
               _timeline(context),
               const SizedBox(height: HabiterSpace.lg),
@@ -150,11 +105,10 @@ class _ReminderTimelineDemoState extends State<ReminderTimelineDemo> {
                 const SizedBox(height: HabiterSpace.sm),
                 Align(
                   alignment: Alignment.center,
-                  child: TextButton.icon(
+                  child: TextButton(
                     key: const ValueKey<String>('reminder-demo-reset'),
                     onPressed: _reset,
-                    icon: const Icon(Icons.replay_rounded),
-                    label: Text(widget.resetLabel),
+                    child: Text(widget.resetLabel),
                   ),
                 ),
               ],
@@ -165,9 +119,81 @@ class _ReminderTimelineDemoState extends State<ReminderTimelineDemo> {
     );
   }
 
+  Widget _habitHeader(BuildContext context, bool reducedMotion) {
+    final colors = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              width: 52,
+              height: 52,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                widget.habitIcon,
+                style: const TextStyle(fontSize: 26),
+              ),
+            ),
+            const SizedBox(width: HabiterSpace.sm2),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    widget.habitName,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Text(
+                    widget.scheduleLabel,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: HabiterSpace.sm),
+        Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: Semantics(
+            key: const ValueKey<String>('reminder-demo-progress'),
+            container: true,
+            label: widget.progressSemanticsBuilder(_completed, widget.target),
+            excludeSemantics: true,
+            child: AnimatedDefaultTextStyle(
+              duration: HabiterMotion.quick.duration(reduced: reducedMotion),
+              curve: HabiterMotion.quick.curve,
+              style:
+                  Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: colors.primary,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.8,
+                  ) ??
+                  const TextStyle(),
+              child: Text(
+                widget.progressLabelBuilder(_completed, widget.target),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _timeline(BuildContext context) {
     final minutes = _reminderTime.hour * 60 + _reminderTime.minute;
     final fraction = ((minutes - 8 * 60) / (14 * 60)).clamp(0.0, 1.0);
+    final ticks = MediaQuery.textScalerOf(context).scale(1) > 1.3
+        ? const <String>['08', '16', '22']
+        : const <String>['08', '12', '16', '20', '22'];
     return Semantics(
       key: const ValueKey<String>('reminder-demo-time'),
       container: true,
@@ -175,18 +201,23 @@ class _ReminderTimelineDemoState extends State<ReminderTimelineDemo> {
       excludeSemantics: true,
       child: Column(
         children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('08'),
-              Text('12'),
-              Text('16'),
-              Text('20'),
-              Text('22'),
+          Row(
+            children: <Widget>[
+              for (final tick in ticks)
+                Expanded(child: Center(child: Text(tick))),
             ],
           ),
           const SizedBox(height: HabiterSpace.xs),
-          LinearProgressIndicator(value: fraction, minHeight: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(HabiterRadius.pill),
+            child: LinearProgressIndicator(
+              value: fraction,
+              minHeight: 5,
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.12),
+            ),
+          ),
           const SizedBox(height: HabiterSpace.sm),
           Text(
             widget.timeLabelBuilder(_reminderTime),
@@ -197,9 +228,12 @@ class _ReminderTimelineDemoState extends State<ReminderTimelineDemo> {
     );
   }
 
-  Widget _reminderCard(BuildContext context) => Card(
+  Widget _reminderCard(BuildContext context) => Container(
     key: const ValueKey<String>('reminder-demo-card'),
-    color: Theme.of(context).colorScheme.primaryContainer,
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.primary,
+      borderRadius: BorderRadius.circular(HabiterRadius.card),
+    ),
     child: Padding(
       padding: const EdgeInsets.all(HabiterSpace.md),
       child: Column(
@@ -207,16 +241,30 @@ class _ReminderTimelineDemoState extends State<ReminderTimelineDemo> {
         children: [
           Text(
             widget.habitName,
-            style: Theme.of(context).textTheme.titleMedium,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onPrimary,
+              fontWeight: FontWeight.w900,
+            ),
           ),
           const SizedBox(height: HabiterSpace.xs),
-          Text(widget.reminderQuestion),
+          Text(
+            widget.reminderQuestion,
+            style: TextStyle(
+              color: Theme.of(
+                context,
+              ).colorScheme.onPrimary.withValues(alpha: 0.82),
+            ),
+          ),
           if (_outcome == _DemoOutcome.later) ...[
             const SizedBox(height: HabiterSpace.sm),
             Text(
               widget.laterExplanation,
               key: const ValueKey<String>('reminder-demo-later'),
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onPrimary.withValues(alpha: 0.82),
+              ),
             ),
           ],
           const SizedBox(height: HabiterSpace.md),
@@ -225,17 +273,31 @@ class _ReminderTimelineDemoState extends State<ReminderTimelineDemo> {
             spacing: HabiterSpace.sm,
             runSpacing: HabiterSpace.sm,
             children: [
-              FilledButton.tonalIcon(
+              FilledButton(
                 key: const ValueKey<String>('reminder-demo-done-action'),
                 onPressed: _done,
-                icon: const Icon(Icons.done_rounded),
-                label: Text(widget.doneLabel),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.onPrimary,
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                  minimumSize: const Size(96, HabiterState.minimumTarget),
+                  shape: const StadiumBorder(),
+                ),
+                child: Text(widget.doneLabel),
               ),
-              OutlinedButton.icon(
+              OutlinedButton(
                 key: const ValueKey<String>('reminder-demo-later-action'),
                 onPressed: _later,
-                icon: const Icon(Icons.snooze_rounded),
-                label: Text(widget.laterLabel),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  side: BorderSide(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onPrimary.withValues(alpha: 0.62),
+                  ),
+                  minimumSize: const Size(96, HabiterState.minimumTarget),
+                  shape: const StadiumBorder(),
+                ),
+                child: Text(widget.laterLabel),
               ),
             ],
           ),
@@ -255,8 +317,11 @@ class _ReminderTimelineDemoState extends State<ReminderTimelineDemo> {
     liveRegion: true,
     label: text,
     excludeSemantics: true,
-    child: Card(
-      color: Theme.of(context).colorScheme.secondaryContainer,
+    child: Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(HabiterRadius.card),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(HabiterSpace.md),
         child: Row(

@@ -2198,16 +2198,58 @@ abstract class AppLocalizations {
   /// **'Dieser Rhythmus konnte nicht angezeigt werden. Gehe zurück und wähle ihn erneut.'**
   String get onboardingRhythmInvalid;
 
+  /// No description provided for @onboardingReminderEducationTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Hinweis.\nZwei Wege.'**
+  String get onboardingReminderEducationTitle;
+
+  /// No description provided for @onboardingReminderEducationBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Teste, wie Erledigt und Später deinen Fortschritt verändern.'**
+  String get onboardingReminderEducationBody;
+
+  /// No description provided for @onboardingReminderQuestion.
+  ///
+  /// In de, this message translates to:
+  /// **'Passt es gerade?'**
+  String get onboardingReminderQuestion;
+
+  /// No description provided for @onboardingReminderResetDemo.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch einmal testen'**
+  String get onboardingReminderResetDemo;
+
+  /// No description provided for @onboardingReminderDoneExplanation.
+  ///
+  /// In de, this message translates to:
+  /// **'Als erledigt markiert. Dein Fortschritt steigt sofort.'**
+  String get onboardingReminderDoneExplanation;
+
+  /// No description provided for @onboardingReminderLaterExplanation.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Fortschritt bleibt gleich. Die Demo springt 30 Minuten weiter.'**
+  String get onboardingReminderLaterExplanation;
+
+  /// No description provided for @onboardingReminderProgressSemantics.
+  ///
+  /// In de, this message translates to:
+  /// **'{completed} von {target} Habit-Tagen erledigt'**
+  String onboardingReminderProgressSemantics(int completed, int target);
+
   /// No description provided for @onboardingReminderTitle.
   ///
   /// In de, this message translates to:
-  /// **'Wann soll Habiter helfen?'**
+  /// **'Erinnern.\nNur wenn du willst.'**
   String get onboardingReminderTitle;
 
   /// No description provided for @onboardingReminderBody.
   ///
   /// In de, this message translates to:
-  /// **'Smart-Reminder sind optional. Wir erklären alles, bevor wir nach der Notification-Berechtigung fragen.'**
+  /// **'Smart-Reminder sind optional. Erst nach deiner Wahl fragen wir nach der Berechtigung.'**
   String get onboardingReminderBody;
 
   /// No description provided for @onboardingNoReminder.

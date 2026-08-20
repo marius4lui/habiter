@@ -12,6 +12,7 @@ import 'steps/first_habit_step.dart';
 import 'steps/habit_ready_step.dart';
 import 'steps/intent_step.dart';
 import 'steps/reminder_step.dart';
+import 'steps/reminder_education_step.dart';
 import 'steps/rhythm_explainer_step.dart';
 import 'steps/rhythm_step.dart';
 import 'steps/welcome_step.dart';
@@ -85,6 +86,10 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     if (step == OnboardingStep.rhythmExplainer &&
         controller.state.habitDraft != null) {
       return RhythmExplainerStep(controller: controller);
+    }
+    if (step == OnboardingStep.reminderModel &&
+        controller.state.habitDraft != null) {
+      return ReminderEducationStep(controller: controller);
     }
     if (step == OnboardingStep.reminder &&
         controller.state.habitDraft != null) {

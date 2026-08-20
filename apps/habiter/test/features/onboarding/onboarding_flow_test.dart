@@ -160,6 +160,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(controller.state.currentStep, OnboardingStep.reminderModel);
+    expect(
+      find.byKey(const ValueKey<String>('onboarding-reminder-timeline-story')),
+      findsOneWidget,
+    );
   });
 }
 

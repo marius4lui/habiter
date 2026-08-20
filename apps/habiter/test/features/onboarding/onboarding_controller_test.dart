@@ -160,6 +160,62 @@ void main() {
   });
 
   test(
+    'optional reminder and widget deferral complete without side effects',
+    () async {
+      final repository = KeyValueOnboardingRepository(InMemoryKeyValueStore());
+      final completionTime = DateTime.utc(2026, 8, 20, 18, 30);
+      final controller = OnboardingController(
+        repository: repository,
+        ids: FakeIdGenerator(const <String>['habit-optional']),
+        clock: FakeClock(completionTime),
+      );
+      addTearDown(controller.dispose);
+
+      await controller.initialize(hasExistingHabits: false);
+      await controller.start();
+      await controller.selectIntent(OnboardingIntent.mindfulness);
+      final draft = OnboardingHabitDraft(
+        name: 'Pause',
+        category: 'Mindfulness',
+        icon: 'P',
+        color: '#DFA79B',
+        frequency: HabitFrequency.daily,
+        targetCount: 1,
+      );
+      await controller.selectHabit(draft);
+      await controller.configureRhythm(draft);
+      await controller.confirmRhythmUnderstanding();
+      await controller.confirmReminderModel();
+      await controller.configureReminder(draft);
+      await controller.reserveFirstHabitId();
+      await controller.markHabitReady();
+
+      expect(controller.state.habitDraft?.reminderEnabled, isFalse);
+      expect(controller.state.habitDraft?.reminderTime, isNull);
+      expect(controller.state.completedAt, isNull);
+
+      await controller.deferWidget();
+      final restarted = OnboardingController(
+        repository: repository,
+        ids: FakeIdGenerator(const <String>['unused']),
+        clock: FakeClock(completionTime.add(const Duration(days: 1))),
+      );
+      addTearDown(restarted.dispose);
+      await restarted.initialize(hasExistingHabits: false);
+
+      expect(restarted.state.currentStep, OnboardingStep.completed);
+      expect(restarted.state.firstHabitId, 'habit-optional');
+      expect(
+        restarted.state.widgetPromotionState,
+        WidgetPromotionState.deferred,
+      );
+      expect(restarted.state.widgetPinAttempted, isFalse);
+      expect(restarted.state.widgetPinned, isFalse);
+      expect(restarted.state.completedAt, completionTime);
+    },
+  );
+
+  test(
     'replaying first-habit creation with its reserved id is idempotent',
     () async {
       final repository = KeyValueHabitRepository(InMemoryKeyValueStore());

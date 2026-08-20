@@ -5,13 +5,13 @@
       "version": "1.6.0",
       "buildNumber": 10600,
       "channel": "beta",
-      "status": "draft",
-      "publishedAt": null,
+      "status": "published",
+      "publishedAt": "2026-08-20T15:03:51+02:00",
       "minimumSupportedVersion": "1.5.0",
       "mandatoryAfter": null,
       "notes": {
         "added": [
-          "Verifizierte Installationsskripte f\u00fcr Windows, Linux und macOS sowie distro-spezifische Installationshilfen.",
+          "Verifizierte Installationsskripte für Windows, Linux und macOS sowie distro-spezifische Installationshilfen.",
           "Ein Linux-AppImage als bevorzugtes Desktop-Installationsformat."
         ],
         "changed": [
@@ -19,16 +19,76 @@
         ],
         "fixed": [],
         "security": [
-          "Installationsskripte pr\u00fcfen Releases, Checksummen und Architektur vor der benutzerspezifischen Installation."
+          "Installationsskripte prüfen Releases, Checksummen und Architektur vor der benutzerspezifischen Installation."
         ]
       },
       "artifacts": [
-        { "platform": "android", "architecture": "universal", "format": "apk", "fileName": "habiter-1.6.0-android-universal.apk", "signed": true, "distribution": "direct" },
-        { "platform": "android", "architecture": "universal", "format": "aab", "fileName": "habiter-1.6.0-android-playstore.aab", "signed": true, "distribution": "play" },
-        { "platform": "linux", "architecture": "x64", "format": "tar.gz", "primary": false, "fileName": "habiter-1.6.0-linux-x64.tar.gz", "signed": false },
-        { "platform": "linux", "architecture": "x64", "format": "appimage", "primary": true, "fileName": "Habiter-1.6.0-x86_64.AppImage", "signed": false },
-        { "platform": "windows", "architecture": "x64", "format": "zip", "primary": true, "fileName": "habiter-1.6.0-windows-x64.zip", "signed": false },
-        { "platform": "macos", "architecture": "universal", "format": "zip", "primary": true, "fileName": "habiter-1.6.0-macos-universal.zip", "signed": false }
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.6.0-android-universal.apk",
+          "signed": true,
+          "distribution": "direct",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.6.0/habiter-1.6.0-android-universal.apk",
+          "sha256": "6dd0ed8ad9918eb88accd866112b860be56793a83852b3b631057e28fce58318",
+          "size": 63968428
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.6.0-android-playstore.aab",
+          "signed": true,
+          "distribution": "play",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.6.0/habiter-1.6.0-android-playstore.aab",
+          "sha256": "8080162c1bd541e929acc848cfd613d5a37aee9b5748dd36742bc4f9bd1e4458",
+          "size": 62412899
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.6.0-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.6.0/habiter-1.6.0-linux-x64.tar.gz",
+          "sha256": "e4830aa87abb80b5fa3e89ce98d5abf66b8f6856bf0241d56749414dae1131fa",
+          "size": 11824436
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.6.0-x86_64.AppImage",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.6.0/Habiter-1.6.0-x86_64.AppImage",
+          "sha256": "32d4c6a03f4a91aa2a5dee313a012eebc9ab467fd5c2d193cd0f5b3bf4055dc4",
+          "size": 11733496
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.6.0-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.6.0/habiter-1.6.0-windows-x64.zip",
+          "sha256": "833be78d74374be7f571111c558bb2e6defdda2d0f05282e5345733d30143b2e",
+          "size": 14536306
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.6.0-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.6.0/habiter-1.6.0-macos-universal.zip",
+          "sha256": "bac99babb34dd0bc8236f6195bc4712ff74c71f9da216a7b5ff1eeb2773a6530",
+          "size": 20843787
+        }
       ]
     },
     {

@@ -7,6 +7,7 @@ on:
       - 'apps/release-api/**'
       - 'packages/release-core/**'
       - 'scripts/release/**'
+      - 'scripts/install/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'

@@ -1,6 +1,7 @@
 import { apiError, json, withCache } from "./responses/http";
-import { defaultArchitecture, detectPlatform, parsePlatform } from "./services/platform";
+import { defaultArchitecture, detectPlatform, parseArchitecture, parseDistro, parsePlatform } from "./services/platform";
 import { ReleaseService } from "./services/release-service";
+import { repositoryInstaller, type InstallerFetcher } from "./services/installer-source";
 import type { ReleaseChannel, ReleaseManifest, SignedManifestEnvelope } from "./types/releases";
 
 const shortCache = "public, max-age=60, s-maxage=300";
@@ -49,7 +50,7 @@ function manifestResponse(request: Request, envelope: SignedManifestEnvelope | u
 }
 
 /** Builds the complete read-only HTTP handler from immutable release data. */
-export function createHandler(manifest: ReleaseManifest, envelope?: SignedManifestEnvelope) {
+export function createHandler(manifest: ReleaseManifest, envelope?: SignedManifestEnvelope, installerFetcher: InstallerFetcher = fetch) {
   const releases = new ReleaseService(manifest);
 
   return async function handle(request: Request, env: Env): Promise<Response> {
@@ -61,11 +62,36 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
       return json({ status: "ok", environment: env.ENVIRONMENT, requestId });
     }
 
+    if (url.pathname === "/install.sh" || url.pathname === "/install.ps1") {
+      try {
+        return (await repositoryInstaller(url.pathname, request, installerFetcher))!;
+      } catch {
+        return new Response("Installer source is unavailable.\n", {
+          status: 503,
+          headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
+        });
+      }
+    }
+
     if (url.pathname === releaseApiContractPaths.downloadSelector) {
-      const platform = parsePlatform(url.searchParams.get("platform")) ?? detectPlatform(request.headers.get("user-agent") ?? "");
-      if (!platform) return Response.redirect(env.WEBSITE_URL, 302);
       const channel = releaseChannel(url.searchParams.get("channel"));
       if (channel === null) return apiError(requestId, 400, "invalid_channel", "channel must be stable or beta");
+      const explicitPlatform = url.searchParams.has("platform");
+      const platform = explicitPlatform
+        ? parsePlatform(url.searchParams.get("platform"))
+        : detectPlatform(request.headers.get("user-agent") ?? "");
+      const docsBase = "https://github.com/marius4lui/habiter";
+      if (!platform) return Response.redirect(`${docsBase}/blob/main/docs/install/README.md`, 302);
+      if (platform === "windows" || platform === "macos") {
+        return Response.redirect(`${docsBase}/blob/main/docs/install/${platform}.md`, 302);
+      }
+      if (platform === "linux") {
+        if (!url.searchParams.has("distro")) {
+          return Response.redirect(`${docsBase}/tree/main/docs/install/linux`, 302);
+        }
+        const distro = parseDistro(url.searchParams.get("distro"));
+        return Response.redirect(`${docsBase}/blob/main/docs/install/linux/${distro}.md`, 302);
+      }
       const architecture = url.searchParams.get("arch") ?? defaultArchitecture(platform);
       const target = new URL(`/api/v1/download/${platform}/${architecture}`, url);
       if (url.searchParams.has("channel")) target.searchParams.set("channel", channel);
@@ -121,6 +147,41 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
       if (channel === null) return apiError(requestId, 400, "invalid_channel", "channel must be stable or beta");
       const result = releases.checkUpdate(platform, version, build, channel, new Date());
       return result ? withCache(json(result), shortCache) : apiError(requestId, 404, "release_not_found", "No published release exists for this channel");
+    }
+
+    if (segments[2] === "install" && segments[3] && segments[4] && segments.length === 5) {
+      const platform = parsePlatform(segments[3]);
+      const architecture = parseArchitecture(segments[4]);
+      if (!platform || platform === "android" || !architecture) {
+        return apiError(requestId, 404, "install_target_not_supported", "Install target is not supported");
+      }
+      const channel = releaseChannel(url.searchParams.get("channel"));
+      if (channel === null) return apiError(requestId, 400, "invalid_channel", "channel must be stable or beta");
+      const version = url.searchParams.get("version") ?? undefined;
+      if (version && !/^\d+\.\d+\.\d+$/.test(version)) {
+        return apiError(requestId, 400, "invalid_version", "version must be semantic version X.Y.Z");
+      }
+      const distro = platform === "linux" ? parseDistro(url.searchParams.get("distro")) : undefined;
+      const resolved = releases.resolveInstall(platform, architecture, channel, version);
+      if (!resolved) return apiError(requestId, 404, "artifact_not_found", "No unambiguous primary install artifact exists");
+      const { release, artifact } = resolved;
+      const docsPath = platform === "linux" ? `linux/${distro}` : platform;
+      return withCache(json({
+        version: release.version,
+        channel,
+        platform,
+        architecture,
+        ...(distro ? { distro } : {}),
+        artifact: {
+          format: artifact.format,
+          fileName: artifact.fileName,
+          url: artifact.url,
+          sha256: artifact.sha256,
+          size: artifact.size,
+          signed: artifact.signed
+        },
+        docsUrl: `https://docs.habiter.dev/install/${docsPath}`
+      }), shortCache);
     }
 
     if (segments[2] === "download" && segments[3] && segments.length <= 5) {

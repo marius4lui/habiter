@@ -68,6 +68,26 @@ test("duplicate versions are rejected", async () => {
   await assert.rejects(validateManifest(manifest, schema), /Duplicate version/);
 });
 
+test("primary installer artifacts require an explicit, unambiguous format", async () => {
+  const manifest = await readJson(manifestPath);
+  const schema = await readJson(schemaPath);
+  const windows = manifest.releases[0].artifacts.find((item) => item.platform === "windows");
+  windows.format = "zip";
+  windows.primary = true;
+  await assert.doesNotReject(validateManifest(manifest, schema));
+
+  const missingFormat = structuredClone(manifest);
+  delete missingFormat.releases[0].artifacts.find((item) => item.platform === "windows").format;
+  await assert.rejects(validateManifest(missingFormat, schema), /Primary artifact requires a format/);
+
+  const ambiguous = structuredClone(manifest);
+  ambiguous.releases[0].artifacts.push({
+    ...ambiguous.releases[0].artifacts.find((item) => item.platform === "windows"),
+    fileName: "habiter-alternative-windows-x64.zip"
+  });
+  await assert.rejects(validateManifest(ambiguous, schema), /Ambiguous primary artifact: windows:x64/);
+});
+
 test("published assets require HTTPS and complete integrity metadata", async () => {
   const manifest = await readJson(manifestPath);
   const schema = await readJson(schemaPath);

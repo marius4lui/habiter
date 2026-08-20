@@ -20,12 +20,30 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'User guide', link: '/guide/getting-started' },
+      { text: 'Installation', link: '/install/' },
       { text: 'API', link: '/api/release-api' },
       { text: 'Development', link: '/dev/architecture' },
       { text: 'Operations', link: '/release-operations' }
     ],
 
     sidebar: {
+      '/install/': [
+        {
+          text: 'Installation',
+          items: [
+            { text: 'Overview', link: '/install/' },
+            { text: 'Linux', link: '/install/linux/' },
+            { text: 'Ubuntu', link: '/install/linux/ubuntu' },
+            { text: 'Debian', link: '/install/linux/debian' },
+            { text: 'Fedora', link: '/install/linux/fedora' },
+            { text: 'Arch Linux', link: '/install/linux/arch' },
+            { text: 'openSUSE', link: '/install/linux/opensuse' },
+            { text: 'Generic Linux', link: '/install/linux/generic' },
+            { text: 'Windows', link: '/install/windows' },
+            { text: 'macOS', link: '/install/macos' }
+          ]
+        }
+      ],
       '/guide/': [
         {
           text: 'User Guide',

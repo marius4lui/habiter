@@ -129,6 +129,8 @@
       "properties": {
         "platform": { "enum": ["android", "windows", "linux", "macos", "ios", "web"] },
         "architecture": { "type": "string", "minLength": 1 },
+        "format": { "enum": ["apk", "aab", "zip", "tar.gz", "appimage", "appbundle", "web"] },
+        "primary": { "type": "boolean" },
         "fileName": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]+$" },
         "signed": { "type": "boolean" },
         "distribution": { "enum": ["direct", "play"] },

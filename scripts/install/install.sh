@@ -1,7 +1,6 @@
 #!/bin/sh
 set -eu
 
-PROGRAM=habiter-installer
 API_BASE=${HABITER_API_BASE:-https://get.habiter.dev}
 CHANNEL=stable
 VERSION=

@@ -135,7 +135,9 @@ Widget _app(
   providers: [
     ChangeNotifierProvider<OnboardingController>.value(value: controller),
     Provider<WidgetBridge>.value(value: bridge),
-    Provider<HapticGateway>.value(value: const SystemHapticGateway(isWeb: true)),
+    Provider<HapticGateway>.value(
+      value: const SystemHapticGateway(isWeb: true),
+    ),
   ],
   child: MaterialApp(
     locale: const Locale('de'),

@@ -29,6 +29,37 @@ void main() {
     );
   });
 
+  test('every persisted step exposes deterministic history and progress', () {
+    for (
+      var index = 0;
+      index < OnboardingProgress.orderedSteps.length;
+      index++
+    ) {
+      final step = OnboardingProgress.orderedSteps[index];
+
+      expect(OnboardingProgress.indexOf(step), index + 1, reason: step.name);
+      expect(
+        OnboardingProgress.through(step),
+        OnboardingProgress.orderedSteps.take(index + 1),
+        reason: step.name,
+      );
+      expect(
+        OnboardingProgress.previousOf(step),
+        index == 0 ? step : OnboardingProgress.orderedSteps[index - 1],
+        reason: step.name,
+      );
+    }
+
+    expect(
+      OnboardingProgress.indexOf(OnboardingStep.habitReady),
+      OnboardingProgress.indexOf(OnboardingStep.widgetIntro),
+    );
+    expect(
+      OnboardingProgress.previousOf(OnboardingStep.completed),
+      OnboardingStep.widgetPin,
+    );
+  });
+
   test('v2 incomplete steps migrate explicitly without losing the draft', () {
     const expected = <String, OnboardingStep>{
       'welcome': OnboardingStep.welcome,

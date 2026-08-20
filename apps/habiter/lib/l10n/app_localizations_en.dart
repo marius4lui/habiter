@@ -1093,7 +1093,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingCustomHabitName => 'Name your habit';
 
   @override
-  String get onboardingRhythmTitle => 'How often does this fit your life?';
+  String get onboardingRhythmTitle => 'Find your\nrhythm.';
 
   @override
   String get onboardingEveryDay => 'Every day';

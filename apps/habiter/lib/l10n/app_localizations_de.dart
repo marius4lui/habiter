@@ -1104,7 +1104,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get onboardingCustomHabitName => 'Gib deinem Habit einen Namen';
 
   @override
-  String get onboardingRhythmTitle => 'Wie oft passt das in deinen Alltag?';
+  String get onboardingRhythmTitle => 'Finde deinen\nRhythmus.';
 
   @override
   String get onboardingEveryDay => 'Jeden Tag';

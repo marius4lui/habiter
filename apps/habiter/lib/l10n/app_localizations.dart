@@ -2051,7 +2051,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingRhythmTitle.
   ///
   /// In de, this message translates to:
-  /// **'Wie oft passt das in deinen Alltag?'**
+  /// **'Finde deinen\nRhythmus.'**
   String get onboardingRhythmTitle;
 
   /// No description provided for @onboardingEveryDay.

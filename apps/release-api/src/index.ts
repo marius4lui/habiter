@@ -1,9 +1,10 @@
 import manifest from "./generated/releases.json";
 import envelope from "./generated/manifest-envelope.json";
+import installers from "./generated/installers.json";
 import { createHandler } from "./router";
 import type { ReleaseManifest, SignedManifestEnvelope } from "./types/releases";
 
-const handle = createHandler(manifest as ReleaseManifest, envelope as SignedManifestEnvelope);
+const handle = createHandler(manifest as ReleaseManifest, envelope as SignedManifestEnvelope, installers);
 
 export default {
   async fetch(request, env): Promise<Response> {

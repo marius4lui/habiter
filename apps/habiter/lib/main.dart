@@ -14,6 +14,7 @@ import 'app/navigation/app_router.dart';
 import 'app/shell/adaptive_app_shell.dart';
 import 'core/design_system/haptics.dart';
 import 'core/design_system/motion.dart';
+import 'features/home/application/habit_hub_model.dart';
 import 'features/onboarding/application/onboarding_controller.dart';
 import 'features/onboarding/application/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_flow.dart';
@@ -376,7 +377,7 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   HabitProvider? _habitProvider;
   WidgetLifecycleCoordinator? _widgetLifecycle;
   Timer? _updateTimer;
-  final _pages = const [HomeScreen(), AnalyticsScreen(), RhythmScreen()];
+  late final List<Widget> _pages;
 
   @override
   void initState() {
@@ -386,6 +387,11 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
       AppRoute.rhythm => 2,
       _ => 0,
     };
+    _pages = <Widget>[
+      HomeScreen(onOpenDestination: _openHubDestination),
+      const AnalyticsScreen(),
+      const RhythmScreen(),
+    ];
     _pageController = PageController(initialPage: _index);
     WidgetsBinding.instance.addObserver(this);
     _updateTimer = Timer.periodic(const Duration(hours: 1), (_) {
@@ -498,6 +504,32 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
     Navigator.of(context).pushNamed(AppRouteCodec.encode(AppRoute.settings));
   }
 
+  void _openHubDestination(HabitHubDestination destination) {
+    switch (destination) {
+      case HabitHubDestination.today:
+        _onRouteSelected(AppRoute.today);
+        break;
+      case HabitHubDestination.analytics:
+        _onRouteSelected(AppRoute.analytics);
+        break;
+      case HabitHubDestination.rhythm:
+        _onRouteSelected(AppRoute.rhythm);
+        break;
+      case HabitHubDestination.appLock:
+        _openAppLock();
+        break;
+      case HabitHubDestination.updates:
+        Navigator.of(context).pushNamed(AppRouteCodec.encode(AppRoute.updates));
+        break;
+      case HabitHubDestination.settings:
+        _openSettings();
+        break;
+      case HabitHubDestination.createHabit:
+        // The HomeScreen owns the existing habit editor sheet.
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AdaptiveAppShell(
@@ -512,7 +544,7 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
       child: PageView(
         controller: _pageController,
         onPageChanged: _onPageChanged,
-        physics: const BouncingScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         children: _pages,
       ),
     );

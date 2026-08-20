@@ -559,6 +559,32 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get habitHubLatestHabit => 'Latest habit';
+
+  @override
+  String get habitHubTodayOpen => 'Open today';
+
+  @override
+  String get habitHubNotPlanned => 'Not planned today';
+
+  @override
+  String get habitHubEmptyTitle => 'Make space for a new habit';
+
+  @override
+  String get habitHubEmptyBody =>
+      'Start with one small action that belongs to you.';
+
+  @override
+  String habitHubWheelPosition(String name, int position, int total) {
+    return '$name, option $position of $total';
+  }
+
+  @override
+  String habitHubOpenDestination(String name) {
+    return 'Open $name';
+  }
+
+  @override
   String get completedToday => 'Completed today';
 
   @override

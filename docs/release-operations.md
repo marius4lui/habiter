@@ -74,7 +74,7 @@ After configuring the custom domain, set `RELEASE_API_BASE_URL` so deployment an
 
 ## Desktop installer delivery and rollback
 
-The only installer source files are `scripts/install/install.sh` and `scripts/install/install.ps1`. The Worker routes `/install.sh` and `/install.ps1` to fixed raw repository URLs on `main`; it has no generic path or upstream URL parameter. Successful responses use explicit text MIME types, `nosniff`, the repository-source marker, and `public, max-age=60, s-maxage=300`. Upstream errors, redirects, HTML, or a missing script marker fail closed as non-executable plain text with `no-store`.
+The only installer source files are `scripts/install/install.sh` and `scripts/install/install.ps1`. The deployment workflow bundles their exact repository contents into the Worker, so `/install.sh` and `/install.ps1` have no runtime dependency on GitHub Raw and expose no generic path or upstream URL parameter. Successful responses use content-derived ETags, explicit text MIME types, `nosniff`, the repository-source marker, and `public, max-age=60, s-maxage=300`. Missing or malformed bundled content fails closed as non-executable plain text with `no-store`; changes to either canonical script trigger a Worker deployment.
 
 Installers never derive release file names. They call `/api/v1/install/<platform>/<architecture>` with stable/beta, optional version, and Linux distro. The resolver selects exactly one artifact marked `primary: true` with an explicit `format`, HTTPS URL, SHA-256, and size. Ambiguity or incomplete metadata is a 404, not array-order fallback. A macOS `universal` artifact may satisfy an `arm64` or `x64` request. Linux browser requests without an explicit distro go to the chooser because a browser cannot reliably identify Fedora, Arch, Ubuntu, Debian, or openSUSE.
 
@@ -95,7 +95,7 @@ Expected headers include the correct `Content-Type`, `X-Content-Type-Options: no
 To roll back a script regression:
 
 1. Revert or fix only the affected repository script and validate both installer workflows.
-2. Merge the correction to `main`; no Worker deployment is required when the proxy contract is unchanged.
+2. Merge the correction to `main`; the installer change triggers a Worker deployment that refreshes the bundled copy.
 3. Wait for revalidation (at most the documented shared-cache interval) or purge only the two installer URLs if an emergency requires it.
 4. Fetch both endpoints, validate markers/syntax and inspect headers without piping them to a shell.
 5. Exercise `--dry-run` and one isolated user-scoped test install before declaring recovery.

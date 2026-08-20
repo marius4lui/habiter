@@ -1076,6 +1076,48 @@ abstract class AppLocalizations {
   /// **'{name} öffnen'**
   String openHabit(String name);
 
+  /// No description provided for @habitHubLatestHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Neuester Habit'**
+  String get habitHubLatestHabit;
+
+  /// No description provided for @habitHubTodayOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute offen'**
+  String get habitHubTodayOpen;
+
+  /// No description provided for @habitHubNotPlanned.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute nicht geplant'**
+  String get habitHubNotPlanned;
+
+  /// No description provided for @habitHubEmptyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Mach Platz für einen neuen Habit'**
+  String get habitHubEmptyTitle;
+
+  /// No description provided for @habitHubEmptyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Beginne mit einer kleinen Handlung, die zu dir gehört.'**
+  String get habitHubEmptyBody;
+
+  /// No description provided for @habitHubWheelPosition.
+  ///
+  /// In de, this message translates to:
+  /// **'{name}, Option {position} von {total}'**
+  String habitHubWheelPosition(String name, int position, int total);
+
+  /// No description provided for @habitHubOpenDestination.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} öffnen'**
+  String habitHubOpenDestination(String name);
+
   /// No description provided for @completedToday.
   ///
   /// In de, this message translates to:

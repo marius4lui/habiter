@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createHash, generateKeyPairSync } from "node:crypto";
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import {
   readJson,
   signManifestEnvelope,
@@ -8,6 +8,19 @@ import {
 } from "../../packages/release-core/src/release-manifest.mjs";
 
 const preview = process.argv.includes("--preview");
+const installersOnly = process.argv.includes("--installers-only");
+const installerEntries = await Promise.all(["install.sh", "install.ps1"].map(async (name) => {
+  const body = await readFile(new URL(`../install/${name}`, import.meta.url), "utf8");
+  return [name, { body, etag: `"${createHash("sha256").update(body).digest("hex")}"` }];
+}));
+await writeFile(
+  new URL("../../apps/release-api/src/generated/installers.json", import.meta.url),
+  `${JSON.stringify(Object.fromEntries(installerEntries), null, 2)}\n`,
+);
+if (installersOnly) {
+  console.log("Prepared bundled repository installers.");
+  process.exit(0);
+}
 const output = new URL("../../apps/release-api/src/generated/releases.json", import.meta.url);
 const manifest = await readJson(new URL("../../packages/release-core/data/releases.json", import.meta.url));
 const schema = await readJson(new URL("../../packages/release-core/schema/releases.schema.json", import.meta.url));

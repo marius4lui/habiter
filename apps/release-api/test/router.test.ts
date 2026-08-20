@@ -43,11 +43,11 @@ const envelope: SignedManifestEnvelope = {
   payload: "eyJzY2hlbWFWZXJzaW9uIjoxLCJyZWxlYXNlcyI6W119",
   signature: "a".repeat(86)
 };
-const installerFetcher = async (input: string) => new Response(
-  input.endsWith("install.sh") ? "#!/bin/sh\necho Habiter\n" : "# Habiter PowerShell installer\nWrite-Output Habiter\n",
-  { headers: { "content-type": "text/plain", etag: '"installer-test"' } }
-);
-const handler = createHandler(manifest, envelope, installerFetcher);
+const installers = {
+  "install.sh": { body: "#!/bin/sh\necho Habiter\n", etag: '"shell-installer"' },
+  "install.ps1": { body: "# Habiter PowerShell installer\nWrite-Output Habiter\n", etag: '"powershell-installer"' },
+};
+const handler = createHandler(manifest, envelope, installers);
 const call = (path: string, headers?: HeadersInit) => handler(new Request(`https://get.habiter.dev${path}`, { headers }), env);
 
 describe("release API", () => {
@@ -113,17 +113,21 @@ describe("release API", () => {
     const powershell = await call("/install.ps1");
     expect(powershell.status).toBe(200);
     expect(await powershell.text()).toContain("Habiter PowerShell installer");
+    expect(powershell.headers.get("etag")).toBe('"powershell-installer"');
+    expect((await call("/install.ps1", { "if-none-match": '"powershell-installer"' })).status).toBe(304);
     expect((await call("/install.sh/other")).status).toBe(404);
   });
 
-  it("fails closed when repository content is unavailable or HTML", async () => {
-    const unavailable = createHandler(manifest, envelope, async () => new Response("missing", { status: 404 }));
+  it("fails closed when bundled repository content is unavailable or malformed", async () => {
+    const unavailable = createHandler(manifest, envelope, {});
     const missing = await unavailable(new Request("https://get.habiter.dev/install.sh"), env);
     expect(missing.status).toBe(503);
     expect(missing.headers.get("cache-control")).toBe("no-store");
 
-    const html = createHandler(manifest, envelope, async () => new Response("<html>error</html>", { headers: { "content-type": "text/html" } }));
-    const rejected = await html(new Request("https://get.habiter.dev/install.ps1"), env);
+    const malformed = createHandler(manifest, envelope, {
+      "install.ps1": { body: "<html>error</html>", etag: '"bad"' },
+    });
+    const rejected = await malformed(new Request("https://get.habiter.dev/install.ps1"), env);
     expect(rejected.status).toBe(502);
     expect(rejected.headers.get("content-type")).toContain("text/plain");
   });
@@ -158,7 +162,7 @@ describe("release API", () => {
     const duplicate = structuredClone(ambiguousManifest.releases[1]!.artifacts.find((item) => item.platform === "windows")!);
     duplicate.fileName = "habiter-other.zip";
     ambiguousManifest.releases[1]!.artifacts.push(duplicate);
-    const ambiguous = createHandler(ambiguousManifest, envelope, installerFetcher);
+    const ambiguous = createHandler(ambiguousManifest, envelope, installers);
     expect((await ambiguous(new Request("https://get.habiter.dev/api/v1/install/windows/x64"), env)).status).toBe(404);
   });
 

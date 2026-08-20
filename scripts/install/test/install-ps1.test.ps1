@@ -7,6 +7,12 @@ $env:HABITER_TEST_MODE = 'functions'
 if ((Get-NormalizedArchitecture 'AMD64') -ne 'x64') { throw 'AMD64 normalization failed' }
 if ((Get-NormalizedArchitecture 'aarch64') -ne 'arm64') { throw 'ARM64 normalization failed' }
 try { Get-NormalizedArchitecture 'sparc'; throw 'Unsupported architecture accepted' } catch { if ($_.Exception.Message -eq 'Unsupported architecture accepted') { throw } }
+try { Get-NormalizedArchitecture $null; throw 'Missing architecture accepted' } catch { if ($_.Exception.Message -eq 'Missing architecture accepted') { throw } }
+try { Get-NormalizedArchitecture 'sparc' } catch { if ($_.Exception.Data['InstallerCode'] -ne 'HAB-WIN-011') { throw 'Missing architecture error code' } }
+$savedProcessorArchitecture = $env:PROCESSOR_ARCHITECTURE
+$env:PROCESSOR_ARCHITECTURE = 'AMD64'
+if ((Get-DetectedArchitecture $null) -ne 'x64') { throw 'Environment architecture fallback failed' }
+$env:PROCESSOR_ARCHITECTURE = $savedProcessorArchitecture
 
 $valid = [pscustomobject]@{
     version = '1.6.0'; platform = 'windows'; architecture = 'x64'
@@ -15,7 +21,10 @@ $valid = [pscustomobject]@{
 Assert-ResolverResponse $valid
 $invalid = $valid | ConvertTo-Json -Depth 4 | ConvertFrom-Json
 $invalid.artifact.url = 'http://example.com/habiter.zip'
-try { Assert-ResolverResponse $invalid; throw 'Insecure URL accepted' } catch { if ($_.Exception.Message -eq 'Insecure URL accepted') { throw } }
+try { Assert-ResolverResponse $invalid; throw 'Insecure URL accepted' } catch {
+    if ($_.Exception.Message -eq 'Insecure URL accepted') { throw }
+    if ($_.Exception.Data['InstallerCode'] -ne 'HAB-WIN-026') { throw 'Missing insecure URL error code' }
+}
 
 $dryRoot = Join-Path ([IO.Path]::GetTempPath()) ("habiter-dry-run-" + [guid]::NewGuid().ToString('N'))
 $env:HABITER_TEST_MODE = ''

@@ -563,6 +563,32 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get habitHubLatestHabit => 'Neuester Habit';
+
+  @override
+  String get habitHubTodayOpen => 'Heute offen';
+
+  @override
+  String get habitHubNotPlanned => 'Heute nicht geplant';
+
+  @override
+  String get habitHubEmptyTitle => 'Mach Platz für einen neuen Habit';
+
+  @override
+  String get habitHubEmptyBody =>
+      'Beginne mit einer kleinen Handlung, die zu dir gehört.';
+
+  @override
+  String habitHubWheelPosition(String name, int position, int total) {
+    return '$name, Option $position von $total';
+  }
+
+  @override
+  String habitHubOpenDestination(String name) {
+    return '$name öffnen';
+  }
+
+  @override
   String get completedToday => 'Heute erledigt';
 
   @override

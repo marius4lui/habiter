@@ -144,13 +144,16 @@ class _HabitNavigationWheelState extends State<HabitNavigationWheel>
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        _WheelBed(dark: _isDark(context)),
+                        _WheelBed(
+                          dark: _isDark(context),
+                          accent: _iconColor(selected),
+                        ),
                         ..._cards(context, constraints.maxWidth),
                         _OpenButton(
                           top:
                               (constraints.maxWidth * .43).clamp(138.0, 172.0) *
                                   .94 +
-                              12,
+                              6,
                           label: context.l10n.habitHubOpenDestination(
                             _label(
                               context,
@@ -158,6 +161,9 @@ class _HabitNavigationWheelState extends State<HabitNavigationWheel>
                             ),
                           ),
                           icon: _icon(habitHubDestinations[_settledIndex]),
+                          accent: _iconColor(
+                            habitHubDestinations[_settledIndex],
+                          ),
                           onPressed: () => widget.onOpen(
                             habitHubDestinations[_settledIndex],
                           ),
@@ -209,13 +215,14 @@ class _HabitNavigationWheelState extends State<HabitNavigationWheel>
     final focus = (1 - delta.abs()).clamp(0.0, 1.0);
     final depth = (1 - delta.abs() / 2.45).clamp(0.0, 1.0);
     final easedFocus = Curves.easeOutCubic.transform(focus);
-    final scale = .84 + easedFocus * .16;
+    final scale = .79 + easedFocus * .21;
     final left = width / 2 + math.sin(angle) * radius - cardWidth / 2;
-    final top = -10 + (1 - math.cos(angle)) * radius * .62;
+    final top = -16 + (1 - math.cos(angle)) * radius * .62;
     final selected = index == _nearestIndex;
     final label = _label(context, destination);
     final paper = _paperColor(context, destination);
     final dark = _isDark(context);
+    final compactCard = cardWidth < 150;
 
     return Positioned(
       left: left,
@@ -223,7 +230,7 @@ class _HabitNavigationWheelState extends State<HabitNavigationWheel>
       width: cardWidth,
       height: cardHeight,
       child: Opacity(
-        opacity: .66 + depth * .34,
+        opacity: .54 + depth * .46,
         child: Transform.rotate(
           angle: delta * .13,
           alignment: Alignment.bottomCenter,
@@ -251,23 +258,22 @@ class _HabitNavigationWheelState extends State<HabitNavigationWheel>
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: dark
-                          ? <Color>[
-                              Color.lerp(paper, Colors.white, .055)!,
-                              Color.lerp(paper, Colors.black, .045)!,
-                            ]
-                          : <Color>[
-                              Color.lerp(paper, Colors.white, .68)!,
-                              paper,
-                            ],
+                      colors: _cardGradient(
+                        paper: paper,
+                        accent: _iconColor(destination),
+                        selected: selected,
+                        dark: dark,
+                      ),
                     ),
                     border: Border.all(
-                      color: dark
-                          ? Colors.white.withValues(alpha: selected ? .20 : .11)
-                          : Colors.white.withValues(
-                              alpha: selected ? .96 : .72,
-                            ),
-                      width: selected ? 1.4 : 1,
+                      color: selected
+                          ? _iconColor(
+                              destination,
+                            ).withValues(alpha: dark ? .82 : .96)
+                          : dark
+                          ? Colors.white.withValues(alpha: .12)
+                          : Colors.white.withValues(alpha: .76),
+                      width: selected ? 2 : 1,
                     ),
                     boxShadow: <BoxShadow>[
                       BoxShadow(
@@ -296,86 +302,154 @@ class _HabitNavigationWheelState extends State<HabitNavigationWheel>
                         destination,
                       ).withValues(alpha: .16),
                       highlightColor: Colors.white.withValues(alpha: .10),
-                      child: MediaQuery.withClampedTextScaling(
-                        maxScaleFactor: 1.3,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(14, 13, 14, 11),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              AnimatedContainer(
-                                duration: context.reduceMotion
-                                    ? Duration.zero
-                                    : HabiterMotion.quick.normal,
-                                width: selected ? 56 : 48,
-                                height: selected ? 56 : 48,
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            top: compactCard ? 8 : 12,
+                            right: compactCard ? 8 : 12,
+                            child: AnimatedScale(
+                              scale: selected ? 1 : 0,
+                              duration: context.reduceMotion
+                                  ? Duration.zero
+                                  : HabiterMotion.quick.normal,
+                              curve: Curves.easeOutBack,
+                              child: DecoratedBox(
                                 decoration: BoxDecoration(
+                                  color: const Color(0xff171717),
                                   shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: <Color>[
-                                      Color.lerp(
-                                        _iconColor(destination),
-                                        Colors.white,
-                                        .34,
-                                      )!,
-                                      _iconColor(destination),
-                                    ],
-                                  ),
                                   border: Border.all(
-                                    color: Colors.white.withValues(alpha: .58),
+                                    color: Colors.white.withValues(alpha: .76),
                                   ),
                                   boxShadow: <BoxShadow>[
                                     BoxShadow(
-                                      color: _iconColor(
-                                        destination,
-                                      ).withValues(alpha: .28),
-                                      blurRadius: 14,
-                                      offset: const Offset(0, 6),
+                                      color: Colors.black.withValues(
+                                        alpha: .22,
+                                      ),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
                                     ),
                                   ],
                                 ),
-                                child: Icon(
-                                  _icon(destination),
-                                  color: const Color(0xff171717),
-                                  size: selected ? 27 : 23,
+                                child: const SizedBox.square(
+                                  dimension: 24,
+                                  child: Icon(
+                                    Icons.check_rounded,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
                                 ),
                               ),
-                              const SizedBox(height: 11),
-                              Text(
-                                label,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: dark
-                                      ? const Color(0xfff7f1e8)
-                                      : const Color(0xff171717),
-                                  fontSize: selected ? 13.5 : 12.5,
-                                  height: 1.05,
-                                  letterSpacing: -.18,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              const Spacer(),
-                              AnimatedContainer(
-                                duration: context.reduceMotion
-                                    ? Duration.zero
-                                    : HabiterMotion.quick.normal,
-                                curve: HabiterMotion.quick.curve,
-                                width: selected ? 34 : 18,
-                                height: 3,
-                                decoration: BoxDecoration(
-                                  color: _iconColor(
-                                    destination,
-                                  ).withValues(alpha: selected ? .88 : .40),
-                                  borderRadius: BorderRadius.circular(99),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
+                          MediaQuery.withClampedTextScaling(
+                            maxScaleFactor: 1.3,
+                            child: Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                14,
+                                compactCard ? 9 : 13,
+                                14,
+                                compactCard ? 8 : 11,
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  AnimatedContainer(
+                                    duration: context.reduceMotion
+                                        ? Duration.zero
+                                        : HabiterMotion.quick.normal,
+                                    width: selected
+                                        ? (compactCard ? 50 : 58)
+                                        : (compactCard ? 44 : 48),
+                                    height: selected
+                                        ? (compactCard ? 50 : 58)
+                                        : (compactCard ? 44 : 48),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: <Color>[
+                                          Color.lerp(
+                                            _iconColor(destination),
+                                            Colors.white,
+                                            .42,
+                                          )!,
+                                          _iconColor(destination),
+                                        ],
+                                      ),
+                                      border: Border.all(
+                                        color: Colors.white.withValues(
+                                          alpha: selected ? .88 : .56,
+                                        ),
+                                        width: selected ? 1.6 : 1,
+                                      ),
+                                      boxShadow: <BoxShadow>[
+                                        BoxShadow(
+                                          color: _iconColor(destination)
+                                              .withValues(
+                                                alpha: selected ? .40 : .24,
+                                              ),
+                                          blurRadius: selected ? 20 : 12,
+                                          offset: const Offset(0, 7),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Icon(
+                                      _icon(destination),
+                                      color: const Color(0xff171717),
+                                      size: selected
+                                          ? (compactCard ? 25 : 29)
+                                          : (compactCard ? 21 : 23),
+                                    ),
+                                  ),
+                                  SizedBox(height: compactCard ? 7 : 10),
+                                  Text(
+                                    label,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: dark
+                                          ? const Color(0xfff7f1e8)
+                                          : const Color(0xff171717),
+                                      fontSize: selected
+                                          ? (compactCard ? 13.5 : 14.5)
+                                          : (compactCard ? 12 : 12.5),
+                                      height: 1.02,
+                                      letterSpacing: selected ? -.28 : -.12,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  AnimatedContainer(
+                                    duration: context.reduceMotion
+                                        ? Duration.zero
+                                        : HabiterMotion.quick.normal,
+                                    curve: HabiterMotion.quick.curve,
+                                    width: selected ? 46 : 20,
+                                    height: selected ? 5 : 3,
+                                    decoration: BoxDecoration(
+                                      color: _iconColor(
+                                        destination,
+                                      ).withValues(alpha: selected ? 1 : .54),
+                                      borderRadius: BorderRadius.circular(99),
+                                      boxShadow: selected
+                                          ? <BoxShadow>[
+                                              BoxShadow(
+                                                color: _iconColor(
+                                                  destination,
+                                                ).withValues(alpha: .38),
+                                                blurRadius: 8,
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -470,9 +544,10 @@ class _HabitNavigationWheelState extends State<HabitNavigationWheel>
 }
 
 class _WheelBed extends StatelessWidget {
-  const _WheelBed({required this.dark});
+  const _WheelBed({required this.dark, required this.accent});
 
   final bool dark;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) => Positioned(
@@ -480,15 +555,34 @@ class _WheelBed extends StatelessWidget {
     right: -90,
     top: 78,
     height: 260,
-    child: DecoratedBox(
+    child: AnimatedContainer(
+      duration: context.reduceMotion
+          ? Duration.zero
+          : HabiterMotion.standard.normal,
+      curve: HabiterMotion.standard.curve,
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(240)),
         gradient: RadialGradient(
           center: const Alignment(0, -.15),
           radius: .86,
           colors: dark
-              ? const <Color>[Color(0xff50393d), Color(0xff281e23)]
-              : const <Color>[Color(0xffe8b5aa), Color(0xffd7a6ad)],
+              ? <Color>[
+                  Color.lerp(const Color(0xff50393d), accent, .25)!,
+                  const Color(0xff281e23),
+                ]
+              : <Color>[
+                  Color.lerp(const Color(0xfff1c8bd), accent, .34)!,
+                  Color.lerp(const Color(0xffd7a6ad), accent, .12)!,
+                ],
+        ),
+        border: Border(
+          top: BorderSide(
+            color: Color.lerp(
+              Colors.white,
+              accent,
+              .18,
+            )!.withValues(alpha: dark ? .18 : .54),
+          ),
         ),
       ),
     ),
@@ -500,12 +594,14 @@ class _OpenButton extends StatelessWidget {
     required this.top,
     required this.label,
     required this.icon,
+    required this.accent,
     required this.onPressed,
   });
 
   final double top;
   final String label;
   final IconData icon;
+  final Color accent;
   final VoidCallback onPressed;
 
   @override
@@ -519,20 +615,50 @@ class _OpenButton extends StatelessWidget {
         label: label,
         child: Tooltip(
           message: label,
-          child: Material(
+          child: AnimatedContainer(
             key: const Key('hub-wheel-open'),
-            color: const Color(0xff151515),
-            shape: const CircleBorder(
-              side: BorderSide(color: Color(0xff343434), width: 2),
+            duration: context.reduceMotion
+                ? Duration.zero
+                : HabiterMotion.standard.normal,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[Color(0xff303030), Color(0xff101010)],
+              ),
+              border: Border.all(
+                color: Color.lerp(const Color(0xff4a4a4a), accent, .56)!,
+                width: 2,
+              ),
+              boxShadow: <BoxShadow>[
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .34),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: accent.withValues(alpha: .28),
+                  blurRadius: 22,
+                  spreadRadius: -5,
+                ),
+              ],
             ),
-            elevation: 4,
-            shadowColor: Colors.black.withValues(alpha: .28),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: onPressed,
-              child: SizedBox.square(
-                dimension: 62,
-                child: Icon(icon, color: Colors.white, size: 27),
+            clipBehavior: Clip.antiAlias,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                splashColor: accent.withValues(alpha: .24),
+                onTap: onPressed,
+                child: SizedBox.square(
+                  dimension: 62,
+                  child: Icon(
+                    icon,
+                    color: Color.lerp(Colors.white, accent, .16),
+                    size: 27,
+                  ),
+                ),
               ),
             ),
           ),
@@ -564,20 +690,38 @@ IconData _icon(HabitHubDestination destination) => switch (destination) {
 };
 
 Color _iconColor(HabitHubDestination destination) => switch (destination) {
-  HabitHubDestination.today => const Color(0xff9dded9),
-  HabitHubDestination.createHabit => const Color(0xffffcf91),
-  HabitHubDestination.analytics => const Color(0xffd7acd0),
-  HabitHubDestination.appLock => const Color(0xffaebfe5),
-  HabitHubDestination.rhythm => const Color(0xffb9dca8),
-  HabitHubDestination.updates => const Color(0xffffb7a8),
-  HabitHubDestination.settings => const Color(0xffddd0b8),
+  HabitHubDestination.today => const Color(0xff65cec3),
+  HabitHubDestination.createHabit => const Color(0xffffbd62),
+  HabitHubDestination.analytics => const Color(0xffc889c5),
+  HabitHubDestination.appLock => const Color(0xff8fa9e8),
+  HabitHubDestination.rhythm => const Color(0xff8dca78),
+  HabitHubDestination.updates => const Color(0xffff917c),
+  HabitHubDestination.settings => const Color(0xffb9a586),
 };
 
 Color _paperColor(BuildContext context, HabitHubDestination destination) {
   if (_isDark(context)) {
-    return Color.lerp(const Color(0xff312d2c), _iconColor(destination), .08)!;
+    return Color.lerp(const Color(0xff312d2c), _iconColor(destination), .18)!;
   }
-  return Color.lerp(const Color(0xfffffbf3), _iconColor(destination), .08)!;
+  return Color.lerp(const Color(0xfffffbf3), _iconColor(destination), .20)!;
+}
+
+List<Color> _cardGradient({
+  required Color paper,
+  required Color accent,
+  required bool selected,
+  required bool dark,
+}) {
+  if (dark) {
+    return <Color>[
+      Color.lerp(paper, accent, selected ? .30 : .10)!,
+      Color.lerp(paper, Colors.black, selected ? .08 : .16)!,
+    ];
+  }
+  return <Color>[
+    Color.lerp(Colors.white, accent, selected ? .40 : .16)!,
+    Color.lerp(paper, accent, selected ? .20 : .06)!,
+  ];
 }
 
 bool _isDark(BuildContext context) =>

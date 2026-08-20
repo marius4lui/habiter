@@ -1100,37 +1100,37 @@ class AppLocalizationsDe extends AppLocalizations {
   String get emptyStarterExamples => 'Wasser · Lesen · Spazieren · Meditieren';
 
   @override
-  String get onboardingWelcomeTitle => 'Gewohnheiten, die sichtbar bleiben.';
+  String get onboardingWelcomeTitle => 'Kleine Schritte.\nEchte Veränderung.';
 
   @override
   String get onboardingWelcomeBody =>
-      'Habiter macht deinen nächsten Schritt klar – ohne Druck, ohne komplizierte Systeme.';
+      'Habiter hält fest, was dir wichtig ist – klar, ruhig und Tag für Tag.';
 
   @override
   String get onboardingGetStarted => 'Loslegen';
 
   @override
-  String get onboardingIntentTitle => 'Was möchtest du gerade stärken?';
+  String get onboardingIntentTitle => 'Was soll\nwachsen?';
 
   @override
   String get onboardingIntentBody =>
-      'Damit zeigen wir dir passende Startideen zuerst.';
+      'Wähle eine Richtung. Du kannst später alles ändern.';
 
   @override
   String get onboardingIntentOther => 'Etwas anderes';
 
   @override
-  String get onboardingFirstHabitTitle => 'Starte mit etwas Kleinem.';
+  String get onboardingFirstHabitTitle => 'Dein erster\nkleiner Schritt.';
 
   @override
   String get onboardingFirstHabitBody =>
-      'Wähle etwas aus oder erstelle dein eigenes Habit.';
+      'Wähle eine Idee oder gib deinem Habit einen eigenen Namen.';
 
   @override
   String get onboardingCustomHabitName => 'Gib deinem Habit einen Namen';
 
   @override
-  String get onboardingRhythmTitle => 'Wie oft passt das in deinen Alltag?';
+  String get onboardingRhythmTitle => 'Finde deinen\nRhythmus.';
 
   @override
   String get onboardingEveryDay => 'Jeden Tag';
@@ -1221,11 +1221,37 @@ class AppLocalizationsDe extends AppLocalizations {
       'Dieser Rhythmus konnte nicht angezeigt werden. Gehe zurück und wähle ihn erneut.';
 
   @override
-  String get onboardingReminderTitle => 'Wann soll Habiter helfen?';
+  String get onboardingReminderEducationTitle => 'Ein Hinweis.\nZwei Wege.';
+
+  @override
+  String get onboardingReminderEducationBody =>
+      'Teste, wie Erledigt und Später deinen Fortschritt verändern.';
+
+  @override
+  String get onboardingReminderQuestion => 'Passt es gerade?';
+
+  @override
+  String get onboardingReminderResetDemo => 'Noch einmal testen';
+
+  @override
+  String get onboardingReminderDoneExplanation =>
+      'Als erledigt markiert. Dein Fortschritt steigt sofort.';
+
+  @override
+  String get onboardingReminderLaterExplanation =>
+      'Dein Fortschritt bleibt gleich. Die Demo springt 30 Minuten weiter.';
+
+  @override
+  String onboardingReminderProgressSemantics(int completed, int target) {
+    return '$completed von $target Habit-Tagen erledigt';
+  }
+
+  @override
+  String get onboardingReminderTitle => 'Erinnern.\nNur wenn du willst.';
 
   @override
   String get onboardingReminderBody =>
-      'Smart-Reminder sind optional. Wir erklären alles, bevor wir nach der Notification-Berechtigung fragen.';
+      'Smart-Reminder sind optional. Erst nach deiner Wahl fragen wir nach der Berechtigung.';
 
   @override
   String get onboardingNoReminder => 'Ohne Erinnerung';
@@ -1262,7 +1288,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die Wachzeit ist zunächst 08:00–22:00 Uhr. Du kannst jederzeit pausieren, jeden Plan ändern oder alle Lerndaten löschen.';
 
   @override
-  String get onboardingHabitReadyTitle => 'Dein erstes Habit steht.';
+  String get onboardingHabitReadyTitle => 'Dein erstes\nHabit steht.';
 
   @override
   String get onboardingHabitReadyBody =>
@@ -1277,8 +1303,14 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get onboardingWidgetIntroTitle =>
-      'Habiter gehört auf deinen Homescreen.';
+  String get onboardingStateUnavailableTitle => 'Kurz zurück.';
+
+  @override
+  String get onboardingStateUnavailableBody =>
+      'Dieser Schritt konnte nicht geladen werden. Gehe zurück und versuche ihn erneut.';
+
+  @override
+  String get onboardingWidgetIntroTitle => 'Dein Habit.\nDirekt im Blick.';
 
   @override
   String get onboardingWidgetIntroBody =>
@@ -1302,6 +1334,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Android fragt dich, wo du das Widget platzieren möchtest.';
 
   @override
+  String get onboardingWidgetRequestingTitle => 'Fast da.';
+
+  @override
+  String get onboardingWidgetRequestingBody =>
+      'Android bereitet die Platzierung vor…';
+
+  @override
   String get onboardingWidgetReadyTitle => 'Bereit.';
 
   @override
@@ -1309,11 +1348,22 @@ class AppLocalizationsDe extends AppLocalizations {
       'Dein nächster Schritt ist jetzt direkt auf deinem Homescreen.';
 
   @override
+  String get onboardingWidgetDeclinedTitle => 'Kein Problem.';
+
+  @override
   String get onboardingWidgetDeclinedBody =>
       'Du kannst das Widget jederzeit später in Habiter hinzufügen.';
 
   @override
   String get onboardingWidgetManualTitle => 'Widget manuell hinzufügen';
+
+  @override
+  String get onboardingWidgetUnsupportedBody =>
+      'Automatisches Anheften wird hier nicht unterstützt. Manuell klappt es trotzdem.';
+
+  @override
+  String get onboardingWidgetFailedBody =>
+      'Die Android-Anfrage hat nicht geklappt. Du kannst das Widget manuell hinzufügen.';
 
   @override
   String get onboardingWidgetManualOne => 'Homescreen gedrückt halten';

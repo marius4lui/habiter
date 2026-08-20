@@ -12,31 +12,35 @@ class WidgetIntroStep extends StatelessWidget {
   final OnboardingController controller;
 
   @override
-  Widget build(BuildContext context) => OnboardingScaffold(
-    step: OnboardingStep.widgetIntro,
-    title: context.l10n.onboardingWidgetIntroTitle,
-    subtitle: context.l10n.onboardingWidgetIntroBody,
-    onBack: controller.back,
-    body: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        const WidgetPreview(),
-        const SizedBox(height: 16),
-        Text(
-          context.l10n.onboardingWidgetResponsive,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-      ],
-    ),
-    secondaryAction: TextButton(
-      onPressed: controller.deferWidget,
-      child: Text(context.l10n.onboardingWidgetLater),
-    ),
-    primaryAction: FilledButton.icon(
-      onPressed: controller.beginWidgetPin,
-      icon: const Icon(Icons.add_to_home_screen_rounded),
-      label: Text(context.l10n.onboardingWidgetAdd),
-    ),
-  );
+  Widget build(BuildContext context) {
+    final draft = controller.state.habitDraft;
+    return OnboardingScaffold(
+      step: OnboardingStep.widgetIntro,
+      title: context.l10n.onboardingWidgetIntroTitle,
+      subtitle: context.l10n.onboardingWidgetIntroBody,
+      onBack: controller.back,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          WidgetPreview(habitName: draft?.name, habitIcon: draft?.icon),
+          const SizedBox(height: 16),
+          Text(
+            context.l10n.onboardingWidgetResponsive,
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+          ),
+        ],
+      ),
+      secondaryAction: TextButton(
+        onPressed: controller.deferWidget,
+        child: Text(context.l10n.onboardingWidgetLater),
+      ),
+      primaryAction: FilledButton(
+        onPressed: controller.beginWidgetPin,
+        child: Text(context.l10n.onboardingWidgetAdd),
+      ),
+    );
+  }
 }

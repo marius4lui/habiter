@@ -4,28 +4,25 @@ import '../../../../core/design_system/tokens.dart';
 
 final class OnboardingFactChip extends StatelessWidget {
   const OnboardingFactChip({
-    required this.icon,
+    required this.code,
     required this.label,
     this.emphasized = false,
     super.key,
   });
 
-  final IconData icon;
+  final String code;
   final String label;
   final bool emphasized;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final foreground = emphasized
-        ? colors.onPrimaryContainer
-        : colors.onSurface;
+    final foreground = emphasized ? colors.onPrimary : colors.onSurface;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: emphasized
-            ? colors.primaryContainer
-            : colors.surfaceContainerHighest,
+        color: emphasized ? colors.primary : colors.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(HabiterRadius.pill),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.14)),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -35,7 +32,14 @@ final class OnboardingFactChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18, color: foreground),
+            Text(
+              code,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: foreground.withValues(alpha: 0.68),
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.1,
+              ),
+            ),
             const SizedBox(width: HabiterSpace.sm),
             Flexible(
               child: Text(

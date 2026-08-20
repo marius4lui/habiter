@@ -38,7 +38,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(controller.state.currentStep, OnboardingStep.welcome);
-    expect(find.text('Gewohnheiten, die sichtbar bleiben.'), findsOneWidget);
+    expect(find.text('Kleine Schritte.\nEchte Veränderung.'), findsOneWidget);
   });
 
   testWidgets('resumed onboarding restores a poppable inner history', (
@@ -97,7 +97,7 @@ void main() {
     addTearDown(controller.dispose);
     await tester.pumpWidget(_app(controller));
     await tester.pumpAndSettle();
-    expect(find.text('Gewohnheiten, die sichtbar bleiben.'), findsOneWidget);
+    expect(find.text('Kleine Schritte.\nEchte Veränderung.'), findsOneWidget);
 
     await tester.tap(find.text('Loslegen'));
     await tester.pumpAndSettle();
@@ -147,6 +147,7 @@ void main() {
     );
     expect(understand.onPressed, isNull);
 
+    await tester.ensureVisible(find.byKey(const ValueKey('week-demo-day-1')));
     await tester.tap(find.byKey(const ValueKey('week-demo-day-1')));
     await tester.pump();
     expect(
@@ -159,6 +160,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(controller.state.currentStep, OnboardingStep.reminderModel);
+    expect(
+      find.byKey(const ValueKey<String>('onboarding-reminder-timeline-story')),
+      findsOneWidget,
+    );
   });
 }
 

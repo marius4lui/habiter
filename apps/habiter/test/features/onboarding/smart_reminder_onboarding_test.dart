@@ -98,6 +98,48 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('optional path creates one habit without requesting permission', (
+    tester,
+  ) async {
+    var permissionRequests = 0;
+    final store = InMemoryKeyValueStore();
+    final clock = FakeClock(DateTime(2026, 8, 17, 10));
+    final provider = HabitProvider(
+      repository: KeyValueHabitRepository(store),
+      actionStore: store,
+      notificationGateway: RecordingNotificationGateway(),
+      clock: clock,
+      ids: FakeIdGenerator(const <String>['calibration-unused']),
+      requestReminderPermission: () async {
+        permissionRequests++;
+        return true;
+      },
+    );
+    await provider.load();
+    addTearDown(provider.dispose);
+    final controller = await _controllerAtReminder(clock);
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(_app(provider: provider, controller: controller));
+    expect(find.text('Without a reminder'), findsOneWidget);
+    await tester.tap(find.text('Continue'));
+    for (
+      var attempt = 0;
+      attempt < 30 &&
+          controller.state.currentStep != OnboardingStep.widgetIntro;
+      attempt++
+    ) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+
+    expect(permissionRequests, 0);
+    expect(provider.habits, hasLength(1));
+    expect(provider.habits.single.notificationEnabled, isFalse);
+    expect(provider.reminderPreferences.enabled, isFalse);
+    expect(controller.state.firstHabitId, 'habit-1');
+    expect(controller.state.currentStep, OnboardingStep.widgetIntro);
+  });
 }
 
 Future<OnboardingController> _controllerAtReminder(FakeClock clock) async {
@@ -119,6 +161,8 @@ Future<OnboardingController> _controllerAtReminder(FakeClock clock) async {
   );
   await controller.selectHabit(draft);
   await controller.configureRhythm(draft);
+  await controller.confirmRhythmUnderstanding();
+  await controller.confirmReminderModel();
   return controller;
 }
 

@@ -38,6 +38,7 @@ final class WeekTargetDemo extends StatefulWidget {
 
 class _WeekTargetDemoState extends State<WeekTargetDemo> {
   final Set<int> _selectedWeekdays = <int>{};
+  int? _focusedWeekday;
 
   int get _completed =>
       _selectedWeekdays.length.clamp(0, widget.model.weeklyTarget);
@@ -51,9 +52,9 @@ class _WeekTargetDemoState extends State<WeekTargetDemo> {
       explicitChildNodes: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: colors.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(HabiterRadius.card),
-          border: Border.all(color: colors.outlineVariant),
+          color: colors.surfaceContainer,
+          borderRadius: BorderRadius.circular(HabiterRadius.prominent),
+          border: Border.all(color: colors.primary.withValues(alpha: 0.16)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(HabiterSpace.md),
@@ -82,11 +83,12 @@ class _WeekTargetDemoState extends State<WeekTargetDemo> {
                       ),
                       curve: HabiterMotion.quick.curve,
                       style:
-                          Theme.of(context).textTheme.titleMedium?.copyWith(
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
                             color: _completed >= widget.model.weeklyTarget
                                 ? colors.primary
                                 : colors.onSurface,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.8,
                           ) ??
                           const TextStyle(),
                       child: Text(
@@ -122,6 +124,7 @@ class _WeekTargetDemoState extends State<WeekTargetDemo> {
     final targetReached = _completed >= widget.model.weeklyTarget;
     final enabled = eligible && (selected || !targetReached);
     final colors = Theme.of(context).colorScheme;
+    final focused = _focusedWeekday == weekday;
     return Semantics(
       key: ValueKey<String>('week-demo-day-$weekday'),
       button: true,
@@ -131,6 +134,10 @@ class _WeekTargetDemoState extends State<WeekTargetDemo> {
       excludeSemantics: true,
       child: FocusableActionDetector(
         enabled: enabled,
+        onShowFocusHighlight: (value) {
+          if (!mounted) return;
+          setState(() => _focusedWeekday = value ? weekday : null);
+        },
         mouseCursor: enabled
             ? SystemMouseCursors.click
             : SystemMouseCursors.basic,
@@ -152,31 +159,37 @@ class _WeekTargetDemoState extends State<WeekTargetDemo> {
           child: AnimatedContainer(
             duration: HabiterMotion.quick.duration(reduced: reducedMotion),
             curve: HabiterMotion.quick.curve,
-            constraints: const BoxConstraints.tightFor(
-              width: HabiterState.minimumTarget,
-              height: HabiterState.minimumTarget,
-            ),
+            constraints: const BoxConstraints.tightFor(width: 52, height: 52),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: selected
-                  ? colors.primaryContainer
+                  ? colors.primary
                   : colors.surfaceContainerHighest.withValues(
                       alpha: enabled ? 1 : HabiterState.disabledOpacity,
                     ),
-              borderRadius: BorderRadius.circular(HabiterRadius.control),
+              borderRadius: BorderRadius.circular(HabiterRadius.pill),
               border: Border.all(
-                color: selected ? colors.primary : colors.outlineVariant,
+                color: focused
+                    ? colors.primary
+                    : selected
+                    ? colors.primary
+                    : colors.outlineVariant,
+                width: focused
+                    ? HabiterState.focusWidth
+                    : selected
+                    ? 2
+                    : 1,
               ),
             ),
             child: Text(
               widget.weekdayLabels[weekday]!,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 color: selected
-                    ? colors.onPrimaryContainer
+                    ? colors.onPrimary
                     : colors.onSurface.withValues(
                         alpha: enabled ? 1 : HabiterState.disabledOpacity,
                       ),
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
               ),
             ),
           ),

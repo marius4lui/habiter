@@ -25,7 +25,8 @@ void main() {
     await tester.pumpWidget(_app(controller, const _FakeWidgetBridge()));
     await tester.pump(const Duration(milliseconds: 800));
 
-    expect(find.text('Habiter gehört auf deinen Homescreen.'), findsOneWidget);
+    expect(find.text('Dein Habit.\nDirekt im Blick.'), findsOneWidget);
+    expect(find.text('Training'), findsOneWidget);
     expect(find.text('Später'), findsOneWidget);
 
     await tester.tap(find.text('Später'));
@@ -71,6 +72,56 @@ void main() {
     expect(find.text('Später'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('widget preview stops animating with reduced motion', (
+    tester,
+  ) async {
+    final controller = await _controllerAtWidgetIntro();
+    await tester.pumpWidget(
+      _app(controller, const _FakeWidgetBridge(), disableAnimations: true),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.binding.hasScheduledFrame, isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final state in const <(WidgetPinResult, String)>[
+    (WidgetPinResult.declined, 'Kein Problem.'),
+    (
+      WidgetPinResult.unsupported,
+      'Automatisches Anheften wird hier nicht unterstützt. Manuell klappt es trotzdem.',
+    ),
+    (
+      WidgetPinResult.failed,
+      'Die Android-Anfrage hat nicht geklappt. Du kannst das Widget manuell hinzufügen.',
+    ),
+  ]) {
+    testWidgets('${state.$1.name} pin state stays recoverable', (tester) async {
+      final controller = await _controllerAtWidgetIntro();
+      await controller.beginWidgetPin();
+      await tester.pumpWidget(
+        _app(controller, _FakeWidgetBridge(result: state.$1)),
+      );
+
+      await tester.tap(find.text('Widget hinzufügen'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(state.$2), findsOneWidget);
+      expect(controller.state.widgetPinAttempted, isTrue);
+      expect(controller.state.currentStep, OnboardingStep.widgetPin);
+      if (state.$1 == WidgetPinResult.unsupported ||
+          state.$1 == WidgetPinResult.failed) {
+        expect(find.text('Homescreen gedrückt halten'), findsOneWidget);
+        expect(find.text('Widget platzieren'), findsOneWidget);
+      }
+
+      await tester.tap(find.text('Verstanden'));
+      await tester.pump();
+      expect(controller.state.currentStep, OnboardingStep.completed);
+      expect(controller.state.widgetPinned, isFalse);
+    });
+  }
 
   testWidgets('widget intro light visual contract', (tester) async {
     await tester.binding.setSurfaceSize(const Size(430, 932));
@@ -131,6 +182,7 @@ Widget _app(
   WidgetBridge bridge, {
   double textScale = 1,
   ThemeMode themeMode = ThemeMode.light,
+  bool disableAnimations = false,
 }) => MultiProvider(
   providers: [
     ChangeNotifierProvider<OnboardingController>.value(value: controller),
@@ -142,9 +194,10 @@ Widget _app(
   child: MaterialApp(
     locale: const Locale('de'),
     builder: (context, child) => MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: TextScaler.linear(textScale)),
+      data: MediaQuery.of(context).copyWith(
+        textScaler: TextScaler.linear(textScale),
+        disableAnimations: disableAnimations,
+      ),
       child: child!,
     ),
     theme: buildAppTheme(),

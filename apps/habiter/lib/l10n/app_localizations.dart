@@ -2039,13 +2039,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingWelcomeTitle.
   ///
   /// In de, this message translates to:
-  /// **'Gewohnheiten, die sichtbar bleiben.'**
+  /// **'Kleine Schritte.\nEchte Veränderung.'**
   String get onboardingWelcomeTitle;
 
   /// No description provided for @onboardingWelcomeBody.
   ///
   /// In de, this message translates to:
-  /// **'Habiter macht deinen nächsten Schritt klar – ohne Druck, ohne komplizierte Systeme.'**
+  /// **'Habiter hält fest, was dir wichtig ist – klar, ruhig und Tag für Tag.'**
   String get onboardingWelcomeBody;
 
   /// No description provided for @onboardingGetStarted.
@@ -2057,13 +2057,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingIntentTitle.
   ///
   /// In de, this message translates to:
-  /// **'Was möchtest du gerade stärken?'**
+  /// **'Was soll\nwachsen?'**
   String get onboardingIntentTitle;
 
   /// No description provided for @onboardingIntentBody.
   ///
   /// In de, this message translates to:
-  /// **'Damit zeigen wir dir passende Startideen zuerst.'**
+  /// **'Wähle eine Richtung. Du kannst später alles ändern.'**
   String get onboardingIntentBody;
 
   /// No description provided for @onboardingIntentOther.
@@ -2075,13 +2075,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingFirstHabitTitle.
   ///
   /// In de, this message translates to:
-  /// **'Starte mit etwas Kleinem.'**
+  /// **'Dein erster\nkleiner Schritt.'**
   String get onboardingFirstHabitTitle;
 
   /// No description provided for @onboardingFirstHabitBody.
   ///
   /// In de, this message translates to:
-  /// **'Wähle etwas aus oder erstelle dein eigenes Habit.'**
+  /// **'Wähle eine Idee oder gib deinem Habit einen eigenen Namen.'**
   String get onboardingFirstHabitBody;
 
   /// No description provided for @onboardingCustomHabitName.
@@ -2093,7 +2093,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingRhythmTitle.
   ///
   /// In de, this message translates to:
-  /// **'Wie oft passt das in deinen Alltag?'**
+  /// **'Finde deinen\nRhythmus.'**
   String get onboardingRhythmTitle;
 
   /// No description provided for @onboardingEveryDay.
@@ -2240,16 +2240,58 @@ abstract class AppLocalizations {
   /// **'Dieser Rhythmus konnte nicht angezeigt werden. Gehe zurück und wähle ihn erneut.'**
   String get onboardingRhythmInvalid;
 
+  /// No description provided for @onboardingReminderEducationTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Hinweis.\nZwei Wege.'**
+  String get onboardingReminderEducationTitle;
+
+  /// No description provided for @onboardingReminderEducationBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Teste, wie Erledigt und Später deinen Fortschritt verändern.'**
+  String get onboardingReminderEducationBody;
+
+  /// No description provided for @onboardingReminderQuestion.
+  ///
+  /// In de, this message translates to:
+  /// **'Passt es gerade?'**
+  String get onboardingReminderQuestion;
+
+  /// No description provided for @onboardingReminderResetDemo.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch einmal testen'**
+  String get onboardingReminderResetDemo;
+
+  /// No description provided for @onboardingReminderDoneExplanation.
+  ///
+  /// In de, this message translates to:
+  /// **'Als erledigt markiert. Dein Fortschritt steigt sofort.'**
+  String get onboardingReminderDoneExplanation;
+
+  /// No description provided for @onboardingReminderLaterExplanation.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Fortschritt bleibt gleich. Die Demo springt 30 Minuten weiter.'**
+  String get onboardingReminderLaterExplanation;
+
+  /// No description provided for @onboardingReminderProgressSemantics.
+  ///
+  /// In de, this message translates to:
+  /// **'{completed} von {target} Habit-Tagen erledigt'**
+  String onboardingReminderProgressSemantics(int completed, int target);
+
   /// No description provided for @onboardingReminderTitle.
   ///
   /// In de, this message translates to:
-  /// **'Wann soll Habiter helfen?'**
+  /// **'Erinnern.\nNur wenn du willst.'**
   String get onboardingReminderTitle;
 
   /// No description provided for @onboardingReminderBody.
   ///
   /// In de, this message translates to:
-  /// **'Smart-Reminder sind optional. Wir erklären alles, bevor wir nach der Notification-Berechtigung fragen.'**
+  /// **'Smart-Reminder sind optional. Erst nach deiner Wahl fragen wir nach der Berechtigung.'**
   String get onboardingReminderBody;
 
   /// No description provided for @onboardingNoReminder.
@@ -2315,7 +2357,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingHabitReadyTitle.
   ///
   /// In de, this message translates to:
-  /// **'Dein erstes Habit steht.'**
+  /// **'Dein erstes\nHabit steht.'**
   String get onboardingHabitReadyTitle;
 
   /// No description provided for @onboardingHabitReadyBody.
@@ -2336,10 +2378,22 @@ abstract class AppLocalizations {
   /// **'Einrichtungsschritt {step} von {total}'**
   String onboardingStepProgress(int step, int total);
 
+  /// No description provided for @onboardingStateUnavailableTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kurz zurück.'**
+  String get onboardingStateUnavailableTitle;
+
+  /// No description provided for @onboardingStateUnavailableBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Schritt konnte nicht geladen werden. Gehe zurück und versuche ihn erneut.'**
+  String get onboardingStateUnavailableBody;
+
   /// No description provided for @onboardingWidgetIntroTitle.
   ///
   /// In de, this message translates to:
-  /// **'Habiter gehört auf deinen Homescreen.'**
+  /// **'Dein Habit.\nDirekt im Blick.'**
   String get onboardingWidgetIntroTitle;
 
   /// No description provided for @onboardingWidgetIntroBody.
@@ -2378,6 +2432,18 @@ abstract class AppLocalizations {
   /// **'Android fragt dich, wo du das Widget platzieren möchtest.'**
   String get onboardingWidgetPinBody;
 
+  /// No description provided for @onboardingWidgetRequestingTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Fast da.'**
+  String get onboardingWidgetRequestingTitle;
+
+  /// No description provided for @onboardingWidgetRequestingBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Android bereitet die Platzierung vor…'**
+  String get onboardingWidgetRequestingBody;
+
   /// No description provided for @onboardingWidgetReadyTitle.
   ///
   /// In de, this message translates to:
@@ -2390,6 +2456,12 @@ abstract class AppLocalizations {
   /// **'Dein nächster Schritt ist jetzt direkt auf deinem Homescreen.'**
   String get onboardingWidgetReadyBody;
 
+  /// No description provided for @onboardingWidgetDeclinedTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Problem.'**
+  String get onboardingWidgetDeclinedTitle;
+
   /// No description provided for @onboardingWidgetDeclinedBody.
   ///
   /// In de, this message translates to:
@@ -2401,6 +2473,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Widget manuell hinzufügen'**
   String get onboardingWidgetManualTitle;
+
+  /// No description provided for @onboardingWidgetUnsupportedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatisches Anheften wird hier nicht unterstützt. Manuell klappt es trotzdem.'**
+  String get onboardingWidgetUnsupportedBody;
+
+  /// No description provided for @onboardingWidgetFailedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Android-Anfrage hat nicht geklappt. Du kannst das Widget manuell hinzufügen.'**
+  String get onboardingWidgetFailedBody;
 
   /// No description provided for @onboardingWidgetManualOne.
   ///

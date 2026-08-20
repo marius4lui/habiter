@@ -94,6 +94,7 @@ void main() {
     await tester.pump();
 
     expect(tester.takeException(), isNull);
+    expect(tester.getSize(_day(1)), const Size(52, 52));
     final animated = tester.widgetList<AnimatedContainer>(
       find.byType(AnimatedContainer),
     );

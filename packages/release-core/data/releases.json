@@ -5,8 +5,8 @@
       "version": "1.7.0",
       "buildNumber": 10700,
       "channel": "stable",
-      "status": "draft",
-      "publishedAt": null,
+      "status": "published",
+      "publishedAt": "2026-08-20T18:05:08+02:00",
       "minimumSupportedVersion": "1.5.0",
       "mandatoryAfter": null,
       "notes": {
@@ -24,12 +24,72 @@
         "security": []
       },
       "artifacts": [
-        { "platform": "android", "architecture": "universal", "format": "apk", "fileName": "habiter-1.7.0-android-universal.apk", "signed": true, "distribution": "direct" },
-        { "platform": "android", "architecture": "universal", "format": "aab", "fileName": "habiter-1.7.0-android-playstore.aab", "signed": true, "distribution": "play" },
-        { "platform": "linux", "architecture": "x64", "format": "tar.gz", "primary": false, "fileName": "habiter-1.7.0-linux-x64.tar.gz", "signed": false },
-        { "platform": "linux", "architecture": "x64", "format": "appimage", "primary": true, "fileName": "Habiter-1.7.0-x86_64.AppImage", "signed": false },
-        { "platform": "windows", "architecture": "x64", "format": "zip", "primary": true, "fileName": "habiter-1.7.0-windows-x64.zip", "signed": false },
-        { "platform": "macos", "architecture": "universal", "format": "zip", "primary": true, "fileName": "habiter-1.7.0-macos-universal.zip", "signed": false }
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.7.0-android-universal.apk",
+          "signed": true,
+          "distribution": "direct",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.0/habiter-1.7.0-android-universal.apk",
+          "sha256": "4c871bef00a6ec9ca4c9f1e7aaf82795d4da064b7c48133c157a1878cf5129fc",
+          "size": 64001280
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.7.0-android-playstore.aab",
+          "signed": true,
+          "distribution": "play",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.0/habiter-1.7.0-android-playstore.aab",
+          "sha256": "eb90dd163c2473fdfaafc884301449b318ef83dd63a5165b518a40f31d0c0d22",
+          "size": 62489854
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.7.0-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.0/habiter-1.7.0-linux-x64.tar.gz",
+          "sha256": "f322f14cd118c81ea67680d3d868e4a3c524a87378863841513ca0197f109861",
+          "size": 11848050
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.7.0-x86_64.AppImage",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.0/Habiter-1.7.0-x86_64.AppImage",
+          "sha256": "1152ac88388a97c725e1b15aac6950c33d8774674af3a4f7bc284957384e3fe9",
+          "size": 11749880
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.7.0-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.0/habiter-1.7.0-windows-x64.zip",
+          "sha256": "46b407e40b87475dc3d4ebe1f1dbf5a984993dd82c40f2c62d2beee3c98e3cc9",
+          "size": 14557306
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.7.0-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.0/habiter-1.7.0-macos-universal.zip",
+          "sha256": "459feae003834114dd26f7be7547ad75dcdaba8496a0bdc3486f26d6bfa3bf51",
+          "size": 20883794
+        }
       ]
     },
     {

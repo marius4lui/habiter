@@ -147,6 +147,7 @@ void main() {
     );
     expect(understand.onPressed, isNull);
 
+    await tester.ensureVisible(find.byKey(const ValueKey('week-demo-day-1')));
     await tester.tap(find.byKey(const ValueKey('week-demo-day-1')));
     await tester.pump();
     expect(

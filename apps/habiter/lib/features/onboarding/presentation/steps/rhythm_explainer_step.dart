@@ -7,6 +7,7 @@ import '../../../../core/design_system/tokens.dart';
 import '../../../../l10n/l10n.dart';
 import '../../application/onboarding_controller.dart';
 import '../../application/onboarding_state.dart';
+import '../components/habit_illustration.dart';
 import '../components/onboarding_fact_chip.dart';
 import '../components/week_target_demo.dart';
 import '../models/schedule_education_model.dart';
@@ -45,7 +46,15 @@ class _RhythmExplainerStepState extends State<RhythmExplainerStep> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          HabitIllustration(
+            kind: HabitIllustrationKind.footsteps,
+            step: OnboardingStep.rhythmExplainer,
+            semanticLabel: _title(context, model),
+            height: 112,
+          ),
+          const SizedBox(height: HabiterSpace.sm),
           WeekTargetDemo(
+            key: const ValueKey<String>('onboarding-week-target-story'),
             model: model,
             weekLabel: context.l10n.onboardingRhythmWeekLabel,
             weekdayLabels: _weekdayLabels(context, short: true),
@@ -77,16 +86,16 @@ class _RhythmExplainerStepState extends State<RhythmExplainerStep> {
             runSpacing: HabiterSpace.sm,
             children: [
               OnboardingFactChip(
-                icon: Icons.looks_one_rounded,
+                code: '01',
                 label: context.l10n.onboardingRhythmFactDifferentDays,
               ),
               OnboardingFactChip(
-                icon: Icons.calendar_view_week_rounded,
+                code: '02',
                 label: context.l10n.onboardingRhythmFactMondayReset,
               ),
               if (model.kind == ScheduleEducationKind.flexibleWeekly)
                 OnboardingFactChip(
-                  icon: Icons.done_all_rounded,
+                  code: '03',
                   label: context.l10n.onboardingRhythmFactConsecutive,
                   emphasized: true,
                 ),

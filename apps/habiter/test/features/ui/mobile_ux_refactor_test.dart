@@ -41,16 +41,16 @@ void main() {
         _app(provider: provider, home: const HomeScreen()),
       );
       await tester.pumpAndSettle();
-      expect(find.text('NEXT UP'), findsOneWidget);
-      expect(find.byKey(const Key('add-habit-fab')), findsOneWidget);
-      expect(find.byKey(const Key('habit-lifecycle-panel')), findsNothing);
+      expect(find.byKey(const Key('latest-habit-name')), findsOneWidget);
+      expect(find.byKey(const Key('latest-habit-complete')), findsOneWidget);
+      expect(find.byKey(const Key('habit-navigation-wheel')), findsOneWidget);
       expect(tester.takeException(), isNull, reason: 'width $width');
     }
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
   });
 
-  testWidgets('Today reveals inactive habits compactly and collapses the FAB', (
+  testWidgets('Today hero falls back to the newest remaining active habit', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(390, 520);
@@ -59,16 +59,19 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     final provider = await _providerWithHabits();
     addTearDown(provider.dispose);
-    await provider.pauseHabit(provider.habits.last.id);
+    await provider.pauseHabit(
+      provider.habits.firstWhere((habit) => habit.name == 'Read').id,
+    );
 
     await tester.pumpWidget(_app(provider: provider, home: const HomeScreen()));
     await tester.pumpAndSettle();
-    expect(find.text('1 paused or archived habit'), findsOneWidget);
-    expect(find.byKey(const ValueKey('extended-add-fab')), findsOneWidget);
+    expect(find.text('Drink water'), findsOneWidget);
+    expect(find.text('Read'), findsNothing);
+    expect(find.byKey(const Key('habit-navigation-wheel')), findsOneWidget);
 
-    await tester.drag(find.byType(CustomScrollView), const Offset(0, -360));
+    await tester.tap(find.byKey(const Key('hub-inactive-habits-action')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('compact-add-fab')), findsOneWidget);
+    expect(find.byKey(const Key('habit-lifecycle-panel')), findsOneWidget);
   });
 
   testWidgets('Today completion stays one tap with an undo affordance', (
@@ -79,7 +82,7 @@ void main() {
     await tester.pumpWidget(_app(provider: provider, home: const HomeScreen()));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Mark as complete').first);
+    await tester.tap(find.byKey(const Key('latest-habit-complete')));
     await tester.pumpAndSettle();
 
     expect(
@@ -268,10 +271,11 @@ void main() {
 
 Future<HabitProvider> _providerWithHabits() async {
   final repository = KeyValueHabitRepository(InMemoryKeyValueStore());
+  final clock = FakeClock(DateTime(2026, 8, 16, 12));
   final provider = HabitProvider(
     repository: repository,
     lifecycleReminders: const _NoLifecycleReminders(),
-    clock: FakeClock(DateTime(2026, 8, 16, 12)),
+    clock: clock,
   );
   await provider.load();
   await provider.addHabit(
@@ -283,6 +287,7 @@ Future<HabitProvider> _providerWithHabits() async {
     color: '#356859',
     icon: '💧',
   );
+  clock.advance(const Duration(minutes: 1));
   await provider.addHabit(
     name: 'Read',
     category: 'Learning',

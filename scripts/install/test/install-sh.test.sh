@@ -27,6 +27,13 @@ for fixture in ubuntu debian fedora arch opensuse generic; do
 done
 
 "$INSTALLER" --help >/dev/null
-if "$INSTALLER" --channel nightly >/dev/null 2>&1; then echo "invalid channel accepted" >&2; exit 1; fi
-if HABITER_UNAME_S=Linux HABITER_UNAME_M=sparc HABITER_OS_RELEASE_FILE="$FIXTURES/generic" "$INSTALLER" --dry-run >/dev/null 2>&1; then echo "unsupported architecture accepted" >&2; exit 1; fi
+error_file="${TMPDIR:-/tmp}/habiter-installer-error-$$"
+trap 'rm -f "$error_file"' EXIT
+if "$INSTALLER" --channel nightly >/dev/null 2>"$error_file"; then echo "invalid channel accepted" >&2; exit 1; fi
+grep -q 'HAB-POSIX-005' "$error_file" || { echo "missing invalid-channel error code" >&2; exit 1; }
+grep -q 'Install ID:' "$error_file" || { echo "missing support correlation ID" >&2; exit 1; }
+if HABITER_UNAME_S=Linux HABITER_UNAME_M=sparc HABITER_OS_RELEASE_FILE="$FIXTURES/generic" "$INSTALLER" --dry-run >/dev/null 2>"$error_file"; then echo "unsupported architecture accepted" >&2; exit 1; fi
+grep -q 'HAB-POSIX-011' "$error_file" || { echo "missing architecture error code" >&2; exit 1; }
+if HABITER_UNAME_S=Plan9 HABITER_UNAME_M=x86_64 "$INSTALLER" --dry-run >/dev/null 2>"$error_file"; then echo "unsupported OS accepted" >&2; exit 1; fi
+grep -q 'HAB-POSIX-013' "$error_file" || { echo "missing OS error code" >&2; exit 1; }
 echo "install.sh tests passed"

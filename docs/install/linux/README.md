@@ -36,4 +36,8 @@ curl -fsSL https://get.habiter.dev/install.sh | sh -s -- --dry-run --verbose
 curl -fsSL https://get.habiter.dev/install.sh | sh -s -- --channel beta
 ```
 
+Use `--verbose` when troubleshooting. Failures include the active phase, a stable `HAB-POSIX-NNN` code, a recovery hint and a short Install ID. Verbose diagnostics are intentionally limited to platform, architecture, channel, destination and install mode; the installer never dumps the full environment, tokens, habit data, keyring contents or browser history.
+
+Code families identify argument errors (`00x`), platform detection (`01x`), resolver/metadata (`02x`), temporary storage/download (`03x`), checksum (`04x`), archive validation (`05x`), installation/permissions (`06x`) and unexpected errors (`999`). Do not bypass HTTPS, artifact-size or checksum checks.
+
 Use `--help` for the complete option list. `--system` is explicit and may require permissions for `/opt` and `/usr/local`; it never elevates privileges itself.

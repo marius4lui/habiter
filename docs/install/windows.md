@@ -24,6 +24,10 @@ Preview without downloading or changing files:
 & ([scriptblock]::Create((irm https://get.habiter.dev/install.ps1))) -DryRun -VerboseOutput
 ```
 
+Add `-Diagnostics` after a failure to print a safe support summary containing the failing phase, PowerShell/Windows architecture, selected channel and destination. It does not dump environment variables, tokens, habit data, browser history or secure storage. Every failure includes a stable `HAB-WIN-NNN` code and a short Install ID that can be included in a support report.
+
+Common code families are: `HAB-WIN-01x` platform detection, `02x` resolver or unsafe metadata, `03x` temporary storage/download, `04x` checksum, `05x` archive validation, `06x` process locks or replacement, `07x` desktop integration and `999` unexpected failures. The installer prints a concrete recovery action with each code. Never bypass HTTPS or checksum validation to work around an error.
+
 Do not globally weaken PowerShell execution policy. If organizational policy blocks in-memory scripts, use the manual verified ZIP method or ask the administrator responsible for that policy.
 
 ## What changes

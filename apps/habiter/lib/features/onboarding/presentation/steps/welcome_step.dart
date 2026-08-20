@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../l10n/l10n.dart';
 import '../../application/onboarding_controller.dart';
+import '../../application/onboarding_state.dart';
 import '../onboarding_scaffold.dart';
 
 class WelcomeStep extends StatelessWidget {
@@ -11,7 +12,7 @@ class WelcomeStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => OnboardingScaffold(
-    step: 1,
+    step: OnboardingStep.welcome,
     title: context.l10n.onboardingWelcomeTitle,
     subtitle: context.l10n.onboardingWelcomeBody,
     body: const _LeafMark(),

@@ -30,7 +30,11 @@ final class KeyValueOnboardingRepository implements OnboardingRepository {
     if (decoded is! Map) {
       throw const FormatException('Onboarding state must be a JSON object.');
     }
-    return OnboardingState.fromMap(Map<String, Object?>.from(decoded));
+    final map = Map<String, Object?>.from(decoded);
+    final storedVersion = (map['onboardingVersion'] as num?)?.toInt() ?? 1;
+    final state = OnboardingState.fromMap(map);
+    if (storedVersion != state.onboardingVersion) await save(state);
+    return state;
   }
 
   @override

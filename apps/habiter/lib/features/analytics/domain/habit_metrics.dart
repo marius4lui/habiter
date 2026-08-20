@@ -1,6 +1,7 @@
 import '../../../core/time/local_date.dart';
 import '../../../models/habit.dart';
 import '../../habits/domain/habit_schedule.dart';
+import '../../habits/domain/habit_schedule_progress.dart';
 
 final class WeeklyHabitMetric {
   const WeeklyHabitMetric({
@@ -59,7 +60,6 @@ abstract final class HabitMetricCalculator {
     return schedule is TimesPerWeekSchedule
         ? _weeklyTargetMetrics(
             habit: habit,
-            schedule: schedule,
             completedDates: completedDates,
             start: created,
             through: through,
@@ -99,7 +99,6 @@ abstract final class HabitMetricCalculator {
     return schedule is TimesPerWeekSchedule
         ? _weeklyTargetMetrics(
             habit: habit,
-            schedule: schedule,
             completedDates: completedDates,
             start: start,
             through: through,
@@ -139,7 +138,6 @@ abstract final class HabitMetricCalculator {
 
   static HabitMetrics _weeklyTargetMetrics({
     required Habit habit,
-    required TimesPerWeekSchedule schedule,
     required Set<LocalDate> completedDates,
     required LocalDate start,
     required LocalDate through,
@@ -151,25 +149,18 @@ abstract final class HabitMetricCalculator {
       weekStart.compareTo(through) <= 0;
       weekStart = weekStart.addDays(7)
     ) {
-      final available = <LocalDate>[];
-      for (var offset = 0; offset < 7; offset++) {
-        final date = weekStart.addDays(offset);
-        if (date.compareTo(start) >= 0 &&
-            date.compareTo(through) <= 0 &&
-            !_inactiveOn(habit, date)) {
-          available.add(date);
-        }
-      }
-      final scheduled = schedule.target.clamp(0, available.length);
-      final completed = available
-          .where(completedDates.contains)
-          .length
-          .clamp(0, scheduled);
+      final progress = HabitScheduleProgress.forHabit(
+        habit: habit,
+        focusDate: weekStart,
+        completedDates: completedDates,
+        activeFrom: start,
+        activeThrough: through,
+      );
       weeks.add(
         WeeklyHabitMetric(
           weekStart: weekStart,
-          scheduled: scheduled,
-          completed: completed,
+          scheduled: progress.target,
+          completed: progress.completed,
         ),
       );
     }
@@ -234,15 +225,6 @@ abstract final class HabitMetricCalculator {
 
   static LocalDate _weekStart(LocalDate date) => date.addDays(1 - date.weekday);
 
-  static bool _inactiveOn(Habit habit, LocalDate date) {
-    final value = date.toString();
-    if (habit.isPausedOn(value)) return true;
-    final archivedAt = habit.archivedAt;
-    if (archivedAt == null) return false;
-    final archiveDate = LocalDate.fromDateTime(archivedAt);
-    if (date.compareTo(archiveDate) < 0) return false;
-    final restoredAt = habit.restoredAt;
-    return restoredAt == null ||
-        date.compareTo(LocalDate.fromDateTime(restoredAt)) < 0;
-  }
+  static bool _inactiveOn(Habit habit, LocalDate date) =>
+      HabitScheduleProgress.isHabitInactiveOn(habit, date);
 }

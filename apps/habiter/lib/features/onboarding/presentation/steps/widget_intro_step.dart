@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../widgets/presentation/widget_preview.dart';
 import '../../application/onboarding_controller.dart';
+import '../../application/onboarding_state.dart';
 import '../onboarding_scaffold.dart';
 
 class WidgetIntroStep extends StatelessWidget {
@@ -12,7 +13,7 @@ class WidgetIntroStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => OnboardingScaffold(
-    step: 7,
+    step: OnboardingStep.widgetIntro,
     title: context.l10n.onboardingWidgetIntroTitle,
     subtitle: context.l10n.onboardingWidgetIntroBody,
     onBack: controller.back,

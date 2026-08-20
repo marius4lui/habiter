@@ -41,7 +41,7 @@ class _FirstHabitStepState extends State<FirstHabitStep> {
   Widget build(BuildContext context) {
     final templates = _rankedTemplates(widget.controller.state.intent);
     return OnboardingScaffold(
-      step: 3,
+      step: OnboardingStep.firstHabit,
       title: context.l10n.onboardingFirstHabitTitle,
       subtitle: context.l10n.onboardingFirstHabitBody,
       onBack: widget.controller.back,

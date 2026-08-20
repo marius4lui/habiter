@@ -11,6 +11,77 @@ import '../../support/fakes/fake_id_generator.dart';
 import '../../support/fakes/in_memory_key_value_store.dart';
 
 void main() {
+  test(
+    'controller preserves the complete nine-step lifecycle contract',
+    () async {
+      final repository = KeyValueOnboardingRepository(InMemoryKeyValueStore());
+      final controller = OnboardingController(
+        repository: repository,
+        ids: FakeIdGenerator(const <String>['habit-1', 'unused']),
+        clock: FakeClock(DateTime.utc(2026, 8, 20)),
+      );
+      addTearDown(controller.dispose);
+      final visited = <OnboardingStep>[];
+
+      await controller.initialize(hasExistingHabits: false);
+      visited.add(controller.state.currentStep);
+      await controller.start();
+      visited.add(controller.state.currentStep);
+      await controller.selectIntent(OnboardingIntent.health);
+      visited.add(controller.state.currentStep);
+      final draft = OnboardingHabitDraft(
+        name: 'Walk',
+        category: 'Health',
+        icon: 'W',
+        color: '#467B68',
+        frequency: HabitFrequency.weekly,
+        targetCount: 3,
+      );
+      await controller.selectHabit(draft);
+      visited.add(controller.state.currentStep);
+      await controller.configureRhythm(draft);
+      visited.add(controller.state.currentStep);
+      await controller.confirmRhythmUnderstanding();
+      visited.add(controller.state.currentStep);
+      await controller.confirmReminderModel();
+      visited.add(controller.state.currentStep);
+      await controller.configureReminder(
+        draft.copyWith(reminderEnabled: true, reminderTime: '18:30'),
+      );
+      final firstId = await controller.reserveFirstHabitId();
+      expect(await controller.reserveFirstHabitId(), firstId);
+      await controller.markHabitReady();
+      visited.add(controller.state.currentStep);
+      await controller.beginWidgetPin();
+      visited.add(controller.state.currentStep);
+
+      expect(visited, OnboardingProgress.orderedSteps);
+      expect(
+        controller.state.onboardingVersion,
+        OnboardingState.currentVersion,
+      );
+      expect(controller.state.habitDraft?.frequency, HabitFrequency.weekly);
+      expect(controller.state.habitDraft?.reminderEnabled, isTrue);
+      expect(controller.state.habitDraft?.reminderTime, '18:30');
+      expect(controller.state.firstHabitId, 'habit-1');
+
+      await controller.recordWidgetPinAttempt();
+      await controller.finishWithoutPin();
+      final restarted = OnboardingController(
+        repository: repository,
+        ids: FakeIdGenerator(const <String>['unused']),
+        clock: FakeClock(DateTime.utc(2026, 8, 21)),
+      );
+      addTearDown(restarted.dispose);
+      await restarted.initialize(hasExistingHabits: false);
+
+      expect(restarted.state.currentStep, OnboardingStep.completed);
+      expect(restarted.state.widgetPinAttempted, isTrue);
+      expect(restarted.state.widgetPinned, isFalse);
+      expect(restarted.state.firstHabitId, firstId);
+    },
+  );
+
   test('process restart resumes the exact persisted step and draft', () async {
     final repository = KeyValueOnboardingRepository(InMemoryKeyValueStore());
     final first = OnboardingController(
@@ -45,10 +116,17 @@ void main() {
     );
     await restarted.initialize(hasExistingHabits: false);
 
-    expect(restarted.state.currentStep, OnboardingStep.reminder);
+    expect(restarted.state.currentStep, OnboardingStep.rhythmExplainer);
     expect(restarted.state.intent, OnboardingIntent.learning);
     expect(restarted.state.habitDraft?.name, 'Read');
     expect(restarted.state.habitDraft?.customDays, <int>[1, 3, 5]);
+
+    await restarted.confirmRhythmUnderstanding();
+    expect(restarted.state.currentStep, OnboardingStep.reminderModel);
+    await restarted.confirmReminderModel();
+    expect(restarted.state.currentStep, OnboardingStep.reminder);
+    await restarted.back();
+    expect(restarted.state.currentStep, OnboardingStep.reminderModel);
   });
 
   test('back navigation keeps the draft and reserved id is stable', () async {

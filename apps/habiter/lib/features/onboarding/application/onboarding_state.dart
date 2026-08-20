@@ -8,11 +8,55 @@ enum OnboardingStep {
   intent,
   firstHabit,
   rhythm,
+  rhythmExplainer,
+  reminderModel,
   reminder,
   habitReady,
   widgetIntro,
   widgetPin,
   completed,
+}
+
+abstract final class OnboardingProgress {
+  static const orderedSteps = <OnboardingStep>[
+    OnboardingStep.welcome,
+    OnboardingStep.intent,
+    OnboardingStep.firstHabit,
+    OnboardingStep.rhythm,
+    OnboardingStep.rhythmExplainer,
+    OnboardingStep.reminderModel,
+    OnboardingStep.reminder,
+    OnboardingStep.widgetIntro,
+    OnboardingStep.widgetPin,
+  ];
+
+  static const total = 9;
+
+  static int indexOf(OnboardingStep step) {
+    final normalized = step == OnboardingStep.habitReady
+        ? OnboardingStep.widgetIntro
+        : step;
+    final index = orderedSteps.indexOf(normalized);
+    if (index >= 0) return index + 1;
+    return normalized == OnboardingStep.completed ? total : 1;
+  }
+
+  static OnboardingStep previousOf(OnboardingStep step) {
+    if (step == OnboardingStep.habitReady) return OnboardingStep.reminder;
+    if (step == OnboardingStep.completed) return OnboardingStep.widgetPin;
+    final index = orderedSteps.indexOf(step);
+    if (index <= 0) return step;
+    return orderedSteps[index - 1];
+  }
+
+  static List<OnboardingStep> through(OnboardingStep step) {
+    final normalized = step == OnboardingStep.habitReady
+        ? OnboardingStep.widgetIntro
+        : step;
+    final index = orderedSteps.indexOf(normalized);
+    if (index < 0) return const <OnboardingStep>[OnboardingStep.welcome];
+    return List<OnboardingStep>.unmodifiable(orderedSteps.take(index + 1));
+  }
 }
 
 enum OnboardingIntent {
@@ -124,16 +168,20 @@ final class OnboardingState {
     this.completedAt,
   });
 
-  static const currentVersion = 2;
+  static const currentVersion = 3;
 
   factory OnboardingState.fromMap(Map<String, Object?> map) {
     final draft = map['habitDraft'];
+    final storedVersion = (map['onboardingVersion'] as num?)?.toInt() ?? 1;
+    if (storedVersion > currentVersion) {
+      throw FormatException('Unsupported onboarding version: $storedVersion');
+    }
+    final storedStep = OnboardingStep.values.byName(
+      map['currentStep'] as String? ?? OnboardingStep.notStarted.name,
+    );
     return OnboardingState(
-      onboardingVersion:
-          (map['onboardingVersion'] as num?)?.toInt() ?? currentVersion,
-      currentStep: OnboardingStep.values.byName(
-        map['currentStep'] as String? ?? OnboardingStep.notStarted.name,
-      ),
+      onboardingVersion: currentVersion,
+      currentStep: _migrateStep(storedVersion, storedStep),
       intent: map['intent'] == null
           ? null
           : OnboardingIntent.values.byName(map['intent']! as String),
@@ -198,4 +246,16 @@ final class OnboardingState {
     'widgetPinAttempted': widgetPinAttempted,
     'completedAt': completedAt?.toUtc().toIso8601String(),
   };
+
+  static OnboardingStep _migrateStep(
+    int storedVersion,
+    OnboardingStep storedStep,
+  ) {
+    if (storedVersion >= 3) return storedStep;
+    return switch (storedStep) {
+      OnboardingStep.reminder => OnboardingStep.rhythmExplainer,
+      OnboardingStep.habitReady => OnboardingStep.widgetIntro,
+      _ => storedStep,
+    };
+  }
 }

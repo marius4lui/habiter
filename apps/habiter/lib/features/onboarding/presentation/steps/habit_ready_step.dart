@@ -4,6 +4,7 @@ import '../../../../core/design_system/tokens.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../models/habit.dart';
 import '../../application/onboarding_controller.dart';
+import '../../application/onboarding_state.dart';
 import '../onboarding_scaffold.dart';
 
 class HabitReadyStep extends StatelessWidget {
@@ -15,7 +16,7 @@ class HabitReadyStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final draft = controller.state.habitDraft!;
     return OnboardingScaffold(
-      step: 6,
+      step: OnboardingStep.habitReady,
       title: context.l10n.onboardingHabitReadyTitle,
       subtitle: context.l10n.onboardingHabitReadyBody,
       body: Center(

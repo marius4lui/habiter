@@ -7,6 +7,7 @@ import '../../../../core/design_system/tokens.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../models/habit.dart';
 import '../../application/onboarding_controller.dart';
+import '../../application/onboarding_state.dart';
 import '../onboarding_scaffold.dart';
 
 class RhythmStep extends StatefulWidget {
@@ -34,7 +35,7 @@ class _RhythmStepState extends State<RhythmStep> {
 
   @override
   Widget build(BuildContext context) => OnboardingScaffold(
-    step: 4,
+    step: OnboardingStep.rhythm,
     title: context.l10n.onboardingRhythmTitle,
     onBack: widget.controller.back,
     body: Column(

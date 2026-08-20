@@ -70,8 +70,16 @@ final class OnboardingController extends ChangeNotifier {
   );
 
   Future<void> configureRhythm(OnboardingHabitDraft draft) => _replace(
-    _state.copyWith(habitDraft: draft, currentStep: OnboardingStep.reminder),
+    _state.copyWith(
+      habitDraft: draft,
+      currentStep: OnboardingStep.rhythmExplainer,
+    ),
   );
+
+  Future<void> confirmRhythmUnderstanding() =>
+      _moveTo(OnboardingStep.reminderModel);
+
+  Future<void> confirmReminderModel() => _moveTo(OnboardingStep.reminder);
 
   Future<void> configureReminder(OnboardingHabitDraft draft) =>
       _replace(_state.copyWith(habitDraft: draft));
@@ -84,7 +92,12 @@ final class OnboardingController extends ChangeNotifier {
     return id;
   }
 
-  Future<void> markHabitReady() => _moveTo(OnboardingStep.habitReady);
+  Future<void> markHabitReady() => _replace(
+    _state.copyWith(
+      currentStep: OnboardingStep.widgetIntro,
+      widgetPromotionState: WidgetPromotionState.presented,
+    ),
+  );
 
   Future<void> showWidgetIntro() => _replace(
     _state.copyWith(
@@ -119,16 +132,7 @@ final class OnboardingController extends ChangeNotifier {
   );
 
   Future<void> back() {
-    final previous = switch (_state.currentStep) {
-      OnboardingStep.intent => OnboardingStep.welcome,
-      OnboardingStep.firstHabit => OnboardingStep.intent,
-      OnboardingStep.rhythm => OnboardingStep.firstHabit,
-      OnboardingStep.reminder => OnboardingStep.rhythm,
-      OnboardingStep.habitReady => OnboardingStep.reminder,
-      OnboardingStep.widgetIntro => OnboardingStep.habitReady,
-      OnboardingStep.widgetPin => OnboardingStep.widgetIntro,
-      _ => _state.currentStep,
-    };
+    final previous = OnboardingProgress.previousOf(_state.currentStep);
     return _moveTo(previous);
   }
 

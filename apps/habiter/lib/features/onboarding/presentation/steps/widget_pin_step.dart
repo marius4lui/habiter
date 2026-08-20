@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../widgets/domain/widget_bridge.dart';
 import '../../application/onboarding_controller.dart';
+import '../../application/onboarding_state.dart';
 import '../onboarding_scaffold.dart';
 
 enum _PinView { ready, requesting, pinned, declined, unsupported, failed }
@@ -53,7 +54,7 @@ class _WidgetPinStepState extends State<WidgetPinStep> {
     final manual = _view == _PinView.unsupported || _view == _PinView.failed;
     final pinned = _view == _PinView.pinned;
     return OnboardingScaffold(
-      step: 8,
+      step: OnboardingStep.widgetPin,
       title: pinned
           ? context.l10n.onboardingWidgetReadyTitle
           : manual

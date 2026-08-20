@@ -7,6 +7,7 @@ import '../../../../core/design_system/tokens.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../providers/habit_provider.dart';
 import '../../application/onboarding_controller.dart';
+import '../../application/onboarding_state.dart';
 import '../onboarding_scaffold.dart';
 
 class ReminderStep extends StatefulWidget {
@@ -31,7 +32,7 @@ class _ReminderStepState extends State<ReminderStep> {
 
   @override
   Widget build(BuildContext context) => OnboardingScaffold(
-    step: 5,
+    step: OnboardingStep.reminder,
     title: context.l10n.onboardingReminderTitle,
     subtitle: context.l10n.onboardingReminderBody,
     onBack: _saving ? null : widget.controller.back,

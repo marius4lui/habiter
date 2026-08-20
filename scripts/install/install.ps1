@@ -21,11 +21,24 @@ function Write-Detail([string]$Message) { Write-Host "      $Message" }
 function Write-DebugDetail([string]$Message) { if ($VerboseOutput) { Write-Detail $Message } }
 
 function Get-NormalizedArchitecture([string]$Value) {
+    if ([string]::IsNullOrWhiteSpace($Value)) { throw 'Unable to detect the Windows architecture.' }
     switch ($Value.ToLowerInvariant()) {
         { $_ -in @('amd64', 'x86_64', 'x64') } { return 'x64' }
         { $_ -in @('arm64', 'aarch64') } { return 'arm64' }
         default { throw "Unsupported architecture: $Value" }
     }
+}
+
+function Get-DetectedArchitecture($RuntimeArchitecture) {
+    if ($null -ne $RuntimeArchitecture) {
+        return Get-NormalizedArchitecture ([string]$RuntimeArchitecture)
+    }
+    foreach ($candidate in @($env:PROCESSOR_ARCHITEW6432, $env:PROCESSOR_ARCHITECTURE)) {
+        if (-not [string]::IsNullOrWhiteSpace($candidate)) {
+            return Get-NormalizedArchitecture $candidate
+        }
+    }
+    throw 'Unable to detect the Windows architecture.'
 }
 
 function Assert-ResolverResponse($Response) {
@@ -93,8 +106,11 @@ function Invoke-HabiterInstall {
     Write-Host 'Habiter installer'
     Write-Host ''
     Write-Step 1 'Detecting system'
-    $architectureSource = if ($env:HABITER_ARCHITECTURE) { $env:HABITER_ARCHITECTURE } else { [Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString() }
-    $architecture = Get-NormalizedArchitecture $architectureSource
+    $architecture = if ($env:HABITER_ARCHITECTURE) {
+        Get-NormalizedArchitecture $env:HABITER_ARCHITECTURE
+    } else {
+        Get-DetectedArchitecture ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture)
+    }
     Write-Detail "Windows · $architecture"
 
     Write-Step 2 'Resolving release'

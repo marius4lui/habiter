@@ -7,6 +7,11 @@ $env:HABITER_TEST_MODE = 'functions'
 if ((Get-NormalizedArchitecture 'AMD64') -ne 'x64') { throw 'AMD64 normalization failed' }
 if ((Get-NormalizedArchitecture 'aarch64') -ne 'arm64') { throw 'ARM64 normalization failed' }
 try { Get-NormalizedArchitecture 'sparc'; throw 'Unsupported architecture accepted' } catch { if ($_.Exception.Message -eq 'Unsupported architecture accepted') { throw } }
+try { Get-NormalizedArchitecture $null; throw 'Missing architecture accepted' } catch { if ($_.Exception.Message -eq 'Missing architecture accepted') { throw } }
+$savedProcessorArchitecture = $env:PROCESSOR_ARCHITECTURE
+$env:PROCESSOR_ARCHITECTURE = 'AMD64'
+if ((Get-DetectedArchitecture $null) -ne 'x64') { throw 'Environment architecture fallback failed' }
+$env:PROCESSOR_ARCHITECTURE = $savedProcessorArchitecture
 
 $valid = [pscustomobject]@{
     version = '1.6.0'; platform = 'windows'; architecture = 'x64'

@@ -2315,7 +2315,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingHabitReadyTitle.
   ///
   /// In de, this message translates to:
-  /// **'Dein erstes Habit steht.'**
+  /// **'Dein erstes\nHabit steht.'**
   String get onboardingHabitReadyTitle;
 
   /// No description provided for @onboardingHabitReadyBody.
@@ -2339,7 +2339,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingWidgetIntroTitle.
   ///
   /// In de, this message translates to:
-  /// **'Habiter gehört auf deinen Homescreen.'**
+  /// **'Dein Habit.\nDirekt im Blick.'**
   String get onboardingWidgetIntroTitle;
 
   /// No description provided for @onboardingWidgetIntroBody.
@@ -2378,6 +2378,18 @@ abstract class AppLocalizations {
   /// **'Android fragt dich, wo du das Widget platzieren möchtest.'**
   String get onboardingWidgetPinBody;
 
+  /// No description provided for @onboardingWidgetRequestingTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Fast da.'**
+  String get onboardingWidgetRequestingTitle;
+
+  /// No description provided for @onboardingWidgetRequestingBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Android bereitet die Platzierung vor…'**
+  String get onboardingWidgetRequestingBody;
+
   /// No description provided for @onboardingWidgetReadyTitle.
   ///
   /// In de, this message translates to:
@@ -2390,6 +2402,12 @@ abstract class AppLocalizations {
   /// **'Dein nächster Schritt ist jetzt direkt auf deinem Homescreen.'**
   String get onboardingWidgetReadyBody;
 
+  /// No description provided for @onboardingWidgetDeclinedTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Problem.'**
+  String get onboardingWidgetDeclinedTitle;
+
   /// No description provided for @onboardingWidgetDeclinedBody.
   ///
   /// In de, this message translates to:
@@ -2401,6 +2419,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Widget manuell hinzufügen'**
   String get onboardingWidgetManualTitle;
+
+  /// No description provided for @onboardingWidgetUnsupportedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatisches Anheften wird hier nicht unterstützt. Manuell klappt es trotzdem.'**
+  String get onboardingWidgetUnsupportedBody;
+
+  /// No description provided for @onboardingWidgetFailedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Android-Anfrage hat nicht geklappt. Du kannst das Widget manuell hinzufügen.'**
+  String get onboardingWidgetFailedBody;
 
   /// No description provided for @onboardingWidgetManualOne.
   ///

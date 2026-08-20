@@ -5,6 +5,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../../models/habit.dart';
 import '../../application/onboarding_controller.dart';
 import '../../application/onboarding_state.dart';
+import '../components/habit_illustration.dart';
 import '../onboarding_scaffold.dart';
 
 class HabitReadyStep extends StatelessWidget {
@@ -19,33 +20,63 @@ class HabitReadyStep extends StatelessWidget {
       step: OnboardingStep.habitReady,
       title: context.l10n.onboardingHabitReadyTitle,
       subtitle: context.l10n.onboardingHabitReadyBody,
-      body: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 360),
-          padding: const EdgeInsets.all(HabiterSpace.xl),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(32),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          HabitIllustration(
+            kind: HabitIllustrationKind.growth,
+            step: OnboardingStep.habitReady,
+            semanticLabel: context.l10n.onboardingHabitReadyTitle,
+            height: 168,
           ),
-          child: Column(
-            children: <Widget>[
-              Text(draft.icon, style: const TextStyle(fontSize: 52)),
-              const SizedBox(height: HabiterSpace.md),
-              Text(
-                draft.name,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: HabiterSpace.xs),
-              Text(
-                _schedule(context, draft.frequency, draft.targetCount),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: HabiterSpace.md),
-              const Icon(Icons.check_circle_rounded, size: 42),
-            ],
+          const SizedBox(height: HabiterSpace.md),
+          Container(
+            constraints: const BoxConstraints(minHeight: 86),
+            padding: const EdgeInsets.all(HabiterSpace.md),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainer,
+              borderRadius: BorderRadius.circular(HabiterRadius.prominent),
+            ),
+            child: Row(
+              children: <Widget>[
+                Text(draft.icon, style: const TextStyle(fontSize: 34)),
+                const SizedBox(width: HabiterSpace.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        draft.name,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      Text(
+                        _schedule(context, draft.frequency, draft.targetCount),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.check_rounded,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
       primaryAction: FilledButton(
         onPressed: controller.showWidgetIntro,

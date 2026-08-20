@@ -1249,7 +1249,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Active hours default to 08:00–22:00. You can pause, change every plan, or delete all learning data anytime.';
 
   @override
-  String get onboardingHabitReadyTitle => 'Your first habit is ready.';
+  String get onboardingHabitReadyTitle => 'Your first\nhabit is ready.';
 
   @override
   String get onboardingHabitReadyBody =>
@@ -1264,8 +1264,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get onboardingWidgetIntroTitle =>
-      'Habiter belongs on your home screen.';
+  String get onboardingWidgetIntroTitle => 'Your habit.\nRight in view.';
 
   @override
   String get onboardingWidgetIntroBody =>
@@ -1289,6 +1288,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Android will ask where you want to place the widget.';
 
   @override
+  String get onboardingWidgetRequestingTitle => 'Almost there.';
+
+  @override
+  String get onboardingWidgetRequestingBody =>
+      'Android is preparing placement…';
+
+  @override
   String get onboardingWidgetReadyTitle => 'Ready.';
 
   @override
@@ -1296,11 +1302,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your next step is now directly on your home screen.';
 
   @override
+  String get onboardingWidgetDeclinedTitle => 'No problem.';
+
+  @override
   String get onboardingWidgetDeclinedBody =>
       'You can add the widget later from Habiter at any time.';
 
   @override
   String get onboardingWidgetManualTitle => 'Add the widget manually';
+
+  @override
+  String get onboardingWidgetUnsupportedBody =>
+      'Automatic pinning is not supported here. You can still add it manually.';
+
+  @override
+  String get onboardingWidgetFailedBody =>
+      'The Android request did not work. You can add the widget manually instead.';
 
   @override
   String get onboardingWidgetManualOne => 'Touch and hold your home screen';

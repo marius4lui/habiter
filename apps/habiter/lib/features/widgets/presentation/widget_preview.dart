@@ -4,9 +4,16 @@ import '../../../core/design_system/tokens.dart';
 import '../../../l10n/l10n.dart';
 
 class WidgetPreview extends StatefulWidget {
-  const WidgetPreview({super.key, this.animate = true});
+  const WidgetPreview({
+    super.key,
+    this.animate = true,
+    this.habitName,
+    this.habitIcon,
+  });
 
   final bool animate;
+  final String? habitName;
+  final String? habitIcon;
 
   @override
   State<WidgetPreview> createState() => _WidgetPreviewState();
@@ -47,105 +54,155 @@ class _WidgetPreviewState extends State<WidgetPreview>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final habitName = widget.habitName ?? context.l10n.templateWorkout;
+    final habitIcon = widget.habitIcon ?? '🏋️';
     return Semantics(
       label: context.l10n.widgetPreviewSemantics,
       image: true,
       excludeSemantics: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerLow,
+          color: theme.colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(HabiterRadius.prominent),
+          border: Border.all(
+            color: theme.colorScheme.primary.withValues(alpha: 0.14),
+          ),
         ),
         child: SizedBox(
-          height: 300,
-          child: Center(
-            child: AnimatedBuilder(
-              animation: _controller,
-              builder: (context, _) {
-                final t = Curves.easeInOutCubic.transform(_controller.value);
-                return MediaQuery(
-                  // This is an illustrative image of an Android widget. Keep
-                  // its simulated launcher typography at a realistic scale;
-                  // the surrounding copy and controls still honor large text.
-                  data: MediaQuery.of(
-                    context,
-                  ).copyWith(textScaler: TextScaler.noScaling),
-                  child: Container(
-                    width: 180 + (t * 110),
-                    height: 112 + (t * 82),
-                    padding: const EdgeInsets.all(HabiterSpace.md),
-                    decoration: BoxDecoration(
-                      color: theme.brightness == Brightness.dark
-                          ? theme.colorScheme.surfaceContainerHighest
-                          : theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(HabiterRadius.card),
-                      border: Border.all(
-                        color: theme.colorScheme.outlineVariant.withValues(
-                          alpha: .65,
-                        ),
-                      ),
-                      boxShadow: <BoxShadow>[
-                        BoxShadow(
-                          color: theme.colorScheme.shadow.withValues(
-                            alpha: 0.14,
-                          ),
-                          blurRadius: 24,
-                          offset: const Offset(0, 12),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Text(
-                              context.l10n.today,
-                              style: theme.textTheme.labelLarge,
-                            ),
-                            const Spacer(),
-                            Text('1 / 3', style: theme.textTheme.labelLarge),
-                          ],
-                        ),
-                        const SizedBox(height: HabiterSpace.sm),
-                        LinearProgressIndicator(
-                          value: 1 / 3,
-                          minHeight: 5,
-                          borderRadius: BorderRadius.circular(99),
-                        ),
-                        const Spacer(),
-                        Row(
-                          children: <Widget>[
-                            const Text('🏋️', style: TextStyle(fontSize: 24)),
-                            const SizedBox(width: HabiterSpace.sm),
-                            Expanded(
-                              child: Text(
-                                context.l10n.templateWorkout,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.titleMedium,
+          height: 286,
+          child: Padding(
+            padding: const EdgeInsets.all(HabiterSpace.sm2),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final availableWidth = constraints.maxWidth;
+                final minWidth = availableWidth < 190 ? availableWidth : 190.0;
+                final maxWidth = availableWidth < 292 ? availableWidth : 292.0;
+                return Center(
+                  child: AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, _) {
+                      final t = Curves.easeInOutCubic.transform(
+                        _controller.value,
+                      );
+                      return MediaQuery(
+                        // This remains a launcher-widget illustration. The
+                        // surrounding copy and controls still honor text scale.
+                        data: MediaQuery.of(
+                          context,
+                        ).copyWith(textScaler: TextScaler.noScaling),
+                        child: Container(
+                          width: minWidth + ((maxWidth - minWidth) * t),
+                          height: 120 + (t * 72),
+                          padding: const EdgeInsets.all(HabiterSpace.md),
+                          decoration: BoxDecoration(
+                            color: Color.alphaBlend(
+                              theme.colorScheme.onSurface.withValues(
+                                alpha: 0.04,
                               ),
+                              theme.colorScheme.surface,
                             ),
-                            if (t > .35)
-                              const FilledButton.tonal(
-                                onPressed: null,
-                                child: Icon(Icons.check_rounded),
+                            borderRadius: BorderRadius.circular(
+                              HabiterRadius.card,
+                            ),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.42,
                               ),
-                          ],
-                        ),
-                        if (t > .65) ...<Widget>[
-                          const SizedBox(height: HabiterSpace.sm),
-                          Text(
-                            context.l10n.widgetPreviewNext(
-                              context.l10n.templateRead,
+                              width: 2,
                             ),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
+                            boxShadow: <BoxShadow>[
+                              BoxShadow(
+                                color: theme.colorScheme.shadow.withValues(
+                                  alpha: 0.13,
+                                ),
+                                blurRadius: 26,
+                                offset: const Offset(0, 14),
+                              ),
+                            ],
                           ),
-                        ],
-                      ],
-                    ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: <Widget>[
+                              Row(
+                                children: <Widget>[
+                                  Text(
+                                    context.l10n.today.toUpperCase(),
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 1.1,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '1 / 3',
+                                    style: theme.textTheme.labelLarge?.copyWith(
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: HabiterSpace.sm),
+                              LinearProgressIndicator(
+                                value: 1 / 3,
+                                minHeight: 4,
+                                borderRadius: BorderRadius.circular(
+                                  HabiterRadius.pill,
+                                ),
+                              ),
+                              const Spacer(),
+                              Row(
+                                children: <Widget>[
+                                  Text(
+                                    habitIcon,
+                                    style: const TextStyle(fontSize: 24),
+                                  ),
+                                  const SizedBox(width: HabiterSpace.sm),
+                                  Expanded(
+                                    child: Text(
+                                      habitName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                    ),
+                                  ),
+                                  if (t > .35)
+                                    Container(
+                                      width: 38,
+                                      height: 38,
+                                      margin: const EdgeInsetsDirectional.only(
+                                        start: HabiterSpace.sm,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.check_rounded,
+                                        color: theme.colorScheme.onPrimary,
+                                        size: 21,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              if (t > .65) ...<Widget>[
+                                const SizedBox(height: HabiterSpace.sm),
+                                Text(
+                                  context.l10n.widgetPreviewNext(
+                                    context.l10n.templateRead,
+                                  ),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 );
               },

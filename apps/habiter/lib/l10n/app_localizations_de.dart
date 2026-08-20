@@ -1262,7 +1262,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die Wachzeit ist zunächst 08:00–22:00 Uhr. Du kannst jederzeit pausieren, jeden Plan ändern oder alle Lerndaten löschen.';
 
   @override
-  String get onboardingHabitReadyTitle => 'Dein erstes Habit steht.';
+  String get onboardingHabitReadyTitle => 'Dein erstes\nHabit steht.';
 
   @override
   String get onboardingHabitReadyBody =>
@@ -1277,8 +1277,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get onboardingWidgetIntroTitle =>
-      'Habiter gehört auf deinen Homescreen.';
+  String get onboardingWidgetIntroTitle => 'Dein Habit.\nDirekt im Blick.';
 
   @override
   String get onboardingWidgetIntroBody =>
@@ -1302,6 +1301,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Android fragt dich, wo du das Widget platzieren möchtest.';
 
   @override
+  String get onboardingWidgetRequestingTitle => 'Fast da.';
+
+  @override
+  String get onboardingWidgetRequestingBody =>
+      'Android bereitet die Platzierung vor…';
+
+  @override
   String get onboardingWidgetReadyTitle => 'Bereit.';
 
   @override
@@ -1309,11 +1315,22 @@ class AppLocalizationsDe extends AppLocalizations {
       'Dein nächster Schritt ist jetzt direkt auf deinem Homescreen.';
 
   @override
+  String get onboardingWidgetDeclinedTitle => 'Kein Problem.';
+
+  @override
   String get onboardingWidgetDeclinedBody =>
       'Du kannst das Widget jederzeit später in Habiter hinzufügen.';
 
   @override
   String get onboardingWidgetManualTitle => 'Widget manuell hinzufügen';
+
+  @override
+  String get onboardingWidgetUnsupportedBody =>
+      'Automatisches Anheften wird hier nicht unterstützt. Manuell klappt es trotzdem.';
+
+  @override
+  String get onboardingWidgetFailedBody =>
+      'Die Android-Anfrage hat nicht geklappt. Du kannst das Widget manuell hinzufügen.';
 
   @override
   String get onboardingWidgetManualOne => 'Homescreen gedrückt halten';

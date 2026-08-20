@@ -7,6 +7,7 @@ import 'package:habiter/features/onboarding/application/onboarding_state.dart';
 import 'package:habiter/features/onboarding/presentation/onboarding_flow.dart';
 import 'package:habiter/features/widgets/domain/widget_bridge.dart';
 import 'package:habiter/features/widgets/domain/widget_snapshot.dart';
+import 'package:habiter/core/design_system/haptics.dart';
 import 'package:habiter/l10n/app_localizations.dart';
 import 'package:habiter/models/habit.dart';
 import 'package:habiter/theme/app_theme.dart';
@@ -134,6 +135,7 @@ Widget _app(
   providers: [
     ChangeNotifierProvider<OnboardingController>.value(value: controller),
     Provider<WidgetBridge>.value(value: bridge),
+    Provider<HapticGateway>.value(value: const SystemHapticGateway(isWeb: true)),
   ],
   child: MaterialApp(
     locale: const Locale('de'),

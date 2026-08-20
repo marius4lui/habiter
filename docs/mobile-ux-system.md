@@ -19,7 +19,7 @@ replace the persistence, reminder, or App Lock contracts.
 
 ## Design primitives
 
-The canonical tokens live in `lib/core/design_system/`:
+The canonical tokens live in `apps/habiter/lib/core/design_system/`:
 
 - `tokens.dart` defines the spacing, radius, target-size, content-width, and
   breakpoint scales.
@@ -91,4 +91,4 @@ The mobile UI suite covers 320, 360, 390, and 412 dp phone widths, 200% text,
 light and dark themes, one-tap completion/undo, App Lock's friendly picker, and
 golden contracts for Settings and the guided editor. Native App Lock permission,
 overlay, OEM battery, and launcher-icon behavior still require the real-device
-matrix documented in `docs/app-lock-manual-test-matrix.md`.
+matrix documented in the [App Lock engineering notes](/app-lock).

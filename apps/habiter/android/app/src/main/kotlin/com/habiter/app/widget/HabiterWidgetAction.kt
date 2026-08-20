@@ -7,7 +7,7 @@ import androidx.glance.action.ActionParameters
 import androidx.glance.appwidget.action.ActionCallback
 import es.antonborri.home_widget.HomeWidgetBackgroundIntent
 
-object HabiterWidgetAction {
+internal object HabiterWidgetAction {
     val habitIdKey = ActionParameters.Key<String>("habitId")
     val localDateKey = ActionParameters.Key<String>("localDate")
     val actionIdKey = ActionParameters.Key<String>("actionId")

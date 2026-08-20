@@ -15,7 +15,7 @@ import android.view.WindowManager
 import androidx.appcompat.view.ContextThemeWrapper
 
 /** Displays only the blocking state for the package that is currently in the foreground. */
-object BlockingOverlay {
+internal object BlockingOverlay {
     private const val TAG = "HabiterAppLock"
 
     private val handler = Handler(Looper.getMainLooper())

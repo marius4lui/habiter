@@ -6,6 +6,21 @@ import type { ReleaseChannel, ReleaseManifest, SignedManifestEnvelope } from "./
 
 const shortCache = "public, max-age=60, s-maxage=300";
 const immutableCache = "public, max-age=86400, s-maxage=31536000, immutable";
+const semanticVersion = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
+
+/** Route templates that must stay aligned with the published OpenAPI document. */
+export const releaseApiContractPaths = {
+  health: "/health",
+  downloadSelector: "/download",
+  manifest: "/api/v1/manifest",
+  releases: "/api/v1/releases",
+  latestRelease: "/api/v1/releases/latest",
+  release: "/api/v1/releases/{version}",
+  releaseDownloads: "/api/v1/releases/{version}/downloads",
+  update: "/api/v1/update/{platform}",
+  download: "/api/v1/download/{platform}",
+  downloadArchitecture: "/api/v1/download/{platform}/{architecture}",
+} as const;
 
 function positiveInteger(value: string | null, fallback: number, maximum: number): number | null {
   if (value === null) return fallback;
@@ -19,11 +34,12 @@ function releaseChannel(value: string | null): ReleaseChannel | null {
   return value === "stable" || value === "beta" ? value : null;
 }
 
-function manifestResponse(request: Request, envelope: SignedManifestEnvelope | undefined): Response {
-  if (!envelope) return new Response(JSON.stringify({ error: { code: "manifest_unavailable", message: "Signed manifest is unavailable" } }), {
-    status: 503,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" }
-  });
+function manifestResponse(request: Request, envelope: SignedManifestEnvelope | undefined, requestId: string): Response {
+  if (!envelope) {
+    const response = apiError(requestId, 503, "manifest_unavailable", "Signed manifest is unavailable");
+    response.headers.set("cache-control", "no-store");
+    return response;
+  }
   const etag = `"${envelope.keyId}.${envelope.signature.slice(0, 32)}"`;
   if (request.headers.get("if-none-match") === etag) {
     return new Response(null, { status: 304, headers: { etag, "cache-control": shortCache } });
@@ -33,6 +49,7 @@ function manifestResponse(request: Request, envelope: SignedManifestEnvelope | u
   return withCache(response, shortCache);
 }
 
+/** Builds the complete read-only HTTP handler from immutable release data. */
 export function createHandler(manifest: ReleaseManifest, envelope?: SignedManifestEnvelope, installerFetcher: InstallerFetcher = fetch) {
   const releases = new ReleaseService(manifest);
 
@@ -41,7 +58,7 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
     const url = new URL(request.url);
     const segments = url.pathname.split("/").filter(Boolean);
 
-    if (url.pathname === "/health") {
+    if (url.pathname === releaseApiContractPaths.health) {
       return json({ status: "ok", environment: env.ENVIRONMENT, requestId });
     }
 
@@ -56,7 +73,7 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
       }
     }
 
-    if (url.pathname === "/download") {
+    if (url.pathname === releaseApiContractPaths.downloadSelector) {
       const channel = releaseChannel(url.searchParams.get("channel"));
       if (channel === null) return apiError(requestId, 400, "invalid_channel", "channel must be stable or beta");
       const explicitPlatform = url.searchParams.has("platform");
@@ -86,7 +103,7 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
     }
 
     if (segments[2] === "manifest" && segments.length === 3) {
-      return manifestResponse(request, envelope);
+      return manifestResponse(request, envelope, requestId);
     }
 
     if (segments[2] === "releases" && segments.length === 3) {
@@ -107,7 +124,11 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
         : apiError(requestId, 404, "release_not_found", "No published release exists for this channel");
     }
 
-    if (segments[2] === "releases" && segments[3] && segments.length >= 4) {
+    if (
+      segments[2] === "releases"
+      && segments[3]
+      && (segments.length === 4 || (segments.length === 5 && segments[4] === "downloads"))
+    ) {
       const release = releases.find(segments[3]);
       if (!release) return apiError(requestId, 404, "release_not_found", "Release not found");
       const payload = segments[4] === "downloads" ? { version: release.version, artifacts: release.artifacts } : release;
@@ -117,8 +138,11 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
     if (segments[2] === "update" && segments[3] && segments.length === 4) {
       const platform = parsePlatform(segments[3]);
       const version = url.searchParams.get("version");
-      const build = positiveInteger(url.searchParams.get("build"), 0, Number.MAX_SAFE_INTEGER);
-      if (!platform || !version || build === null) return apiError(requestId, 400, "invalid_update_request", "platform, version and build are required");
+      const buildValue = url.searchParams.get("build");
+      const build = positiveInteger(buildValue, 0, Number.MAX_SAFE_INTEGER);
+      if (!platform || !version || !semanticVersion.test(version) || buildValue === null || build === null) {
+        return apiError(requestId, 400, "invalid_update_request", "platform, semantic version and positive build are required");
+      }
       const channel = releaseChannel(url.searchParams.get("channel"));
       if (channel === null) return apiError(requestId, 400, "invalid_channel", "channel must be stable or beta");
       const result = releases.checkUpdate(platform, version, build, channel, new Date());

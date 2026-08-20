@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createHandler } from "../src/router";
+import openApi from "../../../docs/public/release-api.openapi.json";
+import { createHandler, releaseApiContractPaths } from "../src/router";
 import type { ReleaseManifest, SignedManifestEnvelope } from "../src/types/releases";
 
 const manifest: ReleaseManifest = {
@@ -50,6 +51,12 @@ const handler = createHandler(manifest, envelope, installerFetcher);
 const call = (path: string, headers?: HeadersInit) => handler(new Request(`https://get.habiter.dev${path}`, { headers }), env);
 
 describe("release API", () => {
+  it("publishes every supported route in OpenAPI", () => {
+    expect(Object.keys(openApi.paths).sort()).toEqual(
+      Object.values(releaseApiContractPaths).sort(),
+    );
+  });
+
   it("serves the immutable signed bytes through an ETag-aware envelope", async () => {
     const response = await call("/api/v1/manifest");
     expect(response.status).toBe(200);
@@ -77,6 +84,21 @@ describe("release API", () => {
   it("computes update availability", async () => {
     const response = await call("/api/v1/update/android?version=0.9.0&build=9000");
     expect(await response.json()).toMatchObject({ updateAvailable: true, target: { version: "1.0.0", buildNumber: 10000 } });
+
+    const beta = await call("/api/v1/update/android?version=1.0.0&build=10000&channel=beta");
+    expect(await beta.json()).toMatchObject({ download: "/api/v1/download/android?channel=beta" });
+  });
+
+  it("rejects incomplete or malformed update coordinates", async () => {
+    for (const path of [
+      "/api/v1/update/android?version=1.0.0",
+      "/api/v1/update/android?version=current&build=10000",
+      "/api/v1/update/android?version=1.0.0&build=0",
+    ]) {
+      const response = await call(path);
+      expect(response.status).toBe(400);
+      expect(await response.json()).toMatchObject({ error: { code: "invalid_update_request" } });
+    }
   });
 
   it("serves only allow-listed repository installers with executable-safe headers", async () => {
@@ -174,5 +196,25 @@ describe("release API", () => {
     const invalidChannel = await call("/api/v1/releases/latest?channel=nightly");
     expect(invalidChannel.status).toBe(400);
     expect(await invalidChannel.json()).toMatchObject({ error: { code: "invalid_channel" } });
+  });
+
+  it("does not expose arbitrary release subpaths", async () => {
+    expect((await call("/api/v1/releases/1.0.0/private")).status).toBe(404);
+    expect((await call("/api/v1/releases/1.0.0/downloads/extra")).status).toBe(404);
+  });
+
+  it("includes a request ID when the signed manifest is unavailable", async () => {
+    const response = await createHandler(manifest)(
+      new Request("https://get.habiter.dev/api/v1/manifest"),
+      env,
+    );
+    expect(response.status).toBe(503);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toMatchObject({
+      error: {
+        code: "manifest_unavailable",
+        requestId: expect.any(String),
+      },
+    });
   });
 });

@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://docs.habiter.dev/habiter-backup.schema.json",
+  "title": "Habiter backup",
+  "description": "Portable data exported by Habiter schema version 1.",
+  "type": "object",
+  "required": ["schemaVersion", "exportedAt", "habits", "entries", "settings"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "exportedAt": { "type": "string", "format": "date-time" },
+    "habits": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/habit" }
+    },
+    "entries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "settings": { "$ref": "#/$defs/settings" }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "habit": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "description",
+        "color",
+        "icon",
+        "frequency",
+        "targetCount",
+        "category",
+        "customDays",
+        "createdAt",
+        "isActive",
+        "notificationEnabled",
+        "notificationTime"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": ["string", "null"] },
+        "color": { "type": "string" },
+        "icon": { "type": "string" },
+        "frequency": {
+          "type": "string",
+          "enum": ["daily", "weekly", "custom"]
+        },
+        "targetCount": { "type": "integer" },
+        "category": { "type": "string" },
+        "customDays": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "array",
+              "items": { "type": "integer", "minimum": 1, "maximum": 7 }
+            }
+          ]
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "isActive": { "type": "boolean" },
+        "notificationEnabled": { "type": "boolean" },
+        "notificationTime": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "pattern": "^(?:[01][0-9]|2[0-3]):[0-5][0-9]$" }
+          ]
+        },
+        "pauses": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/pause" }
+        },
+        "archivedAt": { "type": "string", "format": "date-time" },
+        "restoredAt": { "type": "string", "format": "date-time" },
+        "source": { "$ref": "#/$defs/source" }
+      },
+      "additionalProperties": true
+    },
+    "pause": {
+      "type": "object",
+      "required": ["startedAt", "endedAt"],
+      "properties": {
+        "startedAt": { "type": "string", "format": "date-time" },
+        "endedAt": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": true
+    },
+    "source": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "type": "string" },
+        "externalId": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "entry": {
+      "type": "object",
+      "required": ["id", "habitId", "date", "completed", "count", "timestamp"],
+      "properties": {
+        "id": { "type": "string" },
+        "habitId": { "type": "string" },
+        "date": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])$"
+        },
+        "completed": { "type": "boolean" },
+        "count": { "type": "integer" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": true
+    },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "theme": { "type": "string", "enum": ["light", "dark", "system"] },
+        "notifications": { "type": "boolean" },
+        "reminderTime": {
+          "type": "string",
+          "pattern": "^(?:[01][0-9]|2[0-3]):[0-5][0-9]$"
+        },
+        "aiInsights": { "type": "boolean" },
+        "language": { "type": "string" },
+        "showRecoverySupport": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

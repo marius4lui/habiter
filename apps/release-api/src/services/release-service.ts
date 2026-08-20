@@ -84,7 +84,7 @@ export class ReleaseService {
       current: { version: currentVersion, buildNumber: currentBuild },
       target: { version: latest.version, buildNumber: latest.buildNumber },
       minimumSupportedVersion: latest.minimumSupportedVersion,
-      download: `/api/v1/download/${platform}`
+      download: `/api/v1/download/${platform}${channel === "beta" ? "?channel=beta" : ""}`
     };
   }
 }

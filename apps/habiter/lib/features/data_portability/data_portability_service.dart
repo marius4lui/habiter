@@ -73,23 +73,33 @@ final class DataPortabilityService {
   }
 
   _PortableData _decode(String input) {
-    final value = jsonDecode(input);
-    if (value is! Map) throw const FormatException('Export must be an object.');
-    final map = Map<String, Object?>.from(value);
-    final version = map['schemaVersion'];
-    if (version is! int || version < 1) {
-      throw const FormatException('Export schema is missing or invalid.');
+    try {
+      final value = jsonDecode(input);
+      if (value is! Map) {
+        throw const FormatException('Export must be an object.');
+      }
+      final map = Map<String, Object?>.from(value);
+      final version = map['schemaVersion'];
+      if (version is! int || version < 1) {
+        throw const FormatException('Export schema is missing or invalid.');
+      }
+      if (version > schemaVersion) {
+        throw const FormatException(
+          'This export needs a newer Habiter version.',
+        );
+      }
+      final habits = _list(map['habits'], Habit.fromMap);
+      final entries = _list(map['entries'], HabitEntry.fromMap);
+      final ids = habits.map((habit) => habit.id).toSet();
+      if (ids.length != habits.length) {
+        throw const FormatException('Export contains duplicate habit IDs.');
+      }
+      return _PortableData(habits, entries);
+    } on FormatException {
+      rethrow;
+    } on Object {
+      throw const FormatException('Export payload is invalid.');
     }
-    if (version > schemaVersion) {
-      throw const FormatException('This export needs a newer Habiter version.');
-    }
-    final habits = _list(map['habits'], Habit.fromMap);
-    final entries = _list(map['entries'], HabitEntry.fromMap);
-    final ids = habits.map((habit) => habit.id).toSet();
-    if (ids.length != habits.length) {
-      throw const FormatException('Export contains duplicate habit IDs.');
-    }
-    return _PortableData(habits, entries);
   }
 
   List<T> _list<T>(Object? value, T Function(Map<String, dynamic>) decode) {

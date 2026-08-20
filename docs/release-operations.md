@@ -18,6 +18,8 @@ After the API smoke tests pass, the workflow finalizes the matching manifest ent
 
 The Release API defaults to `stable`. Beta clients opt in explicitly with `?channel=beta` on list, latest, update and download routes. Unknown channel values are rejected instead of being treated as an empty channel.
 
+The [Release API reference](/api/release-api) is the HTTP contract. The [manifest and signature reference](/api/release-manifest) defines schemas, publication invariants, client verification, and key rotation.
+
 ## GitHub configuration
 
 Repository secrets:
@@ -49,13 +51,9 @@ Generate signing material on a trusted offline workstation, back up the private 
 
 ## Android signing and recovery
 
-The v1 upload key is stored locally outside the repository under:
+Keep the v1 upload key in an operator-managed encrypted directory outside every repository checkout, synced folder, and routine backup that is not explicitly approved for signing material. Do not document a contributor-specific path: each release operator must record the location in their private runbook.
 
-```text
-/home/marius/.local/share/habiter/signing
-```
-
-Files are user-readable only. The public fingerprint is safe to compare, but the keystore and password files are secrets. Before publishing `v1.0.0`, create and verify a second encrypted offline backup. Losing both copies prevents compatible Android upgrades; rotating the GitHub secret does not rotate the certificate.
+The public fingerprint is safe to compare, but the keystore and password files are secrets. Maintain and periodically verify a second encrypted offline backup. Losing both copies prevents compatible Android upgrades; rotating the GitHub secret does not rotate the certificate.
 
 To rotate GitHub's stored copy without changing the certificate, re-upload the same local keystore and credentials, then run the dry-run workflow. A new certificate is a separate migration and must not be substituted silently.
 
@@ -110,7 +108,7 @@ Android is built in two flavors with the same application ID. `direct` produces 
 
 Optional story images belong in `packages/release-core/media/<version>/` and must be declared by file name, MIME type and ID in the matching draft. The publish job copies them beside the platform artifacts, calculates size and SHA-256, adds their immutable GitHub Release URLs to the runtime manifest and signs those exact manifest bytes. Missing or corrupt client-side media falls back to the declared icon without affecting the update itself.
 
-Habiter 1.5.0 is the bootstrap release for this updater. Clients older than 1.5 must install it once through the existing download page, GitHub Release or store flow. Automatic checks and direct downloads begin only after 1.5 is running. Publish 1.5 first as Preview/RC; promote it to Stable only after the physical-device matrix below succeeds.
+Habiter 1.5.0 is the bootstrap release for this updater. Clients older than 1.5 must install a current version once through the download page, GitHub Releases, or a store flow. Automatic checks and direct downloads begin only after 1.5 or newer is running. Every later release still has to pass the physical-device matrix below before stable publication.
 
 ## Manual gates
 
@@ -131,7 +129,7 @@ The current Flutter build reports a future Kotlin Gradle Plugin migration warnin
 The website is exported by Next.js as static files and deployed as Cloudflare Worker assets. No OpenNext server bundle is involved. The Cloudflare Workers Build for `habiter` uses:
 
 ```text
-Root directory: /apps/website
+Root directory: apps/website
 Build command: pnpm build
 Deploy command: pnpm exec wrangler deploy
 Production branch: main
@@ -159,6 +157,6 @@ gh run watch --exit-status
 
 The committed `docs/public/CNAME` preserves the custom domain in every artifact. Keep Pages in GitHub Actions mode and enforce HTTPS after DNS and certificate validation succeed.
 
-## Legacy cleanup
+## Historical releases
 
-The old `v1.3` and `v1.3.3` tags and the `v1.3.3` GitHub Release belong to the superseded product line. Remove them only after all local checks, the manual dry run and signing verification pass. Commit history is retained even when the public tags and release are deleted.
+Published tags and release entries are part of the update and download history. Do not delete or rewrite them as routine cleanup. If a release must be withdrawn for security or integrity reasons, preserve the manifest history, document the incident, verify client behavior, and use the GitHub and Worker rollback procedures deliberately.

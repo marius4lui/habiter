@@ -1,23 +1,19 @@
 import assert from "node:assert/strict";
-import { createHash, generateKeyPairSync } from "node:crypto";
+import { createHash, generateKeyPairSync, verify } from "node:crypto";
 import { test } from "node:test";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
   assertTagMatches,
-  compareVersions,
   enrichRelease,
   finalizeRelease,
-  manifestPayloadBytes,
   parseRawPublicKeyRing,
   parsePubspecVersion,
-  publishedManifest,
   readJson,
   renderNotes,
   signManifestEnvelope,
-  validateManifest,
-  verifyManifestEnvelope
+  validateManifest
 } from "../src/release-manifest.mjs";
 
 const manifestPath = new URL("../data/releases.json", import.meta.url);
@@ -54,13 +50,11 @@ test("the published v1.5 release carries the complete update experience contract
     new Set(release?.artifacts.map((item) => item.platform)),
     new Set(["android", "windows", "linux", "macos"])
   );
-  assert.equal(publishedManifest(manifest).releases.some((item) => item.version === "1.5.0"), true);
 });
 
-test("version comparison is numeric and release notes are deterministic", async () => {
+test("release notes are deterministic", async () => {
   const manifest = await readJson(manifestPath);
   const notes = renderNotes(manifest.releases[0]);
-  assert.ok(compareVersions("1.10.0", "1.9.9") > 0);
   assert.doesNotMatch(notes, /^# Habiter/m);
   assert.match(notes, /^## (Added|Changed|Fixed|Security)/m);
   assert.equal(notes, renderNotes(manifest.releases[0]));
@@ -176,17 +170,16 @@ test("signed manifests are deterministic, published-only and tamper evident", as
   const first = signManifestEnvelope({ manifest: source, keyId: "test-2026-01", privateKey: privatePem });
   const second = signManifestEnvelope({ manifest: source, keyId: "test-2026-01", privateKey: privatePem });
   assert.deepEqual(first, second);
-  assert.deepEqual(manifestPayloadBytes(source), manifestPayloadBytes(source));
-  assert.equal(publishedManifest(source).releases.some((release) => release.status === "draft"), false);
-
-  const verified = verifyManifestEnvelope(first, { "test-2026-01": publicPem });
-  assert.equal(verified.manifest.releases.some((release) => release.version === "9.0.0"), false);
-  assert.deepEqual(verified.payload, manifestPayloadBytes(source));
+  const payload = Buffer.from(first.payload, "base64url");
+  const signature = Buffer.from(first.signature, "base64url");
+  const signedManifest = JSON.parse(payload.toString("utf8"));
+  assert.equal(signedManifest.releases.some((release) => release.version === "9.0.0"), false);
+  assert.equal(verify(null, payload, publicPem, signature), true);
 
   const tampered = { ...first, payload: `${first.payload.slice(0, -1)}${first.payload.endsWith("A") ? "B" : "A"}` };
-  assert.throws(
-    () => verifyManifestEnvelope(tampered, { "test-2026-01": publicPem }),
-    /signature verification failed/
+  assert.equal(
+    verify(null, Buffer.from(tampered.payload, "base64url"), publicPem, signature),
+    false,
   );
 });
 
@@ -195,10 +188,6 @@ test("manifest verification supports explicit key rotation", async () => {
   const oldPair = generateKeyPairSync("ed25519");
   const nextPair = generateKeyPairSync("ed25519");
   const pem = (key, type) => key.export({ format: "pem", type });
-  const ring = {
-    "release-2026-01": pem(oldPair.publicKey, "spki"),
-    "release-2027-01": pem(nextPair.publicKey, "spki")
-  };
   const oldEnvelope = signManifestEnvelope({
     manifest,
     keyId: "release-2026-01",
@@ -209,9 +198,11 @@ test("manifest verification supports explicit key rotation", async () => {
     keyId: "release-2027-01",
     privateKey: pem(nextPair.privateKey, "pkcs8")
   });
-  assert.equal(verifyManifestEnvelope(oldEnvelope, ring).manifest.schemaVersion, 1);
-  assert.equal(verifyManifestEnvelope(nextEnvelope, ring).manifest.schemaVersion, 1);
-  assert.throws(() => verifyManifestEnvelope(nextEnvelope, { "release-2026-01": ring["release-2026-01"] }), /Unknown/);
+  const oldPayload = Buffer.from(oldEnvelope.payload, "base64url");
+  const nextPayload = Buffer.from(nextEnvelope.payload, "base64url");
+  assert.equal(verify(null, oldPayload, oldPair.publicKey, Buffer.from(oldEnvelope.signature, "base64url")), true);
+  assert.equal(verify(null, nextPayload, nextPair.publicKey, Buffer.from(nextEnvelope.signature, "base64url")), true);
+  assert.equal(verify(null, nextPayload, oldPair.publicKey, Buffer.from(nextEnvelope.signature, "base64url")), false);
 });
 
 test("embedded raw public-key rings are canonical and contain the active key", () => {

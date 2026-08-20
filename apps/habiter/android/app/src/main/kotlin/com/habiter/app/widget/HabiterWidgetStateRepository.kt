@@ -2,7 +2,7 @@ package com.habiter.app.widget
 
 import android.content.SharedPreferences
 
-object HabiterWidgetStateRepository {
+internal object HabiterWidgetStateRepository {
     const val SNAPSHOT_KEY = "habiter_widget_snapshot"
     private val undoWindow = java.time.Duration.ofMinutes(5)
 

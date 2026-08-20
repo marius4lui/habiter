@@ -1,7 +1,7 @@
 import { apiError, json, withCache } from "./responses/http";
 import { defaultArchitecture, detectPlatform, parseArchitecture, parseDistro, parsePlatform } from "./services/platform";
 import { ReleaseService } from "./services/release-service";
-import { repositoryInstaller, type InstallerFetcher } from "./services/installer-source";
+import { repositoryInstaller, type InstallerBundle } from "./services/installer-source";
 import type { ReleaseChannel, ReleaseManifest, SignedManifestEnvelope } from "./types/releases";
 
 const shortCache = "public, max-age=60, s-maxage=300";
@@ -50,7 +50,7 @@ function manifestResponse(request: Request, envelope: SignedManifestEnvelope | u
 }
 
 /** Builds the complete read-only HTTP handler from immutable release data. */
-export function createHandler(manifest: ReleaseManifest, envelope?: SignedManifestEnvelope, installerFetcher: InstallerFetcher = fetch) {
+export function createHandler(manifest: ReleaseManifest, envelope?: SignedManifestEnvelope, installers: InstallerBundle = {}) {
   const releases = new ReleaseService(manifest);
 
   return async function handle(request: Request, env: Env): Promise<Response> {
@@ -64,7 +64,7 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
 
     if (url.pathname === "/install.sh" || url.pathname === "/install.ps1") {
       try {
-        return (await repositoryInstaller(url.pathname, request, installerFetcher))!;
+        return repositoryInstaller(url.pathname, request, installers)!;
       } catch {
         return new Response("Installer source is unavailable.\n", {
           status: 503,

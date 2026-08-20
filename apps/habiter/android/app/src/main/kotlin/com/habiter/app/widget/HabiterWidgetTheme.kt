@@ -3,7 +3,7 @@ package com.habiter.app.widget
 import androidx.glance.unit.ColorProvider
 import com.habiter.app.R
 
-object HabiterWidgetTheme {
+internal object HabiterWidgetTheme {
     val surface = ColorProvider(R.color.widget_surface)
     val surfaceAccent = ColorProvider(R.color.widget_surface_accent)
     val primary = ColorProvider(R.color.widget_primary)

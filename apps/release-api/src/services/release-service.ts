@@ -49,6 +49,30 @@ export class ReleaseService {
     ) ?? null;
   }
 
+  installArtifact(release: Release, platform: Platform, architecture: string): ReleaseArtifact | null {
+    const matches = release.artifacts.filter((artifact) =>
+      artifact.platform === platform
+      && (artifact.architecture === architecture || (platform === "macos" && artifact.architecture === "universal"))
+      && artifact.primary === true
+      && artifact.format
+      && artifact.url
+      && artifact.sha256
+      && artifact.size
+    );
+    return matches.length === 1 ? matches[0]! : null;
+  }
+
+  resolveInstall(platform: Platform, architecture: string, channel: ReleaseChannel, version?: string): { release: Release; artifact: ReleaseArtifact } | null {
+    const candidates = version
+      ? this.#published.filter((release) => release.version === version && release.channel === channel)
+      : this.#published.filter((release) => release.channel === channel);
+    for (const release of candidates) {
+      const artifact = this.installArtifact(release, platform, architecture);
+      if (artifact) return { release, artifact };
+    }
+    return null;
+  }
+
   checkUpdate(platform: Platform, currentVersion: string, currentBuild: number, channel: ReleaseChannel, now: Date) {
     const latest = this.latest(channel);
     if (!latest) return null;
@@ -60,7 +84,7 @@ export class ReleaseService {
       current: { version: currentVersion, buildNumber: currentBuild },
       target: { version: latest.version, buildNumber: latest.buildNumber },
       minimumSupportedVersion: latest.minimumSupportedVersion,
-      download: `/api/v1/download/${platform}`
+      download: `/api/v1/download/${platform}${channel === "beta" ? "?channel=beta" : ""}`
     };
   }
 }

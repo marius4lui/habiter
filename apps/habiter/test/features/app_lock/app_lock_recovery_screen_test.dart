@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/features/app_lock/domain/app_lock_gateway.dart';
+import 'package:habiter/features/app_lock/domain/app_block_candidate.dart';
+import 'package:habiter/features/app_lock/domain/app_block_projection.dart';
 import 'package:habiter/l10n/app_localizations.dart';
 import 'package:habiter/models/habit.dart';
 import 'package:habiter/models/locked_app.dart';
@@ -169,6 +171,10 @@ final class _AppLockGateway implements AppLockGateway {
       ]);
 
   @override
+  Future<AppLockResult<List<AppUsageRecord>>> recentUsage() async =>
+      const AppLockSuccess<List<AppUsageRecord>>(<AppUsageRecord>[]);
+
+  @override
   Future<AppLockResult<bool>> isBatteryOptimized() async =>
       const AppLockSuccess<bool>(false);
 
@@ -210,6 +216,14 @@ final class _AppLockGateway implements AppLockGateway {
     required List<String> incompleteHabitNames,
   }) async {
     completionStates.add(complete);
+    return const AppLockSuccess<void>(null);
+  }
+
+  @override
+  Future<AppLockResult<void>> publishProjections(
+    AppBlockProjectionSnapshot snapshot,
+  ) async {
+    completionStates.add(snapshot.blocked.isEmpty);
     return const AppLockSuccess<void>(null);
   }
 

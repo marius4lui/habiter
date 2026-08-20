@@ -12,9 +12,9 @@ A polished, local-first habit tracker for mobile, desktop, and web — built wit
 [![Platform builds](https://github.com/marius4lui/habiter/actions/workflows/platform-builds.yml/badge.svg?branch=main)](https://github.com/marius4lui/habiter/actions/workflows/platform-builds.yml)
 [![Release API](https://github.com/marius4lui/habiter/actions/workflows/worker-deploy.yml/badge.svg?branch=main)](https://github.com/marius4lui/habiter/actions/workflows/worker-deploy.yml)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44.8-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Version](https://img.shields.io/badge/version-1.4.0-6C63FF)](apps/habiter/pubspec.yaml)
+[![Latest release](https://img.shields.io/github/v/release/marius4lui/habiter?sort=semver&label=release&color=6C63FF)](https://github.com/marius4lui/habiter/releases/latest)
 
-[Website](https://habiter.dev) · [Download](https://get.habiter.dev/download) · [Documentation](docs/) · [Release API](https://get.habiter.dev/health)
+[Website](https://habiter.dev) · [Download](https://get.habiter.dev/download) · [Documentation](https://docs.habiter.dev) · [Release API](https://docs.habiter.dev/api/release-api)
 
 </div>
 
@@ -73,7 +73,7 @@ Responsive screens are tested at narrow widths and large text sizes. The interfa
 
 ## Download
 
-The smart download endpoint detects Android, Windows, Linux, or macOS and redirects to the matching artifact. Platform and architecture can also be selected explicitly through query parameters.
+The smart download endpoint sends Android to the signed direct artifact and desktop users to maintained platform instructions. Linux distribution routing is used only when an explicit distro hint exists; the local installer performs authoritative detection from `/etc/os-release`.
 
 <div align="center">
 
@@ -82,6 +82,16 @@ The smart download endpoint detects Android, Windows, Linux, or macOS and redire
 `https://get.habiter.dev/download`
 
 </div>
+
+Checksum-verifying user-scoped installers and manual instructions are available in the [installation guide](docs/install/README.md):
+
+```sh
+curl -fsSL https://get.habiter.dev/install.sh | sh
+```
+
+```powershell
+irm https://get.habiter.dev/install.ps1 | iex
+```
 
 ## Repository
 
@@ -128,8 +138,6 @@ A concise view of the released baseline and upcoming product milestones.
 
 - Keep App Block UI scoped to the currently blocked foreground app and align it with Habiter's product language.
 
-### Upcoming
-
 **v1.4.4 — Linux startup stability (Stable)**
 
 - Fix the Linux startup crash caused by unguarded Home Widget initialization.
@@ -137,6 +145,14 @@ A concise view of the released baseline and upcoming product milestones.
 **v1.5.0 — Premium automatic update system (Stable)**
 
 - Deliver a signed, localized update experience with safe direct Android downloads and user-controlled installation.
+
+**v1.5.1 — Android update-check reliability (Stable)**
+
+- Use a constrained native Android transport for signed release-manifest checks.
+- Preserve the existing desktop transport for Linux, Windows and macOS.
+- Expose the underlying update-check failure instead of only a generic status.
+
+### Upcoming
 
 **v1.6.0 — Distribution and installers (Stable)**
 
@@ -192,19 +208,27 @@ flutter run
 ```bash
 # Flutter
 cd apps/habiter
+flutter pub get --enforce-lockfile
+flutter gen-l10n
 dart format --output=none --set-exit-if-changed .
 flutter analyze --fatal-infos
-flutter test
+flutter test --coverage
 
 # Worker, release tooling, and website
 cd ../..
 pnpm install --frozen-lockfile
+pnpm roadmap:check
 pnpm release:validate
 pnpm release:test
 pnpm website:check
 pnpm --filter @habiter/release-api types
 pnpm --filter @habiter/release-api check
 pnpm --filter @habiter/release-api deploy:dry
+
+# Documentation
+cd docs
+npm ci
+npm run docs:check
 ```
 
 ### Run the website
@@ -225,12 +249,19 @@ Open `http://localhost:3000`. Use `pnpm website:check` for the complete website 
 | `GET /api/v1/releases` | Paginated published releases |
 | `GET /api/v1/releases/latest` | Latest release for a channel |
 | `GET /api/v1/releases/:version` | One concrete release |
+| `GET /api/v1/releases/:version/downloads` | Artifacts for one concrete release |
 | `GET /api/v1/manifest` | ETag-aware Ed25519-signed update manifest envelope |
 | `GET /api/v1/update/:platform` | Version and build update decision |
 | `GET /api/v1/download/:platform` | Latest platform download |
-| `GET /download` | User-Agent-aware download redirect |
+| `GET /api/v1/download/:platform/:architecture` | Latest matching platform download |
+| `GET /api/v1/install/:platform/:architecture` | Complete primary installer artifact contract |
+| `GET /install.sh` | Allow-listed repository POSIX installer |
+| `GET /install.ps1` | Allow-listed repository PowerShell installer |
+| `GET /download` | Explicit platform/distro or broad User-Agent smart route |
 
 Concrete release responses are immutable; latest, update, and download decisions use short cache windows. Errors share a stable JSON contract with a request ID.
+
+See the [complete Release API reference](https://docs.habiter.dev/api/release-api) for parameters, schemas, status codes, caching, redirects, and verification guidance.
 
 ## Delivery model
 

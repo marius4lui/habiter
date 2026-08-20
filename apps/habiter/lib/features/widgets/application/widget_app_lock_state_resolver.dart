@@ -5,7 +5,7 @@ import '../../../core/persistence/storage_envelope.dart';
 import '../../../core/time/local_date.dart';
 import '../../../models/habit.dart';
 import '../../../models/locked_app.dart';
-import '../../today/application/today_query.dart';
+import '../../app_lock/application/app_block_gate_evaluator.dart';
 import '../domain/widget_snapshot.dart';
 
 final class WidgetAppLockStateResolver {
@@ -22,19 +22,23 @@ final class WidgetAppLockStateResolver {
   }) async {
     final config = await _readConfig();
     if (config == null || !config.isEnabled) return null;
-    final today = TodayQuery.forDate(
-      date: date,
-      habits: habits,
-      entries: entries,
-    );
-    final required = (config.requiredHabitIds ?? const <String>[]).toSet();
-    final incomplete = today.pending
-        .where(
-          (habit) =>
-              config.lockUntilAllHabitsComplete || required.contains(habit.id),
-        )
-        .map((habit) => habit.name)
-        .toList(growable: false);
+    const evaluator = AppBlockGateEvaluator();
+    final incomplete =
+        config.activeRules
+            .expand(
+              (rule) => evaluator
+                  .evaluate(
+                    requirement: rule.requirement,
+                    date: date,
+                    habits: habits,
+                    entries: entries,
+                  )
+                  .blockers,
+            )
+            .map((gate) => gate.habitName)
+            .toSet()
+            .toList(growable: false)
+          ..sort();
     return WidgetAppLockState(
       complete: incomplete.isEmpty,
       incompleteHabitNames: incomplete,

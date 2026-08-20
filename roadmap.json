@@ -83,9 +83,9 @@
     {
       "version": "1.4.4",
       "title": "Linux startup stability",
-      "status": "planned",
+      "status": "released",
       "channel": "stable",
-      "target": "Before v1.5.0 release-candidate completion",
+      "statusText": "Released as a focused stable patch.",
       "issues": [21],
       "summary": ["Fix the Linux startup crash caused by unguarded Home Widget initialization."],
       "scope": [
@@ -104,9 +104,9 @@
     {
       "version": "1.5.0",
       "title": "Premium automatic update system",
-      "status": "planned",
+      "status": "released",
       "channel": "stable",
-      "target": "After successful RC and real-device testing",
+      "statusText": "Released as the stable automatic-update baseline.",
       "summary": [
         "Deliver a signed, localized update experience with safe direct Android downloads and user-controlled installation."
       ],
@@ -124,6 +124,22 @@
         "Real-device direct upgrade, store routing, metered and unmetered networks, installer denial, offline mandatory mode and process recovery."
       ],
       "note": "Older clients install v1.5 manually once; automatic updates are supported from v1.5 onward. Stable publication is gated on successful RC and real-device acceptance."
+    },
+    {
+      "version": "1.5.1",
+      "title": "Android update-check reliability",
+      "status": "released",
+      "channel": "stable",
+      "statusText": "Released as a focused stable follow-up to v1.5.0.",
+      "summary": [
+        "Use a constrained native Android transport for signed release-manifest checks.",
+        "Preserve the existing desktop transport for Linux, Windows and macOS.",
+        "Expose the underlying update-check failure instead of only a generic status."
+      ],
+      "scope": [
+        "Fix Android update checks on custom ROMs where the Dart runtime cannot resolve the manifest host.",
+        "Restrict the native transport to HTTPS, no redirects, bounded response size and bounded connection and read timeouts."
+      ]
     },
     {
       "version": "1.6.0",

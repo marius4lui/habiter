@@ -26,6 +26,21 @@ Package visibility is scoped to launcher apps rather than `QUERY_ALL_PACKAGES`.
 The foreground-service `specialUse` declaration and App Lock behavior must be
 reviewed against the applicable store policy before distribution.
 
+## Guided setup and per-app rules
+
+The optional guided setup explains Usage Access and overlay access before it
+opens either Android settings screen. A first decline leads to one respectful
+second explanation; a second decline exits immediately. Draft progress is
+feature-local and resumable after process recreation, so the parent onboarding
+depends only on the `enabled`, `skipped`, or `deferred` result.
+
+Recommendations combine seven days of local foreground usage, a versioned local
+package catalog, and recency. They never auto-select an app. Every selected app
+has its own general-focus or specific-habit requirement. Dart evaluates daily,
+fixed-weekday, and flexible weekly schedules and publishes only current
+per-package blockers to Android. Missing projections and revoked permissions
+fail open.
+
 ## Manual verification
 
 - Android 13–16 permission grant/revocation and one-tap disable.
@@ -38,3 +53,5 @@ reviewed against the applicable store policy before distribution.
 - Gesture navigation, rotation, landscape, and 200 percent font scaling.
 
 No claim is made that every OEM will preserve the service indefinitely.
+
+The serialized Flutter/native boundary is documented under [Platform-channel contracts](/dev/platform-contracts#app-lock).

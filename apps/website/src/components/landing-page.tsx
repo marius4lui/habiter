@@ -45,7 +45,7 @@ export function LandingPage() {
     <section className="hero">
       <div className="container hero-content">
         <div className="beta-pill" data-reveal>
-          Habiter 1.1 · Stable
+          Aktueller Stable-Release
         </div>
         <h1 data-reveal>
           <span className="quiet">

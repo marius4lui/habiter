@@ -11,6 +11,8 @@ Import supported school events from a trusted Classly-compatible service as habi
 
 Imported items retain source metadata so repeated syncs can reconcile them rather than creating uncontrolled duplicates.
 
+Service operators can implement the exact three-route protocol from the [Classly-compatible API reference](/api/classly-compatible).
+
 ::: warning Trust boundary
 Only connect to a service you recognize. Login and event data are handled by that service under its own privacy and availability terms.
 :::

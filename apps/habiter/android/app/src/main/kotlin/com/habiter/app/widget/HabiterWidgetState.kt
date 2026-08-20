@@ -6,7 +6,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
-data class HabiterWidgetHabit(
+internal data class HabiterWidgetHabit(
     val id: String,
     val name: String,
     val icon: String,
@@ -14,19 +14,19 @@ data class HabiterWidgetHabit(
     val scheduleLabel: String,
 )
 
-data class HabiterWidgetCompletion(
+internal data class HabiterWidgetCompletion(
     val habitId: String,
     val habitName: String,
     val actionId: String,
     val completedAt: Instant,
 )
 
-data class HabiterWidgetAppLockState(
+internal data class HabiterWidgetAppLockState(
     val complete: Boolean,
     val incompleteHabitNames: Set<String>,
 )
 
-data class HabiterWidgetState(
+internal data class HabiterWidgetState(
     val schemaVersion: Int,
     val generatedAt: Instant,
     val localDate: String,
@@ -110,7 +110,7 @@ data class HabiterWidgetState(
     }
 }
 
-sealed interface HabiterWidgetContentState {
+internal sealed interface HabiterWidgetContentState {
     data object Missing : HabiterWidgetContentState
     data class Stale(val state: HabiterWidgetState? = null) : HabiterWidgetContentState
     data class NoHabits(val state: HabiterWidgetState) : HabiterWidgetContentState

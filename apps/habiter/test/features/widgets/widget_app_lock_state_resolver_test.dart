@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/core/time/local_date.dart';
+import 'package:habiter/features/app_lock/domain/app_block_rule.dart';
 import 'package:habiter/features/widgets/application/widget_app_lock_state_resolver.dart';
 import 'package:habiter/models/habit.dart';
 import 'package:habiter/models/locked_app.dart';
@@ -12,10 +13,15 @@ void main() {
   test('last required widget completion unlocks app lock projection', () async {
     final store = InMemoryKeyValueStore(<String, Object?>{
       WidgetAppLockStateResolver.configKey: jsonEncode(
-        const AppLockConfig(
+        AppLockConfig(
           isEnabled: true,
-          lockUntilAllHabitsComplete: false,
-          requiredHabitIds: <String>['training'],
+          rules: <AppBlockRule>[
+            AppBlockRule(
+              packageName: 'example.app',
+              appName: 'Example',
+              requirement: HabitRequirement(<String>['training']),
+            ),
+          ],
         ).toMap(),
       ),
     });

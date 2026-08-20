@@ -40,9 +40,8 @@ class AppLockPolicyTest {
                 enabled = true,
                 hasUsageAccess = true,
                 hasOverlayAccess = true,
-                habitsComplete = false,
                 foregroundPackage = "app.blocked.a",
-                lockedPackages = emptySet(),
+                blockedPackages = emptySet(),
             ),
         )
     }
@@ -60,11 +59,7 @@ class AppLockPolicyTest {
     }
 
     @Test
-    fun completedHabitsDisabledFeatureOrRevokedPermissionDismissesTheUi() {
-        assertEquals(
-            BlockingUiState.Hidden,
-            resolve(foregroundPackage = "app.blocked.a", habitsComplete = true),
-        )
+    fun disabledFeatureRevokedPermissionOrOpenProjectionDismissesTheUi() {
         assertEquals(
             BlockingUiState.Hidden,
             resolve(foregroundPackage = "app.blocked.a", enabled = false),
@@ -84,13 +79,12 @@ class AppLockPolicyTest {
         enabled: Boolean = true,
         hasUsageAccess: Boolean = true,
         hasOverlayAccess: Boolean = true,
-        habitsComplete: Boolean = false,
+        blockedPackages: Set<String> = setOf("app.blocked.a", "app.blocked.b"),
     ) = AppLockPolicy.blockingUiState(
         enabled = enabled,
         hasUsageAccess = hasUsageAccess,
         hasOverlayAccess = hasOverlayAccess,
-        habitsComplete = habitsComplete,
         foregroundPackage = foregroundPackage,
-        lockedPackages = setOf("app.blocked.a", "app.blocked.b"),
+        blockedPackages = blockedPackages,
     )
 }

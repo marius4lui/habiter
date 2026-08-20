@@ -121,9 +121,8 @@ class AppMonitorService : Service() {
     
     private fun checkForegroundApp() {
         val isEnabled = prefs.getBoolean("is_enabled", false)
-        val habitsComplete = prefs.getBoolean("habits_complete", false)
-        
-        val lockedPackages = prefs.getStringSet("locked_packages", emptySet())?.toSet() ?: emptySet()
+        val blockedPackages = prefs.getStringSet("projected_blocked_packages", emptySet())
+            ?.toSet() ?: emptySet()
         val usageAccess = hasUsageStatsPermission()
         val overlayAccess = Settings.canDrawOverlays(this)
 
@@ -136,9 +135,8 @@ class AppMonitorService : Service() {
             enabled = isEnabled,
             hasUsageAccess = usageAccess,
             hasOverlayAccess = overlayAccess,
-            habitsComplete = habitsComplete,
             foregroundPackage = observedForegroundPackage,
-            lockedPackages = lockedPackages,
+            blockedPackages = blockedPackages,
         )
         when (uiState) {
             BlockingUiState.Hidden -> BlockingOverlay.dismiss()
@@ -210,7 +208,7 @@ class AppMonitorService : Service() {
         }
         
         // Get incomplete habit names from SharedPreferences
-        val incompleteHabits = prefs.getStringSet("incomplete_habits", emptySet())
+        val incompleteHabits = prefs.getStringSet("projection_blockers_$blockedPackage", emptySet())
             ?.sortedWith(String.CASE_INSENSITIVE_ORDER) ?: emptyList()
         
         BlockingOverlay.show(

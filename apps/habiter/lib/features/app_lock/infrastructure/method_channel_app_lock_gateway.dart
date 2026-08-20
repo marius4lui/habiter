@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../../../models/locked_app.dart';
+import '../domain/app_block_candidate.dart';
+import '../domain/app_block_projection.dart';
 import '../domain/app_lock_gateway.dart';
 
 final class MethodChannelAppLockGateway implements AppLockGateway {
@@ -40,6 +42,31 @@ final class MethodChannelAppLockGateway implements AppLockGateway {
           })
           .toList(growable: false);
     },
+  );
+
+  @override
+  Future<AppLockResult<List<AppUsageRecord>>> recentUsage() => _invoke(
+    'getRecentUsage',
+    decode: (value) => ((value as List<dynamic>?) ?? const <dynamic>[])
+        .whereType<Map>()
+        .map((item) {
+          final map = Map<String, dynamic>.from(item);
+          return AppUsageRecord(
+            packageName: map['packageName'] as String? ?? '',
+            appName: map['appName'] as String? ?? '',
+            foregroundDuration: Duration(
+              milliseconds:
+                  (map['foregroundMilliseconds'] as num?)?.toInt() ?? 0,
+            ),
+            lastUsed: switch ((map['lastUsedMilliseconds'] as num?)?.toInt()) {
+              final int value when value > 0 =>
+                DateTime.fromMillisecondsSinceEpoch(value),
+              _ => null,
+            },
+          );
+        })
+        .where((record) => record.packageName.isNotEmpty)
+        .toList(growable: false),
   );
 
   @override
@@ -109,6 +136,11 @@ final class MethodChannelAppLockGateway implements AppLockGateway {
     if (names is AppLockFailure<void>) return names;
     return _void(complete ? 'habitsComplete' : 'habitsIncomplete');
   }
+
+  @override
+  Future<AppLockResult<void>> publishProjections(
+    AppBlockProjectionSnapshot snapshot,
+  ) => _void('updateGateProjections', arguments: snapshot.toMap());
 
   @override
   Future<AppLockResult<bool>> isBatteryOptimized() =>

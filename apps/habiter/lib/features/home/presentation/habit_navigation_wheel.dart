@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
@@ -138,7 +139,7 @@ class _HabitNavigationWheelState extends State<HabitNavigationWheel>
                     onHorizontalDragUpdate: (details) {
                       _position.value -= details.delta.dx / _dragExtent;
                     },
-                    onHorizontalDragEnd: (_) => _snapToNearest(),
+                    onHorizontalDragEnd: _settleAfterDrag,
                     onHorizontalDragCancel: _snapToNearest,
                     child: Stack(
                       clipBehavior: Clip.none,
@@ -149,7 +150,7 @@ class _HabitNavigationWheelState extends State<HabitNavigationWheel>
                           top:
                               (constraints.maxWidth * .43).clamp(138.0, 172.0) *
                                   .94 +
-                              28,
+                              12,
                           label: context.l10n.habitHubOpenDestination(
                             _label(
                               context,
@@ -205,82 +206,176 @@ class _HabitNavigationWheelState extends State<HabitNavigationWheel>
     final destination = habitHubDestinations[index];
     final delta = _deltaFor(index);
     final angle = delta * .36;
-    final scale = (1 - delta.abs() * .12).clamp(.72, 1.0);
+    final focus = (1 - delta.abs()).clamp(0.0, 1.0);
+    final depth = (1 - delta.abs() / 2.45).clamp(0.0, 1.0);
+    final easedFocus = Curves.easeOutCubic.transform(focus);
+    final scale = .84 + easedFocus * .16;
     final left = width / 2 + math.sin(angle) * radius - cardWidth / 2;
-    final top = 8 + (1 - math.cos(angle)) * radius * .58;
+    final top = -10 + (1 - math.cos(angle)) * radius * .62;
     final selected = index == _nearestIndex;
     final label = _label(context, destination);
+    final paper = _paperColor(context, destination);
+    final dark = _isDark(context);
 
     return Positioned(
       left: left,
       top: top,
       width: cardWidth,
       height: cardHeight,
-      child: Transform.rotate(
-        angle: delta * .16,
-        alignment: Alignment.bottomCenter,
-        child: Transform.scale(
-          scale: scale,
+      child: Opacity(
+        opacity: .66 + depth * .34,
+        child: Transform.rotate(
+          angle: delta * .13,
           alignment: Alignment.bottomCenter,
-          child: Semantics(
-            button: true,
-            selected: selected,
-            label: context.l10n.habitHubWheelPosition(label, index + 1, _count),
-            onTap: () => _onCardTap(index),
-            child: ExcludeSemantics(
-              child: Material(
-                key: Key('hub-wheel-card-${destination.name}'),
-                color: _paperColor(context, destination),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  side: BorderSide(
-                    color: _isDark(context)
-                        ? Colors.white.withValues(alpha: .12)
-                        : Colors.white.withValues(alpha: .72),
+          child: Transform.scale(
+            scale: scale,
+            alignment: Alignment.bottomCenter,
+            child: Semantics(
+              button: true,
+              selected: selected,
+              label: context.l10n.habitHubWheelPosition(
+                label,
+                index + 1,
+                _count,
+              ),
+              onTap: () => _onCardTap(index),
+              child: ExcludeSemantics(
+                child: AnimatedContainer(
+                  key: Key('hub-wheel-card-${destination.name}'),
+                  duration: context.reduceMotion
+                      ? Duration.zero
+                      : HabiterMotion.quick.normal,
+                  curve: HabiterMotion.quick.curve,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(32),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: dark
+                          ? <Color>[
+                              Color.lerp(paper, Colors.white, .055)!,
+                              Color.lerp(paper, Colors.black, .045)!,
+                            ]
+                          : <Color>[
+                              Color.lerp(paper, Colors.white, .68)!,
+                              paper,
+                            ],
+                    ),
+                    border: Border.all(
+                      color: dark
+                          ? Colors.white.withValues(alpha: selected ? .20 : .11)
+                          : Colors.white.withValues(
+                              alpha: selected ? .96 : .72,
+                            ),
+                      width: selected ? 1.4 : 1,
+                    ),
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: selected ? .17 : .07,
+                        ),
+                        blurRadius: selected ? 24 : 12,
+                        offset: Offset(0, selected ? 12 : 7),
+                      ),
+                      if (selected)
+                        BoxShadow(
+                          color: _iconColor(
+                            destination,
+                          ).withValues(alpha: dark ? .12 : .18),
+                          blurRadius: 30,
+                          spreadRadius: -8,
+                        ),
+                    ],
                   ),
-                ),
-                elevation: selected ? 2 : 0,
-                shadowColor: Colors.black.withValues(alpha: .14),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: () => _onCardTap(index),
-                  child: MediaQuery.withClampedTextScaling(
-                    maxScaleFactor: 1.3,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: _iconColor(destination),
-                              shape: BoxShape.circle,
-                            ),
-                            child: SizedBox.square(
-                              dimension: selected ? 52 : 46,
-                              child: Icon(
-                                _icon(destination),
-                                color: const Color(0xff171717),
-                                size: selected ? 26 : 23,
+                  clipBehavior: Clip.antiAlias,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _onCardTap(index),
+                      splashColor: _iconColor(
+                        destination,
+                      ).withValues(alpha: .16),
+                      highlightColor: Colors.white.withValues(alpha: .10),
+                      child: MediaQuery.withClampedTextScaling(
+                        maxScaleFactor: 1.3,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 13, 14, 11),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              AnimatedContainer(
+                                duration: context.reduceMotion
+                                    ? Duration.zero
+                                    : HabiterMotion.quick.normal,
+                                width: selected ? 56 : 48,
+                                height: selected ? 56 : 48,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: <Color>[
+                                      Color.lerp(
+                                        _iconColor(destination),
+                                        Colors.white,
+                                        .34,
+                                      )!,
+                                      _iconColor(destination),
+                                    ],
+                                  ),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: .58),
+                                  ),
+                                  boxShadow: <BoxShadow>[
+                                    BoxShadow(
+                                      color: _iconColor(
+                                        destination,
+                                      ).withValues(alpha: .28),
+                                      blurRadius: 14,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  _icon(destination),
+                                  color: const Color(0xff171717),
+                                  size: selected ? 27 : 23,
+                                ),
                               ),
-                            ),
+                              const SizedBox(height: 11),
+                              Text(
+                                label,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: dark
+                                      ? const Color(0xfff7f1e8)
+                                      : const Color(0xff171717),
+                                  fontSize: selected ? 13.5 : 12.5,
+                                  height: 1.05,
+                                  letterSpacing: -.18,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const Spacer(),
+                              AnimatedContainer(
+                                duration: context.reduceMotion
+                                    ? Duration.zero
+                                    : HabiterMotion.quick.normal,
+                                curve: HabiterMotion.quick.curve,
+                                width: selected ? 34 : 18,
+                                height: 3,
+                                decoration: BoxDecoration(
+                                  color: _iconColor(
+                                    destination,
+                                  ).withValues(alpha: selected ? .88 : .40),
+                                  borderRadius: BorderRadius.circular(99),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 10),
-                          Text(
-                            label,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: _isDark(context)
-                                  ? const Color(0xfff7f1e8)
-                                  : const Color(0xff171717),
-                              fontSize: 13,
-                              height: 1.08,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -304,6 +399,38 @@ class _HabitNavigationWheelState extends State<HabitNavigationWheel>
   }
 
   void _snapToNearest() => _selectRaw(_position.value.round());
+
+  void _settleAfterDrag(DragEndDetails details) {
+    final velocity = (-(details.primaryVelocity ?? 0) / _dragExtent).clamp(
+      -8.0,
+      8.0,
+    );
+    final nearest = _position.value.round();
+    final projected = (_position.value + velocity * .16).round();
+    final target = projected.clamp(nearest - 2, nearest + 2);
+    _settleWithSpring(target, velocity);
+  }
+
+  void _settleWithSpring(int target, double velocity) {
+    if (context.reduceMotion) {
+      _position.value = target.toDouble();
+      _commit(target);
+      return;
+    }
+    unawaited(
+      _position
+          .animateWith(
+            SpringSimulation(
+              const SpringDescription(mass: 1, stiffness: 430, damping: 34),
+              _position.value,
+              target.toDouble(),
+              velocity,
+              tolerance: const Tolerance(distance: .001, velocity: .015),
+            ),
+          )
+          .then((_) => _commit(target)),
+    );
+  }
 
   void _selectRaw(int target) {
     final reduced = context.reduceMotion;

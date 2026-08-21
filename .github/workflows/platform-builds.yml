@@ -82,6 +82,7 @@ jobs:
           cache: true
       - run: flutter pub get --enforce-lockfile
       - run: flutter build ${{ matrix.target }} --release
+      - run: flutter test test/features/updates/io_desktop_update_installer_test.dart
 
   ios:
     name: Build iOS without signing

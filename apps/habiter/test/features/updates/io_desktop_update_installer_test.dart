@@ -25,62 +25,66 @@ void main() {
     if (await fixture.exists()) await fixture.delete(recursive: true);
   });
 
-  test('Linux handoff verifies, replaces atomically, and restarts', () async {
-    String? command;
-    List<String>? arguments;
-    final payload = File('${helperRoot.path}/next.AppImage');
-    final marker = File('${fixture.path}/started');
-    await payload.writeAsString(
-      '#!/bin/sh\nprintf updated > "${marker.path}"\nsleep 4\n',
-    );
-    final digest = sha256.convert(await payload.readAsBytes()).toString();
-    final installer = IoDesktopUpdateInstaller(
-      helperDirectory: helperRoot,
-      platformOverride: 'linux',
-      environment: {'APPIMAGE': executable.path},
-      processIdOverride: 999999,
-      launcher: (value, args) async {
-        command = value;
-        arguments = args;
-        return true;
-      },
-    );
+  test(
+    'Linux handoff verifies, replaces atomically, and restarts',
+    () async {
+      String? command;
+      List<String>? arguments;
+      final payload = File('${helperRoot.path}/next.AppImage');
+      final marker = File('${fixture.path}/started');
+      await payload.writeAsString(
+        '#!/bin/sh\nprintf updated > "${marker.path}"\nsleep 4\n',
+      );
+      final digest = sha256.convert(await payload.readAsBytes()).toString();
+      final installer = IoDesktopUpdateInstaller(
+        helperDirectory: helperRoot,
+        platformOverride: 'linux',
+        environment: {'APPIMAGE': executable.path},
+        processIdOverride: 999999,
+        launcher: (value, args) async {
+          command = value;
+          arguments = args;
+          return true;
+        },
+      );
 
-    expect(installer.canInstall('linux'), isTrue);
-    expect(
-      await installer.launch(
-        DesktopInstallRequest(
-          platform: 'linux',
-          payloadPath: payload.path,
-          sha256: digest,
-          size: await payload.length(),
-          version: '1.8.0',
-          signed: false,
-          errorPath: '${helperRoot.path}/install.error',
+      expect(installer.canInstall('linux'), isTrue);
+      expect(
+        await installer.launch(
+          DesktopInstallRequest(
+            platform: 'linux',
+            payloadPath: payload.path,
+            sha256: digest,
+            size: await payload.length(),
+            version: '1.8.0',
+            signed: false,
+            errorPath: '${helperRoot.path}/install.error',
+          ),
         ),
-      ),
-      isTrue,
-    );
-    expect(command, '/bin/sh');
-    final helper = File(arguments!.first);
-    final script = await helper.readAsString();
-    expect(script, contains('sha256sum'));
-    expect(script, contains('.Habiter.AppImage.backup-'));
-    expect(script, contains('kill -0'));
+        isTrue,
+      );
+      expect(command, '/bin/sh');
+      final helper = File(arguments!.first);
+      final script = await helper.readAsString();
+      expect(script, contains('sha256sum'));
+      expect(script, contains('.Habiter.AppImage.backup-'));
+      expect(script, contains('kill -0'));
 
-    final rejectedArguments = [...arguments!]
-      ..[5] = List.filled(64, '0').join();
-    final rejected = await Process.run(command!, rejectedArguments);
-    expect(rejected.exitCode, isNot(0));
-    expect(await executable.readAsString(), contains('exit 0'));
-    await File('${helperRoot.path}/install.error').delete();
+      final rejectedArguments = [...arguments!]
+        ..[5] = List.filled(64, '0').join();
+      final rejected = await Process.run(command!, rejectedArguments);
+      expect(rejected.exitCode, isNot(0));
+      expect(await executable.readAsString(), contains('exit 0'));
+      await File('${helperRoot.path}/install.error').delete();
 
-    final result = await Process.run(command!, arguments!);
-    expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
-    expect(await executable.readAsString(), await payload.readAsString());
-    expect(await marker.exists(), isTrue);
-    expect(await File('${helperRoot.path}/install.error').exists(), isFalse);
-  });
+      final result = await Process.run(command!, arguments!);
+      expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
+      expect(await executable.readAsString(), await payload.readAsString());
+      expect(await marker.exists(), isTrue);
+      expect(await File('${helperRoot.path}/install.error').exists(), isFalse);
+    },
+    skip: Platform.isWindows,
+  );
 
   test(
     'Linux handoff restores the previous AppImage on startup failure',
@@ -120,6 +124,7 @@ void main() {
       expect(await executable.readAsString(), original);
       expect((await error.readAsString()).trim(), 'install_failed');
     },
+    skip: Platform.isWindows,
   );
 
   test('ownership scope fails closed', () async {
@@ -196,8 +201,14 @@ void main() {
       expect(command, '/bin/sh');
       expect(arguments, contains(manifest.resolveSymbolicLinksSync()));
       final script = await File(arguments!.first).readAsString();
-      final syntax = await Process.run('/bin/sh', ['-n', arguments!.first]);
-      expect(syntax.exitCode, 0, reason: '${syntax.stdout}\n${syntax.stderr}');
+      if (!Platform.isWindows) {
+        final syntax = await Process.run('/bin/sh', ['-n', arguments!.first]);
+        expect(
+          syntax.exitCode,
+          0,
+          reason: '${syntax.stdout}\n${syntax.stderr}',
+        );
+      }
       expect(script, contains('codesign --verify --deep --strict'));
       expect(script, contains('TeamIdentifier='));
       expect(script, contains('spctl --assess --type execute'));
@@ -269,6 +280,21 @@ void main() {
       );
       final helperPath = arguments![arguments!.indexOf('-File') + 1];
       final script = await File(helperPath).readAsString();
+      if (Platform.isWindows) {
+        final syntax = await Process.run('powershell.exe', [
+          '-NoLogo',
+          '-NoProfile',
+          '-NonInteractive',
+          '-Command',
+          r'& { param($Path) [scriptblock]::Create((Get-Content -LiteralPath $Path -Raw)) | Out-Null }',
+          helperPath,
+        ]);
+        expect(
+          syntax.exitCode,
+          0,
+          reason: '${syntax.stdout}\n${syntax.stderr}',
+        );
+      }
       expect(script, contains('Get-FileHash'));
       expect(script, contains('Get-AuthenticodeSignature'));
       expect(script, contains('ReparsePoint'));

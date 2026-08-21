@@ -3901,6 +3901,108 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Sync-Hinweis'**
   String get widgetStyleSyncMessage;
+
+  /// No description provided for @widgetLivePreview.
+  ///
+  /// In de, this message translates to:
+  /// **'Live-Vorschau'**
+  String get widgetLivePreview;
+
+  /// No description provided for @widgetLivePreviewSemantics.
+  ///
+  /// In de, this message translates to:
+  /// **'Live-Widget-Vorschau in Größe {size}'**
+  String widgetLivePreviewSemantics(String size);
+
+  /// No description provided for @widgetPreviewEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine passenden Habits für dieses Widget.'**
+  String get widgetPreviewEmpty;
+
+  /// No description provided for @widgetScheduleCustom.
+  ///
+  /// In de, this message translates to:
+  /// **'Bestimmte Tage'**
+  String get widgetScheduleCustom;
+
+  /// No description provided for @widgetPresets.
+  ///
+  /// In de, this message translates to:
+  /// **'Presets und Wiederverwendung'**
+  String get widgetPresets;
+
+  /// No description provided for @widgetPreset.
+  ///
+  /// In de, this message translates to:
+  /// **'Preset'**
+  String get widgetPreset;
+
+  /// No description provided for @widgetPresetDefault.
+  ///
+  /// In de, this message translates to:
+  /// **'Standard'**
+  String get widgetPresetDefault;
+
+  /// No description provided for @widgetPresetMinimal.
+  ///
+  /// In de, this message translates to:
+  /// **'Minimal'**
+  String get widgetPresetMinimal;
+
+  /// No description provided for @widgetPresetFocus.
+  ///
+  /// In de, this message translates to:
+  /// **'Focus'**
+  String get widgetPresetFocus;
+
+  /// No description provided for @widgetPresetDenseList.
+  ///
+  /// In de, this message translates to:
+  /// **'Dichte Liste'**
+  String get widgetPresetDenseList;
+
+  /// No description provided for @widgetPresetDashboard.
+  ///
+  /// In de, this message translates to:
+  /// **'Dashboard'**
+  String get widgetPresetDashboard;
+
+  /// No description provided for @widgetResetDefault.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf Standard zurücksetzen'**
+  String get widgetResetDefault;
+
+  /// No description provided for @widgetCopySettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen von Widget kopieren'**
+  String get widgetCopySettings;
+
+  /// No description provided for @widgetDuplicateConfiguration.
+  ///
+  /// In de, this message translates to:
+  /// **'Konfiguration duplizieren'**
+  String get widgetDuplicateConfiguration;
+
+  /// No description provided for @widgetCopyFrom.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen kopieren von…'**
+  String get widgetCopyFrom;
+
+  /// No description provided for @widgetDuplicateTo.
+  ///
+  /// In de, this message translates to:
+  /// **'Konfiguration duplizieren nach…'**
+  String get widgetDuplicateTo;
+
+  /// No description provided for @widgetDuplicated.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Konfiguration wurde dupliziert.'**
+  String get widgetDuplicated;
 }
 
 class _AppLocalizationsDelegate

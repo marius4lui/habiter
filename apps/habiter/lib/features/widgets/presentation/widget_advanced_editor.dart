@@ -884,6 +884,7 @@ class _EnumField<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DropdownButtonFormField<T>(
+    key: ValueKey<T>(value),
     initialValue: value,
     isExpanded: true,
     decoration: InputDecoration(labelText: label),

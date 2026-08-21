@@ -63,7 +63,10 @@ class _WidgetManagementScreenState extends State<WidgetManagementScreen> {
     setState(() => _instances = _gateway.listWidgetInstances());
   }
 
-  Future<void> _openEditor(WidgetInstance instance) async {
+  Future<void> _openEditor(
+    WidgetInstance instance,
+    List<WidgetInstance> instances,
+  ) async {
     final configurationLaunch = _configurationLaunchId == instance.widgetId;
     await Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
@@ -71,6 +74,9 @@ class _WidgetManagementScreenState extends State<WidgetManagementScreen> {
           instance: instance,
           habits: widget.habits ?? context.read<HabitProvider>().habits,
           gateway: _gateway,
+          otherInstances: instances
+              .where((candidate) => candidate.widgetId != instance.widgetId)
+              .toList(growable: false),
           configurationLaunch: configurationLaunch,
         ),
       ),
@@ -86,7 +92,7 @@ class _WidgetManagementScreenState extends State<WidgetManagementScreen> {
     if (matching == null) return;
     _openedConfigurationLaunch = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) unawaited(_openEditor(matching));
+      if (mounted) unawaited(_openEditor(matching, instances));
     });
   }
 
@@ -165,7 +171,7 @@ class _WidgetManagementScreenState extends State<WidgetManagementScreen> {
                       padding: const EdgeInsets.only(bottom: HabiterSpace.md),
                       child: _WidgetInstanceCard(
                         instance: instance,
-                        onTap: () => _openEditor(instance),
+                        onTap: () => _openEditor(instance, instances),
                       ),
                     ),
                   ),

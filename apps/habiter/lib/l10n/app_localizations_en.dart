@@ -2101,4 +2101,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetStyleSyncMessage => 'Sync message';
+
+  @override
+  String get widgetLivePreview => 'Live preview';
+
+  @override
+  String widgetLivePreviewSemantics(String size) {
+    return 'Live widget preview at $size size';
+  }
+
+  @override
+  String get widgetPreviewEmpty => 'No matching habits for this widget.';
+
+  @override
+  String get widgetScheduleCustom => 'Specific days';
+
+  @override
+  String get widgetPresets => 'Presets and reuse';
+
+  @override
+  String get widgetPreset => 'Preset';
+
+  @override
+  String get widgetPresetDefault => 'Default';
+
+  @override
+  String get widgetPresetMinimal => 'Minimal';
+
+  @override
+  String get widgetPresetFocus => 'Focus';
+
+  @override
+  String get widgetPresetDenseList => 'Dense List';
+
+  @override
+  String get widgetPresetDashboard => 'Dashboard';
+
+  @override
+  String get widgetResetDefault => 'Reset to Default';
+
+  @override
+  String get widgetCopySettings => 'Copy settings from widget';
+
+  @override
+  String get widgetDuplicateConfiguration => 'Duplicate configuration';
+
+  @override
+  String get widgetCopyFrom => 'Copy settings from…';
+
+  @override
+  String get widgetDuplicateTo => 'Duplicate configuration to…';
+
+  @override
+  String get widgetDuplicated => 'The configuration was duplicated.';
 }

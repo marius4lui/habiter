@@ -10,6 +10,7 @@ import '../domain/widget_configuration.dart';
 import '../domain/widget_configuration_gateway.dart';
 import '../domain/widget_configuration_options.dart';
 import 'widget_advanced_editor.dart';
+import 'widget_live_preview.dart';
 
 class WidgetBasicEditor extends StatefulWidget {
   const WidgetBasicEditor({
@@ -17,12 +18,14 @@ class WidgetBasicEditor extends StatefulWidget {
     required this.instance,
     required this.habits,
     required this.gateway,
+    this.otherInstances = const <WidgetInstance>[],
     this.configurationLaunch = false,
   });
 
   final WidgetInstance instance;
   final List<Habit> habits;
   final WidgetConfigurationGateway gateway;
+  final List<WidgetInstance> otherInstances;
   final bool configurationLaunch;
 
   @override
@@ -34,6 +37,7 @@ class _WidgetBasicEditorState extends State<WidgetBasicEditor> {
   late final TextEditingController _nameController;
   late List<String> _customOrder;
   bool _saving = false;
+  late WidgetBreakpoint _previewBreakpoint;
 
   List<Habit> get _availableHabits =>
       widget.habits.where((habit) => habit.isActive).toList(growable: false);
@@ -43,6 +47,7 @@ class _WidgetBasicEditorState extends State<WidgetBasicEditor> {
     super.initState();
     _draft = widget.instance.configuration;
     _nameController = TextEditingController(text: _draft.displayName);
+    _previewBreakpoint = widget.instance.breakpoint;
     final availableIds = _availableHabits.map((habit) => habit.id).toList();
     _customOrder = <String>[
       ..._draft.customHabitOrder.where(availableIds.contains),
@@ -63,6 +68,81 @@ class _WidgetBasicEditorState extends State<WidgetBasicEditor> {
     visible ? hidden.remove(element) : hidden.add(element);
     _update(_draft.copyWith(hiddenElements: hidden));
   }
+
+  void _applyPreset(WidgetPreset preset) {
+    _update(_draft.applyPreset(preset));
+  }
+
+  void _resetToDefaults() {
+    final name = _nameController.text.trim();
+    _update(
+      WidgetConfiguration.defaults(widgetId: _draft.widgetId).copyWith(
+        displayName: name.isEmpty ? null : name,
+        clearDisplayName: name.isEmpty,
+      ),
+    );
+  }
+
+  Future<void> _copyFromWidget() async {
+    final source = await _chooseInstance(title: context.l10n.widgetCopyFrom);
+    if (source == null) return;
+    _update(
+      _configurationForWidget(
+        source.configuration,
+        widgetId: _draft.widgetId,
+        displayName: _nameController.text.trim(),
+      ),
+    );
+  }
+
+  Future<void> _duplicateToWidget() async {
+    final target = await _chooseInstance(title: context.l10n.widgetDuplicateTo);
+    if (target == null) return;
+    try {
+      await widget.gateway.saveWidgetConfiguration(
+        _configurationForWidget(
+          _draft,
+          widgetId: target.widgetId,
+          displayName: target.configuration.displayName,
+        ),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.widgetDuplicated)));
+    } on Object {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.widgetSaveFailed)));
+    }
+  }
+
+  Future<WidgetInstance?> _chooseInstance({required String title}) =>
+      showModalBottomSheet<WidgetInstance>(
+        context: context,
+        showDragHandle: true,
+        builder: (context) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(title: Text(title)),
+              ...widget.otherInstances.map(
+                (instance) => ListTile(
+                  title: Text(
+                    instance.configuration.displayName ??
+                        context.l10n.widgetDefaultName(instance.widgetId),
+                  ),
+                  subtitle: Text(
+                    '${instance.widthDp} × ${instance.heightDp} dp',
+                  ),
+                  onTap: () => Navigator.pop(context, instance),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
 
   Future<void> _save() async {
     if (_saving) return;
@@ -126,10 +206,69 @@ class _WidgetBasicEditorState extends State<WidgetBasicEditor> {
             subtitle: context.l10n.widgetBasicBody,
           ),
           const SizedBox(height: HabiterSpace.lg),
+          HabiterSurface(
+            child: WidgetLivePreview(
+              configuration: _draft,
+              habits: _availableHabits,
+              breakpoint: _previewBreakpoint,
+              onBreakpointChanged: (value) =>
+                  setState(() => _previewBreakpoint = value),
+            ),
+          ),
+          const SizedBox(height: HabiterSpace.md),
+          _EditorSection(
+            title: context.l10n.widgetPresets,
+            children: <Widget>[
+              _Dropdown<WidgetPreset>(
+                controlKey: const Key('widget-preset'),
+                label: context.l10n.widgetPreset,
+                value: _draft.preset,
+                values: WidgetPreset.values,
+                text: (value) => switch (value) {
+                  WidgetPreset.defaults => context.l10n.widgetPresetDefault,
+                  WidgetPreset.minimal => context.l10n.widgetPresetMinimal,
+                  WidgetPreset.focus => context.l10n.widgetPresetFocus,
+                  WidgetPreset.denseList => context.l10n.widgetPresetDenseList,
+                  WidgetPreset.dashboard => context.l10n.widgetPresetDashboard,
+                },
+                onChanged: _applyPreset,
+              ),
+              const SizedBox(height: HabiterSpace.sm),
+              Wrap(
+                spacing: HabiterSpace.sm,
+                runSpacing: HabiterSpace.sm,
+                children: <Widget>[
+                  OutlinedButton.icon(
+                    key: const Key('widget-reset-default'),
+                    onPressed: _resetToDefaults,
+                    icon: const Icon(Icons.restart_alt_rounded),
+                    label: Text(context.l10n.widgetResetDefault),
+                  ),
+                  OutlinedButton.icon(
+                    key: const Key('widget-copy-settings'),
+                    onPressed: widget.otherInstances.isEmpty
+                        ? null
+                        : _copyFromWidget,
+                    icon: const Icon(Icons.copy_rounded),
+                    label: Text(context.l10n.widgetCopySettings),
+                  ),
+                  OutlinedButton.icon(
+                    key: const Key('widget-duplicate-settings'),
+                    onPressed: widget.otherInstances.isEmpty
+                        ? null
+                        : _duplicateToWidget,
+                    icon: const Icon(Icons.control_point_duplicate_rounded),
+                    label: Text(context.l10n.widgetDuplicateConfiguration),
+                  ),
+                ],
+              ),
+            ],
+          ),
           _EditorSection(
             title: context.l10n.widgetSectionIdentity,
             children: <Widget>[
               TextField(
+                key: const Key('widget-display-name'),
                 controller: _nameController,
                 maxLength: 40,
                 decoration: InputDecoration(
@@ -386,6 +525,19 @@ class _WidgetBasicEditorState extends State<WidgetBasicEditor> {
   );
 }
 
+WidgetConfiguration _configurationForWidget(
+  WidgetConfiguration source, {
+  required int widgetId,
+  String? displayName,
+}) {
+  final map = source.toMap()
+    ..['widgetId'] = widgetId
+    ..['displayName'] = displayName?.trim().isEmpty == false
+        ? displayName!.trim()
+        : null;
+  return WidgetConfiguration.fromMap(map, widgetId: widgetId);
+}
+
 class _EditorSection extends StatelessWidget {
   const _EditorSection({required this.title, required this.children});
 
@@ -410,6 +562,7 @@ class _EditorSection extends StatelessWidget {
 
 class _Dropdown<T> extends StatelessWidget {
   const _Dropdown({
+    this.controlKey,
     required this.label,
     required this.value,
     required this.values,
@@ -417,6 +570,7 @@ class _Dropdown<T> extends StatelessWidget {
     required this.onChanged,
   });
 
+  final Key? controlKey;
   final String label;
   final T value;
   final List<T> values;
@@ -424,20 +578,24 @@ class _Dropdown<T> extends StatelessWidget {
   final ValueChanged<T> onChanged;
 
   @override
-  Widget build(BuildContext context) => DropdownButtonFormField<T>(
-    initialValue: value,
-    isExpanded: true,
-    decoration: InputDecoration(labelText: label),
-    items: values
-        .map(
-          (value) => DropdownMenuItem<T>(
-            value: value,
-            child: Text(text(value), overflow: TextOverflow.ellipsis),
-          ),
-        )
-        .toList(growable: false),
-    onChanged: (value) {
-      if (value != null) onChanged(value);
-    },
+  Widget build(BuildContext context) => KeyedSubtree(
+    key: controlKey,
+    child: DropdownButtonFormField<T>(
+      key: ValueKey<T>(value),
+      initialValue: value,
+      isExpanded: true,
+      decoration: InputDecoration(labelText: label),
+      items: values
+          .map(
+            (value) => DropdownMenuItem<T>(
+              value: value,
+              child: Text(text(value), overflow: TextOverflow.ellipsis),
+            ),
+          )
+          .toList(growable: false),
+      onChanged: (value) {
+        if (value != null) onChanged(value);
+      },
+    ),
   );
 }

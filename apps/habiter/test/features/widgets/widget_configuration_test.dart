@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/features/widgets/domain/widget_configuration.dart';
 import 'package:habiter/features/widgets/domain/widget_configuration_options.dart';
+import 'package:habiter/features/widgets/domain/widget_configuration_projection.dart';
 import 'package:habiter/features/widgets/domain/widget_habit_item.dart';
 
 void main() {
@@ -278,5 +279,31 @@ void main() {
           .completionControl,
       WidgetCompletionAction.openHabit,
     );
+  });
+
+  test('shared preview projection resolves every breakpoint like native', () {
+    final configuration = WidgetConfiguration(
+      widgetId: 17,
+      breakpointOverrides: const <WidgetBreakpoint, WidgetBreakpointOverride>{
+        WidgetBreakpoint.large: WidgetBreakpointOverride(
+          contentMode: WidgetContentMode.focus,
+          hiddenElements: <WidgetElement>{WidgetElement.completedHabits},
+        ),
+      },
+    );
+
+    for (final breakpoint in WidgetBreakpoint.values) {
+      final projection = projectWidgetConfiguration(
+        configuration: configuration,
+        breakpoint: breakpoint,
+        habits: habits,
+      );
+      expect(projection.scheduledCount, 3);
+      expect(projection.completedCount, 1);
+      if (breakpoint == WidgetBreakpoint.large) {
+        expect(projection.effective.contentMode, WidgetContentMode.focus);
+        expect(projection.habits.map((habit) => habit.id), <String>['read']);
+      }
+    }
   });
 }

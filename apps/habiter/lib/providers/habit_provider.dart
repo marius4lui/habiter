@@ -25,6 +25,7 @@ import '../features/reminders/domain/reminder_preferences.dart';
 import '../features/reminders/domain/reminder_signal.dart';
 import '../features/today/application/today_controller.dart';
 import '../features/today/application/completion_use_case.dart';
+import '../features/runtime/infrastructure/method_channel_background_runtime_gateway.dart';
 import '../models/habit.dart';
 import '../services/ai_manager.dart';
 import '../services/classly_client.dart';
@@ -72,6 +73,7 @@ class HabitProvider extends ChangeNotifier {
     _analyticsController = AnalyticsController(clock);
     _lifecycleReminders = lifecycleReminders ?? const _NoopLifecycleReminders();
     final reminderStore = actionStore ?? fallbackStore;
+    const backgroundRuntime = MethodChannelBackgroundRuntimeGateway();
     _reminders =
         reminderCoordinator ??
         ReminderCoordinator(
@@ -80,6 +82,10 @@ class HabitProvider extends ChangeNotifier {
           clock: clock,
           ids: ids,
           complete: _todayController.complete,
+          runtimeOwnsSmartDelivery: backgroundRuntime.isSupported,
+          invalidateAdaptiveRuntime: () async {
+            await backgroundRuntime.invalidateReminders();
+          },
         );
     NotificationService.instance.setActionCallback((_, _) async {
       await reconcileReminders(processActions: true);

@@ -12,6 +12,7 @@ import android.os.HandlerThread
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.habiter.app.runtime.AppBlockRuntime
+import com.habiter.app.runtime.ReminderEngineRuntime
 import com.habiter.app.runtime.RuntimeStateStore
 
 class HabiterRuntimeService : Service() {
@@ -19,6 +20,7 @@ class HabiterRuntimeService : Service() {
     private lateinit var handler: Handler
     private lateinit var runtimeState: RuntimeStateStore
     private lateinit var appBlockRuntime: AppBlockRuntime
+    private lateinit var reminderRuntime: ReminderEngineRuntime
 
     private val heartbeat = object : Runnable {
         override fun run() {
@@ -38,6 +40,7 @@ class HabiterRuntimeService : Service() {
             runtimeState = runtimeState,
             onFeatureStateChanged = ::reconcileFeatures,
         )
+        reminderRuntime = ReminderEngineRuntime(this, runtimeState)
         createNotificationChannel()
     }
 
@@ -56,6 +59,11 @@ class HabiterRuntimeService : Service() {
         )
         reconcileFeatures()
         RuntimeRecoveryReceiver.reconcilePersisted(this)
+        if (intent?.action == ACTION_EVALUATE_REMINDERS) {
+            reminderRuntime.invalidate(
+                intent.getStringExtra(EXTRA_START_REASON) ?: REASON_RECOVERY,
+            )
+        }
         handler.removeCallbacks(heartbeat)
         handler.post(heartbeat)
         return START_STICKY
@@ -63,6 +71,7 @@ class HabiterRuntimeService : Service() {
 
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
+        reminderRuntime.stop()
         appBlockRuntime.stop()
         runtimeThread.quitSafely()
         super.onDestroy()
@@ -77,6 +86,7 @@ class HabiterRuntimeService : Service() {
             return
         }
         appBlockRuntime.reconcile(features.appBlockEnabled)
+        reminderRuntime.reconcile(features.remindersEnabled)
         val manager = getSystemService(NotificationManager::class.java)
         manager.notify(NOTIFICATION_ID, createNotification(features.notificationText()))
     }

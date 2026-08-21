@@ -12,6 +12,8 @@ import '../domain/reminder_payload.dart';
 import '../infrastructure/device_time_zone_service.dart';
 import 'notification_id_registry.dart';
 
+const adaptiveRuntimeNotificationKeyPrefix = 'runtime:';
+
 final class PlannedReminder {
   const PlannedReminder({
     required this.logicalKey,
@@ -155,13 +157,18 @@ final class ReminderScheduler {
   final NotificationIdRegistry _registry;
   final NotificationGateway _gateway;
 
-  Future<void> replaceWith(Iterable<PlannedReminder> plan) async {
+  Future<void> replaceWith(
+    Iterable<PlannedReminder> plan, {
+    bool Function(String key)? preserveRegistered,
+  }) async {
     final desired = {
       for (final reminder in plan) reminder.logicalKey: reminder,
     };
     final registered = await _registry.snapshot();
     for (final stale in registered.keys.where(
-      (key) => !desired.containsKey(key),
+      (key) =>
+          !desired.containsKey(key) &&
+          !(preserveRegistered?.call(key) ?? false),
     )) {
       await _gateway.cancel(registered[stale]!);
       await _registry.release(stale);

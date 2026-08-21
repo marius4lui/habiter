@@ -57,6 +57,19 @@ class RuntimeStateStore(context: Context) {
         preferences.edit().putLong(LAST_HEARTBEAT_AT, now).apply()
     }
 
+    fun recordReminderEvaluation(
+        nextEvaluationAt: Long?,
+        dispatched: Boolean,
+        now: Long = System.currentTimeMillis(),
+    ) {
+        preferences.edit().apply {
+            putLong(LAST_REMINDER_EVALUATION_AT, now)
+            if (nextEvaluationAt == null) remove(NEXT_REMINDER_EVALUATION_AT)
+            else putLong(NEXT_REMINDER_EVALUATION_AT, nextEvaluationAt)
+            if (dispatched) putLong(LAST_NOTIFICATION_DISPATCH_AT, now)
+        }.apply()
+    }
+
     fun diagnostics(): Map<String, Any?> {
         val state = features()
         return mapOf(

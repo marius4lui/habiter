@@ -34,6 +34,8 @@ final class ReminderCoordinator {
     required CompleteFromReminder complete,
     tz.Location Function()? location,
     DynamicReminderPlanner planner = const DynamicReminderPlanner(),
+    bool runtimeOwnsSmartDelivery = false,
+    Future<void> Function()? invalidateAdaptiveRuntime,
   }) : _repository = ReminderRepository(store),
        _notifications = notifications,
        _clock = clock,
@@ -41,6 +43,8 @@ final class ReminderCoordinator {
        _complete = complete,
        _location = location ?? _safeLocalLocation,
        _planner = planner,
+       _runtimeOwnsSmartDelivery = runtimeOwnsSmartDelivery,
+       _invalidateAdaptiveRuntime = invalidateAdaptiveRuntime,
        _scheduler = ReminderScheduler(
          registry: NotificationIdRegistry(store),
          gateway: notifications,
@@ -58,6 +62,8 @@ final class ReminderCoordinator {
   final CompleteFromReminder _complete;
   final tz.Location Function() _location;
   final DynamicReminderPlanner _planner;
+  final bool _runtimeOwnsSmartDelivery;
+  final Future<void> Function()? _invalidateAdaptiveRuntime;
   final ReminderScheduler _scheduler;
   final ReminderReconciler _reconciler;
   final ReminderActionInbox _inbox;
@@ -122,7 +128,22 @@ final class ReminderCoordinator {
         capacity: 64,
       ),
     );
-    await _scheduler.replaceWith(result.reminders);
+    final scheduledByUi = _runtimeOwnsSmartDelivery
+        ? result.reminders.where(
+            (reminder) =>
+                _snapshot.policies[reminder.habit.id]?.mode !=
+                ReminderMode.smart,
+          )
+        : result.reminders;
+    await _scheduler.replaceWith(
+      scheduledByUi,
+      preserveRegistered: _runtimeOwnsSmartDelivery
+          ? (key) => key.startsWith(adaptiveRuntimeNotificationKeyPrefix)
+          : null,
+    );
+    if (_runtimeOwnsSmartDelivery) {
+      await _invalidateAdaptiveRuntime?.call();
+    }
     await _reconciler.reconcile();
     final profiles = <String, AvailabilityProfile>{};
     for (final computation in result.profilesByHabit.values) {

@@ -70,6 +70,12 @@ final class AndroidWidgetBridge
   }
 
   @override
+  Future<int?> pendingWidgetConfiguration() async {
+    if (!_isSupported) return null;
+    return _channel.invokeMethod<int>('pendingWidgetConfiguration');
+  }
+
+  @override
   Future<List<WidgetInstance>> listWidgetInstances() async {
     if (!_isSupported) return const <WidgetInstance>[];
     final values = await _channel.invokeListMethod<Object?>(
@@ -109,5 +115,11 @@ final class AndroidWidgetBridge
       'resetWidgetConfiguration',
       <String, Object?>{'widgetId': widgetId},
     );
+  }
+
+  @override
+  Future<void> cancelWidgetConfiguration() async {
+    if (!_isSupported) return;
+    await _channel.invokeMethod<void>('cancelWidgetConfiguration');
   }
 }

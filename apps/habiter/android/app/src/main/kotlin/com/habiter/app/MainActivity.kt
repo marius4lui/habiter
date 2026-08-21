@@ -21,7 +21,7 @@ import java.util.TimeZone
 import android.util.Log
 import com.habiter.app.widget.HabiterWidgetPinPlugin
 
-class MainActivity: FlutterActivity() {
+open class MainActivity: FlutterActivity() {
     private val TAG = "HabiterAppLock"
     private val CHANNEL = "com.habiter.app/applock"
     private val TIME_ZONE_CHANNEL = "com.habiter.app/timezone"

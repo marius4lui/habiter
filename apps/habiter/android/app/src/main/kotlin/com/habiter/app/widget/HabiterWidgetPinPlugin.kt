@@ -1,18 +1,25 @@
 package com.habiter.app.widget
 
 import android.app.PendingIntent
+import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
-internal class HabiterWidgetPinPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
+internal class HabiterWidgetPinPlugin :
+    FlutterPlugin,
+    ActivityAware,
+    MethodChannel.MethodCallHandler {
     private lateinit var context: Context
     private lateinit var channel: MethodChannel
+    private var activity: Activity? = null
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         context = binding.applicationContext
@@ -22,6 +29,22 @@ internal class HabiterWidgetPinPlugin : FlutterPlugin, MethodChannel.MethodCallH
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        activity = null
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivity() {
+        activity = null
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -34,8 +57,13 @@ internal class HabiterWidgetPinPlugin : FlutterPlugin, MethodChannel.MethodCallH
             )
             "hasInstalledWidgets" -> result.success(hasInstalledWidgets())
             "listWidgetInstances" -> result.success(listWidgetInstances())
+            "pendingWidgetConfiguration" -> result.success(pendingConfigurationWidgetId())
             "saveWidgetConfiguration" -> saveWidgetConfiguration(call, result)
             "resetWidgetConfiguration" -> resetWidgetConfiguration(call, result)
+            "cancelWidgetConfiguration" -> {
+                cancelWidgetConfiguration()
+                result.success(null)
+            }
             else -> result.notImplemented()
         }
     }
@@ -113,6 +141,7 @@ internal class HabiterWidgetPinPlugin : FlutterPlugin, MethodChannel.MethodCallH
             return
         }
         HabiterWidgetReceiver.requestUpdate(context, widgetId)
+        completeWidgetConfiguration(widgetId)
         result.success(null)
     }
 
@@ -133,6 +162,33 @@ internal class HabiterWidgetPinPlugin : FlutterPlugin, MethodChannel.MethodCallH
     private fun installedWidgetIds(): IntArray =
         AppWidgetManager.getInstance(context)
             .getAppWidgetIds(ComponentName(context, HabiterWidgetReceiver::class.java))
+
+    private fun pendingConfigurationWidgetId(): Int? {
+        val host = activity as? HabiterWidgetConfigurationActivity ?: return null
+        return HabiterWidgetConfigurationLaunch.widgetId(
+            action = host.intent?.action,
+            widgetId = host.intent?.getIntExtra(
+                AppWidgetManager.EXTRA_APPWIDGET_ID,
+                AppWidgetManager.INVALID_APPWIDGET_ID,
+            ) ?: AppWidgetManager.INVALID_APPWIDGET_ID,
+        )
+    }
+
+    private fun completeWidgetConfiguration(widgetId: Int) {
+        val host = activity as? HabiterWidgetConfigurationActivity ?: return
+        if (pendingConfigurationWidgetId() != widgetId) return
+        host.setResult(
+            Activity.RESULT_OK,
+            Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId),
+        )
+        host.finish()
+    }
+
+    private fun cancelWidgetConfiguration() {
+        val host = activity as? HabiterWidgetConfigurationActivity ?: return
+        host.setResult(Activity.RESULT_CANCELED)
+        host.finish()
+    }
 
     companion object {
         const val CHANNEL = "com.habiter.app/widget_pin"

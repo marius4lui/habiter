@@ -34,9 +34,11 @@ void main() {
               },
             ];
           }
+          if (call.method == 'pendingWidgetConfiguration') return 17;
           return null;
         });
 
+    final pendingWidgetId = await bridge.pendingWidgetConfiguration();
     final instances = await bridge.listWidgetInstances();
     await bridge.saveWidgetConfiguration(
       instances.single.configuration.copyWith(
@@ -44,20 +46,24 @@ void main() {
       ),
     );
     await bridge.resetWidgetConfiguration(17);
+    await bridge.cancelWidgetConfiguration();
 
+    expect(pendingWidgetId, 17);
     expect(instances.single.widgetId, 17);
     expect(instances.single.breakpoint, WidgetBreakpoint.mediumHero);
     expect(instances.single.configuration.displayName, 'Training');
     expect(calls.map((call) => call.method), <String>[
+      'pendingWidgetConfiguration',
       'listWidgetInstances',
       'saveWidgetConfiguration',
       'resetWidgetConfiguration',
+      'cancelWidgetConfiguration',
     ]);
-    expect(calls[1].arguments, <String, Object?>{
+    expect(calls[2].arguments, <String, Object?>{
       'widgetId': 17,
       'configuration': isA<String>(),
     });
-    expect(calls[2].arguments, <String, Object?>{'widgetId': 17});
+    expect(calls[3].arguments, <String, Object?>{'widgetId': 17});
   });
 
   test('typed bridge rejects malformed instance payloads', () async {
@@ -76,9 +82,11 @@ void main() {
     const unsupported = AndroidWidgetBridge(channel: channel, supported: false);
 
     expect(await unsupported.listWidgetInstances(), isEmpty);
+    expect(await unsupported.pendingWidgetConfiguration(), isNull);
     await unsupported.saveWidgetConfiguration(
       WidgetConfiguration.defaults(widgetId: 17),
     );
     await unsupported.resetWidgetConfiguration(17);
+    await unsupported.cancelWidgetConfiguration();
   });
 }

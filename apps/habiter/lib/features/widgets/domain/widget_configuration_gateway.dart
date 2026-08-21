@@ -48,9 +48,13 @@ final class WidgetInstance {
 }
 
 abstract interface class WidgetConfigurationGateway {
+  Future<int?> pendingWidgetConfiguration();
+
   Future<List<WidgetInstance>> listWidgetInstances();
 
   Future<void> saveWidgetConfiguration(WidgetConfiguration configuration);
 
   Future<void> resetWidgetConfiguration(int widgetId);
+
+  Future<void> cancelWidgetConfiguration();
 }

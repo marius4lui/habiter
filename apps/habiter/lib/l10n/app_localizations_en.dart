@@ -1599,4 +1599,181 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get updateUnsupported =>
       'Updates are not available on this platform yet.';
+
+  @override
+  String get widgetInstancesTitle => 'Widgets';
+
+  @override
+  String get widgetInstancesBody =>
+      'Each home-screen widget keeps its own content, layout, colors and actions.';
+
+  @override
+  String get widgetInstancesEmpty =>
+      'No Habiter widgets are currently placed on your home screen.';
+
+  @override
+  String get widgetInstancesLoadFailed =>
+      'Your widget instances could not be loaded.';
+
+  @override
+  String get widgetAddAnother => 'Add widget';
+
+  @override
+  String widgetDefaultName(int id) {
+    return 'Widget $id';
+  }
+
+  @override
+  String get widgetBreakpointCompact => 'Compact';
+
+  @override
+  String get widgetBreakpointCompactSquare => 'Compact Square';
+
+  @override
+  String get widgetBreakpointWide => 'Wide';
+
+  @override
+  String get widgetBreakpointMediumHero => 'Medium Hero';
+
+  @override
+  String get widgetBreakpointLarge => 'Large';
+
+  @override
+  String get widgetBreakpointExtraLarge => 'Extra Large';
+
+  @override
+  String get widgetBasicTitle => 'Widget settings';
+
+  @override
+  String get widgetBasicBody =>
+      'Simple by default. These settings only affect this widget instance.';
+
+  @override
+  String get widgetSectionIdentity => 'This widget';
+
+  @override
+  String get widgetSectionContent => 'Content';
+
+  @override
+  String get widgetSectionMode => 'Widget mode';
+
+  @override
+  String get widgetSectionAppearance => 'Appearance';
+
+  @override
+  String get widgetSectionBehavior => 'Behavior';
+
+  @override
+  String get widgetDisplayName => 'Name (optional)';
+
+  @override
+  String get widgetDisplayNameHint => 'Morning, Training, Dashboard…';
+
+  @override
+  String get widgetHabitSelection => 'Habits to show';
+
+  @override
+  String get widgetHabitsAllToday => 'All today\'s habits';
+
+  @override
+  String get widgetHabitsOpenOnly => 'Open habits only';
+
+  @override
+  String get widgetHabitsSelected => 'Selected habits';
+
+  @override
+  String get widgetNoSelectableHabits =>
+      'There are no active habits to select.';
+
+  @override
+  String get widgetSort => 'Sort order';
+
+  @override
+  String get widgetSortHabiter => 'As in Habiter';
+
+  @override
+  String get widgetSortOpenFirst => 'Open habits first';
+
+  @override
+  String get widgetSortCustom => 'Custom order';
+
+  @override
+  String get widgetSortCustomBody =>
+      'Drag habits into the order this widget should use.';
+
+  @override
+  String get widgetMode => 'Mode';
+
+  @override
+  String get widgetModeAuto => 'Auto';
+
+  @override
+  String get widgetModeFocus => 'Focus';
+
+  @override
+  String get widgetModeList => 'List';
+
+  @override
+  String get widgetModeMinimal => 'Minimal';
+
+  @override
+  String get widgetTheme => 'Theme';
+
+  @override
+  String get widgetAccent => 'Accent';
+
+  @override
+  String get widgetAccentHabiter => 'Habiter';
+
+  @override
+  String get widgetAccentDynamic => 'Android Dynamic Color';
+
+  @override
+  String get widgetAccentCustom => 'Custom';
+
+  @override
+  String get widgetShowProgress => 'Show progress';
+
+  @override
+  String get widgetShowSchedule => 'Show schedule label';
+
+  @override
+  String get widgetShowCompleted => 'Show completed habits';
+
+  @override
+  String get widgetDensity => 'Density';
+
+  @override
+  String get widgetDensityCompact => 'Compact';
+
+  @override
+  String get widgetDensityComfortable => 'Comfortable';
+
+  @override
+  String get widgetBackgroundTap => 'Tap widget background';
+
+  @override
+  String get widgetBackgroundToday => 'Open Today';
+
+  @override
+  String get widgetBackgroundNext => 'Open next habit';
+
+  @override
+  String get widgetBackgroundApp => 'Open Habiter';
+
+  @override
+  String get widgetOneTapCompletion => 'One-tap completion';
+
+  @override
+  String get widgetOneTapCompletionBody =>
+      'When off, the completion control opens the habit instead.';
+
+  @override
+  String get widgetShowUndo => 'Show Undo after completion';
+
+  @override
+  String get widgetCompletionFeedback => 'Show completion feedback';
+
+  @override
+  String get widgetSaveFailed => 'This widget\'s settings could not be saved.';
 }

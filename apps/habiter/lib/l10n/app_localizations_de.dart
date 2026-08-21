@@ -1612,4 +1612,182 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get updateUnsupported =>
       'Updates sind auf dieser Plattform noch nicht verfügbar.';
+
+  @override
+  String get widgetInstancesTitle => 'Widgets';
+
+  @override
+  String get widgetInstancesBody =>
+      'Jedes Homescreen-Widget behält eigene Inhalte, Layouts, Farben und Aktionen.';
+
+  @override
+  String get widgetInstancesEmpty =>
+      'Auf deinem Homescreen ist derzeit kein Habiter-Widget platziert.';
+
+  @override
+  String get widgetInstancesLoadFailed =>
+      'Deine Widget-Instanzen konnten nicht geladen werden.';
+
+  @override
+  String get widgetAddAnother => 'Widget hinzufügen';
+
+  @override
+  String widgetDefaultName(int id) {
+    return 'Widget $id';
+  }
+
+  @override
+  String get widgetBreakpointCompact => 'Kompakt';
+
+  @override
+  String get widgetBreakpointCompactSquare => 'Kompakt quadratisch';
+
+  @override
+  String get widgetBreakpointWide => 'Breit';
+
+  @override
+  String get widgetBreakpointMediumHero => 'Medium Hero';
+
+  @override
+  String get widgetBreakpointLarge => 'Groß';
+
+  @override
+  String get widgetBreakpointExtraLarge => 'Extra groß';
+
+  @override
+  String get widgetBasicTitle => 'Widget-Einstellungen';
+
+  @override
+  String get widgetBasicBody =>
+      'Einfach als Standard. Diese Einstellungen gelten nur für diese Widget-Instanz.';
+
+  @override
+  String get widgetSectionIdentity => 'Dieses Widget';
+
+  @override
+  String get widgetSectionContent => 'Inhalt';
+
+  @override
+  String get widgetSectionMode => 'Widget-Modus';
+
+  @override
+  String get widgetSectionAppearance => 'Darstellung';
+
+  @override
+  String get widgetSectionBehavior => 'Verhalten';
+
+  @override
+  String get widgetDisplayName => 'Name (optional)';
+
+  @override
+  String get widgetDisplayNameHint => 'Morgen, Training, Dashboard…';
+
+  @override
+  String get widgetHabitSelection => 'Angezeigte Habits';
+
+  @override
+  String get widgetHabitsAllToday => 'Alle heutigen Habits';
+
+  @override
+  String get widgetHabitsOpenOnly => 'Nur offene Habits';
+
+  @override
+  String get widgetHabitsSelected => 'Ausgewählte Habits';
+
+  @override
+  String get widgetNoSelectableHabits =>
+      'Es gibt keine aktiven Habits zur Auswahl.';
+
+  @override
+  String get widgetSort => 'Sortierung';
+
+  @override
+  String get widgetSortHabiter => 'Wie in Habiter';
+
+  @override
+  String get widgetSortOpenFirst => 'Offene Habits zuerst';
+
+  @override
+  String get widgetSortCustom => 'Eigene Reihenfolge';
+
+  @override
+  String get widgetSortCustomBody =>
+      'Ziehe Habits in die Reihenfolge, die dieses Widget verwenden soll.';
+
+  @override
+  String get widgetMode => 'Modus';
+
+  @override
+  String get widgetModeAuto => 'Auto';
+
+  @override
+  String get widgetModeFocus => 'Focus';
+
+  @override
+  String get widgetModeList => 'Liste';
+
+  @override
+  String get widgetModeMinimal => 'Minimal';
+
+  @override
+  String get widgetTheme => 'Theme';
+
+  @override
+  String get widgetAccent => 'Akzent';
+
+  @override
+  String get widgetAccentHabiter => 'Habiter';
+
+  @override
+  String get widgetAccentDynamic => 'Android Dynamic Color';
+
+  @override
+  String get widgetAccentCustom => 'Benutzerdefiniert';
+
+  @override
+  String get widgetShowProgress => 'Fortschritt anzeigen';
+
+  @override
+  String get widgetShowSchedule => 'Zeit-/Schedule-Label anzeigen';
+
+  @override
+  String get widgetShowCompleted => 'Erledigte Habits anzeigen';
+
+  @override
+  String get widgetDensity => 'Dichte';
+
+  @override
+  String get widgetDensityCompact => 'Kompakt';
+
+  @override
+  String get widgetDensityComfortable => 'Komfortabel';
+
+  @override
+  String get widgetBackgroundTap => 'Tap auf Widget-Hintergrund';
+
+  @override
+  String get widgetBackgroundToday => 'Today öffnen';
+
+  @override
+  String get widgetBackgroundNext => 'Nächstes Habit öffnen';
+
+  @override
+  String get widgetBackgroundApp => 'Habiter öffnen';
+
+  @override
+  String get widgetOneTapCompletion => 'One-Tap Completion';
+
+  @override
+  String get widgetOneTapCompletionBody =>
+      'Wenn aus, öffnet die Completion-Schaltfläche das Habit.';
+
+  @override
+  String get widgetShowUndo => 'Undo nach Completion anzeigen';
+
+  @override
+  String get widgetCompletionFeedback => 'Completion Feedback anzeigen';
+
+  @override
+  String get widgetSaveFailed =>
+      'Die Einstellungen dieses Widgets konnten nicht gespeichert werden.';
 }

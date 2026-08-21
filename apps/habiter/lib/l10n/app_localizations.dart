@@ -2917,6 +2917,342 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Updates sind auf dieser Plattform noch nicht verfügbar.'**
   String get updateUnsupported;
+
+  /// No description provided for @widgetInstancesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Widgets'**
+  String get widgetInstancesTitle;
+
+  /// No description provided for @widgetInstancesBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Jedes Homescreen-Widget behält eigene Inhalte, Layouts, Farben und Aktionen.'**
+  String get widgetInstancesBody;
+
+  /// No description provided for @widgetInstancesEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf deinem Homescreen ist derzeit kein Habiter-Widget platziert.'**
+  String get widgetInstancesEmpty;
+
+  /// No description provided for @widgetInstancesLoadFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Widget-Instanzen konnten nicht geladen werden.'**
+  String get widgetInstancesLoadFailed;
+
+  /// No description provided for @widgetAddAnother.
+  ///
+  /// In de, this message translates to:
+  /// **'Widget hinzufügen'**
+  String get widgetAddAnother;
+
+  /// No description provided for @widgetDefaultName.
+  ///
+  /// In de, this message translates to:
+  /// **'Widget {id}'**
+  String widgetDefaultName(int id);
+
+  /// No description provided for @widgetBreakpointCompact.
+  ///
+  /// In de, this message translates to:
+  /// **'Kompakt'**
+  String get widgetBreakpointCompact;
+
+  /// No description provided for @widgetBreakpointCompactSquare.
+  ///
+  /// In de, this message translates to:
+  /// **'Kompakt quadratisch'**
+  String get widgetBreakpointCompactSquare;
+
+  /// No description provided for @widgetBreakpointWide.
+  ///
+  /// In de, this message translates to:
+  /// **'Breit'**
+  String get widgetBreakpointWide;
+
+  /// No description provided for @widgetBreakpointMediumHero.
+  ///
+  /// In de, this message translates to:
+  /// **'Medium Hero'**
+  String get widgetBreakpointMediumHero;
+
+  /// No description provided for @widgetBreakpointLarge.
+  ///
+  /// In de, this message translates to:
+  /// **'Groß'**
+  String get widgetBreakpointLarge;
+
+  /// No description provided for @widgetBreakpointExtraLarge.
+  ///
+  /// In de, this message translates to:
+  /// **'Extra groß'**
+  String get widgetBreakpointExtraLarge;
+
+  /// No description provided for @widgetBasicTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Widget-Einstellungen'**
+  String get widgetBasicTitle;
+
+  /// No description provided for @widgetBasicBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Einfach als Standard. Diese Einstellungen gelten nur für diese Widget-Instanz.'**
+  String get widgetBasicBody;
+
+  /// No description provided for @widgetSectionIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Widget'**
+  String get widgetSectionIdentity;
+
+  /// No description provided for @widgetSectionContent.
+  ///
+  /// In de, this message translates to:
+  /// **'Inhalt'**
+  String get widgetSectionContent;
+
+  /// No description provided for @widgetSectionMode.
+  ///
+  /// In de, this message translates to:
+  /// **'Widget-Modus'**
+  String get widgetSectionMode;
+
+  /// No description provided for @widgetSectionAppearance.
+  ///
+  /// In de, this message translates to:
+  /// **'Darstellung'**
+  String get widgetSectionAppearance;
+
+  /// No description provided for @widgetSectionBehavior.
+  ///
+  /// In de, this message translates to:
+  /// **'Verhalten'**
+  String get widgetSectionBehavior;
+
+  /// No description provided for @widgetDisplayName.
+  ///
+  /// In de, this message translates to:
+  /// **'Name (optional)'**
+  String get widgetDisplayName;
+
+  /// No description provided for @widgetDisplayNameHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Morgen, Training, Dashboard…'**
+  String get widgetDisplayNameHint;
+
+  /// No description provided for @widgetHabitSelection.
+  ///
+  /// In de, this message translates to:
+  /// **'Angezeigte Habits'**
+  String get widgetHabitSelection;
+
+  /// No description provided for @widgetHabitsAllToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle heutigen Habits'**
+  String get widgetHabitsAllToday;
+
+  /// No description provided for @widgetHabitsOpenOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur offene Habits'**
+  String get widgetHabitsOpenOnly;
+
+  /// No description provided for @widgetHabitsSelected.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausgewählte Habits'**
+  String get widgetHabitsSelected;
+
+  /// No description provided for @widgetNoSelectableHabits.
+  ///
+  /// In de, this message translates to:
+  /// **'Es gibt keine aktiven Habits zur Auswahl.'**
+  String get widgetNoSelectableHabits;
+
+  /// No description provided for @widgetSort.
+  ///
+  /// In de, this message translates to:
+  /// **'Sortierung'**
+  String get widgetSort;
+
+  /// No description provided for @widgetSortHabiter.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie in Habiter'**
+  String get widgetSortHabiter;
+
+  /// No description provided for @widgetSortOpenFirst.
+  ///
+  /// In de, this message translates to:
+  /// **'Offene Habits zuerst'**
+  String get widgetSortOpenFirst;
+
+  /// No description provided for @widgetSortCustom.
+  ///
+  /// In de, this message translates to:
+  /// **'Eigene Reihenfolge'**
+  String get widgetSortCustom;
+
+  /// No description provided for @widgetSortCustomBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ziehe Habits in die Reihenfolge, die dieses Widget verwenden soll.'**
+  String get widgetSortCustomBody;
+
+  /// No description provided for @widgetMode.
+  ///
+  /// In de, this message translates to:
+  /// **'Modus'**
+  String get widgetMode;
+
+  /// No description provided for @widgetModeAuto.
+  ///
+  /// In de, this message translates to:
+  /// **'Auto'**
+  String get widgetModeAuto;
+
+  /// No description provided for @widgetModeFocus.
+  ///
+  /// In de, this message translates to:
+  /// **'Focus'**
+  String get widgetModeFocus;
+
+  /// No description provided for @widgetModeList.
+  ///
+  /// In de, this message translates to:
+  /// **'Liste'**
+  String get widgetModeList;
+
+  /// No description provided for @widgetModeMinimal.
+  ///
+  /// In de, this message translates to:
+  /// **'Minimal'**
+  String get widgetModeMinimal;
+
+  /// No description provided for @widgetTheme.
+  ///
+  /// In de, this message translates to:
+  /// **'Theme'**
+  String get widgetTheme;
+
+  /// No description provided for @widgetAccent.
+  ///
+  /// In de, this message translates to:
+  /// **'Akzent'**
+  String get widgetAccent;
+
+  /// No description provided for @widgetAccentHabiter.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter'**
+  String get widgetAccentHabiter;
+
+  /// No description provided for @widgetAccentDynamic.
+  ///
+  /// In de, this message translates to:
+  /// **'Android Dynamic Color'**
+  String get widgetAccentDynamic;
+
+  /// No description provided for @widgetAccentCustom.
+  ///
+  /// In de, this message translates to:
+  /// **'Benutzerdefiniert'**
+  String get widgetAccentCustom;
+
+  /// No description provided for @widgetShowProgress.
+  ///
+  /// In de, this message translates to:
+  /// **'Fortschritt anzeigen'**
+  String get widgetShowProgress;
+
+  /// No description provided for @widgetShowSchedule.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeit-/Schedule-Label anzeigen'**
+  String get widgetShowSchedule;
+
+  /// No description provided for @widgetShowCompleted.
+  ///
+  /// In de, this message translates to:
+  /// **'Erledigte Habits anzeigen'**
+  String get widgetShowCompleted;
+
+  /// No description provided for @widgetDensity.
+  ///
+  /// In de, this message translates to:
+  /// **'Dichte'**
+  String get widgetDensity;
+
+  /// No description provided for @widgetDensityCompact.
+  ///
+  /// In de, this message translates to:
+  /// **'Kompakt'**
+  String get widgetDensityCompact;
+
+  /// No description provided for @widgetDensityComfortable.
+  ///
+  /// In de, this message translates to:
+  /// **'Komfortabel'**
+  String get widgetDensityComfortable;
+
+  /// No description provided for @widgetBackgroundTap.
+  ///
+  /// In de, this message translates to:
+  /// **'Tap auf Widget-Hintergrund'**
+  String get widgetBackgroundTap;
+
+  /// No description provided for @widgetBackgroundToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Today öffnen'**
+  String get widgetBackgroundToday;
+
+  /// No description provided for @widgetBackgroundNext.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächstes Habit öffnen'**
+  String get widgetBackgroundNext;
+
+  /// No description provided for @widgetBackgroundApp.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter öffnen'**
+  String get widgetBackgroundApp;
+
+  /// No description provided for @widgetOneTapCompletion.
+  ///
+  /// In de, this message translates to:
+  /// **'One-Tap Completion'**
+  String get widgetOneTapCompletion;
+
+  /// No description provided for @widgetOneTapCompletionBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wenn aus, öffnet die Completion-Schaltfläche das Habit.'**
+  String get widgetOneTapCompletionBody;
+
+  /// No description provided for @widgetShowUndo.
+  ///
+  /// In de, this message translates to:
+  /// **'Undo nach Completion anzeigen'**
+  String get widgetShowUndo;
+
+  /// No description provided for @widgetCompletionFeedback.
+  ///
+  /// In de, this message translates to:
+  /// **'Completion Feedback anzeigen'**
+  String get widgetCompletionFeedback;
+
+  /// No description provided for @widgetSaveFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Einstellungen dieses Widgets konnten nicht gespeichert werden.'**
+  String get widgetSaveFailed;
 }
 
 class _AppLocalizationsDelegate

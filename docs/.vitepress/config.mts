@@ -74,6 +74,7 @@ export default defineConfig({
           text: 'Developer Guide',
           items: [
             { text: 'Architecture', link: '/dev/architecture' },
+            { text: 'Agent Workflows', link: '/dev/agent-workflows/' },
             { text: 'Branch Workflow', link: '/dev/branches' },
             { text: 'State Management', link: '/dev/state' },
             { text: 'Services', link: '/dev/services' },

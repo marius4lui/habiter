@@ -2,6 +2,8 @@
 
 Branches are named after the work they contain, never after the person, coding agent, or tool that creates them.
 
+This page owns branch names and lifecycle mechanics. Read [agent workflows](/dev/agent-workflows/) for required preflight, authorization, batch commits, the two allowed paths to `main`, and remote-branch cleanup.
+
 ## Create a branch
 
 Start from an up-to-date `main` and use `<type>/<short-description>`:
@@ -46,8 +48,9 @@ Avoid vague names including `changes`, `work`, `test`, `new-feature`, or `final-
 
 - Keep one coherent concern per branch.
 - Commit logical, reviewable steps.
-- Bring in current `main` according to the pull request merge policy.
+- Before a new task, inspect status, run `git fetch --all --prune --tags`, update `main` with `git pull --ff-only origin main`, then create the task branch from that base.
+- Bring current `main` into an existing branch only under the pull request merge policy or with explicit owner direction; do not perform a hidden merge or rebase.
 - Avoid renaming a published branch; coordinate it if necessary.
-- Delete local and remote branches after merge.
+- After a remote branch is deleted, prune and delete its matching local branch after confirming it is not current, checked out elsewhere, or still needed.
 
 Check the current name with `git branch --show-current`. Rename an unpublished branch with `git branch -m docs/descriptive-name`.

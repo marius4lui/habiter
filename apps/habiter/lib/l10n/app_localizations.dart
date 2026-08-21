@@ -2786,6 +2786,30 @@ abstract class AppLocalizations {
   /// **'Android fragt einmal, ob Habiter geprüfte APK-Updates öffnen darf. Du kannst diese Freigabe jederzeit entziehen.'**
   String get updateInstallerPermissionBody;
 
+  /// No description provided for @updateInstallerPermissionHelpTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Installationsfreigabe weiterhin nötig'**
+  String get updateInstallerPermissionHelpTitle;
+
+  /// No description provided for @updateInstallerPermissionDeniedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Android hat die Freigabe nicht erteilt. Öffne ‚Unbekannte Apps installieren‘ für Habiter, aktiviere ‚Aus dieser Quelle zulassen‘ und tippe danach erneut auf Installieren.'**
+  String get updateInstallerPermissionDeniedBody;
+
+  /// No description provided for @updateInstallerPermissionUnavailableBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Android konnte die passende App-Einstellung nicht öffnen. Suche in den Android-Einstellungen nach ‚Unbekannte Apps installieren‘, wähle Habiter und erlaube diese Quelle, bevor du es erneut versuchst.'**
+  String get updateInstallerPermissionUnavailableBody;
+
+  /// No description provided for @updateInstallerPermissionGotIt.
+  ///
+  /// In de, this message translates to:
+  /// **'Verstanden'**
+  String get updateInstallerPermissionGotIt;
+
   /// No description provided for @updateOpenSettings.
   ///
   /// In de, this message translates to:

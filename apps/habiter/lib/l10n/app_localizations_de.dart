@@ -1530,6 +1530,21 @@ class AppLocalizationsDe extends AppLocalizations {
       'Android fragt einmal, ob Habiter geprüfte APK-Updates öffnen darf. Du kannst diese Freigabe jederzeit entziehen.';
 
   @override
+  String get updateInstallerPermissionHelpTitle =>
+      'Installationsfreigabe weiterhin nötig';
+
+  @override
+  String get updateInstallerPermissionDeniedBody =>
+      'Android hat die Freigabe nicht erteilt. Öffne ‚Unbekannte Apps installieren‘ für Habiter, aktiviere ‚Aus dieser Quelle zulassen‘ und tippe danach erneut auf Installieren.';
+
+  @override
+  String get updateInstallerPermissionUnavailableBody =>
+      'Android konnte die passende App-Einstellung nicht öffnen. Suche in den Android-Einstellungen nach ‚Unbekannte Apps installieren‘, wähle Habiter und erlaube diese Quelle, bevor du es erneut versuchst.';
+
+  @override
+  String get updateInstallerPermissionGotIt => 'Verstanden';
+
+  @override
   String get updateOpenSettings => 'Android-Einstellungen öffnen';
 
   @override

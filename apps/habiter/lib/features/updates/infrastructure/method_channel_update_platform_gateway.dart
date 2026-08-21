@@ -156,8 +156,16 @@ final class MethodChannelUpdatePlatformGateway
   }
 
   @override
-  Future<void> openInstallerPermission() =>
-      _channel.invokeMethod<void>('openInstallerPermission');
+  Future<InstallerPermissionResult> openInstallerPermission() async {
+    final result = await _channel.invokeMethod<String>(
+      'openInstallerPermission',
+    );
+    return switch (result) {
+      'granted' => InstallerPermissionResult.granted,
+      'denied' => InstallerPermissionResult.denied,
+      _ => InstallerPermissionResult.unavailable,
+    };
+  }
 
   @override
   Future<UpdateInstallResult> openExternal(UpdateCandidate candidate) async {

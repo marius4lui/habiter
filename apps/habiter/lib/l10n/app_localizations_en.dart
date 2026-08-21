@@ -1518,6 +1518,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Android asks once whether Habiter may open verified APK updates. You can revoke this permission anytime.';
 
   @override
+  String get updateInstallerPermissionHelpTitle =>
+      'Installation permission still needed';
+
+  @override
+  String get updateInstallerPermissionDeniedBody =>
+      'Android did not grant the permission. Open Install unknown apps for Habiter, turn on Allow from this source, then try Install again.';
+
+  @override
+  String get updateInstallerPermissionUnavailableBody =>
+      'Android could not open the app-specific setting. Open Android Settings, search for Install unknown apps, select Habiter, and allow this source before trying again.';
+
+  @override
+  String get updateInstallerPermissionGotIt => 'Got it';
+
+  @override
   String get updateOpenSettings => 'Open Android settings';
 
   @override

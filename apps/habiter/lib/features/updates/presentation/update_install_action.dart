@@ -25,7 +25,31 @@ Future<void> requestUpdateInstall(
         FilledButton(
           onPressed: () async {
             Navigator.pop(dialogContext);
-            await controller.openInstallerPermission();
+            final permission = await controller.openInstallerPermission();
+            if (!context.mounted) return;
+            if (permission == InstallerPermissionResult.granted) {
+              final retry = await controller.install();
+              if (retry == UpdateInstallResult.launched || !context.mounted) {
+                return;
+              }
+            }
+            await showDialog<void>(
+              context: context,
+              builder: (helpContext) => AlertDialog(
+                title: Text(context.l10n.updateInstallerPermissionHelpTitle),
+                content: Text(
+                  permission == InstallerPermissionResult.unavailable
+                      ? context.l10n.updateInstallerPermissionUnavailableBody
+                      : context.l10n.updateInstallerPermissionDeniedBody,
+                ),
+                actions: [
+                  FilledButton(
+                    onPressed: () => Navigator.pop(helpContext),
+                    child: Text(context.l10n.updateInstallerPermissionGotIt),
+                  ),
+                ],
+              ),
+            );
           },
           child: Text(context.l10n.updateOpenSettings),
         ),

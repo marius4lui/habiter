@@ -398,7 +398,8 @@ class _NoUpdatePlatform implements UpdatePlatformGateway {
       const UpdateNetworkStatus(isOnline: false, isMetered: false);
 
   @override
-  Future<void> openInstallerPermission() async {}
+  Future<InstallerPermissionResult> openInstallerPermission() async =>
+      InstallerPermissionResult.granted;
 
   @override
   Future<UpdateInstallResult> openExternal(UpdateCandidate candidate) async =>

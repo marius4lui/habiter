@@ -3,7 +3,8 @@ set -eu
 
 ROOT=$(CDPATH='' cd -- "$(dirname "$0")/../../.." && pwd)
 UNINSTALLER=$ROOT/scripts/install/uninstall.sh
-TEST_ROOT=${TMPDIR:-/tmp}/habiter-uninstall-test-$$
+TEMP_ROOT=$(CDPATH='' cd -- "${TMPDIR:-/tmp}" && pwd -P)
+TEST_ROOT=$TEMP_ROOT/habiter-uninstall-test-$$
 HOME_FIXTURE=$TEST_ROOT/home
 SYSTEM_FIXTURE=$TEST_ROOT/system/habiter
 SYSTEM_WRAPPER=$TEST_ROOT/system-bin/habiter

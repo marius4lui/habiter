@@ -113,12 +113,17 @@ class _RhythmScreenState extends State<RhythmScreen> {
                   DropdownButtonFormField<String>(
                     key: ValueKey(selectedHabit?.id),
                     initialValue: selectedHabit?.id,
+                    isExpanded: true,
                     decoration: InputDecoration(labelText: _copy.habit),
                     items: [
                       for (final habit in habits)
                         DropdownMenuItem(
                           value: habit.id,
-                          child: Text(habit.name),
+                          child: Text(
+                            habit.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                     ],
                     onChanged: (value) =>

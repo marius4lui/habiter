@@ -16,6 +16,7 @@ import 'package:habiter/providers/habit_provider.dart';
 import 'package:habiter/providers/settings_provider.dart';
 import 'package:habiter/screens/analytics_screen.dart';
 import 'package:habiter/screens/home_screen.dart';
+import 'package:habiter/screens/rhythm_screen.dart';
 import 'package:habiter/screens/settings_screen.dart';
 import 'package:habiter/widgets/add_habit_sheet.dart';
 import 'package:provider/provider.dart';
@@ -124,6 +125,38 @@ void main() {
         isNull,
         reason: screen.runtimeType.toString(),
       );
+    }
+  });
+
+  testWidgets('secondary screens support compact low-height viewports', (
+    tester,
+  ) async {
+    final provider = await _providerWithHabits();
+    final settings = SettingsProvider();
+    addTearDown(provider.dispose);
+    addTearDown(settings.dispose);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    for (final size in <Size>[const Size(320, 480), const Size(480, 320)]) {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      for (final screen in <Widget>[
+        const AnalyticsScreen(),
+        const SettingsScreen(),
+        const RhythmScreen(),
+      ]) {
+        await tester.pumpWidget(
+          _app(
+            provider: provider,
+            settings: settings,
+            home: screen,
+            textScale: 2,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(screen.runtimeType), findsOneWidget);
+      }
     }
   });
 

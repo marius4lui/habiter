@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { FoundationPage } from "@/components/foundation-page";
+import { PrivacyPage as PrivacyExperiencePage } from "@/components/privacy-page";
 
 export const metadata: Metadata = {
   title: "Privacy",
@@ -9,11 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyPage() {
-  return (
-    <FoundationPage
-      eyebrow="Privacy by design"
-      title="Dein Verhalten ist kein Werbeprofil."
-      copy="Gewohnheiten erzählen viel über dich. Deshalb beginnt Habiter bei lokaler Datenhaltung und klaren, nachvollziehbaren Grenzen."
-    />
-  );
+  return <PrivacyExperiencePage />;
 }

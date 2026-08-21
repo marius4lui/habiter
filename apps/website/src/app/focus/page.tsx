@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { FoundationPage } from "@/components/foundation-page";
+import { FocusPage as FocusExperiencePage } from "@/components/focus-page";
 
 export const metadata: Metadata = {
   title: "Focus Shield",
@@ -9,11 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function FocusPage() {
-  return (
-    <FoundationPage
-      eyebrow="Focus Shield"
-      title="Erst dein Ritual. Dann der Feed."
-      copy="Habiter setzt bewusste Reibung zwischen dich und die Apps, die deine Aufmerksamkeit sonst zuerst bekommen."
-    />
-  );
+  return <FocusExperiencePage />;
 }

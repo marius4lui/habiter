@@ -22,7 +22,7 @@ await access(new URL("public/favicon.ico", website));
 await access(new URL("src/app/page.tsx", website));
 await access(new URL("src/app/globals.css", website));
 assert.equal(packageJson.dependencies.next, "15.4.6");
-assert.match(page, /https:\/\/get\.habiter\.dev\/download/);
+assert.match(page, /https:\/\/get\.the\.habiter\.dev\//);
 assert.match(page, /Aktueller Stable-Release/);
 assert.doesNotMatch(page, /Habiter 1\.\d+ · Stable/);
 assert.doesNotMatch(page, />\s*Beta testen\s*</);

@@ -61,6 +61,7 @@ const openApi = JSON.parse(
 assert.equal(openApi.openapi, "3.1.0");
 
 const expectedPaths = [
+  "/",
   "/api/v1/download/{platform}",
   "/api/v1/download/{platform}/{architecture}",
   "/api/v1/manifest",

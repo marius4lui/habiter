@@ -87,7 +87,7 @@ curl --fail --dump-header - https://get.habiter.dev/install.sh --output /tmp/hab
 head -n 1 /tmp/habiter-install.sh
 sh -n /tmp/habiter-install.sh
 curl --fail 'https://get.habiter.dev/api/v1/install/linux/x64?channel=stable&distro=fedora' | jq .
-curl --head 'https://get.habiter.dev/download?platform=linux&distro=fedora'
+curl --head 'https://get.the.habiter.dev/?platform=linux&distro=fedora'
 ```
 
 Expected headers include the correct `Content-Type`, `X-Content-Type-Options: nosniff`, `X-Habiter-Installer-Source: repository`, cache policy, and—when supplied upstream—an ETag. Resolver output must match the enriched GitHub Release URL, size, and SHA-256.
@@ -115,7 +115,8 @@ Habiter 1.5.0 is the bootstrap release for this updater. Clients older than 1.5 
 The following manual checks remain part of the stable-release checklist:
 
 - Create and verify an encrypted offline Android-keystore backup.
-- Attach and verify `get.habiter.dev` in Cloudflare and set `RELEASE_API_BASE_URL`.
+- Attach and verify both `get.habiter.dev` and `get.the.habiter.dev` as Worker Custom Domains in Cloudflare, then set `RELEASE_API_BASE_URL` to the API origin.
+- Verify that `https://get.the.habiter.dev/` performs platform selection and that the legacy `https://get.habiter.dev/download` path redirects there with its query string intact.
 - Exercise Android reminders, notification actions and App Lock on physical hardware.
 - Confirm the unsigned status and user guidance for Windows and macOS downloads.
 - Complete the OAuth and import/export scenarios from the release-candidate checklist.

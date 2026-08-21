@@ -10,7 +10,7 @@ The release workflow builds and installer CI tests macOS on `macos-latest`. The 
 curl -fsSL https://get.habiter.dev/install.sh | sh
 ```
 
-The installer detects Apple Silicon or Intel, resolves the release, downloads through HTTPS, checks SHA-256, verifies the expected `.app/Contents/MacOS` structure, and stages replacement. Preview with:
+The installer detects Apple Silicon or Intel, resolves the release, downloads through HTTPS, checks SHA-256, verifies the expected `.app/Contents/MacOS` structure, and stages replacement. It records ownership beside the bundle as `Habiter.app.habiter-install.json`; it never writes metadata inside the app and therefore does not invalidate a future code signature. Preview with:
 
 ```sh
 curl -fsSL https://get.habiter.dev/install.sh | sh -s -- --dry-run --verbose
@@ -39,7 +39,9 @@ Confirm `~/Applications/Habiter.app/Contents/MacOS` exists. Do not replace an ex
 
 ## Update
 
-Quit Habiter and rerun the installer. The new app is verified and staged before the previous bundle is moved aside. Manual updates repeat the resolver and checksum flow.
+Current unsigned releases keep update installation visible and external: quit Habiter and rerun the installer. The new app is checksum-verified and staged before the previous bundle is moved aside. Manual updates repeat the resolver and checksum flow.
+
+When release metadata truthfully marks a ZIP signed, a maintained user-scoped installation can complete the same lifecycle from the Update Center. Habiter downloads to its per-user cache, rechecks size and SHA-256, then a detached helper validates archive layout, exact `dev.habiter.Habiter` bundle identity, strict code signing, Gatekeeper assessment, and signing-team continuity. After Habiter exits, the helper performs an adjacent bundle swap, relaunches, and restores the prior bundle if the new process exits during startup. `/Applications`, custom system-scoped, unsigned, unowned, and legacy internal-marker installs remain on the external path; the app never invokes `sudo` or weakens Gatekeeper.
 
 ## Uninstall safely
 
@@ -58,13 +60,13 @@ Use `--system` for `/Applications/Habiter.app`, or `--install-dir '/exact/custom
 
 Normal uninstall quarantines the verified bundle before final deletion and restores staged content if a later move fails. It preserves `~/Library` application support/preferences, Keychain entries, backups, exports, and operating-system backups. This version has no application-data deletion option.
 
-For a manual fallback, first reject `/`, the home directory, `/Applications`, symlinks, and redirected parents; verify `.habiter-install.json`, `Contents/MacOS/habiter`, and the exact `CFBundleIdentifier` in `Contents/Info.plist`. Rename only the verified `.app` to a unique adjacent quarantine, then remove that literal quarantine after review. Never start with recursive deletion of a name-only match, never remove `/Applications`, and preserve all data locations outside the bundle.
+For a manual fallback, first reject `/`, the home directory, `/Applications`, symlinks, and redirected parents; verify the adjacent `<Habiter.app>.habiter-install.json`, `Contents/MacOS/habiter`, and the exact `CFBundleIdentifier` in `Contents/Info.plist`. Older installs may have an internal `.habiter-install.json`; internal and adjacent manifests together are ambiguous and must be repaired by reinstalling. Rename only the verified manifest and `.app` to unique adjacent quarantines, then remove those literal quarantines after review. Never start with recursive deletion of a name-only match, never remove `/Applications`, and preserve all data locations outside the bundle.
 
 ## Gatekeeper and signing
 
 The installer never disables Gatekeeper and never removes quarantine metadata. For an unsigned current build, first confirm the resolver URL and SHA-256. Then use Finder's **Open** action or the macOS **Privacy & Security** panel if your policy offers an explicit approval. Do not run broad `xattr` removal or disable Gatekeeper. Managed Macs may require administrator approval.
 
-When notarized/signing metadata becomes available, verification with `codesign` and `spctl` will be additive to SHA-256:
+For an artifact marked signed, the in-app helper requires both `codesign` and `spctl` verification in addition to SHA-256 and requires the current and next bundle to share a non-ad-hoc Team Identifier. These commands provide manual diagnostics:
 
 ```sh
 codesign --display --verbose=4 "$HOME/Applications/Habiter.app"

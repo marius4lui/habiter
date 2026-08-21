@@ -8,6 +8,8 @@ import 'package:http/http.dart' as http;
 import '../domain/update_models.dart';
 import '../domain/update_platform_gateway.dart';
 import 'desktop_update_client.dart';
+import 'desktop_update_installer.dart';
+import 'io_desktop_update_installer.dart';
 
 DesktopUpdateClient createDesktopUpdateClient() => _defaultClient;
 
@@ -17,11 +19,21 @@ final class IoDesktopUpdateClient implements DesktopUpdateClient {
   IoDesktopUpdateClient({
     Directory? root,
     http.Client Function()? httpClientFactory,
+    DesktopUpdateInstaller? installer,
+    void Function(int)? terminate,
   }) : _root = root ?? Directory(_defaultRootPath()),
-       _httpClientFactory = httpClientFactory ?? http.Client.new;
+       _httpClientFactory = httpClientFactory ?? http.Client.new,
+       _installer =
+           installer ??
+           IoDesktopUpdateInstaller(
+             helperDirectory: root ?? Directory(_defaultRootPath()),
+           ),
+       _terminate = terminate ?? exit;
 
   final Directory _root;
   final http.Client Function() _httpClientFactory;
+  final DesktopUpdateInstaller _installer;
+  final void Function(int) _terminate;
   final Map<String, _DownloadTask> _tasks = {};
 
   static final RegExp _idPattern = RegExp(
@@ -29,8 +41,7 @@ final class IoDesktopUpdateClient implements DesktopUpdateClient {
   );
 
   @override
-  bool canSelfUpdate(String platform) =>
-      const {'windows', 'linux', 'macos'}.contains(platform);
+  bool canSelfUpdate(String platform) => _installer.canInstall(platform);
 
   @override
   Future<String> enqueueDownload(UpdateCandidate candidate) async {
@@ -149,7 +160,32 @@ final class IoDesktopUpdateClient implements DesktopUpdateClient {
   Future<UpdateInstallResult> install(
     String downloadId,
     UpdateCandidate candidate,
-  ) async => UpdateInstallResult.unavailable;
+  ) async {
+    _requireId(downloadId);
+    final record = await _readRecord(downloadId);
+    final expected = _DesktopDownloadRecord.fromCandidate(candidate);
+    if (record != expected || record?.id != downloadId) {
+      throw const FormatException('Desktop update metadata changed.');
+    }
+    final verification = await verifyDownload(downloadId, candidate);
+    if (!verification.isValid) {
+      throw StateError(verification.failureCode ?? 'verification_failed');
+    }
+    final launched = await _installer.launch(
+      DesktopInstallRequest(
+        platform: record!.platform,
+        payloadPath: _payloadFile(record).path,
+        sha256: record.sha256,
+        size: record.size,
+        version: candidate.release.version,
+        signed: record.signed,
+        errorPath: _errorFile(downloadId).path,
+      ),
+    );
+    if (!launched) return UpdateInstallResult.unavailable;
+    Timer(const Duration(milliseconds: 250), () => _terminate(0));
+    return UpdateInstallResult.launched;
+  }
 
   @override
   Future<int> storedDownloadBytes() async {

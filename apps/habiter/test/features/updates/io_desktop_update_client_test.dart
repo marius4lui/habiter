@@ -6,6 +6,7 @@ import 'package:habiter/features/updates/domain/update_models.dart';
 import 'package:habiter/features/updates/domain/update_platform_gateway.dart';
 import 'package:habiter/features/updates/domain/update_policy.dart';
 import 'package:habiter/features/updates/infrastructure/io_desktop_update_client.dart';
+import 'package:habiter/features/updates/infrastructure/desktop_update_installer.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
@@ -115,6 +116,44 @@ void main() {
     final client = IoDesktopUpdateClient(root: root);
     expect(client.removeDownload('../../unrelated'), throwsFormatException);
   });
+
+  test(
+    'install re-verifies the payload before launching and terminating',
+    () async {
+      final bytes = List<int>.generate(64, (index) => 255 - index);
+      final candidate = _candidate(bytes);
+      final installer = _FakeInstaller();
+      int? exitCode;
+      final client = IoDesktopUpdateClient(
+        root: root,
+        httpClientFactory: () =>
+            MockClient((_) async => http.Response.bytes(bytes, HttpStatus.ok)),
+        installer: installer,
+        terminate: (code) => exitCode = code,
+      );
+      final id = await client.enqueueDownload(candidate);
+      await _waitForPhase(client, id, UpdateDownloadPhase.complete);
+
+      expect(await client.install(id, candidate), UpdateInstallResult.launched);
+      expect(installer.request?.sha256, candidate.artifact.sha256);
+      expect(installer.request?.version, candidate.release.version);
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      expect(exitCode, 0);
+    },
+  );
+}
+
+final class _FakeInstaller implements DesktopUpdateInstaller {
+  DesktopInstallRequest? request;
+
+  @override
+  bool canInstall(String platform) => platform == 'linux';
+
+  @override
+  Future<bool> launch(DesktopInstallRequest value) async {
+    request = value;
+    return true;
+  }
 }
 
 UpdateCandidate _candidate(List<int> bytes, {String? declaredDigest}) {

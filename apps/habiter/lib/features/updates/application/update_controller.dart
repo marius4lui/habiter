@@ -223,7 +223,7 @@ final class UpdateController extends ChangeNotifier {
       _applyCandidate(verifiedOnline: true);
       final candidate = _state.candidate;
       if (candidate != null &&
-          _runtime?.supportsDirectInstall == true &&
+          _canInstallDirectly(_runtime!, candidate) &&
           _policy.shouldAutoDownload(
             profile: profile,
             isOnline: true,
@@ -341,7 +341,7 @@ final class UpdateController extends ChangeNotifier {
     final candidate = _state.candidate;
     final runtime = _runtime;
     if (candidate == null || runtime == null) return;
-    if (!runtime.supportsDirectInstall) {
+    if (!_canInstallDirectly(runtime, candidate)) {
       await _platform.openExternal(candidate);
       return;
     }
@@ -555,6 +555,14 @@ final class UpdateController extends ChangeNotifier {
 
   Future<void> handleForegroundTick() =>
       check(UpdateCheckTrigger.foregroundTimer);
+
+  bool _canInstallDirectly(
+    UpdateRuntimeInfo runtime,
+    UpdateCandidate candidate,
+  ) =>
+      runtime.supportsDirectInstall &&
+      (!const {'windows', 'macos'}.contains(runtime.platform) ||
+          candidate.artifact.signed);
 
   @override
   void dispose() {

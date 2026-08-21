@@ -60,3 +60,18 @@ jobs:
           curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/health"
           curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/api/v1/releases"
           curl --fail --retry 5 --retry-all-errors --retry-delay 3 "$RELEASE_API_BASE_URL/api/v1/manifest"
+      - name: Smoke test smart-download domain
+        env:
+          SMART_DOWNLOAD_BASE_URL: https://get.the.habiter.dev
+        run: |
+          location=$(curl --silent --show-error --fail --retry 5 --retry-all-errors --retry-delay 3 \
+            --user-agent 'Mozilla/5.0 (Linux; Android 15)' \
+            --output /dev/null --write-out '%{redirect_url}' "$SMART_DOWNLOAD_BASE_URL/")
+          case "$location" in
+            https://get.habiter.dev/api/v1/download/android/*) ;;
+            *) echo "Unexpected smart-download redirect: $location" >&2; exit 1 ;;
+          esac
+          legacy=$(curl --silent --show-error --fail --retry 5 --retry-all-errors --retry-delay 3 \
+            --output /dev/null --write-out '%{redirect_url}' \
+            'https://get.habiter.dev/download?platform=android')
+          test "$legacy" = "$SMART_DOWNLOAD_BASE_URL/?platform=android"

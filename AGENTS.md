@@ -14,11 +14,12 @@ Before starting any task, an agent must:
 
 ## Rule map
 
-Every changing agent must read [agent roles](/dev/agent-workflows/roles), [batch rules](/dev/agent-workflows/batches), and [delivery flows](/dev/agent-workflows/flows). Read the additional page that matches the task:
+Every changing agent must read [agent modes](/dev/agent-workflows/modes), [agent roles](/dev/agent-workflows/roles), [batch rules](/dev/agent-workflows/batches), and [delivery flows](/dev/agent-workflows/flows). Read the additional page that matches the task:
 
 | Task | Required page |
 | --- | --- |
 | Medium, risky, or multi-batch work | [Planning](/dev/agent-workflows/planning) |
+| Repeated task type or handoff | [Playbooks](/dev/agent-workflows/playbooks) and [handoffs](/dev/agent-workflows/handoffs) |
 | Branch creation, synchronization, or cleanup | [Branch workflow](/dev/branches) |
 | Tests and quality evidence | [Testing and quality](/dev/testing) |
 | Published documentation | [Documentation development](/dev/documentation) |

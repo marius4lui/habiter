@@ -16,6 +16,7 @@ An agent must stop and request direction when two applicable rules cannot both b
 Before changing files, state the following in the task record, implementation plan, or pull request:
 
 ```text
+Mode: Plan | Inspect | Diagnose | Review | Implement | Verify | Deliver | Monitor
 Flow: Standard | Yeet | Hotfix | Release
 Scope: what is included and explicitly excluded
 Acceptance: observable completion criteria
@@ -28,10 +29,24 @@ Remote actions: none | push | pull request | merge | release | deploy
 
 ## Read in this order
 
-1. [Roles and authority](/dev/agent-workflows/roles)
-2. [Planning](/dev/agent-workflows/planning) when the work is not trivial
-3. [Batches and commits](/dev/agent-workflows/batches)
-4. [Delivery flows](/dev/agent-workflows/flows)
-5. The relevant branch, test, documentation, platform, and release contracts
+1. [Agent modes](/dev/agent-workflows/modes)
+2. [Roles and authority](/dev/agent-workflows/roles)
+3. [Planning](/dev/agent-workflows/planning) when the work is not trivial
+4. [Batches and commits](/dev/agent-workflows/batches)
+5. [Delivery flows](/dev/agent-workflows/flows)
+6. The relevant [playbook](/dev/agent-workflows/playbooks), handoff pattern, and engineering contract
 
 The branch naming and cleanup mechanics are maintained in the [branch workflow](/dev/branches). Quality evidence is maintained in [testing and quality](/dev/testing).
+
+## Working pages
+
+| Need | Page |
+| --- | --- |
+| Decide what an agent is allowed to do now | [Agent modes](/dev/agent-workflows/modes) |
+| Decide who owns a decision or approval | [Roles and authority](/dev/agent-workflows/roles) |
+| Design a multi-step change | [Planning](/dev/agent-workflows/planning) |
+| Split work and create commits | [Batches and commits](/dev/agent-workflows/batches) |
+| Choose Standard, Yeet, Hotfix, or Release | [Delivery flows](/dev/agent-workflows/flows) |
+| Start a common type of development task | [Change playbooks](/dev/agent-workflows/playbooks) |
+| Transfer work without losing evidence | [Handoffs](/dev/agent-workflows/handoffs) |
+| Execute a task reliably | [Checklists](/dev/agent-workflows/checklists) |

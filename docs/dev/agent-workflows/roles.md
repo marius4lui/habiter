@@ -10,14 +10,9 @@ One person or agent can perform more than one role, but the authority and eviden
 | Reviewer | Independent assessment of correctness, regressions, and missing evidence | Treat unrun checks as passing or approve its own exception |
 | Release operator | The authorized release or deployment procedure and operator evidence | Treat a successful push as a release or deployment |
 
-## Task modes
+## Modes and authorization
 
-| Request mode | Default permission |
-| --- | --- |
-| Plan, explain, inspect, review, or diagnose | Read-only. A plan document may be created only when requested. |
-| Implement, fix, or change | Create a scoped branch, edit files, run local checks, and commit completed batches. |
-| Push or open a pull request | Only when the owner explicitly requests that remote action. |
-| Merge, release, deploy, delete, rotate credentials, or alter access | Only with separate, exact owner authorization. |
+[Agent modes](/dev/agent-workflows/modes) defines the permitted local actions and required outcome for Plan, Inspect, Diagnose, Review, Implement, Verify, Deliver, and Monitor. The owner remains the only source of approval for remote or privileged actions.
 
 Words such as “finish”, “urgent”, or “use Yeet” do not waive the authorization boundary. If a request says “use Yeet and push/open a PR”, those two remote actions are authorized; merge, release, and deployment still are not.
 

@@ -14,10 +14,10 @@ cleanup() { rm -rf "$TEST_ROOT"; }
 trap cleanup EXIT HUP INT TERM
 mkdir -p "$HOME_FIXTURE" "$TEST_ROOT/system-bin" "$TEST_ROOT/system-share"
 
-export HABITER_TEST_HOME=$HOME_FIXTURE
-export HABITER_TEST_SYSTEM_INSTALL_ROOT=$SYSTEM_FIXTURE
-export HABITER_TEST_SYSTEM_WRAPPER=$SYSTEM_WRAPPER
-export HABITER_TEST_SYSTEM_DESKTOP=$SYSTEM_DESKTOP
+export HABITER_TEST_HOME="$HOME_FIXTURE"
+export HABITER_TEST_SYSTEM_INSTALL_ROOT="$SYSTEM_FIXTURE"
+export HABITER_TEST_SYSTEM_WRAPPER="$SYSTEM_WRAPPER"
+export HABITER_TEST_SYSTEM_DESKTOP="$SYSTEM_DESKTOP"
 export HABITER_UNINSTALL_OS=Linux
 
 write_manifest() {
@@ -157,7 +157,7 @@ expect_failure HAB-UNIX-049 "$UNINSTALLER" --dry-run
 
 reset_fixtures
 mkdir -p "$HOME_FIXTURE/Applications/Habiter.app/Contents/MacOS"
-mac_root=$HOME_FIXTURE/Applications/Habiter.app
+mac_root=$(CDPATH='' cd -- "$HOME_FIXTURE/Applications/Habiter.app" && pwd -P)
 printf '#!/bin/sh\n' > "$mac_root/Contents/MacOS/habiter"; chmod 755 "$mac_root/Contents/MacOS/habiter"
 printf '%s\n' '<plist><dict><key>CFBundleIdentifier</key><string>dev.habiter.Habiter</string></dict></plist>' > "$mac_root/Contents/Info.plist"
 write_manifest "$mac_root" "$mac_root/Contents/MacOS/habiter" user 1.7.1 '' "$mac_root.habiter-install.json"
@@ -169,7 +169,7 @@ HABITER_UNINSTALL_OS=Darwin expect_failure HAB-UNIX-047 "$UNINSTALLER" --dry-run
 
 reset_fixtures
 mkdir -p "$HOME_FIXTURE/Applications/Habiter.app/Contents/MacOS"
-mac_root=$HOME_FIXTURE/Applications/Habiter.app
+mac_root=$(CDPATH='' cd -- "$HOME_FIXTURE/Applications/Habiter.app" && pwd -P)
 printf '#!/bin/sh\n' > "$mac_root/Contents/MacOS/habiter"; chmod 755 "$mac_root/Contents/MacOS/habiter"
 printf '%s\n' '<plist><dict><key>CFBundleIdentifier</key><string>dev.habiter.Habiter</string></dict></plist>' > "$mac_root/Contents/Info.plist"
 write_manifest "$mac_root" "$mac_root/Contents/MacOS/habiter" user 1.7.1 '' "$mac_root.habiter-install.json"

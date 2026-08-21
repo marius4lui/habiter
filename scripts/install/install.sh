@@ -13,7 +13,7 @@ TMP_DIR=
 BACKUP_PATH=
 FINAL_PATH=
 PHASE=startup
-INSTALL_ID="$(date +%s 2>/dev/null || say 0)-$$"
+INSTALL_ID="$(date +%s 2>/dev/null || printf 0)-$$"
 MANIFEST_NAME=.habiter-install.json
 
 say() { printf '%s\n' "$*"; }
@@ -206,7 +206,8 @@ install_linux() {
     printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Name=Habiter' "Exec=$FINAL_PATH" 'Icon=dev.habiter.Habiter' 'Terminal=false' 'Categories=Utility;' > "$desktop_dir/dev.habiter.Habiter.desktop"
   fi
   canonical_root=$(CDPATH='' cd -- "$root" && pwd -P) || fail HAB-POSIX-063 "cannot canonicalize installation root" "Check the installation path and links." 60
-  integration_a= integration_b=
+  integration_a=''
+  integration_b=''
   if [ "$NO_DESKTOP" -eq 0 ]; then integration_a=$bin_dir/habiter; integration_b=$desktop_dir/dev.habiter.Habiter.desktop; fi
   write_manifest "$canonical_root" "$canonical_root/Habiter.AppImage" "$(if [ "$SYSTEM" -eq 1 ]; then say system; else say user; fi)" "$integration_a" "$integration_b"
   [ -z "$BACKUP_PATH" ] || rm -f "$BACKUP_PATH"; BACKUP_PATH=

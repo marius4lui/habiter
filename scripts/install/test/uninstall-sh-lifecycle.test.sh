@@ -32,10 +32,10 @@ printf '%s\n' \
   '  "pathEntryAddedByInstaller": false' \
   '}' > "$USER_ROOT/.habiter-install.json"
 
-export HABITER_TEST_HOME=$HOME_FIXTURE
-export HABITER_TEST_SYSTEM_INSTALL_ROOT=$SYSTEM_FIXTURE
-export HABITER_TEST_SYSTEM_WRAPPER=$TEST_ROOT/system-bin/habiter
-export HABITER_TEST_SYSTEM_DESKTOP=$TEST_ROOT/system-share/dev.habiter.Habiter.desktop
+export HABITER_TEST_HOME="$HOME_FIXTURE"
+export HABITER_TEST_SYSTEM_INSTALL_ROOT="$SYSTEM_FIXTURE"
+export HABITER_TEST_SYSTEM_WRAPPER="$TEST_ROOT/system-bin/habiter"
+export HABITER_TEST_SYSTEM_DESKTOP="$TEST_ROOT/system-share/dev.habiter.Habiter.desktop"
 export HABITER_UNINSTALL_OS=Linux
 export HABITER_UNINSTALL_TEST=1
 
@@ -56,7 +56,7 @@ unset HABITER_TEST_NO_TTY
 expect_failure HAB-UNIX-072 "$UNINSTALLER" --install-dir "$USER_ROOT" --confirm-target 'UNINSTALL HABITER /wrong'
 
 printf 'n\n' > "$TEST_ROOT/confirm"
-export HABITER_TEST_CONFIRM_FILE=$TEST_ROOT/confirm
+export HABITER_TEST_CONFIRM_FILE="$TEST_ROOT/confirm"
 expect_failure HAB-UNIX-075 "$UNINSTALLER" --install-dir "$USER_ROOT"
 printf 'y\nwrong\n' > "$TEST_ROOT/confirm"
 expect_failure HAB-UNIX-077 "$UNINSTALLER" --install-dir "$USER_ROOT"
@@ -69,7 +69,7 @@ expect_failure HAB-UNIX-082 "$UNINSTALLER" --install-dir "$USER_ROOT" --confirm-
 unset HABITER_TEST_FAIL_STAGE_AT
 [ -d "$USER_ROOT" ] && [ -L "$WRAPPER" ] && [ -f "$DESKTOP" ]
 
-export HABITER_TEST_FAIL_FINALIZE_AT=$WRAPPER
+export HABITER_TEST_FAIL_FINALIZE_AT="$WRAPPER"
 expect_failure HAB-UNIX-084 "$UNINSTALLER" --install-dir "$USER_ROOT" --confirm-target "$CHALLENGE"
 unset HABITER_TEST_FAIL_FINALIZE_AT
 [ -d "$USER_ROOT" ] && [ -L "$WRAPPER" ] && [ -f "$DESKTOP" ]

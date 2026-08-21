@@ -263,6 +263,7 @@ final class UpdateController extends ChangeNotifier {
       track: track,
       currentBuild: runtime.buildNumber,
       platform: runtime.platform,
+      architecture: runtime.architecture,
       androidDistribution: runtime.androidDistribution,
     );
     if (candidate == null) {
@@ -292,14 +293,12 @@ final class UpdateController extends ChangeNotifier {
         .where((item) => item.buildNumber == build)
         .firstOrNull;
     if (release == null) return null;
-    final artifact = release.artifacts
-        .where(
-          (item) =>
-              item.platform == runtime.platform &&
-              (runtime.platform != 'android' ||
-                  item.distribution == runtime.androidDistribution),
-        )
-        .firstOrNull;
+    final artifact = _selector.artifactFor(
+      release: release,
+      platform: runtime.platform,
+      architecture: runtime.architecture,
+      androidDistribution: runtime.androidDistribution,
+    );
     return artifact == null
         ? null
         : UpdateCandidate(release: release, artifact: artifact);

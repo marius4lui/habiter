@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../domain/update_models.dart';
 import '../domain/update_platform_gateway.dart';
+import 'runtime_architecture.dart';
 
 final class MethodChannelUpdatePlatformGateway
     implements UpdatePlatformGateway {
@@ -38,6 +39,7 @@ final class MethodChannelUpdatePlatformGateway
       };
       return UpdateRuntimeInfo(
         platform: platform,
+        architecture: runtimeArchitecture(platform),
         version: package.version,
         buildNumber: build,
         supportsUpdates: true,
@@ -50,6 +52,7 @@ final class MethodChannelUpdatePlatformGateway
     }
     return UpdateRuntimeInfo(
       platform: platform,
+      architecture: runtimeArchitecture(platform),
       version: package.version,
       buildNumber: build,
       supportsUpdates: const {'windows', 'linux', 'macos'}.contains(platform),

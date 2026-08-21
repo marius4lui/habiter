@@ -9,6 +9,8 @@ enum ReleaseChannel { stable, beta }
 
 enum AndroidDistribution { direct, play }
 
+enum UpdateArtifactFormat { apk, aab, zip, tarGz, appImage, appBundle, web }
+
 enum UpdatePhase {
   idle,
   checking,
@@ -143,6 +145,8 @@ final class UpdateArtifact {
   const UpdateArtifact({
     required this.platform,
     required this.architecture,
+    required this.format,
+    required this.primary,
     required this.fileName,
     required this.signed,
     required this.url,
@@ -154,6 +158,16 @@ final class UpdateArtifact {
   factory UpdateArtifact.fromJson(Object? value) {
     final json = _map(value, 'artifact');
     final platform = _string(json['platform'], 'artifact.platform');
+    if (!const {
+      'android',
+      'windows',
+      'linux',
+      'macos',
+      'ios',
+      'web',
+    }.contains(platform)) {
+      throw const FormatException('Unknown update artifact platform.');
+    }
     final distribution = switch (json['distribution']) {
       'direct' => AndroidDistribution.direct,
       'play' => AndroidDistribution.play,
@@ -163,6 +177,26 @@ final class UpdateArtifact {
     if (platform == 'android' && distribution == null) {
       throw const FormatException('Android artifacts require a distribution.');
     }
+    if (platform != 'android' && distribution != null) {
+      throw const FormatException(
+        'Only Android artifacts may declare a distribution.',
+      );
+    }
+    final format = switch (json['format']) {
+      'apk' => UpdateArtifactFormat.apk,
+      'aab' => UpdateArtifactFormat.aab,
+      'zip' => UpdateArtifactFormat.zip,
+      'tar.gz' => UpdateArtifactFormat.tarGz,
+      'appimage' => UpdateArtifactFormat.appImage,
+      'appbundle' => UpdateArtifactFormat.appBundle,
+      'web' => UpdateArtifactFormat.web,
+      null => null,
+      _ => throw const FormatException('Unknown update artifact format.'),
+    };
+    final fileName = _string(json['fileName'], 'artifact.fileName');
+    if (!RegExp(r'^[A-Za-z0-9][A-Za-z0-9._-]+$').hasMatch(fileName)) {
+      throw const FormatException('Update artifact file name is unsafe.');
+    }
     final url = Uri.parse(_string(json['url'], 'artifact.url'));
     if (url.scheme != 'https' || !url.hasAuthority) {
       throw const FormatException('Update artifacts must use HTTPS.');
@@ -170,7 +204,9 @@ final class UpdateArtifact {
     return UpdateArtifact(
       platform: platform,
       architecture: _string(json['architecture'], 'artifact.architecture'),
-      fileName: _string(json['fileName'], 'artifact.fileName'),
+      format: format,
+      primary: _optionalBool(json['primary'], 'artifact.primary'),
+      fileName: fileName,
       signed: _bool(json['signed'], 'artifact.signed'),
       distribution: distribution,
       url: url,
@@ -181,6 +217,8 @@ final class UpdateArtifact {
 
   final String platform;
   final String architecture;
+  final UpdateArtifactFormat? format;
+  final bool? primary;
   final String fileName;
   final bool signed;
   final AndroidDistribution? distribution;
@@ -375,6 +413,9 @@ bool _bool(Object? value, String field) {
   if (value is! bool) throw FormatException('$field must be a boolean.');
   return value;
 }
+
+bool? _optionalBool(Object? value, String field) =>
+    value == null ? null : _bool(value, field);
 
 DateTime _date(Object? value, String field) {
   final parsed = DateTime.tryParse(_string(value, field));

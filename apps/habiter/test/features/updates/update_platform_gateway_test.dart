@@ -119,6 +119,10 @@ UpdateCandidate _candidateFor({
     artifact: UpdateArtifact(
       platform: platform,
       architecture: 'universal',
+      format: platform == 'android'
+          ? UpdateArtifactFormat.aab
+          : UpdateArtifactFormat.tarGz,
+      primary: platform == 'android' ? null : true,
       fileName: 'habiter-download',
       signed: platform == 'android',
       url: Uri.parse(url),

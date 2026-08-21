@@ -144,9 +144,9 @@
     {
       "version": "1.6.0",
       "title": "Distribution and installers",
-      "status": "planned",
-      "channel": "stable",
-      "target": "After v1.5.0 is stable",
+      "status": "released",
+      "channel": "beta",
+      "statusText": "Released to the beta channel as the desktop distribution baseline.",
       "issues": [22],
       "summary": [
         "Deliver repository-backed installers and a reliable, documented desktop installation experience."
@@ -162,9 +162,9 @@
     {
       "version": "1.7.0",
       "title": "Habit Experience and Onboarding v3",
-      "status": "planned",
+      "status": "released",
       "channel": "stable",
-      "target": "After v1.6.0",
+      "statusText": "Released as the stable onboarding and habit-experience foundation.",
       "issues": [6, 7, 8],
       "summary": [
         "Improve habit schedule understanding.",
@@ -204,6 +204,21 @@
         }
       ],
       "goal": "Avoid multiple independent implementations of schedule and reminder behavior."
+    },
+    {
+      "version": "1.7.1",
+      "title": "Editorial onboarding polish",
+      "status": "released",
+      "channel": "stable",
+      "statusText": "Released as a focused stable presentation update.",
+      "summary": [
+        "Give every onboarding step a distinct editorial layout and clearer visual hierarchy."
+      ],
+      "scope": [
+        "Differentiate onboarding cards, typography and spacing by step.",
+        "Clarify swipe interactions and the current action.",
+        "Keep the polished flow accessible across themes, contrast settings and text scales."
+      ]
     },
     {
       "version": "1.8.0",

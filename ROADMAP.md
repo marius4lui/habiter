@@ -162,15 +162,15 @@ Scope:
 
 ---
 
-## Planned releases
-
 ### v1.6.0 — Distribution and installers
 
-**Channel:** Stable
+**Channel:** Beta
 
-**Target:** After v1.5.0 is stable
+Released to the beta channel as the desktop distribution baseline.
 
 **Issue:** #22
+
+- Deliver repository-backed installers and a reliable, documented desktop installation experience.
 
 Scope:
 
@@ -189,9 +189,13 @@ Make desktop distribution trustworthy and maintainable without expanding v1.5.0'
 
 **Channel:** Stable
 
-**Target:** After v1.6.0
+Released as the stable onboarding and habit-experience foundation.
 
 **Issues:** #6, #7, #8
+
+- Improve habit schedule understanding.
+- Improve onboarding navigation.
+- Align reminder creation flows.
 
 Implementation order:
 
@@ -216,6 +220,24 @@ Goal:
 Avoid multiple independent implementations of schedule and reminder behavior.
 
 ---
+
+### v1.7.1 — Editorial onboarding polish
+
+**Channel:** Stable
+
+Released as a focused stable presentation update.
+
+- Give every onboarding step a distinct editorial layout and clearer visual hierarchy.
+
+Scope:
+
+- Differentiate onboarding cards, typography and spacing by step.
+- Clarify swipe interactions and the current action.
+- Keep the polished flow accessible across themes, contrast settings and text scales.
+
+---
+
+## Planned releases
 
 ### v1.8.0 — Persistent Habiter Runtime
 

@@ -152,9 +152,7 @@ A concise view of the released baseline and upcoming product milestones.
 - Preserve the existing desktop transport for Linux, Windows and macOS.
 - Expose the underlying update-check failure instead of only a generic status.
 
-### Upcoming
-
-**v1.6.0 — Distribution and installers (Stable)**
+**v1.6.0 — Distribution and installers (Beta)**
 
 - Deliver repository-backed installers and a reliable, documented desktop installation experience.
 
@@ -163,6 +161,12 @@ A concise view of the released baseline and upcoming product milestones.
 - Improve habit schedule understanding.
 - Improve onboarding navigation.
 - Align reminder creation flows.
+
+**v1.7.1 — Editorial onboarding polish (Stable)**
+
+- Give every onboarding step a distinct editorial layout and clearer visual hierarchy.
+
+### Upcoming
 
 **v1.8.0 — Persistent Habiter Runtime (Stable)**
 

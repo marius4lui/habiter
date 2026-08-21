@@ -202,9 +202,56 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await _scrollStoryUntilVisible(tester, find.text('Später'));
 
     expect(find.text('Später'), findsOneWidget);
+    await _scrollStoryUntilVisible(tester, find.text('Vor der Installation'));
+    expect(find.text('Vor der Installation'), findsOneWidget);
+    await _scrollStoryUntilVisible(tester, find.text('Installationsschritte'));
+    expect(find.text('Installationsschritte'), findsOneWidget);
+    await _scrollStoryUntilVisible(tester, find.text('Release-Hinweise'));
+    expect(find.text('Release-Hinweise'), findsOneWidget);
+    await _scrollStoryUntilVisible(tester, find.text('Hilfe benötigt?'));
+    expect(find.text('Hilfe benötigt?'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('primary update action stays visible above release details', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final now = DateTime.utc(2026, 8, 17, 12);
+    final fixture = await _signed([
+      _storyRelease(build: 10500, channel: 'stable'),
+    ]);
+    final controller = await _checkedController(fixture, now: now);
+    addTearDown(controller.dispose);
+
+    final releases = manifestOf([
+      _storyRelease(build: 10500, channel: 'stable'),
+    ]).releases;
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('en'),
+        controller: controller,
+        home: ReleaseStoryScreen(
+          releases: releases,
+          isUpgrade: false,
+          onClose: () {},
+          controller: controller,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Download update'), findsOneWidget);
+    expect(find.text('Not now'), findsOneWidget);
+    expect(
+      tester.getBottomLeft(find.text('Download update')).dy,
+      lessThan(844),
+    );
     expect(tester.takeException(), isNull);
   });
 

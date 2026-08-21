@@ -1625,6 +1625,73 @@ class AppLocalizationsDe extends AppLocalizations {
       'Eine neue Habiter-Version ist bereit.';
 
   @override
+  String get releaseStoryPrerequisitesTitle => 'Vor der Installation';
+
+  @override
+  String get releaseStoryPrerequisitesIntro =>
+      'Ein kurzer Check sorgt für einen verlässlichen, geprüften Update-Pfad.';
+
+  @override
+  String get releaseStoryPrerequisiteAndroid =>
+      'Android-Gerät mit der direkten Habiter-Version';
+
+  @override
+  String get releaseStoryPrerequisiteConnection =>
+      'Stabile Verbindung und ausreichend freier Speicher';
+
+  @override
+  String get releaseStoryPrerequisitePermission =>
+      'Freigabe, damit Habiter geprüfte APK-Updates öffnen darf';
+
+  @override
+  String get releaseStoryStepsTitle => 'Installationsschritte';
+
+  @override
+  String get releaseStoryStepsIntro =>
+      'Habiter führt dich durch jeden Schritt und kehrt nach einer Android-Freigabe hierher zurück.';
+
+  @override
+  String get releaseStoryStepDownload =>
+      'Signiertes Update laden und Größe, Hash sowie Signatur von Habiter prüfen lassen.';
+
+  @override
+  String get releaseStoryStepPermission =>
+      'Falls gefragt, Habiter unter ‚Unbekannte Apps installieren‘ in Android freigeben.';
+
+  @override
+  String get releaseStoryStepInstall =>
+      'Zu Habiter zurückkehren; nach der Freigabe wird die Installation automatisch fortgesetzt.';
+
+  @override
+  String get releaseStoryHighlightsTitle => 'Das ist enthalten';
+
+  @override
+  String get releaseStoryHighlightsIntro =>
+      'Die wichtigsten Verbesserungen dieses Releases.';
+
+  @override
+  String get releaseStoryNotesTitle => 'Release-Hinweise';
+
+  @override
+  String get releaseStoryNotesIntro =>
+      'Detaillierte Änderungen nach Art gruppiert.';
+
+  @override
+  String get releaseStoryHelpTitle => 'Hilfe benötigt?';
+
+  @override
+  String get releaseStoryHelpIntro =>
+      'Die Installation bleibt unter deiner Kontrolle und kann sicher erneut versucht werden.';
+
+  @override
+  String get releaseStoryHelpAction =>
+      'Wenn Android die Installation blockiert';
+
+  @override
+  String get releaseStoryHelpBody =>
+      'Öffne ‚Unbekannte Apps installieren‘ für Habiter, erlaube diese Quelle und tippe nach der Rückkehr erneut auf Installieren.';
+
+  @override
   String get updateUnsupported =>
       'Updates sind auf dieser Plattform noch nicht verfügbar.';
 }

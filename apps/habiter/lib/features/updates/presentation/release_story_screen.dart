@@ -40,6 +40,11 @@ final class ReleaseStoryScreen extends StatelessWidget {
     final reducedMotion = context.reduceMotion;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
+      bottomNavigationBar: _StoryActions(
+        isUpgrade: isUpgrade,
+        onClose: onClose,
+        controller: controller,
+      ),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -58,10 +63,32 @@ final class ReleaseStoryScreen extends StatelessWidget {
               sliver: SliverList.list(
                 children: [
                   if (!isUpgrade) _DeadlineNotice(release: primary),
-                  if (highlights.isNotEmpty) ...[
-                    _HighlightGrid(items: highlights),
+                  if (!isUpgrade) ...[
+                    _SectionHeading(
+                      title: context.l10n.releaseStoryPrerequisitesTitle,
+                      intro: context.l10n.releaseStoryPrerequisitesIntro,
+                    ),
+                    _Prerequisites(),
                     const SizedBox(height: 28),
+                    _SectionHeading(
+                      title: context.l10n.releaseStoryStepsTitle,
+                      intro: context.l10n.releaseStoryStepsIntro,
+                    ),
+                    _InstallSteps(),
+                    const SizedBox(height: 32),
                   ],
+                  if (highlights.isNotEmpty) ...[
+                    _SectionHeading(
+                      title: context.l10n.releaseStoryHighlightsTitle,
+                      intro: context.l10n.releaseStoryHighlightsIntro,
+                    ),
+                    _HighlightGrid(items: highlights),
+                    const SizedBox(height: 32),
+                  ],
+                  _SectionHeading(
+                    title: context.l10n.releaseStoryNotesTitle,
+                    intro: context.l10n.releaseStoryNotesIntro,
+                  ),
                   _Changes(releases: releases, language: language),
                   if (releases.length > 1) ...[
                     const SizedBox(height: 24),
@@ -73,21 +100,13 @@ final class ReleaseStoryScreen extends StatelessWidget {
                     for (final release in releases)
                       _VersionDetails(release: release, language: language),
                   ],
-                  const SizedBox(height: 28),
-                  if (isUpgrade)
-                    FilledButton.icon(
-                      onPressed: onClose,
-                      icon: const Icon(Icons.check_rounded),
-                      label: Text(context.l10n.releaseStoryContinue),
-                    )
-                  else if (controller != null)
-                    _StoryUpdateAction(controller: controller!),
                   if (!isUpgrade) ...[
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: onClose,
-                      child: Text(context.l10n.updateNotNow),
+                    const SizedBox(height: 24),
+                    _SectionHeading(
+                      title: context.l10n.releaseStoryHelpTitle,
+                      intro: context.l10n.releaseStoryHelpIntro,
                     ),
+                    _HelpCard(),
                   ],
                 ],
               ),
@@ -118,6 +137,148 @@ final class ReleaseStoryScreen extends StatelessWidget {
     }
     return items;
   }
+}
+
+final class _StoryActions extends StatelessWidget {
+  const _StoryActions({
+    required this.isUpgrade,
+    required this.onClose,
+    required this.controller,
+  });
+
+  final bool isUpgrade;
+  final VoidCallback onClose;
+  final UpdateController? controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Material(
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        elevation: 8,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (isUpgrade)
+                FilledButton.icon(
+                  onPressed: onClose,
+                  icon: const Icon(Icons.check_rounded),
+                  label: Text(context.l10n.releaseStoryContinue),
+                )
+              else if (controller != null)
+                _StoryUpdateAction(controller: controller!),
+              if (!isUpgrade)
+                TextButton(
+                  onPressed: onClose,
+                  child: Text(context.l10n.updateNotNow),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+final class _SectionHeading extends StatelessWidget {
+  const _SectionHeading({required this.title, required this.intro});
+
+  final String title;
+  final String intro;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 14),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 6),
+        Text(intro, style: Theme.of(context).textTheme.bodyLarge),
+      ],
+    ),
+  );
+}
+
+final class _Prerequisites extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Card(
+    margin: EdgeInsets.zero,
+    child: Column(
+      children: [
+        ListTile(
+          leading: const Icon(Icons.android_rounded),
+          title: Text(context.l10n.releaseStoryPrerequisiteAndroid),
+        ),
+        ListTile(
+          leading: const Icon(Icons.wifi_rounded),
+          title: Text(context.l10n.releaseStoryPrerequisiteConnection),
+        ),
+        ListTile(
+          leading: const Icon(Icons.verified_user_outlined),
+          title: Text(context.l10n.releaseStoryPrerequisitePermission),
+        ),
+      ],
+    ),
+  );
+}
+
+final class _InstallSteps extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      _Step(number: 1, text: context.l10n.releaseStoryStepDownload),
+      _Step(number: 2, text: context.l10n.releaseStoryStepPermission),
+      _Step(number: 3, text: context.l10n.releaseStoryStepInstall),
+    ],
+  );
+}
+
+final class _Step extends StatelessWidget {
+  const _Step({required this.number, required this.text});
+
+  final int number;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(radius: 16, child: Text('$number')),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: Text(text),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+final class _HelpCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Card(
+    margin: EdgeInsets.zero,
+    color: Theme.of(context).colorScheme.secondaryContainer,
+    child: ListTile(
+      leading: const Icon(Icons.help_outline_rounded),
+      title: Text(context.l10n.releaseStoryHelpAction),
+      subtitle: Text(context.l10n.releaseStoryHelpBody),
+    ),
+  );
 }
 
 final class _StoryHero extends StatelessWidget {

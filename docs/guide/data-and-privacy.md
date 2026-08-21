@@ -52,6 +52,10 @@ Malformed, unsupported, or corrupt input is rejected before storage changes. The
 
 ## Deletion and reset scope
 
+Uninstalling the desktop application does **not** reset Habiter data. The maintained uninstallers remove only the verified application payload and integration created for that exact installation. They preserve databases/preferences, reminder state, secure-storage credentials, backups, exports, clipboard history, and operating-system backups, and state that preservation in both the removal plan and completion summary. The initial uninstaller contract deliberately has no `--remove-data` or `-RemoveData` option.
+
+Use the [safe platform uninstall workflow](/install/#uninstall-safely) for the application. Export a backup first if you later choose to remove data through Habiter or operating-system facilities.
+
 Use the narrowest reset that matches your intent:
 
 - reset reminder learning to remove calibration and adaptive timing data;

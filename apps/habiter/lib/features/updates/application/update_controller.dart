@@ -443,7 +443,8 @@ final class UpdateController extends ChangeNotifier {
     }
   }
 
-  Future<void> openInstallerPermission() => _platform.openInstallerPermission();
+  Future<InstallerPermissionResult> openInstallerPermission() =>
+      _platform.openInstallerPermission();
 
   Future<void> clearDownloads() async {
     _downloadPoller?.cancel();

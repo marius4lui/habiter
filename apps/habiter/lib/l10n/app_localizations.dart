@@ -2792,6 +2792,30 @@ abstract class AppLocalizations {
   /// **'Android fragt einmal, ob Habiter geprüfte APK-Updates öffnen darf. Du kannst diese Freigabe jederzeit entziehen.'**
   String get updateInstallerPermissionBody;
 
+  /// No description provided for @updateInstallerPermissionHelpTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Installationsfreigabe weiterhin nötig'**
+  String get updateInstallerPermissionHelpTitle;
+
+  /// No description provided for @updateInstallerPermissionDeniedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Android hat die Freigabe nicht erteilt. Öffne ‚Unbekannte Apps installieren‘ für Habiter, aktiviere ‚Aus dieser Quelle zulassen‘ und tippe danach erneut auf Installieren.'**
+  String get updateInstallerPermissionDeniedBody;
+
+  /// No description provided for @updateInstallerPermissionUnavailableBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Android konnte die passende App-Einstellung nicht öffnen. Suche in den Android-Einstellungen nach ‚Unbekannte Apps installieren‘, wähle Habiter und erlaube diese Quelle, bevor du es erneut versuchst.'**
+  String get updateInstallerPermissionUnavailableBody;
+
+  /// No description provided for @updateInstallerPermissionGotIt.
+  ///
+  /// In de, this message translates to:
+  /// **'Verstanden'**
+  String get updateInstallerPermissionGotIt;
+
   /// No description provided for @updateOpenSettings.
   ///
   /// In de, this message translates to:
@@ -2917,6 +2941,114 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Eine neue Habiter-Version ist bereit.'**
   String get releaseStoryFallbackSummary;
+
+  /// No description provided for @releaseStoryPrerequisitesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Vor der Installation'**
+  String get releaseStoryPrerequisitesTitle;
+
+  /// No description provided for @releaseStoryPrerequisitesIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein kurzer Check sorgt für einen verlässlichen, geprüften Update-Pfad.'**
+  String get releaseStoryPrerequisitesIntro;
+
+  /// No description provided for @releaseStoryPrerequisiteAndroid.
+  ///
+  /// In de, this message translates to:
+  /// **'Android-Gerät mit der direkten Habiter-Version'**
+  String get releaseStoryPrerequisiteAndroid;
+
+  /// No description provided for @releaseStoryPrerequisiteConnection.
+  ///
+  /// In de, this message translates to:
+  /// **'Stabile Verbindung und ausreichend freier Speicher'**
+  String get releaseStoryPrerequisiteConnection;
+
+  /// No description provided for @releaseStoryPrerequisitePermission.
+  ///
+  /// In de, this message translates to:
+  /// **'Freigabe, damit Habiter geprüfte APK-Updates öffnen darf'**
+  String get releaseStoryPrerequisitePermission;
+
+  /// No description provided for @releaseStoryStepsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Installationsschritte'**
+  String get releaseStoryStepsTitle;
+
+  /// No description provided for @releaseStoryStepsIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter führt dich durch jeden Schritt und kehrt nach einer Android-Freigabe hierher zurück.'**
+  String get releaseStoryStepsIntro;
+
+  /// No description provided for @releaseStoryStepDownload.
+  ///
+  /// In de, this message translates to:
+  /// **'Signiertes Update laden und Größe, Hash sowie Signatur von Habiter prüfen lassen.'**
+  String get releaseStoryStepDownload;
+
+  /// No description provided for @releaseStoryStepPermission.
+  ///
+  /// In de, this message translates to:
+  /// **'Falls gefragt, Habiter unter ‚Unbekannte Apps installieren‘ in Android freigeben.'**
+  String get releaseStoryStepPermission;
+
+  /// No description provided for @releaseStoryStepInstall.
+  ///
+  /// In de, this message translates to:
+  /// **'Zu Habiter zurückkehren; nach der Freigabe wird die Installation automatisch fortgesetzt.'**
+  String get releaseStoryStepInstall;
+
+  /// No description provided for @releaseStoryHighlightsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ist enthalten'**
+  String get releaseStoryHighlightsTitle;
+
+  /// No description provided for @releaseStoryHighlightsIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Die wichtigsten Verbesserungen dieses Releases.'**
+  String get releaseStoryHighlightsIntro;
+
+  /// No description provided for @releaseStoryNotesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Release-Hinweise'**
+  String get releaseStoryNotesTitle;
+
+  /// No description provided for @releaseStoryNotesIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Detaillierte Änderungen nach Art gruppiert.'**
+  String get releaseStoryNotesIntro;
+
+  /// No description provided for @releaseStoryHelpTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Hilfe benötigt?'**
+  String get releaseStoryHelpTitle;
+
+  /// No description provided for @releaseStoryHelpIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Installation bleibt unter deiner Kontrolle und kann sicher erneut versucht werden.'**
+  String get releaseStoryHelpIntro;
+
+  /// No description provided for @releaseStoryHelpAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Wenn Android die Installation blockiert'**
+  String get releaseStoryHelpAction;
+
+  /// No description provided for @releaseStoryHelpBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffne ‚Unbekannte Apps installieren‘ für Habiter, erlaube diese Quelle und tippe nach der Rückkehr erneut auf Installieren.'**
+  String get releaseStoryHelpBody;
 
   /// No description provided for @updateUnsupported.
   ///

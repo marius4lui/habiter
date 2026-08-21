@@ -55,8 +55,7 @@ internal class UpdateManager(private val activity: MainActivity) {
                 }
                 "installUpdate" -> result.success(install(requiredId(call), requiredLong(call, "buildNumber")))
                 "openInstallerPermission" -> {
-                    openInstallerPermission()
-                    result.success(null)
+                    openInstallerPermission(result)
                 }
                 "openStore" -> result.success(openStore())
                 "storedDownloadBytes" -> result.success(storedDownloadBytes())
@@ -261,12 +260,42 @@ internal class UpdateManager(private val activity: MainActivity) {
         return "launched"
     }
 
-    private fun openInstallerPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+    private var installerPermissionResult: MethodChannel.Result? = null
+
+    private fun openInstallerPermission(result: MethodChannel.Result) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            result.success("granted")
+            return
+        }
         requireDirectDistribution()
-        activity.startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+        if (installerPermissionResult != null) {
+            result.error("installer_permission_in_progress", "Installer permission settings are already open.", null)
+            return
+        }
+        val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
             data = Uri.parse("package:${activity.packageName}")
-        })
+        }
+        if (intent.resolveActivity(activity.packageManager) == null) {
+            result.success("unavailable")
+            return
+        }
+        installerPermissionResult = result
+        try {
+            activity.startActivityForResult(intent, INSTALLER_PERMISSION_REQUEST)
+        } catch (_: Exception) {
+            installerPermissionResult = null
+            result.success("unavailable")
+        }
+    }
+
+    fun handleActivityResult(requestCode: Int): Boolean {
+        if (requestCode != INSTALLER_PERMISSION_REQUEST) return false
+        val result = installerPermissionResult ?: return true
+        installerPermissionResult = null
+        val granted = Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
+            activity.packageManager.canRequestPackageInstalls()
+        result.success(if (granted) "granted" else "denied")
+        return true
     }
 
     private fun openStore(): Boolean {
@@ -500,5 +529,6 @@ internal class UpdateManager(private val activity: MainActivity) {
         const val METADATA_PREFIX = "download_"
         const val UPDATE_CHANNEL = "habiter_updates"
         const val READY_NOTIFICATION_BASE = 150000
+        const val INSTALLER_PERMISSION_REQUEST = 150001
     }
 }

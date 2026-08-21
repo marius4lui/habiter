@@ -63,6 +63,8 @@ enum UpdateInstallResult {
   unavailable,
 }
 
+enum InstallerPermissionResult { granted, denied, unavailable }
+
 abstract interface class UpdatePlatformGateway {
   Future<UpdateRuntimeInfo> runtimeInfo();
 
@@ -89,7 +91,7 @@ abstract interface class UpdatePlatformGateway {
     UpdateCandidate candidate,
   );
 
-  Future<void> openInstallerPermission();
+  Future<InstallerPermissionResult> openInstallerPermission();
 
   Future<UpdateInstallResult> openExternal(UpdateCandidate candidate);
 

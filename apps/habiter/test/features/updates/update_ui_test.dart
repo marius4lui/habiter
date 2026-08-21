@@ -14,6 +14,7 @@ import 'package:habiter/features/updates/domain/update_policy.dart';
 import 'package:habiter/features/updates/presentation/release_story_screen.dart';
 import 'package:habiter/features/updates/presentation/update_center_screen.dart';
 import 'package:habiter/features/updates/presentation/update_experience_gate.dart';
+import 'package:habiter/features/updates/presentation/update_install_action.dart';
 import 'package:habiter/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -25,6 +26,96 @@ import 'update_test_data.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('installer permission returns to and resumes installation', (
+    tester,
+  ) async {
+    final now = DateTime.utc(2026, 8, 17, 12);
+    final fixture = await _signed([
+      _storyRelease(build: 10500, channel: 'stable'),
+    ]);
+    final platform = _FakePlatform(buildNumber: 10400)
+      ..installResults.addAll([
+        UpdateInstallResult.permissionRequired,
+        UpdateInstallResult.launched,
+      ])
+      ..installerPermission = InstallerPermissionResult.granted;
+    final controller = await _controller(fixture, now: now, platform: platform);
+    addTearDown(controller.dispose);
+    await controller.check(UpdateCheckTrigger.manual);
+    await controller.download();
+    platform.download = const UpdateDownloadStatus(
+      phase: UpdateDownloadPhase.complete,
+      downloadedBytes: 100,
+      totalBytes: 100,
+    );
+    await controller.pollDownload();
+
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('en'),
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => requestUpdateInstall(context, controller),
+            child: const Text('Install'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Install'));
+    await tester.pumpAndSettle();
+    expect(find.text('Allow Habiter to install this update'), findsOneWidget);
+
+    await tester.tap(find.text('Open Android settings'));
+    await tester.pumpAndSettle();
+
+    expect(platform.installCalls, 2);
+    expect(platform.permissionCalls, 1);
+    expect(controller.state.phase, UpdatePhase.installing);
+    expect(find.text('Installation permission still needed'), findsNothing);
+  });
+
+  testWidgets('denied installer permission gives a concrete next step', (
+    tester,
+  ) async {
+    final now = DateTime.utc(2026, 8, 17, 12);
+    final fixture = await _signed([
+      _storyRelease(build: 10500, channel: 'stable'),
+    ]);
+    final platform = _FakePlatform(buildNumber: 10400)
+      ..installResults.add(UpdateInstallResult.permissionRequired)
+      ..installerPermission = InstallerPermissionResult.denied;
+    final controller = await _controller(fixture, now: now, platform: platform);
+    addTearDown(controller.dispose);
+    await controller.check(UpdateCheckTrigger.manual);
+    await controller.download();
+    platform.download = const UpdateDownloadStatus(
+      phase: UpdateDownloadPhase.complete,
+      downloadedBytes: 100,
+      totalBytes: 100,
+    );
+    await controller.pollDownload();
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('en'),
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => requestUpdateInstall(context, controller),
+            child: const Text('Install'),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Install'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open Android settings'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Installation permission still needed'), findsOneWidget);
+    expect(find.textContaining('Allow from this source'), findsOneWidget);
+    expect(controller.state.phase, UpdatePhase.ready);
+  });
 
   testWidgets('Update Center is localized and usable with large text', (
     tester,
@@ -111,9 +202,56 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await _scrollStoryUntilVisible(tester, find.text('Später'));
 
     expect(find.text('Später'), findsOneWidget);
+    await _scrollStoryUntilVisible(tester, find.text('Vor der Installation'));
+    expect(find.text('Vor der Installation'), findsOneWidget);
+    await _scrollStoryUntilVisible(tester, find.text('Installationsschritte'));
+    expect(find.text('Installationsschritte'), findsOneWidget);
+    await _scrollStoryUntilVisible(tester, find.text('Release-Hinweise'));
+    expect(find.text('Release-Hinweise'), findsOneWidget);
+    await _scrollStoryUntilVisible(tester, find.text('Hilfe benötigt?'));
+    expect(find.text('Hilfe benötigt?'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('primary update action stays visible above release details', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final now = DateTime.utc(2026, 8, 17, 12);
+    final fixture = await _signed([
+      _storyRelease(build: 10500, channel: 'stable'),
+    ]);
+    final controller = await _checkedController(fixture, now: now);
+    addTearDown(controller.dispose);
+
+    final releases = manifestOf([
+      _storyRelease(build: 10500, channel: 'stable'),
+    ]).releases;
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('en'),
+        controller: controller,
+        home: ReleaseStoryScreen(
+          releases: releases,
+          isUpgrade: false,
+          onClose: () {},
+          controller: controller,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Download update'), findsOneWidget);
+    expect(find.text('Not now'), findsOneWidget);
+    expect(
+      tester.getBottomLeft(find.text('Download update')).dy,
+      lessThan(844),
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -574,6 +712,16 @@ final class _FakePlatform implements UpdatePlatformGateway {
     isOnline: true,
     isMetered: false,
   );
+  UpdateDownloadStatus download = const UpdateDownloadStatus(
+    phase: UpdateDownloadPhase.missing,
+    downloadedBytes: 0,
+    totalBytes: 0,
+  );
+  final List<UpdateInstallResult> installResults = [];
+  InstallerPermissionResult installerPermission =
+      InstallerPermissionResult.granted;
+  int installCalls = 0;
+  int permissionCalls = 0;
 
   @override
   Future<void> cleanupAfterUpgrade(int currentBuild) async {}
@@ -583,11 +731,7 @@ final class _FakePlatform implements UpdatePlatformGateway {
 
   @override
   Future<UpdateDownloadStatus> downloadStatus(String downloadId) async =>
-      const UpdateDownloadStatus(
-        phase: UpdateDownloadPhase.missing,
-        downloadedBytes: 0,
-        totalBytes: 0,
-      );
+      download;
 
   @override
   Future<String> enqueueDownload(
@@ -599,13 +743,21 @@ final class _FakePlatform implements UpdatePlatformGateway {
   Future<UpdateInstallResult> install(
     String downloadId,
     UpdateCandidate candidate,
-  ) async => UpdateInstallResult.launched;
+  ) async {
+    installCalls += 1;
+    return installResults.isEmpty
+        ? UpdateInstallResult.launched
+        : installResults.removeAt(0);
+  }
 
   @override
   Future<UpdateNetworkStatus> networkStatus() async => network;
 
   @override
-  Future<void> openInstallerPermission() async {}
+  Future<InstallerPermissionResult> openInstallerPermission() async {
+    permissionCalls += 1;
+    return installerPermission;
+  }
 
   @override
   Future<UpdateInstallResult> openExternal(UpdateCandidate candidate) async =>

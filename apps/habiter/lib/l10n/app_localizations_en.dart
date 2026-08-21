@@ -1521,6 +1521,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Android asks once whether Habiter may open verified APK updates. You can revoke this permission anytime.';
 
   @override
+  String get updateInstallerPermissionHelpTitle =>
+      'Installation permission still needed';
+
+  @override
+  String get updateInstallerPermissionDeniedBody =>
+      'Android did not grant the permission. Open Install unknown apps for Habiter, turn on Allow from this source, then try Install again.';
+
+  @override
+  String get updateInstallerPermissionUnavailableBody =>
+      'Android could not open the app-specific setting. Open Android Settings, search for Install unknown apps, select Habiter, and allow this source before trying again.';
+
+  @override
+  String get updateInstallerPermissionGotIt => 'Got it';
+
+  @override
   String get updateOpenSettings => 'Open Android settings';
 
   @override
@@ -1598,6 +1613,71 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get releaseStoryFallbackSummary => 'A new Habiter release is ready.';
+
+  @override
+  String get releaseStoryPrerequisitesTitle => 'Before you install';
+
+  @override
+  String get releaseStoryPrerequisitesIntro =>
+      'A quick check keeps the verified update path predictable.';
+
+  @override
+  String get releaseStoryPrerequisiteAndroid =>
+      'Android device using the direct Habiter build';
+
+  @override
+  String get releaseStoryPrerequisiteConnection =>
+      'A stable connection and enough free storage';
+
+  @override
+  String get releaseStoryPrerequisitePermission =>
+      'Permission for Habiter to open verified APK updates';
+
+  @override
+  String get releaseStoryStepsTitle => 'Installation steps';
+
+  @override
+  String get releaseStoryStepsIntro =>
+      'Habiter guides you through each step and returns here when Android needs approval.';
+
+  @override
+  String get releaseStoryStepDownload =>
+      'Download the signed update and let Habiter verify its size, hash, and signature.';
+
+  @override
+  String get releaseStoryStepPermission =>
+      'If asked, allow Habiter under Android’s Install unknown apps setting.';
+
+  @override
+  String get releaseStoryStepInstall =>
+      'Return to Habiter; installation continues automatically after approval.';
+
+  @override
+  String get releaseStoryHighlightsTitle => 'What’s included';
+
+  @override
+  String get releaseStoryHighlightsIntro =>
+      'The most important improvements in this release.';
+
+  @override
+  String get releaseStoryNotesTitle => 'Release notes';
+
+  @override
+  String get releaseStoryNotesIntro => 'Detailed changes grouped by type.';
+
+  @override
+  String get releaseStoryHelpTitle => 'Need help?';
+
+  @override
+  String get releaseStoryHelpIntro =>
+      'Installation stays under your control and can be retried safely.';
+
+  @override
+  String get releaseStoryHelpAction => 'If Android blocks installation';
+
+  @override
+  String get releaseStoryHelpBody =>
+      'Open Install unknown apps for Habiter, allow this source, then return and choose Install again.';
 
   @override
   String get updateUnsupported =>

@@ -49,6 +49,7 @@ const installers = {
 };
 const handler = createHandler(manifest, envelope, installers);
 const call = (path: string, headers?: HeadersInit) => handler(new Request(`https://get.habiter.dev${path}`, { headers }), env);
+const callDownload = (path: string, headers?: HeadersInit) => handler(new Request(`https://get.the.habiter.dev${path}`, { headers }), env);
 
 describe("release API", () => {
   it("publishes every supported route in OpenAPI", () => {
@@ -175,25 +176,31 @@ describe("release API", () => {
   });
 
   it("keeps Android direct downloads while routing desktop browsers to install guides", async () => {
-    expect((await call("/download", { "user-agent": "Mozilla Android" })).headers.get("location")).toContain("/api/v1/download/android/universal");
-    expect((await call("/download?platform=windows&arch=x64")).headers.get("location")).toBe("https://github.com/marius4lui/habiter/blob/main/docs/install/windows.md");
-    expect((await call("/download", { "user-agent": "Mozilla Macintosh" })).headers.get("location")).toBe("https://github.com/marius4lui/habiter/blob/main/docs/install/macos.md");
-    expect((await call("/download?platform=android&channel=beta")).headers.get("location")).toContain("/api/v1/download/android/universal?channel=beta");
+    expect((await callDownload("/", { "user-agent": "Mozilla Android" })).headers.get("location")).toBe("https://get.habiter.dev/api/v1/download/android/universal");
+    expect((await callDownload("/?platform=windows&arch=x64")).headers.get("location")).toBe("https://github.com/marius4lui/habiter/blob/main/docs/install/windows.md");
+    expect((await callDownload("/", { "user-agent": "Mozilla Macintosh" })).headers.get("location")).toBe("https://github.com/marius4lui/habiter/blob/main/docs/install/macos.md");
+    expect((await callDownload("/?platform=android&channel=beta")).headers.get("location")).toBe("https://get.habiter.dev/api/v1/download/android/universal?channel=beta");
     expect((await call("/api/v1/download/windows/x64")).headers.get("location")).toBe("https://example.com/habiter.zip");
   });
 
+  it("redirects the legacy selector to the canonical smart-download root", async () => {
+    const response = await call("/download?platform=android&channel=beta");
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe("https://get.the.habiter.dev/?platform=android&channel=beta");
+  });
+
   it("routes Linux only from explicit, reliable distro hints", async () => {
-    expect((await call("/download", { "user-agent": "Mozilla Linux x86_64" })).headers.get("location")).toBe("https://github.com/marius4lui/habiter/tree/main/docs/install/linux");
+    expect((await callDownload("/", { "user-agent": "Mozilla Linux x86_64" })).headers.get("location")).toBe("https://github.com/marius4lui/habiter/tree/main/docs/install/linux");
     for (const distro of ["ubuntu", "debian", "fedora", "arch", "opensuse"]) {
-      expect((await call(`/download?platform=linux&distro=${distro}`, { "user-agent": "Mozilla Windows" })).headers.get("location"))
+      expect((await callDownload(`/?platform=linux&distro=${distro}`, { "user-agent": "Mozilla Windows" })).headers.get("location"))
         .toBe(`https://github.com/marius4lui/habiter/blob/main/docs/install/linux/${distro}.md`);
     }
-    expect((await call("/download?platform=linux&distro=gentoo")).headers.get("location")).toBe("https://github.com/marius4lui/habiter/blob/main/docs/install/linux/generic.md");
+    expect((await callDownload("/?platform=linux&distro=gentoo")).headers.get("location")).toBe("https://github.com/marius4lui/habiter/blob/main/docs/install/linux/generic.md");
   });
 
   it("redirects unknown clients and returns consistent API errors", async () => {
-    expect((await call("/download", { "user-agent": "curl" })).headers.get("location")).toBe("https://github.com/marius4lui/habiter/blob/main/docs/install/README.md");
-    expect((await call("/download?platform=plan9", { "user-agent": "Mozilla Windows" })).headers.get("location")).toBe("https://github.com/marius4lui/habiter/blob/main/docs/install/README.md");
+    expect((await callDownload("/", { "user-agent": "curl" })).headers.get("location")).toBe("https://github.com/marius4lui/habiter/blob/main/docs/install/README.md");
+    expect((await callDownload("/?platform=plan9", { "user-agent": "Mozilla Windows" })).headers.get("location")).toBe("https://github.com/marius4lui/habiter/blob/main/docs/install/README.md");
     const response = await call("/api/v1/releases/9.9.9");
     expect(response.status).toBe(404);
     expect(await response.json()).toMatchObject({ error: { code: "release_not_found" } });

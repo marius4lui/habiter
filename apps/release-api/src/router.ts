@@ -7,9 +7,11 @@ import type { ReleaseChannel, ReleaseManifest, SignedManifestEnvelope } from "./
 const shortCache = "public, max-age=60, s-maxage=300";
 const immutableCache = "public, max-age=86400, s-maxage=31536000, immutable";
 const semanticVersion = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
+const smartDownloadHost = "get.the.habiter.dev";
 
 /** Route templates that must stay aligned with the published OpenAPI document. */
 export const releaseApiContractPaths = {
+  smartDownload: "/",
   health: "/health",
   downloadSelector: "/download",
   manifest: "/api/v1/manifest",
@@ -21,6 +23,31 @@ export const releaseApiContractPaths = {
   download: "/api/v1/download/{platform}",
   downloadArchitecture: "/api/v1/download/{platform}/{architecture}",
 } as const;
+
+function selectDownload(request: Request, url: URL, requestId: string): Response {
+  const channel = releaseChannel(url.searchParams.get("channel"));
+  if (channel === null) return apiError(requestId, 400, "invalid_channel", "channel must be stable or beta");
+  const explicitPlatform = url.searchParams.has("platform");
+  const platform = explicitPlatform
+    ? parsePlatform(url.searchParams.get("platform"))
+    : detectPlatform(request.headers.get("user-agent") ?? "");
+  const docsBase = "https://github.com/marius4lui/habiter";
+  if (!platform) return Response.redirect(`${docsBase}/blob/main/docs/install/README.md`, 302);
+  if (platform === "windows" || platform === "macos") {
+    return Response.redirect(`${docsBase}/blob/main/docs/install/${platform}.md`, 302);
+  }
+  if (platform === "linux") {
+    if (!url.searchParams.has("distro")) {
+      return Response.redirect(`${docsBase}/tree/main/docs/install/linux`, 302);
+    }
+    const distro = parseDistro(url.searchParams.get("distro"));
+    return Response.redirect(`${docsBase}/blob/main/docs/install/linux/${distro}.md`, 302);
+  }
+  const architecture = url.searchParams.get("arch") ?? defaultArchitecture(platform);
+  const target = new URL(`/api/v1/download/${platform}/${architecture}`, "https://get.habiter.dev");
+  if (url.searchParams.has("channel")) target.searchParams.set("channel", channel);
+  return Response.redirect(target.toString(), 302);
+}
 
 function positiveInteger(value: string | null, fallback: number, maximum: number): number | null {
   if (value === null) return fallback;
@@ -58,6 +85,16 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
     const url = new URL(request.url);
     const segments = url.pathname.split("/").filter(Boolean);
 
+    if (url.hostname === smartDownloadHost && url.pathname === releaseApiContractPaths.smartDownload) {
+      return selectDownload(request, url, requestId);
+    }
+
+    if (url.pathname === releaseApiContractPaths.downloadSelector) {
+      const target = new URL(`https://${smartDownloadHost}/`);
+      target.search = url.search;
+      return Response.redirect(target.toString(), 308);
+    }
+
     if (url.pathname === releaseApiContractPaths.health) {
       return json({ status: "ok", environment: env.ENVIRONMENT, requestId });
     }
@@ -71,31 +108,6 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
           headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
         });
       }
-    }
-
-    if (url.pathname === releaseApiContractPaths.downloadSelector) {
-      const channel = releaseChannel(url.searchParams.get("channel"));
-      if (channel === null) return apiError(requestId, 400, "invalid_channel", "channel must be stable or beta");
-      const explicitPlatform = url.searchParams.has("platform");
-      const platform = explicitPlatform
-        ? parsePlatform(url.searchParams.get("platform"))
-        : detectPlatform(request.headers.get("user-agent") ?? "");
-      const docsBase = "https://github.com/marius4lui/habiter";
-      if (!platform) return Response.redirect(`${docsBase}/blob/main/docs/install/README.md`, 302);
-      if (platform === "windows" || platform === "macos") {
-        return Response.redirect(`${docsBase}/blob/main/docs/install/${platform}.md`, 302);
-      }
-      if (platform === "linux") {
-        if (!url.searchParams.has("distro")) {
-          return Response.redirect(`${docsBase}/tree/main/docs/install/linux`, 302);
-        }
-        const distro = parseDistro(url.searchParams.get("distro"));
-        return Response.redirect(`${docsBase}/blob/main/docs/install/linux/${distro}.md`, 302);
-      }
-      const architecture = url.searchParams.get("arch") ?? defaultArchitecture(platform);
-      const target = new URL(`/api/v1/download/${platform}/${architecture}`, url);
-      if (url.searchParams.has("channel")) target.searchParams.set("channel", channel);
-      return Response.redirect(target.toString(), 302);
     }
 
     if (segments[0] !== "api" || segments[1] !== "v1") {

@@ -52,9 +52,18 @@ $env:HABITER_TEMP_ROOT = $tempRoot
 
 & $hostExecutable -NoProfile -File $installer -InstallDir $installRoot -NoDesktopIntegration | Out-Null
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path (Join-Path $installRoot 'habiter.exe'))) { throw 'Real test install failed' }
+$manifestPath = Join-Path $installRoot '.habiter-install.json'
+if (-not (Test-Path -LiteralPath $manifestPath)) { throw 'Ownership manifest was not created' }
+$manifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
+if ($manifest.schemaVersion -ne 1 -or $manifest.product -ne 'habiter' -or $manifest.applicationId -ne 'dev.habiter.Habiter') { throw 'Ownership manifest identity is invalid' }
+if ($manifest.version -ne '1.6.0' -or $manifest.scope -ne 'user' -or $manifest.canonicalInstallRoot -ne [IO.Path]::GetFullPath($installRoot)) { throw 'Ownership manifest lifecycle fields are invalid' }
+if ($manifest.executable -ne (Join-Path ([IO.Path]::GetFullPath($installRoot)) 'habiter.exe') -or @($manifest.integrationPaths).Count -ne 0) { throw 'Ownership manifest target fields are invalid' }
+$firstInstallId = $manifest.installId
 'old' | Set-Content -LiteralPath (Join-Path $installRoot 'old.txt')
 & $hostExecutable -NoProfile -File $installer -InstallDir $installRoot -NoDesktopIntegration | Out-Null
 if ($LASTEXITCODE -ne 0 -or (Test-Path (Join-Path $installRoot 'old.txt'))) { throw 'Repeated install did not replace cleanly' }
+$upgradedManifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
+if ($upgradedManifest.installId -eq $firstInstallId -or $upgradedManifest.schemaVersion -ne 1) { throw 'Repeated install did not refresh the ownership manifest' }
 
 $startMenu = Join-Path $testRoot 'start-menu'
 $env:HABITER_START_MENU_DIR = $startMenu
@@ -62,6 +71,9 @@ $env:HABITER_SKIP_PATH_UPDATE = '1'
 & $hostExecutable -NoProfile -File $installer -InstallDir $installRoot | Out-Null
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path (Join-Path $startMenu 'Habiter.lnk'))) { throw 'Start Menu integration failed' }
 if (-not (Test-Path (Join-Path $installRoot 'bin\habiter.cmd'))) { throw 'Command integration failed' }
+$integratedManifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
+if (@($integratedManifest.integrationPaths).Count -ne 2 -or $integratedManifest.pathEntry -ne (Join-Path ([IO.Path]::GetFullPath($installRoot)) 'bin')) { throw 'Desktop integration was not recorded in the ownership manifest' }
+if ($integratedManifest.pathEntryAddedByInstaller -ne $false) { throw 'Skipped PATH update was recorded as installer-owned' }
 
 $badRoot = Join-Path $testRoot 'bad-install'
 $valid.artifact.sha256 = 'b' * 64

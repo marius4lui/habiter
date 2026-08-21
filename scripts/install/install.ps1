@@ -17,6 +17,9 @@ $script:BackupDirectory = $null
 $script:FinalDirectory = $null
 $script:Phase = 'startup'
 $script:InstallId = [guid]::NewGuid().ToString('N').Substring(0, 12)
+$script:IntegrationPaths = @()
+$script:PathEntry = $null
+$script:PathEntryAddedByInstaller = $false
 $ApiBase = if ($env:HABITER_API_BASE) { $env:HABITER_API_BASE } else { 'https://get.habiter.dev' }
 
 function Write-Step([int]$Number, [string]$Message) { Write-Host "[$Number/7] $Message" }
@@ -129,18 +132,40 @@ function Install-DesktopIntegration([string]$Root) {
     $shortcut.WorkingDirectory = $Root
     $shortcut.Description = 'Habiter'
     $shortcut.Save()
+    $script:IntegrationPaths += $startMenu
 
     $binDirectory = Join-Path $Root 'bin'
     New-Item -ItemType Directory -Path $binDirectory -Force | Out-Null
     '@echo off' + [Environment]::NewLine + '"%~dp0..\habiter.exe" %*' | Set-Content -LiteralPath (Join-Path $binDirectory 'habiter.cmd') -Encoding Ascii
+    $script:IntegrationPaths += (Join-Path $binDirectory 'habiter.cmd')
+    $script:PathEntry = $binDirectory
     if (-not $env:HABITER_SKIP_PATH_UPDATE) {
         $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
         $entries = @($userPath -split ';' | Where-Object { $_ })
         if ($entries -notcontains $binDirectory) {
             [Environment]::SetEnvironmentVariable('Path', (($entries + $binDirectory) -join ';'), 'User')
+            $script:PathEntryAddedByInstaller = $true
             Write-Detail "Added command directory to user PATH: $binDirectory"
         }
     }
+}
+
+function Write-OwnershipManifest([string]$Root, [string]$VersionValue, [bool]$SystemScope) {
+    $canonicalRoot = [IO.Path]::GetFullPath($Root).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
+    $manifest = [ordered]@{
+        schemaVersion = 1
+        product = 'habiter'
+        applicationId = 'dev.habiter.Habiter'
+        installId = $script:InstallId
+        version = $VersionValue
+        scope = if ($SystemScope) { 'system' } else { 'user' }
+        canonicalInstallRoot = $canonicalRoot
+        executable = Join-Path $canonicalRoot 'habiter.exe'
+        integrationPaths = @($script:IntegrationPaths)
+        pathEntry = $script:PathEntry
+        pathEntryAddedByInstaller = $script:PathEntryAddedByInstaller
+    }
+    $manifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $canonicalRoot '.habiter-install.json') -Encoding UTF8
 }
 
 function Invoke-HabiterInstall {
@@ -212,6 +237,8 @@ function Invoke-HabiterInstall {
         Write-Detail $root
         $script:Phase = 'desktop-integration'
         if (-not $NoDesktopIntegration) { try { Install-DesktopIntegration $root } catch { Throw-InstallerError 'HAB-WIN-070' "Desktop integration failed: $($_.Exception.Message)" 'The app may be installed; retry with -NoDesktopIntegration or check Start Menu and PATH permissions.' 70 } }
+        $script:Phase = 'ownership-manifest'
+        try { Write-OwnershipManifest $root $release.version ([bool]$System) } catch { Throw-InstallerError 'HAB-WIN-071' "Ownership manifest failed: $($_.Exception.Message)" 'The installation was not finalized; check destination permissions.' 70 }
         if ($script:BackupDirectory) { Remove-Item -LiteralPath $script:BackupDirectory -Recurse -Force; $script:BackupDirectory = $null }
     }
     Write-Step 6 'Desktop integration'

@@ -99,7 +99,7 @@ export function createHandler(manifest: ReleaseManifest, envelope?: SignedManife
       return json({ status: "ok", environment: env.ENVIRONMENT, requestId });
     }
 
-    if (url.pathname === "/install.sh" || url.pathname === "/install.ps1") {
+    if (["/install.sh", "/install.ps1", "/uninstall.sh", "/uninstall.ps1"].includes(url.pathname)) {
       try {
         return repositoryInstaller(url.pathname, request, installers)!;
       } catch {

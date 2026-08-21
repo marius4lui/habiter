@@ -8,6 +8,16 @@ const sources = new Map([
     key: "install.ps1",
     contentType: "text/plain; charset=utf-8",
     marker: "# Habiter PowerShell installer"
+  }],
+  ["/uninstall.sh", {
+    key: "uninstall.sh",
+    contentType: "text/x-shellscript; charset=utf-8",
+    marker: "#!/bin/sh"
+  }],
+  ["/uninstall.ps1", {
+    key: "uninstall.ps1",
+    contentType: "text/plain; charset=utf-8",
+    marker: "# Habiter PowerShell uninstaller"
   }]
 ]);
 

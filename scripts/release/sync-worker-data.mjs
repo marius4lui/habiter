@@ -9,7 +9,7 @@ import {
 
 const preview = process.argv.includes("--preview");
 const installersOnly = process.argv.includes("--installers-only");
-const installerEntries = await Promise.all(["install.sh", "install.ps1"].map(async (name) => {
+const installerEntries = await Promise.all(["install.sh", "install.ps1", "uninstall.sh", "uninstall.ps1"].map(async (name) => {
   const body = await readFile(new URL(`../install/${name}`, import.meta.url), "utf8");
   return [name, { body, etag: `"${createHash("sha256").update(body).digest("hex")}"` }];
 }));

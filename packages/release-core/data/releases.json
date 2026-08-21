@@ -2,6 +2,35 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.7.2",
+      "buildNumber": 10702,
+      "channel": "stable",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.5.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Sichere, repository-gestützte Deinstallationsassistenten für Linux, macOS und Windows mit transparenter Installationsprüfung."
+        ],
+        "changed": [
+          "Desktop-Installationen speichern nun geprüfte Eigentumsinformationen für eine sichere spätere Deinstallation."
+        ],
+        "fixed": [],
+        "security": [
+          "Die Deinstallation prüft Zielpfade und Besitznachweise, zeigt vorab den genauen Entfernungsplan und bewahrt Anwendungsdaten standardmäßig auf."
+        ]
+      },
+      "artifacts": [
+        { "platform": "android", "architecture": "universal", "format": "apk", "fileName": "habiter-1.7.2-android-universal.apk", "signed": true, "distribution": "direct" },
+        { "platform": "android", "architecture": "universal", "format": "aab", "fileName": "habiter-1.7.2-android-playstore.aab", "signed": true, "distribution": "play" },
+        { "platform": "linux", "architecture": "x64", "format": "tar.gz", "primary": false, "fileName": "habiter-1.7.2-linux-x64.tar.gz", "signed": false },
+        { "platform": "linux", "architecture": "x64", "format": "appimage", "primary": true, "fileName": "Habiter-1.7.2-x86_64.AppImage", "signed": false },
+        { "platform": "windows", "architecture": "x64", "format": "zip", "primary": true, "fileName": "habiter-1.7.2-windows-x64.zip", "signed": false },
+        { "platform": "macos", "architecture": "universal", "format": "zip", "primary": true, "fileName": "habiter-1.7.2-macos-universal.zip", "signed": false }
+      ]
+    },
+    {
       "version": "1.7.1",
       "buildNumber": 10701,
       "channel": "stable",

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/features/widgets/domain/widget_configuration.dart';
+import 'package:habiter/features/widgets/domain/widget_configuration_options.dart';
 import 'package:habiter/features/widgets/domain/widget_habit_item.dart';
 
 void main() {
@@ -146,5 +147,136 @@ void main() {
     expect(effective.textScale, 1.4);
     expect(effective.shows(WidgetElement.scheduleLabel), isFalse);
     expect(effective.shows(WidgetElement.habitIcon), isFalse);
+  });
+
+  test('preset baselines stay compact and accept explicit overrides', () {
+    final baseline = WidgetConfiguration.fromJson(
+      '{"schemaVersion":1,"widgetId":17,"preset":"minimal"}',
+      widgetId: 17,
+    );
+    final overridden = WidgetConfiguration.fromJson(
+      '{"schemaVersion":1,"widgetId":17,"preset":"focus",'
+      '"showProgress":true,"maximumHabits":2}',
+      widgetId: 17,
+    );
+
+    expect(baseline.preset, WidgetPreset.minimal);
+    expect(baseline.contentMode, WidgetContentMode.minimal);
+    expect(baseline.showProgress, isFalse);
+    expect(baseline.hiddenElements, contains(WidgetElement.todayHeader));
+    expect(overridden.contentMode, WidgetContentMode.focus);
+    expect(overridden.showProgress, isTrue);
+    expect(overridden.maximumHabits, 2);
+  });
+
+  test('full cracked options roundtrip and resolve per breakpoint', () {
+    final configuration = WidgetConfiguration(
+      widgetId: 17,
+      preset: WidgetPreset.dashboard,
+      accentMode: WidgetAccentMode.custom,
+      density: WidgetDensity.compact,
+      surfaceTransparency: .2,
+      listSettings: const WidgetListSettings(
+        completedPlacement: WidgetCompletedPlacement.end,
+        pinnedHabitIds: <String>['train'],
+        overflowBehavior: WidgetOverflowBehavior.switchToFocus,
+      ),
+      progressSettings: const WidgetProgressSettings(
+        segmentHeight: 8,
+        segmentGap: 2,
+        maximumSegments: 12,
+        completedStyle: WidgetProgressCompletedStyle.muted,
+        remainingStyle: WidgetProgressRemainingStyle.outline,
+      ),
+      completionSettings: const WidgetCompletionSettings(
+        buttonStyle: WidgetCompletionButtonStyle.wholeRow,
+        showUndo: false,
+        feedback: WidgetCompletionFeedback.detailed,
+        focusNextHabit: true,
+      ),
+      geometry: const WidgetGeometry(
+        habitRowRadius: 18,
+        buttonRadius: 12,
+        horizontalPadding: 16,
+        verticalPadding: 10,
+        rowGap: 5,
+        sectionGap: 11,
+      ),
+      typography: const WidgetTypography(
+        habitTitleSize: 20,
+        secondaryTextSize: 12,
+        counterSize: 16,
+        fontWeight: WidgetFontWeight.bold,
+      ),
+      stateStyles: const WidgetStateStyles(
+        justCompleted: WidgetJustCompletedStyle.nextHabit,
+        allComplete: WidgetAllCompleteStyle.iconOnly,
+        freeToday: WidgetFreeTodayStyle.minimal,
+        noHabits: WidgetNoHabitsStyle.compact,
+        missingStale: WidgetMissingStaleStyle.compact,
+      ),
+      interactions: const WidgetInteractionMap(
+        background: WidgetBackgroundAction.nextHabit,
+        habitRow: WidgetHabitRowAction.complete,
+        completionControl: WidgetCompletionAction.openHabit,
+      ),
+      breakpointOverrides: const <WidgetBreakpoint, WidgetBreakpointOverride>{
+        WidgetBreakpoint.extraLarge: WidgetBreakpointOverride(
+          density: WidgetDensity.comfortable,
+          surfaceTransparency: .3,
+          geometry: WidgetGeometry(horizontalPadding: 24),
+          typography: WidgetTypography(habitTitleSize: 24),
+        ),
+      },
+    );
+
+    final restored = WidgetConfiguration.fromJson(
+      configuration.toJson(),
+      widgetId: 17,
+    );
+    final effective = restored.effectiveFor(WidgetBreakpoint.extraLarge);
+
+    expect(restored.listSettings.pinnedHabitIds, <String>['train']);
+    expect(restored.progressSettings.maximumSegments, 12);
+    expect(restored.completionSettings.showUndo, isFalse);
+    expect(restored.stateStyles.allComplete, WidgetAllCompleteStyle.iconOnly);
+    expect(restored.interactions.habitRow, WidgetHabitRowAction.complete);
+    expect(effective.density, WidgetDensity.comfortable);
+    expect(effective.surfaceTransparency, .3);
+    expect(effective.geometry.horizontalPadding, 24);
+    expect(effective.geometry.habitRowRadius, 18);
+    expect(effective.typography.habitTitleSize, 24);
+    expect(effective.typography.counterSize, 16);
+  });
+
+  test('pinned and completed ordering remains deterministic', () {
+    final configuration = WidgetConfiguration(
+      widgetId: 17,
+      listSettings: const WidgetListSettings(
+        pinnedHabitIds: <String>['train'],
+        completedPlacement: WidgetCompletedPlacement.end,
+      ),
+    );
+
+    expect(configuration.select(habits).map((item) => item.id), <String>[
+      'train',
+      'read',
+      'water',
+    ]);
+  });
+
+  test('one-tap off resolves the completion control to open habit', () {
+    final configuration = WidgetConfiguration(
+      widgetId: 17,
+      oneTapCompletion: false,
+    );
+
+    expect(
+      configuration
+          .effectiveFor(WidgetBreakpoint.compact)
+          .interactions
+          .completionControl,
+      WidgetCompletionAction.openHabit,
+    );
   });
 }

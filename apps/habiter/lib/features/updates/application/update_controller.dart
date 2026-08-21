@@ -57,8 +57,6 @@ final class UpdateController extends ChangeNotifier {
     UpdatePhase.checking,
     UpdatePhase.downloading,
     UpdatePhase.verifying,
-    UpdatePhase.ready,
-    UpdatePhase.restartRequired,
     UpdatePhase.installing,
     UpdatePhase.unsupported,
   }.contains(_state.phase);
@@ -241,6 +239,8 @@ final class UpdateController extends ChangeNotifier {
       return;
     }
     _checking = true;
+    final previousPhase = _state.phase;
+    final previousCandidate = _state.candidate;
     _transition(UpdatePhase.checking);
     try {
       final network = await _platform.networkStatus();
@@ -271,9 +271,17 @@ final class UpdateController extends ChangeNotifier {
         lastCheckedAt: checkedAt,
       );
       await _repository.save(_local);
-      _applyCandidate(verifiedOnline: true);
+      final retainedPhase = await _reconcileRefreshedCandidate(
+        previousPhase: previousPhase,
+        previousCandidate: previousCandidate,
+      );
+      _applyCandidate(verifiedOnline: true, retainedPhase: retainedPhase);
       final candidate = _state.candidate;
       if (candidate != null &&
+          const {
+            UpdatePhase.available,
+            UpdatePhase.mandatory,
+          }.contains(_state.phase) &&
           _canInstallDirectly(_runtime!, candidate) &&
           _policy.shouldAutoDownload(
             profile: profile,
@@ -298,7 +306,10 @@ final class UpdateController extends ChangeNotifier {
     }
   }
 
-  void _applyCandidate({required bool verifiedOnline}) {
+  void _applyCandidate({
+    required bool verifiedOnline,
+    UpdatePhase? retainedPhase,
+  }) {
     final manifest = _manifest;
     final runtime = _runtime;
     if (manifest == null || runtime == null || !runtime.supportsUpdates) {
@@ -328,15 +339,66 @@ final class UpdateController extends ChangeNotifier {
           verifiedOnline && candidate.release.isMandatoryAt(_clock.now());
       if (mandatory) _mandatoryEnforced = true;
       _state = UpdateState(
-        phase: _mandatoryEnforced
-            ? UpdatePhase.mandatory
-            : UpdatePhase.available,
+        phase:
+            retainedPhase ??
+            (_mandatoryEnforced
+                ? UpdatePhase.mandatory
+                : UpdatePhase.available),
         candidate: candidate,
+        progress: retainedPhase == null ? 0 : 1,
         lastCheckedAt: _local.lastCheckedAt,
       );
     }
     notifyListeners();
   }
+
+  Future<UpdatePhase?> _reconcileRefreshedCandidate({
+    required UpdatePhase previousPhase,
+    required UpdateCandidate? previousCandidate,
+  }) async {
+    if (_local.downloadId == null || _local.downloadBuild == null) return null;
+    final selected = _selectedCandidate();
+    final canRetain =
+        selected != null &&
+        selected.release.buildNumber == _local.downloadBuild &&
+        previousCandidate != null &&
+        _sameArtifact(selected.artifact, previousCandidate.artifact);
+    if (!canRetain) {
+      await _clearDownload(removeNative: true);
+      return null;
+    }
+    return const {
+          UpdatePhase.ready,
+          UpdatePhase.restartRequired,
+        }.contains(previousPhase)
+        ? previousPhase
+        : null;
+  }
+
+  UpdateCandidate? _selectedCandidate() {
+    final manifest = _manifest;
+    final runtime = _runtime;
+    if (manifest == null || runtime == null) return null;
+    return _selector.select(
+      manifest: manifest,
+      track: track,
+      currentBuild: runtime.buildNumber,
+      platform: runtime.platform,
+      architecture: runtime.architecture,
+      androidDistribution: runtime.androidDistribution,
+    );
+  }
+
+  static bool _sameArtifact(UpdateArtifact left, UpdateArtifact right) =>
+      left.platform == right.platform &&
+      left.architecture == right.architecture &&
+      left.format == right.format &&
+      left.fileName == right.fileName &&
+      left.signed == right.signed &&
+      left.distribution == right.distribution &&
+      left.url == right.url &&
+      left.sha256 == right.sha256 &&
+      left.size == right.size;
 
   UpdateCandidate? _candidateForBuild(UpdateManifest manifest, int build) {
     final runtime = _runtime!;

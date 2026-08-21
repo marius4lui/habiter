@@ -53,6 +53,8 @@ final class UpdateState {
       UpdatePhase.upToDate,
       UpdatePhase.available,
       UpdatePhase.mandatory,
+      UpdatePhase.ready,
+      UpdatePhase.restartRequired,
       UpdatePhase.error,
     },
     UpdatePhase.upToDate: {UpdatePhase.checking, UpdatePhase.available},

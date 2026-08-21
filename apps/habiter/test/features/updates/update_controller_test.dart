@@ -434,11 +434,46 @@ void main() {
 
       await controller.check(UpdateCheckTrigger.manual);
       expect(controller.state.phase, UpdatePhase.ready);
-      expect(controller.canCheck, isFalse);
+      expect(controller.canCheck, isTrue);
       expect(await controller.install(), UpdateInstallResult.launched);
       controller.dispose();
     },
   );
+
+  test('a signed release withdrawal removes a ready payload', () async {
+    final fixture = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    final withdrawn = await signed(const []);
+    var serverEnvelope = fixture.envelope;
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final platform = FakeUpdatePlatform(buildNumber: 10400);
+    final controller = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+      responseEnvelopeProvider: () => serverEnvelope,
+    );
+    await controller.check(UpdateCheckTrigger.manual);
+    await controller.download();
+    platform.download = const UpdateDownloadStatus(
+      phase: UpdateDownloadPhase.complete,
+      downloadedBytes: 100,
+      totalBytes: 100,
+    );
+    await controller.pollDownload();
+    expect(controller.state.phase, UpdatePhase.ready);
+
+    serverEnvelope = withdrawn.envelope;
+    await controller.check(UpdateCheckTrigger.manual);
+
+    expect(controller.state.phase, UpdatePhase.upToDate);
+    expect(controller.state.candidate, isNull);
+    expect(platform.removeCalls, 1);
+    expect(await controller.install(), UpdateInstallResult.unavailable);
+    controller.dispose();
+  });
 
   test('a persisted DownloadManager ID resumes after app restart', () async {
     final fixture = await signed([

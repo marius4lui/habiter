@@ -950,6 +950,84 @@ abstract class AppLocalizations {
   /// **'Berechtigung und ausstehende Erinnerungen sicher prüfen'**
   String get reminderDiagnosticsDescription;
 
+  /// No description provided for @backgroundRuntimeDiagnostics.
+  ///
+  /// In de, this message translates to:
+  /// **'Hintergrundlaufzeit'**
+  String get backgroundRuntimeDiagnostics;
+
+  /// No description provided for @runtimeAdaptiveReminders.
+  ///
+  /// In de, this message translates to:
+  /// **'Adaptive Erinnerungen'**
+  String get runtimeAdaptiveReminders;
+
+  /// No description provided for @runtimeAppBlock.
+  ///
+  /// In de, this message translates to:
+  /// **'App Block'**
+  String get runtimeAppBlock;
+
+  /// No description provided for @runtimeStatusOn.
+  ///
+  /// In de, this message translates to:
+  /// **'An'**
+  String get runtimeStatusOn;
+
+  /// No description provided for @runtimeStatusOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus'**
+  String get runtimeStatusOff;
+
+  /// No description provided for @runtimeStarted.
+  ///
+  /// In de, this message translates to:
+  /// **'Gestartet'**
+  String get runtimeStarted;
+
+  /// No description provided for @runtimeHeartbeat.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzter Herzschlag'**
+  String get runtimeHeartbeat;
+
+  /// No description provided for @runtimeReminderEvaluation.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Erinnerungsauswertung'**
+  String get runtimeReminderEvaluation;
+
+  /// No description provided for @runtimeNextEvaluation.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächste Erinnerungsauswertung'**
+  String get runtimeNextEvaluation;
+
+  /// No description provided for @runtimeNotificationDispatch.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Benachrichtigungszustellung'**
+  String get runtimeNotificationDispatch;
+
+  /// No description provided for @runtimeStartReason.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzter Startgrund'**
+  String get runtimeStartReason;
+
+  /// No description provided for @runtimeNotRecorded.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nicht erfasst'**
+  String get runtimeNotRecorded;
+
+  /// No description provided for @runtimeUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Diagnosedaten der Hintergrundlaufzeit sind auf diesem Gerät nicht verfügbar'**
+  String get runtimeUnavailable;
+
   /// No description provided for @reminderPermissionGranted.
   ///
   /// In de, this message translates to:

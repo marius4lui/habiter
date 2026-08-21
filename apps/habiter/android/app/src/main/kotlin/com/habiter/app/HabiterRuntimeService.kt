@@ -59,7 +59,7 @@ class HabiterRuntimeService : Service() {
         )
         reconcileFeatures()
         RuntimeRecoveryReceiver.reconcilePersisted(this)
-        if (intent?.action == ACTION_EVALUATE_REMINDERS) {
+        if (features.remindersEnabled && intent?.action == ACTION_EVALUATE_REMINDERS) {
             reminderRuntime.invalidate(
                 intent.getStringExtra(EXTRA_START_REASON) ?: REASON_RECOVERY,
             )

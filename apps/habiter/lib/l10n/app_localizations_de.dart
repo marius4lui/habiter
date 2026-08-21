@@ -481,6 +481,47 @@ class AppLocalizationsDe extends AppLocalizations {
       'Berechtigung und ausstehende Erinnerungen sicher prüfen';
 
   @override
+  String get backgroundRuntimeDiagnostics => 'Hintergrundlaufzeit';
+
+  @override
+  String get runtimeAdaptiveReminders => 'Adaptive Erinnerungen';
+
+  @override
+  String get runtimeAppBlock => 'App Block';
+
+  @override
+  String get runtimeStatusOn => 'An';
+
+  @override
+  String get runtimeStatusOff => 'Aus';
+
+  @override
+  String get runtimeStarted => 'Gestartet';
+
+  @override
+  String get runtimeHeartbeat => 'Letzter Herzschlag';
+
+  @override
+  String get runtimeReminderEvaluation => 'Letzte Erinnerungsauswertung';
+
+  @override
+  String get runtimeNextEvaluation => 'Nächste Erinnerungsauswertung';
+
+  @override
+  String get runtimeNotificationDispatch =>
+      'Letzte Benachrichtigungszustellung';
+
+  @override
+  String get runtimeStartReason => 'Letzter Startgrund';
+
+  @override
+  String get runtimeNotRecorded => 'Noch nicht erfasst';
+
+  @override
+  String get runtimeUnavailable =>
+      'Diagnosedaten der Hintergrundlaufzeit sind auf diesem Gerät nicht verfügbar';
+
+  @override
   String get reminderPermissionGranted => 'Benachrichtigungen sind erlaubt';
 
   @override

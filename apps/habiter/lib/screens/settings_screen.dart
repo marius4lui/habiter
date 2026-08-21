@@ -6,7 +6,10 @@ import '../core/design_system/components.dart';
 import '../core/design_system/tokens.dart';
 import '../app/navigation/app_route.dart';
 import '../features/reminders/application/reminder_permission_controller.dart';
+import '../features/reminders/application/reminder_diagnostics.dart';
 import '../features/reminders/infrastructure/local_reminder_permission_gateway.dart';
+import '../features/reminders/presentation/reminder_diagnostics_panel.dart';
+import '../features/runtime/infrastructure/method_channel_background_runtime_gateway.dart';
 import '../features/widgets/domain/widget_bridge.dart';
 import '../features/widgets/application/widget_sync_controller.dart';
 import '../features/widgets/presentation/widget_promotion_card.dart';
@@ -18,6 +21,7 @@ import '../providers/classly_sync_provider.dart';
 import '../providers/habit_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/ai_manager.dart';
+import '../services/notification_service.dart';
 import '../widgets/ai_setup_dialog.dart';
 import 'app_lock_screen.dart';
 
@@ -208,6 +212,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ? () => _chooseReminderTime(preferences)
                           : null,
                     ),
+                    ListTile(
+                      key: const Key('reminder-diagnostics-entry'),
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.monitor_heart_outlined),
+                      title: Text(context.l10n.reminderDiagnostics),
+                      subtitle: Text(
+                        context.l10n.reminderDiagnosticsDescription,
+                      ),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: _showReminderDiagnostics,
+                    ),
                   ],
                 ),
                 _SettingsSection(
@@ -365,6 +380,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(context.l10n.backupCopied)));
+  }
+
+  Future<void> _showReminderDiagnostics() async {
+    final snapshot = await ReminderDiagnosticsController(
+      notifications: NotificationService.instance,
+      permissions: const LocalReminderPermissionGateway(),
+      runtime: const MethodChannelBackgroundRuntimeGateway(),
+    ).load();
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            0,
+            20,
+            20 + MediaQuery.viewInsetsOf(sheetContext).bottom,
+          ),
+          child: ReminderDiagnosticsPanel(
+            snapshot: snapshot,
+            onSendTest: NotificationService.instance.showTestNotification,
+            onReschedule: context.read<HabitProvider>().reconcileReminders,
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _importData() async {

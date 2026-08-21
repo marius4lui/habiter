@@ -477,6 +477,46 @@ class AppLocalizationsEn extends AppLocalizations {
       'Review permissions and pending reminders safely';
 
   @override
+  String get backgroundRuntimeDiagnostics => 'Background runtime';
+
+  @override
+  String get runtimeAdaptiveReminders => 'Adaptive reminders';
+
+  @override
+  String get runtimeAppBlock => 'App Block';
+
+  @override
+  String get runtimeStatusOn => 'On';
+
+  @override
+  String get runtimeStatusOff => 'Off';
+
+  @override
+  String get runtimeStarted => 'Started';
+
+  @override
+  String get runtimeHeartbeat => 'Last heartbeat';
+
+  @override
+  String get runtimeReminderEvaluation => 'Last reminder evaluation';
+
+  @override
+  String get runtimeNextEvaluation => 'Next reminder evaluation';
+
+  @override
+  String get runtimeNotificationDispatch => 'Last notification dispatch';
+
+  @override
+  String get runtimeStartReason => 'Last start reason';
+
+  @override
+  String get runtimeNotRecorded => 'Not recorded yet';
+
+  @override
+  String get runtimeUnavailable =>
+      'Background runtime diagnostics are unavailable on this device';
+
+  @override
   String get reminderPermissionGranted => 'Notification permission is granted';
 
   @override

@@ -1,10 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/core/time/local_date.dart';
 import 'package:habiter/features/reminders/application/adaptive_reminder_runtime.dart';
+import 'package:habiter/features/reminders/application/dynamic_reminder_planner.dart';
 import 'package:habiter/features/reminders/application/reminder_scheduler.dart';
+import 'package:habiter/features/reminders/domain/reminder_policy.dart';
+import 'package:habiter/features/reminders/domain/reminder_preferences.dart';
 import 'package:habiter/models/habit.dart';
+import 'package:timezone/data/latest_all.dart' as tz_data;
+import 'package:timezone/timezone.dart' as tz;
 
 void main() {
+  setUpAll(tz_data.initializeTimeZones);
+
   final habit = Habit(
     id: 'habit-1',
     name: 'Stretch',
@@ -52,16 +59,34 @@ void main() {
     );
   });
 
-  test(
-    'current state invalidation cancels delivery when no candidate remains',
-    () {
-      final decision = AdaptiveReminderDecision.fromCandidates(
-        candidates: const <PlannedReminder>[],
-        now: DateTime.utc(2026, 8, 21, 9, 59, 30),
-      );
+  test('completion before the expected time invalidates adaptive delivery', () {
+    final now = DateTime.utc(2026, 8, 21, 6);
+    final policy = HabitReminderPolicy.smart(habitId: habit.id, now: now);
+    DynamicReminderPlanInput input({Set<String> completed = const {}}) =>
+        DynamicReminderPlanInput(
+          habits: <Habit>[habit],
+          policies: <String, HabitReminderPolicy>{habit.id: policy},
+          preferences: ReminderPreferences(enabled: true),
+          signals: const [],
+          completedOccurrences: completed,
+          start: LocalDate(2026, 8, 21),
+          now: now,
+          location: tz.UTC,
+          horizonDays: 1,
+        );
+    const planner = DynamicReminderPlanner();
+    final previouslyExpected = planner.plan(input()).reminders.first;
+    final current = planner.plan(
+      input(completed: <String>{'${habit.id}@2026-08-21'}),
+    );
+    final decision = AdaptiveReminderDecision.fromCandidates(
+      candidates: current.reminders,
+      now: previouslyExpected.scheduledFor.subtract(
+        const Duration(seconds: 30),
+      ),
+    );
 
-      expect(decision.notification, isNull);
-      expect(decision.nextEvaluationAt, isNull);
-    },
-  );
+    expect(decision.notification, isNull);
+    expect(decision.nextEvaluationAt, isNull);
+  });
 }

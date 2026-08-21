@@ -26,8 +26,8 @@ These channels are internal to the Habiter application. They are not a public pl
 | `requestUsageStatsPermission` | none | `null` after opening system settings. |
 | `hasOverlayPermission` | none | `bool` |
 | `requestOverlayPermission` | none | `null` after opening system settings. |
-| `isBatteryOptimized` | none | `bool`; `true` means Android still applies battery optimization. |
-| `requestBatteryOptimizationExemption` | none | `null` after opening system-wide battery settings. |
+| `isBatteryOptimized` | none | Compatibility alias for the shared runtime battery status. |
+| `requestBatteryOptimizationExemption` | none | Compatibility alias that opens system-wide battery settings. |
 | `startMonitoring` | `{lockedPackages: List<String>}` | `bool` indicating whether monitoring started. |
 | `stopMonitoring` | none | `null` |
 | `updateLockedApps` | `{lockedPackages: List<String>}` | `null` |
@@ -36,6 +36,26 @@ These channels are internal to the Habiter application. They are not a public pl
 | `habitsIncomplete` | none | `null` |
 
 The Dart adapter exposes safe failure categories for unsupported platform, native failure, and malformed response. Permission loss or a failed service start must leave App Lock disabled and fail open.
+
+Battery status and settings are owned by the shared background-runtime contract below. The App Lock methods remain compatibility aliases for older Dart callers and must not become a second source of feature state.
+
+## Android background runtime
+
+- Channel: `com.habiter.app/runtime`
+- Platforms: Android only
+- Dart boundary: `BackgroundRuntimeGateway`
+
+| Method | Arguments | Success result |
+| --- | --- | --- |
+| `getSnapshot` | none | `{remindersEnabled, appBlockEnabled, notificationsGranted, batteryOptimized}` |
+| `reconcile` | `{remindersEnabled: bool, appBlockEnabled: bool, reason: String}` | `null` after persisting both feature flags and reconciling the foreground service. |
+| `invalidateReminders` | none | `null` after requesting an immediate adaptive-reminder evaluation. |
+| `openBatterySettings` | none | `null` after opening system-wide battery settings. |
+| `getDiagnostics` | none | Feature flags plus nullable UTC-epoch-millisecond `runtimeStartedAt`, `lastHeartbeatAt`, `lastReminderEvaluationAt`, `nextReminderEvaluationAt`, `lastNotificationDispatchAt`, and nullable `lastStartReason`. |
+
+The two feature flags are one atomic state snapshot. A caller that changes one feature must first read the snapshot and preserve the other flag. The service runs while either feature is enabled and stops only when both are disabled. Diagnostics and feature state are persisted without habit names, notification payloads, or learning signals.
+
+Adaptive reminders use a persistent headless Flutter engine over `com.habiter.app/runtime_engine`. Native invokes `evaluate` with `{reason: String}`; Dart returns `{nextEvaluationAt: int?, dispatched: bool}`. Dart invokes `ready` with no arguments after registering the handler; native returns `null`. This private engine channel is registered with the notification, shared-preferences, and time-zone plugins before evaluation.
 
 ## Device time zone
 

@@ -1433,13 +1433,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateStatusReady => 'Ready to install';
 
   @override
-  String get updateStatusInstalling => 'Android installer opened';
+  String get updateStatusRestartRequired => 'Downloaded · restart required';
+
+  @override
+  String get updateStatusInstalling => 'Secure update handoff started';
 
   @override
   String get updateStatusMandatory => 'This update is now required';
 
   @override
   String get updateStatusError => 'Update check unavailable';
+
+  @override
+  String get updateErrorOffline => 'Offline · reconnect to check securely';
+
+  @override
+  String get updateErrorIntegrity => 'The download failed its security check';
+
+  @override
+  String get updateErrorStorage => 'Not enough safe storage for this update';
+
+  @override
+  String get updateErrorExternal =>
+      'The platform update service is unavailable';
 
   @override
   String get updateAvailableBadge => 'Update available';
@@ -1501,7 +1517,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateDownload => 'Download update';
 
   @override
+  String get updateCancelDownload => 'Cancel download';
+
+  @override
   String get updateInstall => 'Install';
+
+  @override
+  String get updateRestart => 'Install and restart';
 
   @override
   String get updateOpenDownload => 'Open download';

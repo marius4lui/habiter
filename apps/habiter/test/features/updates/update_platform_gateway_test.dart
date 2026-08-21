@@ -74,7 +74,7 @@ void main() {
   });
 
   test(
-    'Android Store distribution opens Store and never enables direct install',
+    'Android Store distribution uses Play flow and never enables APK install',
     () async {
       const channel = MethodChannel('com.habiter.test/updates');
       final calls = <String>[];
@@ -87,7 +87,13 @@ void main() {
                 'directInstallAllowed': false,
                 'installerSource': 'com.android.vending',
               },
-              'openStore' => true,
+              'startStoreUpdate' => 'launched',
+              'getStoreUpdateStatus' => <String, Object?>{
+                'phase': 'complete',
+                'downloadedBytes': 42,
+                'totalBytes': 42,
+              },
+              'completeStoreUpdate' => 'launched',
               _ => null,
             };
           });
@@ -103,17 +109,31 @@ void main() {
 
       expect(runtime.androidDistribution, AndroidDistribution.play);
       expect(runtime.supportsDirectInstall, isFalse);
-      expect(
-        await gateway.openExternal(
-          _candidateFor(
-            platform: 'android',
-            url: 'https://example.com/habiter.aab',
-            distribution: AndroidDistribution.play,
-          ),
-        ),
-        UpdateInstallResult.externalOpened,
+      final candidate = _candidateFor(
+        platform: 'android',
+        url: 'https://example.com/habiter.aab',
+        distribution: AndroidDistribution.play,
       );
-      expect(calls, ['getRuntimeInfo', 'openStore']);
+      expect(
+        await gateway.openExternal(candidate),
+        UpdateInstallResult.launched,
+      );
+      expect(
+        (await gateway.downloadStatus('play')).phase,
+        UpdateDownloadPhase.complete,
+      );
+      expect((await gateway.verifyDownload('play', candidate)).isValid, isTrue);
+      expect(
+        await gateway.install('play', candidate),
+        UpdateInstallResult.launched,
+      );
+      expect(calls, [
+        'getRuntimeInfo',
+        'startStoreUpdate',
+        'getStoreUpdateStatus',
+        'getStoreUpdateStatus',
+        'completeStoreUpdate',
+      ]);
     },
   );
 }

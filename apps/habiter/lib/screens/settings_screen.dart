@@ -457,8 +457,10 @@ String _updateSummary(BuildContext context, UpdateController controller) =>
       ),
       UpdatePhase.verifying => context.l10n.updateStatusVerifying,
       UpdatePhase.ready => context.l10n.updateStatusReady,
+      UpdatePhase.restartRequired => context.l10n.updateStatusRestartRequired,
       UpdatePhase.installing => context.l10n.updateStatusInstalling,
       UpdatePhase.mandatory => context.l10n.updateStatusMandatory,
+      UpdatePhase.unsupported => context.l10n.updateUnsupported,
       UpdatePhase.error => context.l10n.updateStatusError,
       UpdatePhase.idle => context.l10n.updateSettingsBody,
     };

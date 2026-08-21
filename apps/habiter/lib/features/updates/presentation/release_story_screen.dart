@@ -448,8 +448,11 @@ final class _StoryUpdateAction extends StatelessWidget {
     if (state.phase == UpdatePhase.installing) {
       return Center(child: Text(context.l10n.updateStatusInstalling));
     }
-    final ready = state.phase == UpdatePhase.ready;
-    final external = controller.runtime?.supportsDirectInstall != true;
+    final ready = const {
+      UpdatePhase.ready,
+      UpdatePhase.restartRequired,
+    }.contains(state.phase);
+    final external = controller.candidateUsesExternalInstaller;
     return FilledButton.icon(
       onPressed: () async {
         if (!ready) {
@@ -461,7 +464,9 @@ final class _StoryUpdateAction extends StatelessWidget {
       icon: Icon(ready ? Icons.install_mobile_rounded : Icons.download_rounded),
       label: Text(
         ready
-            ? context.l10n.updateInstall
+            ? state.phase == UpdatePhase.restartRequired
+                  ? context.l10n.updateRestart
+                  : context.l10n.updateInstall
             : external
             ? context.l10n.updateOpenDownload
             : context.l10n.updateDownload,

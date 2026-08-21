@@ -66,10 +66,12 @@ final class UpdateState {
       UpdatePhase.downloading,
       UpdatePhase.verifying,
       UpdatePhase.available,
+      UpdatePhase.mandatory,
       UpdatePhase.error,
     },
     UpdatePhase.verifying: {
       UpdatePhase.ready,
+      UpdatePhase.restartRequired,
       UpdatePhase.available,
       UpdatePhase.error,
     },
@@ -78,14 +80,25 @@ final class UpdateState {
       UpdatePhase.checking,
       UpdatePhase.error,
     },
-    UpdatePhase.installing: {UpdatePhase.ready, UpdatePhase.error},
-    UpdatePhase.mandatory: {
-      UpdatePhase.downloading,
-      UpdatePhase.ready,
+    UpdatePhase.restartRequired: {
       UpdatePhase.installing,
       UpdatePhase.checking,
       UpdatePhase.error,
     },
+    UpdatePhase.installing: {
+      UpdatePhase.ready,
+      UpdatePhase.restartRequired,
+      UpdatePhase.error,
+    },
+    UpdatePhase.mandatory: {
+      UpdatePhase.downloading,
+      UpdatePhase.ready,
+      UpdatePhase.restartRequired,
+      UpdatePhase.installing,
+      UpdatePhase.checking,
+      UpdatePhase.error,
+    },
+    UpdatePhase.unsupported: {},
     UpdatePhase.error: {
       UpdatePhase.checking,
       UpdatePhase.available,

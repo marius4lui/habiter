@@ -56,6 +56,32 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('active downloads expose an accessible cancel action', (
+    tester,
+  ) async {
+    final now = DateTime.utc(2026, 8, 17, 12);
+    final fixture = await _signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    final controller = await _checkedController(fixture, now: now);
+    addTearDown(controller.dispose);
+    await controller.download();
+    await tester.pumpWidget(
+      _app(
+        locale: const Locale('en'),
+        controller: controller,
+        home: const UpdateCenterScreen(),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const Key('cancel-update-download')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('cancel-update-download')));
+    await tester.pump();
+
+    expect(controller.state.phase, UpdatePhase.available);
+  });
+
   testWidgets('aggregated story supports dark, wide and reduced-motion UI', (
     tester,
   ) async {

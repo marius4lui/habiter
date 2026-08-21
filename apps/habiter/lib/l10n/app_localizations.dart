@@ -2630,10 +2630,16 @@ abstract class AppLocalizations {
   /// **'Bereit zur Installation'**
   String get updateStatusReady;
 
+  /// No description provided for @updateStatusRestartRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Heruntergeladen · Neustart erforderlich'**
+  String get updateStatusRestartRequired;
+
   /// No description provided for @updateStatusInstalling.
   ///
   /// In de, this message translates to:
-  /// **'Android-Installer geöffnet'**
+  /// **'Sichere Update-Übergabe gestartet'**
   String get updateStatusInstalling;
 
   /// No description provided for @updateStatusMandatory.
@@ -2647,6 +2653,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Update-Prüfung nicht verfügbar'**
   String get updateStatusError;
+
+  /// No description provided for @updateErrorOffline.
+  ///
+  /// In de, this message translates to:
+  /// **'Offline · für eine sichere Prüfung erneut verbinden'**
+  String get updateErrorOffline;
+
+  /// No description provided for @updateErrorIntegrity.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Download hat die Sicherheitsprüfung nicht bestanden'**
+  String get updateErrorIntegrity;
+
+  /// No description provided for @updateErrorStorage.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht genug sicherer Speicherplatz für dieses Update'**
+  String get updateErrorStorage;
+
+  /// No description provided for @updateErrorExternal.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Update-Dienst der Plattform ist nicht verfügbar'**
+  String get updateErrorExternal;
 
   /// No description provided for @updateAvailableBadge.
   ///
@@ -2756,11 +2786,23 @@ abstract class AppLocalizations {
   /// **'Update herunterladen'**
   String get updateDownload;
 
+  /// No description provided for @updateCancelDownload.
+  ///
+  /// In de, this message translates to:
+  /// **'Download abbrechen'**
+  String get updateCancelDownload;
+
   /// No description provided for @updateInstall.
   ///
   /// In de, this message translates to:
   /// **'Installieren'**
   String get updateInstall;
+
+  /// No description provided for @updateRestart.
+  ///
+  /// In de, this message translates to:
+  /// **'Installieren und neu starten'**
+  String get updateRestart;
 
   /// No description provided for @updateOpenDownload.
   ///

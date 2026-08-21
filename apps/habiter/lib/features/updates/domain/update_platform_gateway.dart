@@ -62,6 +62,7 @@ enum UpdateInstallResult {
   launched,
   permissionRequired,
   externalOpened,
+  canceled,
   unavailable,
 }
 

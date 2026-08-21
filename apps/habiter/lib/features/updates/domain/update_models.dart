@@ -19,8 +19,10 @@ enum UpdatePhase {
   downloading,
   verifying,
   ready,
+  restartRequired,
   installing,
   mandatory,
+  unsupported,
   error,
 }
 

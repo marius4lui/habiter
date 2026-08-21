@@ -103,10 +103,20 @@ final class MethodChannelUpdatePlatformGateway
   @override
   Future<UpdateDownloadStatus> downloadStatus(String downloadId) async {
     if (_isDesktop) return _desktop.downloadStatus(downloadId);
+    if (_platformName == 'android' && downloadId == _playDownloadId) {
+      final data = await _channel.invokeMapMethod<String, Object?>(
+        'getStoreUpdateStatus',
+      );
+      return _downloadStatusFromData(data);
+    }
     final data = await _channel.invokeMapMethod<String, Object?>(
       'getDownloadStatus',
       {'downloadId': downloadId},
     );
+    return _downloadStatusFromData(data);
+  }
+
+  UpdateDownloadStatus _downloadStatusFromData(Map<String, Object?>? data) {
     return UpdateDownloadStatus(
       phase: switch (data?['phase']) {
         'queued' => UpdateDownloadPhase.queued,
@@ -128,6 +138,12 @@ final class MethodChannelUpdatePlatformGateway
     UpdateCandidate candidate,
   ) async {
     if (_isDesktop) return _desktop.verifyDownload(downloadId, candidate);
+    if (_platformName == 'android' && downloadId == _playDownloadId) {
+      final status = await downloadStatus(downloadId);
+      return status.phase == UpdateDownloadPhase.complete
+          ? const UpdateVerificationResult.valid()
+          : const UpdateVerificationResult.invalid('store_update_not_ready');
+    }
     final data = await _channel
         .invokeMapMethod<String, Object?>('verifyDownload', {
           'downloadId': downloadId,
@@ -146,6 +162,8 @@ final class MethodChannelUpdatePlatformGateway
   @override
   Future<void> removeDownload(String downloadId) => _isDesktop
       ? _desktop.removeDownload(downloadId)
+      : _platformName == 'android' && downloadId == _playDownloadId
+      ? Future<void>.value()
       : _channel.invokeMethod<void>('removeDownload', {
           'downloadId': downloadId,
         });
@@ -163,6 +181,13 @@ final class MethodChannelUpdatePlatformGateway
     UpdateCandidate candidate,
   ) async {
     if (_isDesktop) return _desktop.install(downloadId, candidate);
+    if (_platformName == 'android' &&
+        candidate.artifact.distribution == AndroidDistribution.play) {
+      final result = await _channel.invokeMethod<String>('completeStoreUpdate');
+      return result == 'launched'
+          ? UpdateInstallResult.launched
+          : UpdateInstallResult.unavailable;
+    }
     final result = await _channel.invokeMethod<String>('installUpdate', {
       'downloadId': downloadId,
       'buildNumber': candidate.release.buildNumber,
@@ -182,10 +207,15 @@ final class MethodChannelUpdatePlatformGateway
   Future<UpdateInstallResult> openExternal(UpdateCandidate candidate) async {
     final artifact = candidate.artifact;
     if (_platformName == 'android') {
-      final opened = await _channel.invokeMethod<bool>('openStore');
-      return opened == true
-          ? UpdateInstallResult.externalOpened
-          : UpdateInstallResult.unavailable;
+      final result = await _channel.invokeMethod<String>('startStoreUpdate', {
+        'immediate': candidate.release.isMandatoryAt(DateTime.now().toUtc()),
+      });
+      return switch (result) {
+        'launched' => UpdateInstallResult.launched,
+        'externalOpened' => UpdateInstallResult.externalOpened,
+        'canceled' => UpdateInstallResult.canceled,
+        _ => UpdateInstallResult.unavailable,
+      };
     }
     final opened = await (_externalUrlLauncher ?? _launchExternal)(
       artifact.url,
@@ -228,4 +258,6 @@ final class MethodChannelUpdatePlatformGateway
 
   bool get _isDesktop =>
       const {'windows', 'linux', 'macos'}.contains(_platformName);
+
+  static const String _playDownloadId = 'play';
 }

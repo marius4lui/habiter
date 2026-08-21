@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { FoundationPage } from "@/components/foundation-page";
+import { ProductPage as ProductExperiencePage } from "@/components/product-page";
 
 export const metadata: Metadata = {
   title: "Produkt",
@@ -9,11 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function ProductPage() {
-  return (
-    <FoundationPage
-      eyebrow="Die Experience"
-      title="Ein System für den nächsten kleinen Schritt."
-      copy="Habiter reduziert einen vollen Tag auf das, was jetzt machbar ist — und macht Rückkehr wertvoller als Perfektion."
-    />
-  );
+  return <ProductExperiencePage />;
 }

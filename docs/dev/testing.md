@@ -106,6 +106,7 @@ Keep manual checks aligned with the feature-specific matrices:
 - [App Lock QA](/app-lock)
 - [Android widget QA](/dev/widget-qa)
 - [Mobile UX system](/mobile-ux-system)
+- [Responsive layout and reference matrix](/dev/responsive-layout)
 
 Record device model, operating-system version, build/flavor, locale, appearance, steps, and observed result. An unavailable gate remains unverified; it is not silently waived.
 

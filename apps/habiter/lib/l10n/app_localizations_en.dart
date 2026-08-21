@@ -1275,6 +1275,51 @@ class AppLocalizationsEn extends AppLocalizations {
       'Active hours default to 08:00–22:00. You can pause, change every plan, or delete all learning data anytime.';
 
   @override
+  String get onboardingBackgroundTitle =>
+      'Keep Habiter active\nin the background.';
+
+  @override
+  String get onboardingBackgroundBody =>
+      'Reminders are decided locally, so Android needs to keep Habiter\'s foreground runtime active. Android will show an ongoing notification while it runs.';
+
+  @override
+  String get onboardingBackgroundNotifications => 'Notifications';
+
+  @override
+  String get onboardingBackgroundNotificationsReady => 'Allowed';
+
+  @override
+  String get onboardingBackgroundNotificationsNeeded => 'Permission needed';
+
+  @override
+  String get onboardingBackgroundRuntime => 'Background runtime';
+
+  @override
+  String get onboardingBackgroundRuntimeReady => 'Active';
+
+  @override
+  String get onboardingBackgroundRuntimePending => 'Starting locally';
+
+  @override
+  String get onboardingBackgroundBattery => 'Battery access';
+
+  @override
+  String get onboardingBackgroundBatteryReady => 'Unrestricted';
+
+  @override
+  String get onboardingBackgroundBatteryReview => 'Review Android settings';
+
+  @override
+  String get onboardingBackgroundOpenSettings => 'Open battery settings';
+
+  @override
+  String get onboardingBackgroundContinue => 'Keep reminders active';
+
+  @override
+  String get onboardingBackgroundUnavailable =>
+      'Background status is unavailable on this device. Your reminder settings are still saved.';
+
+  @override
   String get onboardingHabitReadyTitle => 'Your first\nhabit is ready.';
 
   @override

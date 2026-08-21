@@ -88,7 +88,9 @@ abstract final class OnboardingEditorial {
 
   static int _toneIndex(OnboardingStep step) => switch (step) {
     OnboardingStep.welcome || OnboardingStep.notStarted => 0,
-    OnboardingStep.intent || OnboardingStep.reminder => 2,
+    OnboardingStep.intent ||
+    OnboardingStep.reminder ||
+    OnboardingStep.backgroundRuntime => 2,
     OnboardingStep.firstHabit || OnboardingStep.rhythmExplainer => 1,
     OnboardingStep.rhythm || OnboardingStep.widgetPin => 3,
     OnboardingStep.reminderModel ||

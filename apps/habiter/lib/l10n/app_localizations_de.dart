@@ -1288,6 +1288,52 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die Wachzeit ist zunächst 08:00–22:00 Uhr. Du kannst jederzeit pausieren, jeden Plan ändern oder alle Lerndaten löschen.';
 
   @override
+  String get onboardingBackgroundTitle =>
+      'Habiter im Hintergrund\naktiv halten.';
+
+  @override
+  String get onboardingBackgroundBody =>
+      'Erinnerungen werden lokal entschieden. Deshalb muss Android Habiters Vordergrunddienst aktiv halten. Solange er läuft, zeigt Android eine dauerhafte Benachrichtigung.';
+
+  @override
+  String get onboardingBackgroundNotifications => 'Benachrichtigungen';
+
+  @override
+  String get onboardingBackgroundNotificationsReady => 'Erlaubt';
+
+  @override
+  String get onboardingBackgroundNotificationsNeeded => 'Berechtigung nötig';
+
+  @override
+  String get onboardingBackgroundRuntime => 'Hintergrunddienst';
+
+  @override
+  String get onboardingBackgroundRuntimeReady => 'Aktiv';
+
+  @override
+  String get onboardingBackgroundRuntimePending => 'Wird lokal gestartet';
+
+  @override
+  String get onboardingBackgroundBattery => 'Akkuzugriff';
+
+  @override
+  String get onboardingBackgroundBatteryReady => 'Uneingeschränkt';
+
+  @override
+  String get onboardingBackgroundBatteryReview =>
+      'Android-Einstellungen prüfen';
+
+  @override
+  String get onboardingBackgroundOpenSettings => 'Akku-Einstellungen öffnen';
+
+  @override
+  String get onboardingBackgroundContinue => 'Erinnerungen aktiv halten';
+
+  @override
+  String get onboardingBackgroundUnavailable =>
+      'Der Hintergrundstatus ist auf diesem Gerät nicht verfügbar. Deine Erinnerungseinstellungen bleiben gespeichert.';
+
+  @override
   String get onboardingHabitReadyTitle => 'Dein erstes\nHabit steht.';
 
   @override

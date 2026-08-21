@@ -8,9 +8,9 @@ import 'package:habiter/models/habit.dart';
 import '../../support/fakes/in_memory_key_value_store.dart';
 
 void main() {
-  test('v3 progress owns the complete nine-step product order', () {
-    expect(OnboardingState.currentVersion, 3);
-    expect(OnboardingProgress.total, 9);
+  test('v4 progress owns the complete ten-step product order', () {
+    expect(OnboardingState.currentVersion, 4);
+    expect(OnboardingProgress.total, 10);
     expect(OnboardingProgress.orderedSteps, <OnboardingStep>[
       OnboardingStep.welcome,
       OnboardingStep.intent,
@@ -19,6 +19,7 @@ void main() {
       OnboardingStep.rhythmExplainer,
       OnboardingStep.reminderModel,
       OnboardingStep.reminder,
+      OnboardingStep.backgroundRuntime,
       OnboardingStep.widgetIntro,
       OnboardingStep.widgetPin,
     ]);
@@ -88,14 +89,14 @@ void main() {
         },
       });
 
-      expect(migrated.onboardingVersion, 3, reason: entry.key);
+      expect(migrated.onboardingVersion, 4, reason: entry.key);
       expect(migrated.currentStep, entry.value, reason: entry.key);
       expect(migrated.habitDraft?.name, 'Read', reason: entry.key);
       expect(migrated.habitDraft?.targetCount, 3, reason: entry.key);
     }
   });
 
-  test('repository persists a loaded v2 state as v3', () async {
+  test('repository persists a loaded v2 state as v4', () async {
     final store = InMemoryKeyValueStore();
     await store.write(
       KeyValueOnboardingRepository.storageKey,
@@ -115,7 +116,7 @@ void main() {
             as Map<String, dynamic>;
 
     expect(restored?.currentStep, OnboardingStep.rhythmExplainer);
-    expect(persisted['onboardingVersion'], 3);
+    expect(persisted['onboardingVersion'], 4);
     expect(persisted['currentStep'], 'rhythmExplainer');
   });
 

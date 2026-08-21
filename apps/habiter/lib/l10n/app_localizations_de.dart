@@ -1448,13 +1448,33 @@ class AppLocalizationsDe extends AppLocalizations {
   String get updateStatusReady => 'Bereit zur Installation';
 
   @override
-  String get updateStatusInstalling => 'Android-Installer geöffnet';
+  String get updateStatusRestartRequired =>
+      'Heruntergeladen · Neustart erforderlich';
+
+  @override
+  String get updateStatusInstalling => 'Sichere Update-Übergabe gestartet';
 
   @override
   String get updateStatusMandatory => 'Dieses Update ist jetzt erforderlich';
 
   @override
   String get updateStatusError => 'Update-Prüfung nicht verfügbar';
+
+  @override
+  String get updateErrorOffline =>
+      'Offline · für eine sichere Prüfung erneut verbinden';
+
+  @override
+  String get updateErrorIntegrity =>
+      'Der Download hat die Sicherheitsprüfung nicht bestanden';
+
+  @override
+  String get updateErrorStorage =>
+      'Nicht genug sicherer Speicherplatz für dieses Update';
+
+  @override
+  String get updateErrorExternal =>
+      'Der Update-Dienst der Plattform ist nicht verfügbar';
 
   @override
   String get updateAvailableBadge => 'Update verfügbar';
@@ -1516,7 +1536,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get updateDownload => 'Update herunterladen';
 
   @override
+  String get updateCancelDownload => 'Download abbrechen';
+
+  @override
   String get updateInstall => 'Installieren';
+
+  @override
+  String get updateRestart => 'Installieren und neu starten';
 
   @override
   String get updateOpenDownload => 'Download öffnen';

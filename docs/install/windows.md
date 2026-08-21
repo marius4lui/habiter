@@ -55,7 +55,9 @@ Confirm the extracted directory contains `habiter.exe`, DLLs, and `data`; do not
 
 ## Update
 
-Rerun the recommended installer. It verifies and stages the new bundle before moving the previous install aside, and restores the previous directory if replacement fails. A repeated installation of the same release is safe.
+Current unsigned releases keep update installation visible and external: rerun the recommended installer. It verifies and stages the new bundle before moving the previous install aside, and restores the previous directory if replacement fails. A repeated installation of the same release is safe.
+
+When release metadata truthfully marks a primary ZIP signed, a maintained user-scoped installation can start the update from the Update Center. Habiter downloads into its bounded per-user cache and verifies HTTPS policy, byte size, and SHA-256. After Habiter exits, a detached PowerShell helper rejects unsafe ZIP paths and reparse points, requires valid Authenticode on both current and next `habiter.exe` with the same signer certificate, swaps only the exact owned directory, relaunches, and restores the backup if startup fails. Unsigned, system-scoped, unowned, and unsupported installs remain on the external route. The helper never kills the running app, requests elevation, changes global execution policy, or bypasses SmartScreen.
 
 ## Uninstall safely
 
@@ -86,7 +88,7 @@ After those checks, rename each verified literal target to a unique adjacent qua
 
 ## SmartScreen and signing
 
-Current unsigned desktop releases may show a reputation warning. Verify that the file URL came from the resolver and that SHA-256 matches before deciding whether to run it. Use the Windows Security/SmartScreen details UI available under your policy; do not disable SmartScreen globally. When signing is introduced, the installer contract will add Authenticode verification in addition to SHA-256.
+Current unsigned desktop releases may show a reputation warning. Verify that the file URL came from the resolver and that SHA-256 matches before deciding whether to run it. Use the Windows Security/SmartScreen details UI available under your policy; do not disable SmartScreen globally. Signed in-app replacement is enabled only when release metadata marks the ZIP signed, and the helper still proves Authenticode validity and publisher continuity immediately before the swap.
 
 ## Download, extraction, and runtime errors
 

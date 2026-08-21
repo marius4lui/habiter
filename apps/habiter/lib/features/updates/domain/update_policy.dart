@@ -50,6 +50,7 @@ final class UpdateSelector {
     required UpdateTrack track,
     required int currentBuild,
     required String platform,
+    String architecture = 'universal',
     AndroidDistribution? androidDistribution,
   }) {
     final allowedChannels = track == UpdateTrack.stable
@@ -60,11 +61,11 @@ final class UpdateSelector {
           !allowedChannels.contains(release.channel)) {
         continue;
       }
-      final artifact = release.artifacts.cast<UpdateArtifact?>().firstWhere(
-        (item) =>
-            item!.platform == platform &&
-            (platform != 'android' || item.distribution == androidDistribution),
-        orElse: () => null,
+      final artifact = artifactFor(
+        release: release,
+        platform: platform,
+        architecture: architecture,
+        androidDistribution: androidDistribution,
       );
       if (artifact != null) {
         return UpdateCandidate(release: release, artifact: artifact);
@@ -72,6 +73,45 @@ final class UpdateSelector {
     }
     return null;
   }
+
+  UpdateArtifact? artifactFor({
+    required UpdateRelease release,
+    required String platform,
+    required String architecture,
+    AndroidDistribution? androidDistribution,
+  }) {
+    final matches = release.artifacts
+        .where((artifact) {
+          if (artifact.platform != platform ||
+              !_architectureMatches(artifact.architecture, architecture)) {
+            return false;
+          }
+          return switch (platform) {
+            'android' =>
+              artifact.distribution == androidDistribution &&
+                  artifact.signed &&
+                  artifact.format ==
+                      (androidDistribution == AndroidDistribution.direct
+                          ? UpdateArtifactFormat.apk
+                          : UpdateArtifactFormat.aab),
+            'windows' =>
+              artifact.primary == true &&
+                  artifact.format == UpdateArtifactFormat.zip,
+            'macos' =>
+              artifact.primary == true &&
+                  artifact.format == UpdateArtifactFormat.zip,
+            'linux' =>
+              artifact.primary == true &&
+                  artifact.format == UpdateArtifactFormat.appImage,
+            _ => false,
+          };
+        })
+        .toList(growable: false);
+    return matches.length == 1 ? matches.single : null;
+  }
+
+  bool _architectureMatches(String artifact, String runtime) =>
+      artifact == runtime || artifact == 'universal';
 
   List<UpdateRelease> releasesBetween({
     required UpdateManifest manifest,

@@ -115,16 +115,25 @@ final class _MandatoryUpdateScreen extends StatelessWidget {
                     Text(context.l10n.updateStatusInstalling)
                   else
                     FilledButton.icon(
-                      onPressed: state.phase == UpdatePhase.ready
+                      onPressed:
+                          const {
+                            UpdatePhase.ready,
+                            UpdatePhase.restartRequired,
+                          }.contains(state.phase)
                           ? () => requestUpdateInstall(context, controller)
                           : controller.download,
                       icon: Icon(
-                        state.phase == UpdatePhase.ready
+                        const {
+                              UpdatePhase.ready,
+                              UpdatePhase.restartRequired,
+                            }.contains(state.phase)
                             ? Icons.install_mobile_rounded
                             : Icons.download_rounded,
                       ),
                       label: Text(
-                        state.phase == UpdatePhase.ready
+                        state.phase == UpdatePhase.restartRequired
+                            ? context.l10n.updateRestart
+                            : state.phase == UpdatePhase.ready
                             ? context.l10n.updateInstall
                             : context.l10n.updateDownload,
                       ),

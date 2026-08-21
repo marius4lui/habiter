@@ -167,6 +167,150 @@ void main() {
     },
   );
 
+  test('Google Play download resumes into an explicit restart state', () async {
+    final fixture = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final platform = FakeUpdatePlatform(
+      buildNumber: 10400,
+      supportsDirectInstall: false,
+    )..externalResult = UpdateInstallResult.launched;
+    final controller = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+    );
+    await controller.check(UpdateCheckTrigger.manual);
+
+    await controller.download();
+    expect(controller.state.phase, UpdatePhase.downloading);
+    expect(platform.openExternalCalls, 1);
+    expect(controller.canCancelDownload, isFalse);
+    platform.download = const UpdateDownloadStatus(
+      phase: UpdateDownloadPhase.complete,
+      downloadedBytes: 100,
+      totalBytes: 100,
+    );
+    await controller.pollDownload();
+
+    expect(controller.state.phase, UpdatePhase.restartRequired);
+    expect(await controller.install(), UpdateInstallResult.launched);
+    controller.dispose();
+  });
+
+  test('declining the Google Play prompt keeps the update available', () async {
+    final fixture = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final platform = FakeUpdatePlatform(
+      buildNumber: 10400,
+      supportsDirectInstall: false,
+    )..externalResult = UpdateInstallResult.canceled;
+    final controller = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+    );
+    await controller.check(UpdateCheckTrigger.manual);
+
+    await controller.download();
+
+    expect(controller.state.phase, UpdatePhase.available);
+    expect(controller.state.candidate, isNotNull);
+    controller.dispose();
+  });
+
+  test('an active Google Play update is recovered after app restart', () async {
+    final fixture = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final platform = FakeUpdatePlatform(
+      buildNumber: 10400,
+      supportsDirectInstall: false,
+    );
+    final store = InMemoryKeyValueStore();
+    final first = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+      existingStore: store,
+    );
+    await first.check(UpdateCheckTrigger.manual);
+    first.dispose();
+    platform.download = const UpdateDownloadStatus(
+      phase: UpdateDownloadPhase.running,
+      downloadedBytes: 40,
+      totalBytes: 100,
+    );
+
+    final restored = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+      existingStore: store,
+      seedLocalState: false,
+    );
+
+    expect(restored.state.phase, UpdatePhase.downloading);
+    expect(restored.state.progress, 0.4);
+    expect(restored.canCancelDownload, isFalse);
+    restored.dispose();
+  });
+
+  test(
+    'direct downloads can be canceled without losing the candidate',
+    () async {
+      final fixture = await signed([
+        releaseJson(build: 10500, channel: 'stable'),
+      ]);
+      final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+      final platform = FakeUpdatePlatform(buildNumber: 10400);
+      final controller = await controllerFor(
+        envelope: fixture.envelope,
+        publicKey: fixture.publicKey,
+        platform: platform,
+        clock: clock,
+      );
+      await controller.check(UpdateCheckTrigger.manual);
+      await controller.download();
+
+      expect(controller.canCancelDownload, isTrue);
+      await controller.cancelDownload();
+
+      expect(controller.state.phase, UpdatePhase.available);
+      expect(platform.removeCalls, 1);
+      controller.dispose();
+    },
+  );
+
+  test('unsupported platforms expose an explicit terminal state', () async {
+    final fixture = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final platform = FakeUpdatePlatform(
+      buildNumber: 10400,
+      supportsUpdates: false,
+    );
+    final controller = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+    );
+
+    expect(controller.state.phase, UpdatePhase.unsupported);
+    expect(controller.canCheck, isFalse);
+    controller.dispose();
+  });
+
   test('mandatory mode requires a successful online verification', () async {
     final fixture = await signed([
       releaseJson(
@@ -232,6 +376,37 @@ void main() {
     },
   );
 
+  test('a signed deadline withdrawal releases a mandatory lock', () async {
+    final mandatory = await signed([
+      releaseJson(
+        build: 10500,
+        channel: 'stable',
+        mandatoryAfter: DateTime.utc(2026, 8, 16),
+      ),
+    ]);
+    final voluntary = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    var serverEnvelope = mandatory.envelope;
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final controller = await controllerFor(
+      envelope: mandatory.envelope,
+      publicKey: mandatory.publicKey,
+      platform: FakeUpdatePlatform(buildNumber: 10400),
+      clock: clock,
+      responseEnvelopeProvider: () => serverEnvelope,
+    );
+    await controller.check(UpdateCheckTrigger.manual);
+    expect(controller.state.phase, UpdatePhase.mandatory);
+
+    serverEnvelope = voluntary.envelope;
+    await controller.check(UpdateCheckTrigger.manual);
+
+    expect(controller.state.phase, UpdatePhase.available);
+    expect(controller.mandatoryEnforced, isFalse);
+    controller.dispose();
+  });
+
   test('tampered server data cannot replace the last verified cache', () async {
     final fixture = await signed([
       releaseJson(build: 10500, channel: 'stable'),
@@ -290,11 +465,46 @@ void main() {
 
       await controller.check(UpdateCheckTrigger.manual);
       expect(controller.state.phase, UpdatePhase.ready);
-      expect(controller.canCheck, isFalse);
+      expect(controller.canCheck, isTrue);
       expect(await controller.install(), UpdateInstallResult.launched);
       controller.dispose();
     },
   );
+
+  test('a signed release withdrawal removes a ready payload', () async {
+    final fixture = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    final withdrawn = await signed(const []);
+    var serverEnvelope = fixture.envelope;
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final platform = FakeUpdatePlatform(buildNumber: 10400);
+    final controller = await controllerFor(
+      envelope: fixture.envelope,
+      publicKey: fixture.publicKey,
+      platform: platform,
+      clock: clock,
+      responseEnvelopeProvider: () => serverEnvelope,
+    );
+    await controller.check(UpdateCheckTrigger.manual);
+    await controller.download();
+    platform.download = const UpdateDownloadStatus(
+      phase: UpdateDownloadPhase.complete,
+      downloadedBytes: 100,
+      totalBytes: 100,
+    );
+    await controller.pollDownload();
+    expect(controller.state.phase, UpdatePhase.ready);
+
+    serverEnvelope = withdrawn.envelope;
+    await controller.check(UpdateCheckTrigger.manual);
+
+    expect(controller.state.phase, UpdatePhase.upToDate);
+    expect(controller.state.candidate, isNull);
+    expect(platform.removeCalls, 1);
+    expect(await controller.install(), UpdateInstallResult.unavailable);
+    controller.dispose();
+  });
 
   test('a persisted DownloadManager ID resumes after app restart', () async {
     final fixture = await signed([
@@ -636,11 +846,12 @@ final class FakeUpdatePlatform implements UpdatePlatformGateway {
   FakeUpdatePlatform({
     required int buildNumber,
     bool supportsDirectInstall = true,
+    bool supportsUpdates = true,
   }) : info = UpdateRuntimeInfo(
          platform: 'android',
          version: '1.4.0',
          buildNumber: buildNumber,
-         supportsUpdates: true,
+         supportsUpdates: supportsUpdates,
          supportsDirectInstall: supportsDirectInstall,
          androidDistribution: supportsDirectInstall
              ? AndroidDistribution.direct
@@ -669,6 +880,7 @@ final class FakeUpdatePlatform implements UpdatePlatformGateway {
   Object? enqueueError;
   Object? downloadStatusError;
   Object? runtimeInfoError;
+  UpdateInstallResult externalResult = UpdateInstallResult.externalOpened;
 
   @override
   Future<void> cleanupAfterUpgrade(int currentBuild) async {}
@@ -713,7 +925,7 @@ final class FakeUpdatePlatform implements UpdatePlatformGateway {
   @override
   Future<UpdateInstallResult> openExternal(UpdateCandidate candidate) async {
     openExternalCalls += 1;
-    return UpdateInstallResult.externalOpened;
+    return externalResult;
   }
 
   @override

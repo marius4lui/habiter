@@ -35,6 +35,11 @@ internal class UpdateManager(private val activity: MainActivity) {
     private val downloads = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
     private val connectivity = activity.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     private val preferences = activity.getSharedPreferences("habiter_updates", Context.MODE_PRIVATE)
+    private val storeUpdates = StoreUpdateCoordinator(activity)
+
+    fun resumeStoreUpdate() = storeUpdates.resumeInterruptedImmediateUpdate()
+
+    fun dispose() = storeUpdates.dispose()
 
     fun handle(call: MethodCall, result: MethodChannel.Result) {
         try {
@@ -57,6 +62,19 @@ internal class UpdateManager(private val activity: MainActivity) {
                 "openInstallerPermission" -> {
                     openInstallerPermission()
                     result.success(null)
+                }
+                "startStoreUpdate" -> storeUpdates.start(call.argument<Boolean>("immediate") == true) { outcome ->
+                    activity.runOnUiThread {
+                        result.success(
+                            if (outcome == "unavailable" && openStore()) "externalOpened" else outcome
+                        )
+                    }
+                }
+                "getStoreUpdateStatus" -> storeUpdates.status { status ->
+                    activity.runOnUiThread { result.success(status) }
+                }
+                "completeStoreUpdate" -> storeUpdates.complete { outcome ->
+                    activity.runOnUiThread { result.success(outcome) }
                 }
                 "openStore" -> result.success(openStore())
                 "storedDownloadBytes" -> result.success(storedDownloadBytes())

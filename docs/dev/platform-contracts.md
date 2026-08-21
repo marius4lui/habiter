@@ -76,7 +76,7 @@ The result tracks platform callback state, not a guarantee that a widget remains
 ## Android updates
 
 - Channel: `com.habiter.app/updates`
-- Platforms: Android for native methods; desktop uses external URLs and an HTTP manifest transport
+- Platforms: Android. Desktop update transport and installation use the Dart IO boundary documented below.
 
 | Method | Required arguments | Success result |
 | --- | --- | --- |
@@ -90,16 +90,33 @@ The result tracks platform callback state, not a guarantee that a widget remains
 | `clearDownloads` | none | `null` |
 | `installUpdate` | `{downloadId, buildNumber}` | `launched`, `permissionRequired`, or `unavailable`. |
 | `openInstallerPermission` | none | `null` after opening Android settings. |
+| `startStoreUpdate` | `{immediate: bool}` | `launched`, `canceled`, `externalOpened`, or `unavailable`. |
+| `getStoreUpdateStatus` | none | `{phase, downloadedBytes, totalBytes, failureCode?}` for the active Google Play update. |
+| `completeStoreUpdate` | none | `launched` or `unavailable`; completes a downloaded flexible Play update. |
 | `openStore` | none | `bool` |
 | `storedDownloadBytes` | none | Non-negative byte count. |
 | `cleanupAfterUpgrade` | `{currentBuild}` | `null` |
 | `consumePendingOpen` | none | `bool` |
 
-`fetchManifest` accepts HTTPS only, does not follow redirects, applies bounded timeouts, caps response bytes, and supports `If-None-Match`. Direct-download methods reject store distributions, unsafe URLs and file names, stale builds, invalid hashes, insufficient storage, mismatched sizes, and mismatched signing certificates.
+`fetchManifest` accepts HTTPS only, does not follow redirects, applies bounded timeouts, caps response bytes, and supports `If-None-Match`. Direct-download methods reject store distributions, unsafe URLs and file names, stale builds, invalid hashes, insufficient storage, mismatched sizes, and mismatched signing certificates. The Store flavor alone links Google Play's app-update library; the direct flavor contains a fail-closed coordinator with no Play dependency. Flexible Play progress and completion are serialized through the same download-status domain model, so Dart can reconcile an active Store update after process recreation.
 
 The native side can invoke `openUpdateCenter` on the same channel when a notification intent is delivered to a running Flutter engine. At cold start, Dart calls `consumePendingOpen` to consume the equivalent intent flag exactly once.
 
 Native update failures use stable machine-readable codes such as `unsafe_manifest_url`, `manifest_too_large`, `manifest_network_error`, `unsafe_url`, `unsafe_file_name`, `invalid_hash`, `stale_apk`, `insufficient_storage`, and `update_platform_error`. UI copy must map these to safe localized messages rather than exposing exception details.
+
+## Desktop updates
+
+Desktop platforms do not expose a Flutter method channel for updating. `DesktopUpdateClient` owns an opaque per-user cache record, partial payload, final payload, and stable error marker. It accepts HTTPS only, rejects redirects, bounds bytes by the signed size, resumes with HTTP Range where possible, and promotes a payload only after size and SHA-256 verification. The gateway persists only the opaque download ID and expected build.
+
+`DesktopUpdateInstaller` detects only maintained installations carrying schema-1 ownership evidence for the exact executable and canonical user-scoped root. System-scoped, unowned, package-manager, and unsupported-format installations return `false` and use the visible external route. The implementation contracts are:
+
+| Platform | Direct handoff contract |
+| --- | --- |
+| Linux | Exact running `Habiter.AppImage`, adjacent staging/backup, checksum revalidation, process wait, relaunch, and rollback on early exit. |
+| Windows | Signed primary ZIP only; bounded target, traversal/reparse rejection, SHA-256, valid Authenticode on current and next executable, identical publisher certificate, adjacent directory swap, relaunch, and rollback. |
+| macOS | Signed primary ZIP only; user-owned bundle with adjacent ownership manifest, archive-layout guard, SHA-256, exact bundle ID, strict code-sign validation, Gatekeeper assessment, identical signing team, adjacent bundle swap, relaunch, and rollback. The app bundle is never modified after signing. |
+
+Helper launch means the current process exits voluntarily; no helper kills it or requests elevation. A helper writes only the stable `install_failed` marker on failure. Dart maps that category to localized recovery copy and retains the current release when rollback succeeds.
 
 ## Changing a channel
 

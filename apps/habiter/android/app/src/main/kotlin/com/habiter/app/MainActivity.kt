@@ -28,11 +28,12 @@ class MainActivity: FlutterActivity() {
     private val SETTINGS_CHANNEL = "com.habiter.app/settings"
     private val UPDATE_CHANNEL = "com.habiter.app/updates"
     private var updateMethodChannel: MethodChannel? = null
+    private var updateManager: UpdateManager? = null
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         flutterEngine.plugins.add(HabiterWidgetPinPlugin())
-        val updateManager = UpdateManager(this)
+        val updateManager = UpdateManager(this).also { this.updateManager = it }
         updateMethodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, UPDATE_CHANNEL).also {
             it.setMethodCallHandler(updateManager::handle)
         }
@@ -131,6 +132,17 @@ class MainActivity: FlutterActivity() {
             intent.removeExtra("openUpdateCenter")
             updateMethodChannel?.invokeMethod("openUpdateCenter", null)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateManager?.resumeStoreUpdate()
+    }
+
+    override fun onDestroy() {
+        updateManager?.dispose()
+        updateManager = null
+        super.onDestroy()
     }
 
     private fun getInstalledNonSystemApps(): List<Map<String, Any?>> {

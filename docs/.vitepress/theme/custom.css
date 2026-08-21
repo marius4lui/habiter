@@ -32,3 +32,11 @@
   display: table;
   width: 100%;
 }
+
+@media (max-width: 767px) {
+  .vp-doc table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}

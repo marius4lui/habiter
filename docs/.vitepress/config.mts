@@ -83,6 +83,7 @@ export default defineConfig({
             { text: 'Branch Workflow', link: '/dev/branches' },
             { text: 'State Management', link: '/dev/state' },
             { text: 'Services', link: '/dev/services' },
+            { text: 'Personal Sync Data Contract', link: '/dev/personal-sync-data-contract' },
             { text: 'Platform Channels', link: '/dev/platform-contracts' },
             { text: 'Testing and Quality', link: '/dev/testing' },
             { text: 'Android Widget QA', link: '/dev/widget-qa' },

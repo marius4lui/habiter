@@ -62,6 +62,70 @@ void main() {
     expect(find.text('Habiter'), findsOneWidget);
   });
 
+  testWidgets('shell matches every canonical reference size', (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.devicePixelRatio = 1;
+    final scenarios = <({String name, Size size, bool rail, bool extended})>[
+      (
+        name: 'smart-display portrait',
+        size: const Size(320, 480),
+        rail: false,
+        extended: false,
+      ),
+      (
+        name: 'smart-display landscape',
+        size: const Size(480, 320),
+        rail: false,
+        extended: false,
+      ),
+      (name: 'phone', size: const Size(390, 844), rail: false, extended: false),
+      (
+        name: 'tablet portrait',
+        size: const Size(700, 1000),
+        rail: false,
+        extended: false,
+      ),
+      (
+        name: 'tablet landscape',
+        size: const Size(1000, 700),
+        rail: true,
+        extended: false,
+      ),
+      (
+        name: 'desktop',
+        size: const Size(1440, 900),
+        rail: true,
+        extended: true,
+      ),
+    ];
+
+    for (final scenario in scenarios) {
+      tester.view.physicalSize = scenario.size;
+      await tester.pumpWidget(_fixture(selected: AppRoute.analytics));
+      await tester.pump();
+
+      expect(
+        find.byType(NavigationRail),
+        scenario.rail ? findsOneWidget : findsNothing,
+        reason: scenario.name,
+      );
+      expect(
+        find.byType(NavigationBar),
+        scenario.rail ? findsNothing : findsOneWidget,
+        reason: scenario.name,
+      );
+      if (scenario.rail) {
+        expect(
+          tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
+          scenario.extended,
+          reason: scenario.name,
+        );
+      }
+      expect(tester.takeException(), isNull, reason: scenario.name);
+    }
+  });
+
   testWidgets('content state survives bottom-navigation and rail changes', (
     tester,
   ) async {

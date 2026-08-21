@@ -302,6 +302,79 @@ void main() {
     expect(secondPlan.dy, firstPlan.dy);
   });
 
+  testWidgets('core flows pass the canonical responsive reference matrix', (
+    tester,
+  ) async {
+    final provider = await _providerWithHabits();
+    final settings = SettingsProvider();
+    addTearDown(provider.dispose);
+    addTearDown(settings.dispose);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.devicePixelRatio = 1;
+    final habitsBefore = provider.habits
+        .map((habit) => habit.toJson())
+        .toList();
+    final entriesBefore = provider.habitEntries
+        .map((entry) => entry.toMap())
+        .toList();
+    final reminderPreferencesBefore = provider.reminderPreferences.toMap();
+    final reminderPoliciesBefore = {
+      for (final entry in provider.reminderPolicies.entries)
+        entry.key: entry.value.toMap(),
+    };
+    final scenarios = <({String name, Size size, double textScale})>[
+      (
+        name: 'smart-display portrait',
+        size: const Size(320, 480),
+        textScale: 2,
+      ),
+      (
+        name: 'smart-display landscape',
+        size: const Size(480, 320),
+        textScale: 2,
+      ),
+      (name: 'phone', size: const Size(390, 844), textScale: 1),
+      (name: 'tablet portrait', size: const Size(700, 1000), textScale: 1),
+      (name: 'tablet landscape', size: const Size(1000, 700), textScale: 1),
+      (name: 'desktop', size: const Size(1440, 900), textScale: 1),
+    ];
+
+    for (final scenario in scenarios) {
+      tester.view.physicalSize = scenario.size;
+      for (final screen in <Widget>[
+        const HomeScreen(),
+        const AnalyticsScreen(),
+        const RhythmScreen(),
+        const SettingsScreen(),
+        const Scaffold(body: AddHabitSheet()),
+      ]) {
+        await tester.pumpWidget(
+          _app(
+            provider: provider,
+            settings: settings,
+            home: screen,
+            textScale: scenario.textScale,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: '${scenario.name}: ${screen.runtimeType}',
+        );
+      }
+    }
+
+    expect(provider.habits.map((habit) => habit.toJson()), habitsBefore);
+    expect(provider.habitEntries.map((entry) => entry.toMap()), entriesBefore);
+    expect(provider.reminderPreferences.toMap(), reminderPreferencesBefore);
+    expect({
+      for (final entry in provider.reminderPolicies.entries)
+        entry.key: entry.value.toMap(),
+    }, reminderPoliciesBefore);
+  });
+
   testWidgets('guided editor keeps primary controls reachable at 200 percent', (
     tester,
   ) async {

@@ -65,6 +65,30 @@ final class WidgetColorTokens {
   final String? mutedText;
   final String? success;
 
+  WidgetColorTokens copyWith({
+    String? surface,
+    bool clearSurface = false,
+    String? surfaceAccent,
+    bool clearSurfaceAccent = false,
+    String? primary,
+    bool clearPrimary = false,
+    String? text,
+    bool clearText = false,
+    String? mutedText,
+    bool clearMutedText = false,
+    String? success,
+    bool clearSuccess = false,
+  }) => WidgetColorTokens(
+    surface: clearSurface ? null : (surface ?? this.surface),
+    surfaceAccent: clearSurfaceAccent
+        ? null
+        : (surfaceAccent ?? this.surfaceAccent),
+    primary: clearPrimary ? null : (primary ?? this.primary),
+    text: clearText ? null : (text ?? this.text),
+    mutedText: clearMutedText ? null : (mutedText ?? this.mutedText),
+    success: clearSuccess ? null : (success ?? this.success),
+  );
+
   bool get isEmpty =>
       surface == null &&
       surfaceAccent == null &&
@@ -167,6 +191,48 @@ final class WidgetBreakpointOverride {
   final WidgetStateStyles? stateStyles;
   final WidgetInteractionMap? interactions;
   final Set<WidgetElement> hiddenElements;
+
+  WidgetBreakpointOverride copyWith({
+    WidgetContentMode? contentMode,
+    WidgetThemeMode? themeMode,
+    WidgetAccentMode? accentMode,
+    WidgetDensity? density,
+    WidgetProgressMode? progressMode,
+    int? maximumHabits,
+    double? outerPadding,
+    double? cornerRadius,
+    double? textScale,
+    WidgetColorTokens? colorTokens,
+    double? surfaceTransparency,
+    WidgetListSettings? listSettings,
+    WidgetProgressSettings? progressSettings,
+    WidgetCompletionSettings? completionSettings,
+    WidgetGeometry? geometry,
+    WidgetTypography? typography,
+    WidgetStateStyles? stateStyles,
+    WidgetInteractionMap? interactions,
+    Set<WidgetElement>? hiddenElements,
+  }) => WidgetBreakpointOverride(
+    contentMode: contentMode ?? this.contentMode,
+    themeMode: themeMode ?? this.themeMode,
+    accentMode: accentMode ?? this.accentMode,
+    density: density ?? this.density,
+    progressMode: progressMode ?? this.progressMode,
+    maximumHabits: maximumHabits ?? this.maximumHabits,
+    outerPadding: outerPadding ?? this.outerPadding,
+    cornerRadius: cornerRadius ?? this.cornerRadius,
+    textScale: textScale ?? this.textScale,
+    colorTokens: colorTokens ?? this.colorTokens,
+    surfaceTransparency: surfaceTransparency ?? this.surfaceTransparency,
+    listSettings: listSettings ?? this.listSettings,
+    progressSettings: progressSettings ?? this.progressSettings,
+    completionSettings: completionSettings ?? this.completionSettings,
+    geometry: geometry ?? this.geometry,
+    typography: typography ?? this.typography,
+    stateStyles: stateStyles ?? this.stateStyles,
+    interactions: interactions ?? this.interactions,
+    hiddenElements: hiddenElements ?? this.hiddenElements,
+  );
 
   bool get isEmpty =>
       contentMode == null &&

@@ -3253,6 +3253,654 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Die Einstellungen dieses Widgets konnten nicht gespeichert werden.'**
   String get widgetSaveFailed;
+
+  /// No description provided for @widgetAdvancedTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Advanced'**
+  String get widgetAdvancedTitle;
+
+  /// No description provided for @widgetAdvancedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Cracked Customization · standardmäßig eingeklappt'**
+  String get widgetAdvancedBody;
+
+  /// No description provided for @widgetAdvancedBreakpoints.
+  ///
+  /// In de, this message translates to:
+  /// **'Overrides pro Breakpoint'**
+  String get widgetAdvancedBreakpoints;
+
+  /// No description provided for @widgetAdvancedVisibleElements.
+  ///
+  /// In de, this message translates to:
+  /// **'Sichtbare Elemente'**
+  String get widgetAdvancedVisibleElements;
+
+  /// No description provided for @widgetAdvancedHabitList.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit-Liste'**
+  String get widgetAdvancedHabitList;
+
+  /// No description provided for @widgetAdvancedProgress.
+  ///
+  /// In de, this message translates to:
+  /// **'Fortschritt'**
+  String get widgetAdvancedProgress;
+
+  /// No description provided for @widgetAdvancedCompletion.
+  ///
+  /// In de, this message translates to:
+  /// **'Completion Controls'**
+  String get widgetAdvancedCompletion;
+
+  /// No description provided for @widgetAdvancedThemeTokens.
+  ///
+  /// In de, this message translates to:
+  /// **'Theme Tokens'**
+  String get widgetAdvancedThemeTokens;
+
+  /// No description provided for @widgetAdvancedGeometry.
+  ///
+  /// In de, this message translates to:
+  /// **'Geometrie'**
+  String get widgetAdvancedGeometry;
+
+  /// No description provided for @widgetAdvancedTypography.
+  ///
+  /// In de, this message translates to:
+  /// **'Typografie'**
+  String get widgetAdvancedTypography;
+
+  /// No description provided for @widgetAdvancedStates.
+  ///
+  /// In de, this message translates to:
+  /// **'Zustandsspezifische UI'**
+  String get widgetAdvancedStates;
+
+  /// No description provided for @widgetAdvancedInteractions.
+  ///
+  /// In de, this message translates to:
+  /// **'Interaktionszuordnung'**
+  String get widgetAdvancedInteractions;
+
+  /// No description provided for @widgetUseGlobalSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Globale Einstellungen verwenden'**
+  String get widgetUseGlobalSettings;
+
+  /// No description provided for @widgetOverrideThisSize.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Größe überschreiben'**
+  String get widgetOverrideThisSize;
+
+  /// No description provided for @widgetMaximumHabits.
+  ///
+  /// In de, this message translates to:
+  /// **'Maximal sichtbare Habits'**
+  String get widgetMaximumHabits;
+
+  /// No description provided for @widgetCompletedPlacement.
+  ///
+  /// In de, this message translates to:
+  /// **'Position erledigter Habits'**
+  String get widgetCompletedPlacement;
+
+  /// No description provided for @widgetCompletedAsHabiter.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie in Habiter'**
+  String get widgetCompletedAsHabiter;
+
+  /// No description provided for @widgetCompletedAtEnd.
+  ///
+  /// In de, this message translates to:
+  /// **'Ans Ende verschieben'**
+  String get widgetCompletedAtEnd;
+
+  /// No description provided for @widgetOverflow.
+  ///
+  /// In de, this message translates to:
+  /// **'Wenn der Platz nicht reicht'**
+  String get widgetOverflow;
+
+  /// No description provided for @widgetOverflowTruncate.
+  ///
+  /// In de, this message translates to:
+  /// **'Liste abschneiden'**
+  String get widgetOverflowTruncate;
+
+  /// No description provided for @widgetOverflowOpenOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur offene Habits zeigen'**
+  String get widgetOverflowOpenOnly;
+
+  /// No description provided for @widgetOverflowFocus.
+  ///
+  /// In de, this message translates to:
+  /// **'Zu Focus wechseln'**
+  String get widgetOverflowFocus;
+
+  /// No description provided for @widgetPinnedHabits.
+  ///
+  /// In de, this message translates to:
+  /// **'Angeheftete Habits'**
+  String get widgetPinnedHabits;
+
+  /// No description provided for @widgetProgressMode.
+  ///
+  /// In de, this message translates to:
+  /// **'Fortschrittsdarstellung'**
+  String get widgetProgressMode;
+
+  /// No description provided for @widgetProgressAutomatic.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatisch'**
+  String get widgetProgressAutomatic;
+
+  /// No description provided for @widgetProgressHidden.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausgeblendet'**
+  String get widgetProgressHidden;
+
+  /// No description provided for @widgetProgressSegments.
+  ///
+  /// In de, this message translates to:
+  /// **'Segmente'**
+  String get widgetProgressSegments;
+
+  /// No description provided for @widgetProgressCounter.
+  ///
+  /// In de, this message translates to:
+  /// **'Zähler'**
+  String get widgetProgressCounter;
+
+  /// No description provided for @widgetProgressBoth.
+  ///
+  /// In de, this message translates to:
+  /// **'Segmente + Zähler'**
+  String get widgetProgressBoth;
+
+  /// No description provided for @widgetSegmentHeight.
+  ///
+  /// In de, this message translates to:
+  /// **'Segmenthöhe'**
+  String get widgetSegmentHeight;
+
+  /// No description provided for @widgetSegmentGap.
+  ///
+  /// In de, this message translates to:
+  /// **'Segmentabstand'**
+  String get widgetSegmentGap;
+
+  /// No description provided for @widgetMaximumSegments.
+  ///
+  /// In de, this message translates to:
+  /// **'Maximale Segmentzahl'**
+  String get widgetMaximumSegments;
+
+  /// No description provided for @widgetCompletedSegments.
+  ///
+  /// In de, this message translates to:
+  /// **'Erledigte Segmente'**
+  String get widgetCompletedSegments;
+
+  /// No description provided for @widgetRemainingSegments.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbleibende Segmente'**
+  String get widgetRemainingSegments;
+
+  /// No description provided for @widgetCompletionButtonStyle.
+  ///
+  /// In de, this message translates to:
+  /// **'Button-Stil'**
+  String get widgetCompletionButtonStyle;
+
+  /// No description provided for @widgetFocusNextHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Nach Completion nächstes offenes Habit fokussieren'**
+  String get widgetFocusNextHabit;
+
+  /// No description provided for @widgetCompletionFeedbackLevel.
+  ///
+  /// In de, this message translates to:
+  /// **'Feedback-Detail'**
+  String get widgetCompletionFeedbackLevel;
+
+  /// No description provided for @widgetFeedbackMinimal.
+  ///
+  /// In de, this message translates to:
+  /// **'Minimal'**
+  String get widgetFeedbackMinimal;
+
+  /// No description provided for @widgetFeedbackNormal.
+  ///
+  /// In de, this message translates to:
+  /// **'Normal'**
+  String get widgetFeedbackNormal;
+
+  /// No description provided for @widgetFeedbackDetailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Detailliert'**
+  String get widgetFeedbackDetailed;
+
+  /// No description provided for @widgetThemeTokenMode.
+  ///
+  /// In de, this message translates to:
+  /// **'Theme-Token-Modus'**
+  String get widgetThemeTokenMode;
+
+  /// No description provided for @widgetColorSurface.
+  ///
+  /// In de, this message translates to:
+  /// **'Surface'**
+  String get widgetColorSurface;
+
+  /// No description provided for @widgetColorSurfaceAccent.
+  ///
+  /// In de, this message translates to:
+  /// **'Surface Accent'**
+  String get widgetColorSurfaceAccent;
+
+  /// No description provided for @widgetColorPrimary.
+  ///
+  /// In de, this message translates to:
+  /// **'Primary'**
+  String get widgetColorPrimary;
+
+  /// No description provided for @widgetColorText.
+  ///
+  /// In de, this message translates to:
+  /// **'Text'**
+  String get widgetColorText;
+
+  /// No description provided for @widgetColorMutedText.
+  ///
+  /// In de, this message translates to:
+  /// **'Gedämpfter Text'**
+  String get widgetColorMutedText;
+
+  /// No description provided for @widgetColorSuccess.
+  ///
+  /// In de, this message translates to:
+  /// **'Success'**
+  String get widgetColorSuccess;
+
+  /// No description provided for @widgetResetToken.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Token zurücksetzen'**
+  String get widgetResetToken;
+
+  /// No description provided for @widgetChooseColor.
+  ///
+  /// In de, this message translates to:
+  /// **'Farbe auswählen'**
+  String get widgetChooseColor;
+
+  /// No description provided for @widgetSurfaceTransparency.
+  ///
+  /// In de, this message translates to:
+  /// **'Surface-Transparenz'**
+  String get widgetSurfaceTransparency;
+
+  /// No description provided for @widgetCornerRadius.
+  ///
+  /// In de, this message translates to:
+  /// **'Widget-Eckenradius'**
+  String get widgetCornerRadius;
+
+  /// No description provided for @widgetHabitRowRadius.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit-Zeilenradius'**
+  String get widgetHabitRowRadius;
+
+  /// No description provided for @widgetButtonRadius.
+  ///
+  /// In de, this message translates to:
+  /// **'Button-Radius'**
+  String get widgetButtonRadius;
+
+  /// No description provided for @widgetOuterPadding.
+  ///
+  /// In de, this message translates to:
+  /// **'Äußerer Abstand'**
+  String get widgetOuterPadding;
+
+  /// No description provided for @widgetHorizontalPadding.
+  ///
+  /// In de, this message translates to:
+  /// **'Horizontaler Abstand'**
+  String get widgetHorizontalPadding;
+
+  /// No description provided for @widgetVerticalPadding.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertikaler Abstand'**
+  String get widgetVerticalPadding;
+
+  /// No description provided for @widgetRowGap.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeilenabstand'**
+  String get widgetRowGap;
+
+  /// No description provided for @widgetSectionGap.
+  ///
+  /// In de, this message translates to:
+  /// **'Abschnittsabstand'**
+  String get widgetSectionGap;
+
+  /// No description provided for @widgetTextScale.
+  ///
+  /// In de, this message translates to:
+  /// **'Textskalierung'**
+  String get widgetTextScale;
+
+  /// No description provided for @widgetHabitTitleSize.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit-Titelgröße'**
+  String get widgetHabitTitleSize;
+
+  /// No description provided for @widgetSecondaryTextSize.
+  ///
+  /// In de, this message translates to:
+  /// **'Sekundärtextgröße'**
+  String get widgetSecondaryTextSize;
+
+  /// No description provided for @widgetCounterSize.
+  ///
+  /// In de, this message translates to:
+  /// **'Zählergröße'**
+  String get widgetCounterSize;
+
+  /// No description provided for @widgetFontWeight.
+  ///
+  /// In de, this message translates to:
+  /// **'Schriftstärke'**
+  String get widgetFontWeight;
+
+  /// No description provided for @widgetFontSystem.
+  ///
+  /// In de, this message translates to:
+  /// **'System'**
+  String get widgetFontSystem;
+
+  /// No description provided for @widgetFontRegular.
+  ///
+  /// In de, this message translates to:
+  /// **'Normal'**
+  String get widgetFontRegular;
+
+  /// No description provided for @widgetFontMedium.
+  ///
+  /// In de, this message translates to:
+  /// **'Mittel'**
+  String get widgetFontMedium;
+
+  /// No description provided for @widgetFontBold.
+  ///
+  /// In de, this message translates to:
+  /// **'Fett'**
+  String get widgetFontBold;
+
+  /// No description provided for @widgetStateJustCompleted.
+  ///
+  /// In de, this message translates to:
+  /// **'Gerade erledigt'**
+  String get widgetStateJustCompleted;
+
+  /// No description provided for @widgetStateAllComplete.
+  ///
+  /// In de, this message translates to:
+  /// **'Alles erledigt'**
+  String get widgetStateAllComplete;
+
+  /// No description provided for @widgetStateFreeToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute frei'**
+  String get widgetStateFreeToday;
+
+  /// No description provided for @widgetStateNoHabits.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Habits'**
+  String get widgetStateNoHabits;
+
+  /// No description provided for @widgetStateMissingStale.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehlend / veraltet'**
+  String get widgetStateMissingStale;
+
+  /// No description provided for @widgetInteractionBackground.
+  ///
+  /// In de, this message translates to:
+  /// **'Widget-Hintergrund'**
+  String get widgetInteractionBackground;
+
+  /// No description provided for @widgetInteractionHabitRow.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit-Zeile'**
+  String get widgetInteractionHabitRow;
+
+  /// No description provided for @widgetInteractionCompletion.
+  ///
+  /// In de, this message translates to:
+  /// **'Completion Control'**
+  String get widgetInteractionCompletion;
+
+  /// No description provided for @widgetActionOpenHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit öffnen'**
+  String get widgetActionOpenHabit;
+
+  /// No description provided for @widgetActionComplete.
+  ///
+  /// In de, this message translates to:
+  /// **'Erledigen'**
+  String get widgetActionComplete;
+
+  /// No description provided for @widgetActionNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Aktion'**
+  String get widgetActionNone;
+
+  /// No description provided for @widgetElementHabitIcon.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit-Icon'**
+  String get widgetElementHabitIcon;
+
+  /// No description provided for @widgetElementHabitName.
+  ///
+  /// In de, this message translates to:
+  /// **'Habit-Name'**
+  String get widgetElementHabitName;
+
+  /// No description provided for @widgetElementSchedule.
+  ///
+  /// In de, this message translates to:
+  /// **'Schedule-Label'**
+  String get widgetElementSchedule;
+
+  /// No description provided for @widgetElementSegments.
+  ///
+  /// In de, this message translates to:
+  /// **'Fortschrittssegmente'**
+  String get widgetElementSegments;
+
+  /// No description provided for @widgetElementCounter.
+  ///
+  /// In de, this message translates to:
+  /// **'x / y Zähler'**
+  String get widgetElementCounter;
+
+  /// No description provided for @widgetElementTodayHeader.
+  ///
+  /// In de, this message translates to:
+  /// **'Today-Header'**
+  String get widgetElementTodayHeader;
+
+  /// No description provided for @widgetElementCompletionButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Completion-Button'**
+  String get widgetElementCompletionButton;
+
+  /// No description provided for @widgetElementCompletedHabits.
+  ///
+  /// In de, this message translates to:
+  /// **'Erledigte Habits'**
+  String get widgetElementCompletedHabits;
+
+  /// No description provided for @widgetElementCheckmark.
+  ///
+  /// In de, this message translates to:
+  /// **'Completion-Häkchen'**
+  String get widgetElementCheckmark;
+
+  /// No description provided for @widgetElementUndo.
+  ///
+  /// In de, this message translates to:
+  /// **'Undo-Button'**
+  String get widgetElementUndo;
+
+  /// No description provided for @widgetElementEmptyText.
+  ///
+  /// In de, this message translates to:
+  /// **'Empty-State-Text'**
+  String get widgetElementEmptyText;
+
+  /// No description provided for @widgetElementDoneText.
+  ///
+  /// In de, this message translates to:
+  /// **'Done-State-Text'**
+  String get widgetElementDoneText;
+
+  /// No description provided for @widgetStyleAutomatic.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatisch'**
+  String get widgetStyleAutomatic;
+
+  /// No description provided for @widgetStyleSolid.
+  ///
+  /// In de, this message translates to:
+  /// **'Voll'**
+  String get widgetStyleSolid;
+
+  /// No description provided for @widgetStyleMuted.
+  ///
+  /// In de, this message translates to:
+  /// **'Gedämpft'**
+  String get widgetStyleMuted;
+
+  /// No description provided for @widgetStyleTrack.
+  ///
+  /// In de, this message translates to:
+  /// **'Spur'**
+  String get widgetStyleTrack;
+
+  /// No description provided for @widgetStyleOutline.
+  ///
+  /// In de, this message translates to:
+  /// **'Kontur'**
+  String get widgetStyleOutline;
+
+  /// No description provided for @widgetStyleCheckOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Häkchen'**
+  String get widgetStyleCheckOnly;
+
+  /// No description provided for @widgetStyleTextOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Text'**
+  String get widgetStyleTextOnly;
+
+  /// No description provided for @widgetStyleCheckAndText.
+  ///
+  /// In de, this message translates to:
+  /// **'Häkchen + Text'**
+  String get widgetStyleCheckAndText;
+
+  /// No description provided for @widgetStyleWholeRow.
+  ///
+  /// In de, this message translates to:
+  /// **'Ganze Habit-Zeile'**
+  String get widgetStyleWholeRow;
+
+  /// No description provided for @widgetStyleFull.
+  ///
+  /// In de, this message translates to:
+  /// **'Volles Feedback'**
+  String get widgetStyleFull;
+
+  /// No description provided for @widgetStyleCompact.
+  ///
+  /// In de, this message translates to:
+  /// **'Kompakt'**
+  String get widgetStyleCompact;
+
+  /// No description provided for @widgetStyleNextHabit.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächstes Habit zeigen'**
+  String get widgetStyleNextHabit;
+
+  /// No description provided for @widgetStyleCard.
+  ///
+  /// In de, this message translates to:
+  /// **'Done-Card'**
+  String get widgetStyleCard;
+
+  /// No description provided for @widgetStyleMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Done-Nachricht'**
+  String get widgetStyleMessage;
+
+  /// No description provided for @widgetStyleIconOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Icon'**
+  String get widgetStyleIconOnly;
+
+  /// No description provided for @widgetStyleTextAndIcon.
+  ///
+  /// In de, this message translates to:
+  /// **'Text + Icon'**
+  String get widgetStyleTextAndIcon;
+
+  /// No description provided for @widgetStyleDefault.
+  ///
+  /// In de, this message translates to:
+  /// **'Standardzustand'**
+  String get widgetStyleDefault;
+
+  /// No description provided for @widgetStyleSyncMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Sync-Hinweis'**
+  String get widgetStyleSyncMessage;
 }
 
 class _AppLocalizationsDelegate

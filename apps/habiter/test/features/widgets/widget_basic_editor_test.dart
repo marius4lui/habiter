@@ -104,7 +104,68 @@ void main() {
     expect(gateway.saved.single.widgetId, 17);
     expect(gateway.saved.single.displayName, 'Training');
     expect(gateway.saved.single.oneTapCompletion, isFalse);
+    expect(gateway.saved.single.breakpointOverrides, isEmpty);
   });
+
+  testWidgets(
+    'Advanced stays collapsed and enables one breakpoint explicitly',
+    (tester) async {
+      final gateway = _FakeWidgetConfigurationGateway();
+      await tester.pumpWidget(
+        _app(
+          WidgetBasicEditor(
+            instance: WidgetInstance(
+              widgetId: 22,
+              widthDp: 250,
+              heightDp: 180,
+              breakpoint: WidgetBreakpoint.large,
+              configuration: WidgetConfiguration.defaults(widgetId: 22),
+            ),
+            habits: const <Habit>[],
+            gateway: gateway,
+          ),
+        ),
+      );
+
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('widget-advanced')),
+        600,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Overrides pro Breakpoint'), findsNothing);
+      await tester.tap(find.byKey(const Key('widget-advanced')));
+      await tester.pumpAndSettle();
+      expect(find.text('Overrides pro Breakpoint'), findsOneWidget);
+      for (final title in <String>[
+        'Sichtbare Elemente',
+        'Habit-Liste',
+        'Fortschritt',
+        'Completion Controls',
+        'Theme Tokens',
+        'Geometrie',
+        'Typografie',
+        'Zustandsspezifische UI',
+        'Interaktionszuordnung',
+      ]) {
+        expect(find.text(title), findsOneWidget);
+      }
+
+      await tester.tap(find.byKey(const Key('widget-advanced-breakpoints')));
+      await tester.pumpAndSettle();
+      final compactOverride = tester.widget<SwitchListTile>(
+        find.byKey(const Key('widget-override-compact')),
+      );
+      compactOverride.onChanged!(true);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('widget-save')));
+      await tester.pumpAndSettle();
+
+      expect(gateway.saved, hasLength(1));
+      expect(gateway.saved.single.breakpointOverrides.keys, <WidgetBreakpoint>[
+        WidgetBreakpoint.compact,
+      ]);
+    },
+  );
 
   testWidgets('launcher configuration back action cancels the host flow', (
     tester,

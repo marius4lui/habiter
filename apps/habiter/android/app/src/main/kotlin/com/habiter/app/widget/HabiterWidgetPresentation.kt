@@ -20,7 +20,9 @@ internal object HabiterWidgetProjector {
             return HabiterWidgetPresentation(content, effective)
         }
         val selected = configuration.select(source.habits)
-        var visible = if (configuration.showCompleted) {
+        var visible = if (
+            configuration.showCompleted && effective.shows(HabiterWidgetElement.COMPLETED_HABITS)
+        ) {
             selected
         } else {
             selected.filterNot { it.completed }

@@ -1790,4 +1790,330 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get widgetSaveFailed =>
       'Die Einstellungen dieses Widgets konnten nicht gespeichert werden.';
+
+  @override
+  String get widgetAdvancedTitle => 'Advanced';
+
+  @override
+  String get widgetAdvancedBody =>
+      'Cracked Customization · standardmäßig eingeklappt';
+
+  @override
+  String get widgetAdvancedBreakpoints => 'Overrides pro Breakpoint';
+
+  @override
+  String get widgetAdvancedVisibleElements => 'Sichtbare Elemente';
+
+  @override
+  String get widgetAdvancedHabitList => 'Habit-Liste';
+
+  @override
+  String get widgetAdvancedProgress => 'Fortschritt';
+
+  @override
+  String get widgetAdvancedCompletion => 'Completion Controls';
+
+  @override
+  String get widgetAdvancedThemeTokens => 'Theme Tokens';
+
+  @override
+  String get widgetAdvancedGeometry => 'Geometrie';
+
+  @override
+  String get widgetAdvancedTypography => 'Typografie';
+
+  @override
+  String get widgetAdvancedStates => 'Zustandsspezifische UI';
+
+  @override
+  String get widgetAdvancedInteractions => 'Interaktionszuordnung';
+
+  @override
+  String get widgetUseGlobalSettings => 'Globale Einstellungen verwenden';
+
+  @override
+  String get widgetOverrideThisSize => 'Diese Größe überschreiben';
+
+  @override
+  String get widgetMaximumHabits => 'Maximal sichtbare Habits';
+
+  @override
+  String get widgetCompletedPlacement => 'Position erledigter Habits';
+
+  @override
+  String get widgetCompletedAsHabiter => 'Wie in Habiter';
+
+  @override
+  String get widgetCompletedAtEnd => 'Ans Ende verschieben';
+
+  @override
+  String get widgetOverflow => 'Wenn der Platz nicht reicht';
+
+  @override
+  String get widgetOverflowTruncate => 'Liste abschneiden';
+
+  @override
+  String get widgetOverflowOpenOnly => 'Nur offene Habits zeigen';
+
+  @override
+  String get widgetOverflowFocus => 'Zu Focus wechseln';
+
+  @override
+  String get widgetPinnedHabits => 'Angeheftete Habits';
+
+  @override
+  String get widgetProgressMode => 'Fortschrittsdarstellung';
+
+  @override
+  String get widgetProgressAutomatic => 'Automatisch';
+
+  @override
+  String get widgetProgressHidden => 'Ausgeblendet';
+
+  @override
+  String get widgetProgressSegments => 'Segmente';
+
+  @override
+  String get widgetProgressCounter => 'Zähler';
+
+  @override
+  String get widgetProgressBoth => 'Segmente + Zähler';
+
+  @override
+  String get widgetSegmentHeight => 'Segmenthöhe';
+
+  @override
+  String get widgetSegmentGap => 'Segmentabstand';
+
+  @override
+  String get widgetMaximumSegments => 'Maximale Segmentzahl';
+
+  @override
+  String get widgetCompletedSegments => 'Erledigte Segmente';
+
+  @override
+  String get widgetRemainingSegments => 'Verbleibende Segmente';
+
+  @override
+  String get widgetCompletionButtonStyle => 'Button-Stil';
+
+  @override
+  String get widgetFocusNextHabit =>
+      'Nach Completion nächstes offenes Habit fokussieren';
+
+  @override
+  String get widgetCompletionFeedbackLevel => 'Feedback-Detail';
+
+  @override
+  String get widgetFeedbackMinimal => 'Minimal';
+
+  @override
+  String get widgetFeedbackNormal => 'Normal';
+
+  @override
+  String get widgetFeedbackDetailed => 'Detailliert';
+
+  @override
+  String get widgetThemeTokenMode => 'Theme-Token-Modus';
+
+  @override
+  String get widgetColorSurface => 'Surface';
+
+  @override
+  String get widgetColorSurfaceAccent => 'Surface Accent';
+
+  @override
+  String get widgetColorPrimary => 'Primary';
+
+  @override
+  String get widgetColorText => 'Text';
+
+  @override
+  String get widgetColorMutedText => 'Gedämpfter Text';
+
+  @override
+  String get widgetColorSuccess => 'Success';
+
+  @override
+  String get widgetResetToken => 'Dieses Token zurücksetzen';
+
+  @override
+  String get widgetChooseColor => 'Farbe auswählen';
+
+  @override
+  String get widgetSurfaceTransparency => 'Surface-Transparenz';
+
+  @override
+  String get widgetCornerRadius => 'Widget-Eckenradius';
+
+  @override
+  String get widgetHabitRowRadius => 'Habit-Zeilenradius';
+
+  @override
+  String get widgetButtonRadius => 'Button-Radius';
+
+  @override
+  String get widgetOuterPadding => 'Äußerer Abstand';
+
+  @override
+  String get widgetHorizontalPadding => 'Horizontaler Abstand';
+
+  @override
+  String get widgetVerticalPadding => 'Vertikaler Abstand';
+
+  @override
+  String get widgetRowGap => 'Zeilenabstand';
+
+  @override
+  String get widgetSectionGap => 'Abschnittsabstand';
+
+  @override
+  String get widgetTextScale => 'Textskalierung';
+
+  @override
+  String get widgetHabitTitleSize => 'Habit-Titelgröße';
+
+  @override
+  String get widgetSecondaryTextSize => 'Sekundärtextgröße';
+
+  @override
+  String get widgetCounterSize => 'Zählergröße';
+
+  @override
+  String get widgetFontWeight => 'Schriftstärke';
+
+  @override
+  String get widgetFontSystem => 'System';
+
+  @override
+  String get widgetFontRegular => 'Normal';
+
+  @override
+  String get widgetFontMedium => 'Mittel';
+
+  @override
+  String get widgetFontBold => 'Fett';
+
+  @override
+  String get widgetStateJustCompleted => 'Gerade erledigt';
+
+  @override
+  String get widgetStateAllComplete => 'Alles erledigt';
+
+  @override
+  String get widgetStateFreeToday => 'Heute frei';
+
+  @override
+  String get widgetStateNoHabits => 'Keine Habits';
+
+  @override
+  String get widgetStateMissingStale => 'Fehlend / veraltet';
+
+  @override
+  String get widgetInteractionBackground => 'Widget-Hintergrund';
+
+  @override
+  String get widgetInteractionHabitRow => 'Habit-Zeile';
+
+  @override
+  String get widgetInteractionCompletion => 'Completion Control';
+
+  @override
+  String get widgetActionOpenHabit => 'Habit öffnen';
+
+  @override
+  String get widgetActionComplete => 'Erledigen';
+
+  @override
+  String get widgetActionNone => 'Keine Aktion';
+
+  @override
+  String get widgetElementHabitIcon => 'Habit-Icon';
+
+  @override
+  String get widgetElementHabitName => 'Habit-Name';
+
+  @override
+  String get widgetElementSchedule => 'Schedule-Label';
+
+  @override
+  String get widgetElementSegments => 'Fortschrittssegmente';
+
+  @override
+  String get widgetElementCounter => 'x / y Zähler';
+
+  @override
+  String get widgetElementTodayHeader => 'Today-Header';
+
+  @override
+  String get widgetElementCompletionButton => 'Completion-Button';
+
+  @override
+  String get widgetElementCompletedHabits => 'Erledigte Habits';
+
+  @override
+  String get widgetElementCheckmark => 'Completion-Häkchen';
+
+  @override
+  String get widgetElementUndo => 'Undo-Button';
+
+  @override
+  String get widgetElementEmptyText => 'Empty-State-Text';
+
+  @override
+  String get widgetElementDoneText => 'Done-State-Text';
+
+  @override
+  String get widgetStyleAutomatic => 'Automatisch';
+
+  @override
+  String get widgetStyleSolid => 'Voll';
+
+  @override
+  String get widgetStyleMuted => 'Gedämpft';
+
+  @override
+  String get widgetStyleTrack => 'Spur';
+
+  @override
+  String get widgetStyleOutline => 'Kontur';
+
+  @override
+  String get widgetStyleCheckOnly => 'Nur Häkchen';
+
+  @override
+  String get widgetStyleTextOnly => 'Nur Text';
+
+  @override
+  String get widgetStyleCheckAndText => 'Häkchen + Text';
+
+  @override
+  String get widgetStyleWholeRow => 'Ganze Habit-Zeile';
+
+  @override
+  String get widgetStyleFull => 'Volles Feedback';
+
+  @override
+  String get widgetStyleCompact => 'Kompakt';
+
+  @override
+  String get widgetStyleNextHabit => 'Nächstes Habit zeigen';
+
+  @override
+  String get widgetStyleCard => 'Done-Card';
+
+  @override
+  String get widgetStyleMessage => 'Done-Nachricht';
+
+  @override
+  String get widgetStyleIconOnly => 'Nur Icon';
+
+  @override
+  String get widgetStyleTextAndIcon => 'Text + Icon';
+
+  @override
+  String get widgetStyleDefault => 'Standardzustand';
+
+  @override
+  String get widgetStyleSyncMessage => 'Sync-Hinweis';
 }

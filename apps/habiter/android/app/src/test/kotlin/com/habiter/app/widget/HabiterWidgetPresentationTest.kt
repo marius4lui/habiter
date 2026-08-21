@@ -123,6 +123,27 @@ class HabiterWidgetPresentationTest {
     }
 
     @Test
+    fun `advanced visibility hides completed habits at one breakpoint`() {
+        val presentation = HabiterWidgetProjector.project(
+            HabiterWidgetContentState.Active(source),
+            HabiterWidgetConfiguration(
+                widgetId = 17,
+                breakpointOverrides = mapOf(
+                    HabiterWidgetLayout.LARGE to HabiterWidgetBreakpointOverride(
+                        hiddenElements = setOf(HabiterWidgetElement.COMPLETED_HABITS),
+                    ),
+                ),
+            ),
+            HabiterWidgetLayout.LARGE,
+        )
+        val state = (presentation.content as HabiterWidgetContentState.Active).state
+
+        assertEquals(listOf("read", "train"), state.habits.map { it.id })
+        assertEquals(1, state.completedCount)
+        assertEquals(3, state.scheduledCount)
+    }
+
+    @Test
     fun `overflow can switch one instance to focus`() {
         val configuration = HabiterWidgetConfiguration(
             widgetId = 17,

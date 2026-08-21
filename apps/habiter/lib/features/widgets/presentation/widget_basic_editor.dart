@@ -9,6 +9,7 @@ import '../../../models/habit.dart';
 import '../domain/widget_configuration.dart';
 import '../domain/widget_configuration_gateway.dart';
 import '../domain/widget_configuration_options.dart';
+import 'widget_advanced_editor.dart';
 
 class WidgetBasicEditor extends StatefulWidget {
   const WidgetBasicEditor({
@@ -373,6 +374,11 @@ class _WidgetBasicEditorState extends State<WidgetBasicEditor> {
                 ),
               ),
             ],
+          ),
+          WidgetAdvancedEditor(
+            configuration: _draft,
+            habits: _availableHabits,
+            onChanged: _update,
           ),
         ],
       ),

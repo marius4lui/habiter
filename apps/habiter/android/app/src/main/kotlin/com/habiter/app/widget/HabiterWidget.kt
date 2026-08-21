@@ -412,9 +412,7 @@ private fun HabitRow(
             Spacer(GlanceModifier.width(8.dp))
         }
         Column(modifier = GlanceModifier.defaultWeight()) {
-            if (effective.shows(HabiterWidgetElement.HABIT_NAME) ||
-                !effective.shows(HabiterWidgetElement.HABIT_ICON)
-            ) {
+            if (effective.shows(HabiterWidgetElement.HABIT_NAME)) {
                 Text(habit.name, maxLines = 1, style = titleStyle(colors, effective, 15))
             }
             if (effective.shows(HabiterWidgetElement.SCHEDULE_LABEL)) {
@@ -437,9 +435,14 @@ private fun GlanceModifier.withHabitRowAction(
 ): GlanceModifier {
     val mapping = if (
         effective.completionSettings.buttonStyle == HabiterWidgetCompletionButtonStyle.WHOLE_ROW &&
+        effective.shows(HabiterWidgetElement.COMPLETION_BUTTON) &&
         !habit.completed
     ) {
-        HabiterWidgetHabitRowAction.COMPLETE
+        if (effective.interactions.completionControl == HabiterWidgetCompletionAction.OPEN_HABIT) {
+            HabiterWidgetHabitRowAction.OPEN_HABIT
+        } else {
+            HabiterWidgetHabitRowAction.COMPLETE
+        }
     } else {
         effective.interactions.habitRow
     }
@@ -573,7 +576,9 @@ private fun JustCompletedState(
         effective.completionSettings.feedback == HabiterWidgetCompletionFeedback.MINIMAL
     ) {
         Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("✓", style = TextStyle(color = colors.success, fontSize = textSize(effective, 32).sp))
+            if (effective.shows(HabiterWidgetElement.COMPLETION_CHECKMARK)) {
+                Text("✓", style = TextStyle(color = colors.success, fontSize = textSize(effective, 32).sp))
+            }
         }
         return
     }
@@ -700,7 +705,9 @@ private fun CompletedState(
             modifier = GlanceModifier.fillMaxSize().configuredPadding(effective, 14, 8),
             verticalAlignment = Alignment.Vertical.CenterVertically,
         ) {
-            Text("✓", style = TextStyle(color = colors.success, fontSize = textSize(effective, 28).sp))
+            if (effective.shows(HabiterWidgetElement.COMPLETION_CHECKMARK)) {
+                Text("✓", style = TextStyle(color = colors.success, fontSize = textSize(effective, 28).sp))
+            }
             if (showMessage) {
                 Spacer(GlanceModifier.width(10.dp))
                 Text(
@@ -717,7 +724,9 @@ private fun CompletedState(
             verticalAlignment = Alignment.Vertical.CenterVertically,
             horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
         ) {
-            Text("✓", style = TextStyle(color = colors.success, fontSize = textSize(effective, 32).sp))
+            if (effective.shows(HabiterWidgetElement.COMPLETION_CHECKMARK)) {
+                Text("✓", style = TextStyle(color = colors.success, fontSize = textSize(effective, 32).sp))
+            }
             if (showMessage) {
                 Spacer(GlanceModifier.height(8.dp))
                 Text(
@@ -788,7 +797,8 @@ private fun habitText(
     return when {
         showIcon && showName -> "${habit.icon} ${habit.name}"
         showIcon -> habit.icon
-        else -> habit.name
+        showName -> habit.name
+        else -> ""
     }
 }
 

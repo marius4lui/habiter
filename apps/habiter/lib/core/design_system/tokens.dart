@@ -23,11 +23,6 @@ abstract final class HabiterRadius {
 abstract final class HabiterSize {
   static const contentMax = 720.0;
   static const wideContentMax = 1120.0;
-  // TODO(issue-26): remove these compatibility aliases when the adaptive shell
-  // and Today layout consume HabiterLayout in their dedicated batches.
-  static const compactBreakpoint = 600.0;
-  static const expandedBreakpoint = 840.0;
-  static const desktopBreakpoint = 1024.0;
 }
 
 abstract final class HabiterState {

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/app/navigation/app_route.dart';
 import 'package:habiter/app/navigation/app_router.dart';
 import 'package:habiter/app/shell/adaptive_app_shell.dart';
+import 'package:habiter/core/design_system/layout.dart';
 import 'package:habiter/core/design_system/tokens.dart';
 
 void main() {
@@ -39,9 +40,52 @@ void main() {
     await tester.pump();
     expect(find.byType(NavigationBar), findsOneWidget);
 
-    await pumpAt(const Size(1200, 800));
+    await pumpAt(const Size(HabiterLayout.expandedMinWidth - 1, 800));
+    await tester.pumpWidget(_fixture(selected: AppRoute.analytics));
+    await tester.pump();
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(NavigationRail), findsNothing);
+
+    await pumpAt(const Size(HabiterLayout.expandedMinWidth, 800));
     expect(find.byType(NavigationRail), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
+      isFalse,
+    );
+
+    await pumpAt(const Size(HabiterLayout.largeMinWidth, 800));
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
+      isTrue,
+    );
+    expect(find.text('Habiter'), findsOneWidget);
+  });
+
+  testWidgets('content state survives bottom-navigation and rail changes', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(700, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      _fixture(selected: AppRoute.analytics, child: const _StatefulCounter()),
+    );
+
+    await tester.tap(find.text('Count 0'));
+    await tester.pump();
+    expect(find.text('Count 1'), findsOneWidget);
+
+    tester.view.physicalSize = const Size(900, 800);
+    await tester.pump();
+    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.text('Count 1'), findsOneWidget);
+
+    tester.view.physicalSize = const Size(700, 800);
+    await tester.pump();
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.text('Count 1'), findsOneWidget);
   });
 
   testWidgets('keyboard shortcuts select primary destinations', (tester) async {
@@ -161,17 +205,38 @@ void main() {
 Widget _fixture({
   AppRoute selected = AppRoute.today,
   ValueChanged<AppRoute>? onSelected,
+  Widget child = const ColoredBox(color: Colors.white),
 }) => MaterialApp(
-  home: _fixtureShell(selected: selected, onSelected: onSelected),
+  home: _fixtureShell(selected: selected, onSelected: onSelected, child: child),
 );
 
 Widget _fixtureShell({
   AppRoute selected = AppRoute.today,
   ValueChanged<AppRoute>? onSelected,
+  Widget child = const ColoredBox(color: Colors.white),
 }) => AdaptiveAppShell(
   selected: selected,
   onSelected: onSelected ?? (_) {},
   onOpenSettings: () {},
   onOpenAppLock: () {},
-  child: const ColoredBox(color: Colors.white),
+  child: child,
 );
+
+class _StatefulCounter extends StatefulWidget {
+  const _StatefulCounter();
+
+  @override
+  State<_StatefulCounter> createState() => _StatefulCounterState();
+}
+
+class _StatefulCounterState extends State<_StatefulCounter> {
+  var count = 0;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: FilledButton(
+      onPressed: () => setState(() => count += 1),
+      child: Text('Count $count'),
+    ),
+  );
+}

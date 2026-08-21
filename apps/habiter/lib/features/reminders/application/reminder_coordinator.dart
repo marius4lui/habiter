@@ -36,6 +36,7 @@ final class ReminderCoordinator {
     DynamicReminderPlanner planner = const DynamicReminderPlanner(),
     bool runtimeOwnsSmartDelivery = false,
     Future<void> Function()? invalidateAdaptiveRuntime,
+    Future<void> Function(bool enabled)? reconcileReminderRuntime,
   }) : _repository = ReminderRepository(store),
        _notifications = notifications,
        _clock = clock,
@@ -45,6 +46,7 @@ final class ReminderCoordinator {
        _planner = planner,
        _runtimeOwnsSmartDelivery = runtimeOwnsSmartDelivery,
        _invalidateAdaptiveRuntime = invalidateAdaptiveRuntime,
+       _reconcileReminderRuntime = reconcileReminderRuntime,
        _scheduler = ReminderScheduler(
          registry: NotificationIdRegistry(store),
          gateway: notifications,
@@ -64,6 +66,7 @@ final class ReminderCoordinator {
   final DynamicReminderPlanner _planner;
   final bool _runtimeOwnsSmartDelivery;
   final Future<void> Function()? _invalidateAdaptiveRuntime;
+  final Future<void> Function(bool enabled)? _reconcileReminderRuntime;
   final ReminderScheduler _scheduler;
   final ReminderReconciler _reconciler;
   final ReminderActionInbox _inbox;
@@ -104,6 +107,7 @@ final class ReminderCoordinator {
     await _completeExpiredCalibration();
     if (processActions) await _drainActions();
     _snapshot = await _repository.load();
+    await _reconcileReminderRuntime?.call(_snapshot.preferences.enabled);
     final now = _clock.now();
     final location = _location();
     final localNow = tz.TZDateTime.from(now, location);

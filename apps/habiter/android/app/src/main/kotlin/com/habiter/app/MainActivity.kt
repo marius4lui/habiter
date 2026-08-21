@@ -21,6 +21,7 @@ import java.util.TimeZone
 import android.util.Log
 import com.habiter.app.widget.HabiterWidgetPinPlugin
 import com.habiter.app.runtime.RuntimeStateStore
+import com.habiter.app.runtime.BackgroundRuntimePlugin
 
 class MainActivity: FlutterActivity() {
     private val TAG = "HabiterAppLock"
@@ -28,6 +29,7 @@ class MainActivity: FlutterActivity() {
     private val TIME_ZONE_CHANNEL = "com.habiter.app/timezone"
     private val SETTINGS_CHANNEL = "com.habiter.app/settings"
     private val UPDATE_CHANNEL = "com.habiter.app/updates"
+    private val RUNTIME_CHANNEL = "com.habiter.app/runtime"
     private var updateMethodChannel: MethodChannel? = null
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
@@ -37,6 +39,10 @@ class MainActivity: FlutterActivity() {
         updateMethodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, UPDATE_CHANNEL).also {
             it.setMethodCallHandler(updateManager::handle)
         }
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            RUNTIME_CHANNEL,
+        ).setMethodCallHandler(BackgroundRuntimePlugin(this)::handle)
         
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {

@@ -22,6 +22,14 @@ final class RuntimeFeatureState {
     if (appBlockEnabled) RuntimeFeature.appBlock,
   };
 
+  RuntimeFeatureState copyWith({
+    bool? remindersEnabled,
+    bool? appBlockEnabled,
+  }) => RuntimeFeatureState(
+    remindersEnabled: remindersEnabled ?? this.remindersEnabled,
+    appBlockEnabled: appBlockEnabled ?? this.appBlockEnabled,
+  );
+
   Map<String, Object?> toMap() => <String, Object?>{
     'remindersEnabled': remindersEnabled,
     'appBlockEnabled': appBlockEnabled,

@@ -162,7 +162,13 @@ export function HabitProductDemo({ initialView = "today", compact = false }: Hab
           <span className={styles.roundAction} aria-hidden="true">○</span>
         </div>
 
-        <div className={styles.panel} id={panelId} role="tabpanel">
+        <div
+          className={styles.panel}
+          id={panelId}
+          role="tabpanel"
+          aria-label={`${views.find((view) => view.id === activeView)?.label ?? "App"} Ansicht`}
+          aria-live="polite"
+        >
           {activeView === "today" ? (
             <TodayView complete={complete} onComplete={() => setComplete((value) => !value)} />
           ) : null}

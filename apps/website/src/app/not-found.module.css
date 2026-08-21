@@ -1,0 +1,72 @@
+.main {
+  position: relative;
+  min-height: 820px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  overflow: hidden;
+  padding: 150px var(--page-gutter) 100px;
+  text-align: center;
+}
+
+.glow {
+  position: absolute;
+  z-index: -1;
+  width: min(80vw, 720px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 40% 40%, rgba(197, 233, 223, .58), transparent 36%),
+    radial-gradient(circle at 65% 65%, rgba(255, 209, 141, .35), transparent 36%);
+  filter: blur(28px);
+}
+
+.main > span {
+  margin-top: 28px;
+  color: var(--mint);
+  font-size: 10px;
+  font-weight: 820;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.main h1 {
+  max-width: 900px;
+  margin: 22px 0 18px;
+  color: var(--text-strong);
+  font-size: clamp(50px, 7.5vw, 92px);
+  line-height: .94;
+  letter-spacing: -.075em;
+}
+
+.main p {
+  max-width: 560px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.main > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+@media (max-width: 600px) {
+  .main {
+    min-height: 720px;
+    padding-top: 120px;
+  }
+
+  .main h1 {
+    font-size: clamp(46px, 14vw, 62px);
+  }
+
+  .main > div:last-child,
+  .main :global(.button) {
+    width: 100%;
+  }
+}

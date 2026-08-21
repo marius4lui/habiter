@@ -1,0 +1,237 @@
+.shell {
+  min-height: 100vh;
+  overflow: clip;
+}
+
+.header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  padding: 14px 0;
+  pointer-events: none;
+}
+
+.headerInner {
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 8px 10px 8px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  box-shadow: var(--shadow-nav);
+  backdrop-filter: blur(22px) saturate(1.25);
+  pointer-events: auto;
+}
+
+.brand {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-strong);
+  font-size: 16px;
+  font-weight: 820;
+  letter-spacing: -0.035em;
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.links a {
+  padding: 10px 13px;
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 680;
+  transition: color 180ms ease, background 180ms ease;
+}
+
+.links a:hover {
+  color: var(--text-strong);
+  background: var(--surface-soft);
+}
+
+.actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.menu {
+  display: none;
+  position: relative;
+}
+
+.menu summary {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-radius: 14px;
+  background: var(--surface-soft);
+  cursor: pointer;
+  list-style: none;
+}
+
+.menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.menu summary span {
+  width: 20px;
+  height: 1.5px;
+  display: block;
+  border-radius: 99px;
+  background: var(--text-strong);
+  transition: transform 180ms ease;
+}
+
+.menu[open] summary span:first-child {
+  transform: translateY(3.75px) rotate(45deg);
+}
+
+.menu[open] summary span:last-child {
+  transform: translateY(-3.75px) rotate(-45deg);
+}
+
+.menuPanel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(300px, calc(100vw - 32px));
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.mobileLinks {
+  display: grid;
+  margin-bottom: 10px;
+}
+
+.mobileLinks a {
+  padding: 13px 12px;
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.mobileLinks a:hover {
+  color: var(--text-strong);
+  background: var(--surface-soft);
+}
+
+.footer {
+  padding: 80px 0 28px;
+  color: var(--text-muted);
+  background: var(--surface-deep);
+  border-top: 1px solid var(--border-soft);
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 64px;
+  padding-bottom: 56px;
+}
+
+.footerBrand p {
+  max-width: 340px;
+  margin: 18px 0 0;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.footerNav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  gap: 36px;
+}
+
+.footerNav > div {
+  display: grid;
+  align-content: start;
+  gap: 11px;
+}
+
+.footerNav strong {
+  margin-bottom: 4px;
+  color: var(--text-strong);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.footerNav a {
+  width: fit-content;
+  font-size: 14px;
+}
+
+.footerNav a:hover {
+  color: var(--text-strong);
+}
+
+.legal {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 12px;
+}
+
+@media (max-width: 820px) {
+  .headerInner {
+    grid-template-columns: 1fr auto;
+  }
+
+  .desktopNav,
+  .actions > :global(.button) {
+    display: none;
+  }
+
+  .menu {
+    display: block;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: 8px 0;
+  }
+
+  .headerInner {
+    min-height: 58px;
+    padding: 6px 7px 6px 12px;
+    border-radius: 18px;
+  }
+
+  .footer {
+    padding-top: 64px;
+  }
+
+  .footerGrid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  .footerNav {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .legal {
+    display: grid;
+  }
+}

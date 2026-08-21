@@ -5,6 +5,7 @@ import '../core/design_system/components.dart';
 import '../core/design_system/tokens.dart';
 import '../features/habits/domain/habit_source.dart';
 import '../features/habits/presentation/templates/habit_template.dart';
+import '../features/habits/presentation/habit_schedule_label.dart';
 import '../l10n/l10n.dart';
 import '../models/habit.dart';
 
@@ -117,7 +118,7 @@ class HabitDetailDialog extends StatelessWidget {
                     _DetailTile(
                       icon: Icons.repeat_rounded,
                       label: context.l10n.frequency,
-                      value: _frequency(context),
+                      value: localizedHabitSchedule(context.l10n, habit),
                     ),
                     const Divider(height: 1, indent: 56),
                     _DetailTile(
@@ -225,12 +226,6 @@ class HabitDetailDialog extends StatelessWidget {
       ),
     );
   }
-
-  String _frequency(BuildContext context) => switch (habit.frequency) {
-    HabitFrequency.daily => context.l10n.daily,
-    HabitFrequency.weekly => context.l10n.perWeek(habit.targetCount),
-    HabitFrequency.custom => context.l10n.custom,
-  };
 }
 
 class _DetailTile extends StatelessWidget {

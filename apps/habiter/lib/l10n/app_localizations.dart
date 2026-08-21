@@ -1202,6 +1202,12 @@ abstract class AppLocalizations {
   /// **'Wähle mindestens einen Tag.'**
   String get scheduleRequired;
 
+  /// No description provided for @scheduleUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeitplan nicht verfügbar'**
+  String get scheduleUnavailable;
+
   /// No description provided for @reminderTimeRequired.
   ///
   /// In de, this message translates to:

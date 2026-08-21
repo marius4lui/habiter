@@ -280,6 +280,7 @@
   "stepOf": "Schritt {step} von {total}",
   "@stepOf": {"placeholders": {"step": {"type": "int"}, "total": {"type": "int"}}},
   "scheduleRequired": "Wähle mindestens einen Tag.",
+  "scheduleUnavailable": "Zeitplan nicht verfügbar",
   "reminderTimeRequired": "Wähle eine Uhrzeit oder schalte Erinnerungen aus.",
   "optional": "Optional",
   "analyticsTitle": "Dein Rhythmus",

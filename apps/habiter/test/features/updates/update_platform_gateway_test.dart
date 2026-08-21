@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/features/updates/domain/update_models.dart';
 import 'package:habiter/features/updates/domain/update_platform_gateway.dart';
+import 'package:habiter/features/updates/infrastructure/desktop_update_client.dart';
 import 'package:habiter/features/updates/infrastructure/method_channel_update_platform_gateway.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -21,11 +22,13 @@ void main() {
   });
 
   test(
-    'desktop supports checks but delegates installation to the browser',
+    'desktop routes downloads to its durable client and retains browser fallback',
     () async {
       Uri? opened;
+      final desktop = _FakeDesktopUpdateClient();
       final gateway = MethodChannelUpdatePlatformGateway(
         platformOverride: TargetPlatform.linux,
+        desktopClient: desktop,
         externalUrlLauncher: (uri) async {
           opened = uri;
           return true;
@@ -38,7 +41,16 @@ void main() {
       );
 
       expect(runtime.supportsUpdates, isTrue);
-      expect(runtime.supportsDirectInstall, isFalse);
+      expect(runtime.supportsDirectInstall, isTrue);
+      expect(
+        await gateway.enqueueDownload(candidate, allowMetered: true),
+        'desktop-download',
+      );
+      expect(
+        (await gateway.downloadStatus('desktop-download')).phase,
+        UpdateDownloadPhase.complete,
+      );
+      expect(desktop.enqueued, candidate);
       expect(
         await gateway.openExternal(candidate),
         UpdateInstallResult.externalOpened,
@@ -104,6 +116,51 @@ void main() {
       expect(calls, ['getRuntimeInfo', 'openStore']);
     },
   );
+}
+
+final class _FakeDesktopUpdateClient implements DesktopUpdateClient {
+  UpdateCandidate? enqueued;
+
+  @override
+  bool canSelfUpdate(String platform) => platform == 'linux';
+
+  @override
+  Future<void> cleanupAfterUpgrade(int currentBuild) async {}
+
+  @override
+  Future<void> clearDownloads() async {}
+
+  @override
+  Future<String> enqueueDownload(UpdateCandidate candidate) async {
+    enqueued = candidate;
+    return 'desktop-download';
+  }
+
+  @override
+  Future<UpdateDownloadStatus> downloadStatus(String downloadId) async =>
+      const UpdateDownloadStatus(
+        phase: UpdateDownloadPhase.complete,
+        downloadedBytes: 42,
+        totalBytes: 42,
+      );
+
+  @override
+  Future<UpdateInstallResult> install(
+    String downloadId,
+    UpdateCandidate candidate,
+  ) async => UpdateInstallResult.launched;
+
+  @override
+  Future<void> removeDownload(String downloadId) async {}
+
+  @override
+  Future<int> storedDownloadBytes() async => 42;
+
+  @override
+  Future<UpdateVerificationResult> verifyDownload(
+    String downloadId,
+    UpdateCandidate candidate,
+  ) async => const UpdateVerificationResult.valid();
 }
 
 UpdateCandidate _candidateFor({

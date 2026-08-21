@@ -5,6 +5,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../domain/update_models.dart';
 import '../domain/update_platform_gateway.dart';
+import 'desktop_update_client.dart';
+import 'desktop_update_client_factory.dart';
 import 'runtime_architecture.dart';
 
 final class MethodChannelUpdatePlatformGateway
@@ -14,15 +16,21 @@ final class MethodChannelUpdatePlatformGateway
     TargetPlatform? platformOverride,
     bool? webOverride,
     Future<bool> Function(Uri)? externalUrlLauncher,
+    DesktopUpdateClient? desktopClient,
   }) : _channel = channel,
        _platformOverride = platformOverride,
        _webOverride = webOverride,
-       _externalUrlLauncher = externalUrlLauncher;
+       _externalUrlLauncher = externalUrlLauncher,
+       _desktopClient = desktopClient;
 
   final MethodChannel _channel;
   final TargetPlatform? _platformOverride;
   final bool? _webOverride;
   final Future<bool> Function(Uri)? _externalUrlLauncher;
+  final DesktopUpdateClient? _desktopClient;
+
+  DesktopUpdateClient get _desktop =>
+      _desktopClient ?? createDesktopUpdateClient();
 
   @override
   Future<UpdateRuntimeInfo> runtimeInfo() async {
@@ -56,7 +64,7 @@ final class MethodChannelUpdatePlatformGateway
       version: package.version,
       buildNumber: build,
       supportsUpdates: const {'windows', 'linux', 'macos'}.contains(platform),
-      supportsDirectInstall: false,
+      supportsDirectInstall: _desktop.canSelfUpdate(platform),
     );
   }
 
@@ -79,6 +87,7 @@ final class MethodChannelUpdatePlatformGateway
     UpdateCandidate candidate, {
     required bool allowMetered,
   }) async {
+    if (_isDesktop) return _desktop.enqueueDownload(candidate);
     final id = await _channel.invokeMethod<Object?>('enqueueDownload', {
       'url': candidate.artifact.url.toString(),
       'fileName': candidate.artifact.fileName,
@@ -93,6 +102,7 @@ final class MethodChannelUpdatePlatformGateway
 
   @override
   Future<UpdateDownloadStatus> downloadStatus(String downloadId) async {
+    if (_isDesktop) return _desktop.downloadStatus(downloadId);
     final data = await _channel.invokeMapMethod<String, Object?>(
       'getDownloadStatus',
       {'downloadId': downloadId},
@@ -117,6 +127,7 @@ final class MethodChannelUpdatePlatformGateway
     String downloadId,
     UpdateCandidate candidate,
   ) async {
+    if (_isDesktop) return _desktop.verifyDownload(downloadId, candidate);
     final data = await _channel
         .invokeMapMethod<String, Object?>('verifyDownload', {
           'downloadId': downloadId,
@@ -133,11 +144,15 @@ final class MethodChannelUpdatePlatformGateway
   }
 
   @override
-  Future<void> removeDownload(String downloadId) =>
-      _channel.invokeMethod<void>('removeDownload', {'downloadId': downloadId});
+  Future<void> removeDownload(String downloadId) => _isDesktop
+      ? _desktop.removeDownload(downloadId)
+      : _channel.invokeMethod<void>('removeDownload', {
+          'downloadId': downloadId,
+        });
 
   @override
   Future<void> clearDownloads() async {
+    if (_isDesktop) return _desktop.clearDownloads();
     if (_platformName != 'android') return;
     await _channel.invokeMethod<void>('clearDownloads');
   }
@@ -147,6 +162,7 @@ final class MethodChannelUpdatePlatformGateway
     String downloadId,
     UpdateCandidate candidate,
   ) async {
+    if (_isDesktop) return _desktop.install(downloadId, candidate);
     final result = await _channel.invokeMethod<String>('installUpdate', {
       'downloadId': downloadId,
       'buildNumber': candidate.release.buildNumber,
@@ -184,12 +200,14 @@ final class MethodChannelUpdatePlatformGateway
 
   @override
   Future<int> storedDownloadBytes() async {
+    if (_isDesktop) return _desktop.storedDownloadBytes();
     if (_platformName != 'android') return 0;
     return await _channel.invokeMethod<int>('storedDownloadBytes') ?? 0;
   }
 
   @override
   Future<void> cleanupAfterUpgrade(int currentBuild) async {
+    if (_isDesktop) return _desktop.cleanupAfterUpgrade(currentBuild);
     if (_platformName != 'android') return;
     await _channel.invokeMethod<void>('cleanupAfterUpgrade', {
       'currentBuild': currentBuild,
@@ -207,4 +225,7 @@ final class MethodChannelUpdatePlatformGateway
       TargetPlatform.fuchsia => 'unknown',
     };
   }
+
+  bool get _isDesktop =>
+      const {'windows', 'linux', 'macos'}.contains(_platformName);
 }

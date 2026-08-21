@@ -19,7 +19,7 @@
       "workers_dev": true,
       "routes": [
         { "pattern": "get.habiter.dev", "custom_domain": true },
-        { "pattern": "get.the.habiter.dev", "custom_domain": true }
+        { "pattern": "get-the.habiter.dev", "custom_domain": true }
       ],
       "vars": {
         "ENVIRONMENT": "production",

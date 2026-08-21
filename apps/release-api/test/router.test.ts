@@ -49,7 +49,7 @@ const installers = {
 };
 const handler = createHandler(manifest, envelope, installers);
 const call = (path: string, headers?: HeadersInit) => handler(new Request(`https://get.habiter.dev${path}`, { headers }), env);
-const callDownload = (path: string, headers?: HeadersInit) => handler(new Request(`https://get.the.habiter.dev${path}`, { headers }), env);
+const callDownload = (path: string, headers?: HeadersInit) => handler(new Request(`https://get-the.habiter.dev${path}`, { headers }), env);
 
 describe("release API", () => {
   it("publishes every supported route in OpenAPI", () => {
@@ -186,7 +186,7 @@ describe("release API", () => {
   it("redirects the legacy selector to the canonical smart-download root", async () => {
     const response = await call("/download?platform=android&channel=beta");
     expect(response.status).toBe(308);
-    expect(response.headers.get("location")).toBe("https://get.the.habiter.dev/?platform=android&channel=beta");
+    expect(response.headers.get("location")).toBe("https://get-the.habiter.dev/?platform=android&channel=beta");
   });
 
   it("routes Linux only from explicit, reliable distro hints", async () => {

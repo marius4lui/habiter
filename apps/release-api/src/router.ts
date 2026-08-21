@@ -7,7 +7,7 @@ import type { ReleaseChannel, ReleaseManifest, SignedManifestEnvelope } from "./
 const shortCache = "public, max-age=60, s-maxage=300";
 const immutableCache = "public, max-age=86400, s-maxage=31536000, immutable";
 const semanticVersion = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
-const smartDownloadHost = "get.the.habiter.dev";
+const smartDownloadHost = "get-the.habiter.dev";
 
 /** Route templates that must stay aligned with the published OpenAPI document. */
 export const releaseApiContractPaths = {

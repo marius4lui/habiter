@@ -22,7 +22,7 @@
       "get": {
         "operationId": "selectSmartDownload",
         "summary": "Select a download from query parameters or User-Agent",
-        "servers": [{ "url": "https://get.the.habiter.dev" }],
+        "servers": [{ "url": "https://get-the.habiter.dev" }],
         "tags": ["Downloads"],
         "parameters": [
           {

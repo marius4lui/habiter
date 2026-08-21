@@ -5,7 +5,7 @@ Choose a maintained installation path:
 - [Linux](/install/linux/) — AppImage with distribution-specific guidance.
 - [Windows](/install/windows) — verified PowerShell or ZIP installation.
 - [macOS](/install/macos) — verified shell or application ZIP installation.
-- [Android](https://get.the.habiter.dev/?platform=android) — signed direct APK or configured store.
+- [Android](https://get-the.habiter.dev/?platform=android) — signed direct APK or configured store.
 
 Linux or macOS:
 

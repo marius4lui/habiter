@@ -1,6 +1,6 @@
 # Release API
 
-The Habiter Release API publishes release metadata, signed update manifests, update decisions, and download redirects. It is a read-only HTTPS API served from `https://get.habiter.dev`; the public smart-download selector is served from `https://get.the.habiter.dev/`.
+The Habiter Release API publishes release metadata, signed update manifests, update decisions, and download redirects. It is a read-only HTTPS API served from `https://get.habiter.dev`; the public smart-download selector is served from `https://get-the.habiter.dev/`.
 
 The [OpenAPI 3.1 document](/release-api.openapi.json) is the machine-readable contract. This page explains behavior that matters to clients and release operators.
 
@@ -67,7 +67,7 @@ Reports Worker availability and runtime environment.
 
 `environment` is deployment metadata such as `production` or `preview`. Clients must not use it as an authorization or trust signal.
 
-## `GET https://get.the.habiter.dev/`
+## `GET https://get-the.habiter.dev/`
 
 Selects a platform from explicit query parameters or the request `User-Agent`, then redirects to the versioned download route. If no supported platform can be determined, it redirects to the website download section.
 
@@ -80,10 +80,10 @@ Selects a platform from explicit query parameters or the request `User-Agent`, t
 Examples:
 
 ```text
-GET https://get.the.habiter.dev/?platform=linux&arch=x64
+GET https://get-the.habiter.dev/?platform=linux&arch=x64
 302 Location: https://get.habiter.dev/api/v1/download/linux/x64
 
-GET https://get.the.habiter.dev/?platform=android&channel=beta
+GET https://get-the.habiter.dev/?platform=android&channel=beta
 302 Location: https://get.habiter.dev/api/v1/download/android/universal?channel=beta
 ```
 

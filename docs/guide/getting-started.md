@@ -4,7 +4,7 @@ This guide covers installation, the first habit, everyday completion, and safe b
 
 ## Installation
 
-Start with the maintained [installation guide](/install/) for Linux, Windows, macOS, or Android. It provides the recommended installer, manual checksum verification, platform limitations, updates, uninstall steps, and troubleshooting. The [smart download page](https://get.the.habiter.dev/) routes desktop browsers to the matching guide and Android to the signed direct artifact.
+Start with the maintained [installation guide](/install/) for Linux, Windows, macOS, or Android. It provides the recommended installer, manual checksum verification, platform limitations, updates, uninstall steps, and troubleshooting. The [smart download page](https://get-the.habiter.dev/) routes desktop browsers to the matching guide and Android to the signed direct artifact.
 
 ::: info Platform status
 Android releases are signed. Windows, Linux, and macOS packages have verified checksums; Windows and macOS code signing is still planned. iOS CI artifacts are unsigned and require manual signing. The web build is validated but is not the primary distribution format.

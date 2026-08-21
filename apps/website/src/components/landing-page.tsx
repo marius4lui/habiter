@@ -838,7 +838,7 @@ export function LandingPage() {
             die du tatsächlich jeden Tag öffnen willst.
           </p>
           <div className="download-actions">
-            <a className="button-primary" href="https://get.the.habiter.dev/">
+            <a className="button-primary" href="https://get-the.habiter.dev/">
               Habiter herunterladen
               <span>
                 →

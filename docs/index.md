@@ -11,7 +11,7 @@ hero:
   actions:
     - theme: brand
       text: Download
-      link: https://get.the.habiter.dev/
+      link: https://get-the.habiter.dev/
     - theme: alt
       text: Getting Started
       link: /guide/getting-started

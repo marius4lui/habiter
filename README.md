@@ -14,7 +14,7 @@ A polished, local-first habit tracker for mobile, desktop, and web — built wit
 [![Flutter](https://img.shields.io/badge/Flutter-3.44.8-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Latest release](https://img.shields.io/github/v/release/marius4lui/habiter?sort=semver&label=release&color=6C63FF)](https://github.com/marius4lui/habiter/releases/latest)
 
-[Website](https://habiter.dev) · [Download](https://get.the.habiter.dev/) · [Documentation](https://docs.habiter.dev) · [Release API](https://docs.habiter.dev/api/release-api)
+[Website](https://habiter.dev) · [Download](https://get-the.habiter.dev/) · [Documentation](https://docs.habiter.dev) · [Release API](https://docs.habiter.dev/api/release-api)
 
 </div>
 
@@ -77,9 +77,9 @@ The smart download endpoint sends Android to the signed direct artifact and desk
 
 <div align="center">
 
-### [Download Habiter](https://get.the.habiter.dev/)
+### [Download Habiter](https://get-the.habiter.dev/)
 
-`https://get.the.habiter.dev/`
+`https://get-the.habiter.dev/`
 
 </div>
 
@@ -261,7 +261,7 @@ Open `http://localhost:3000`. Use `pnpm website:check` for the complete website 
 | `GET /api/v1/install/:platform/:architecture` | Complete primary installer artifact contract |
 | `GET /install.sh` | Allow-listed repository POSIX installer |
 | `GET /install.ps1` | Allow-listed repository PowerShell installer |
-| `GET https://get.the.habiter.dev/` | Explicit platform/distro or broad User-Agent smart route |
+| `GET https://get-the.habiter.dev/` | Explicit platform/distro or broad User-Agent smart route |
 | `GET /download` | Legacy redirect to the canonical smart-download origin |
 
 Concrete release responses are immutable; latest, update, and download decisions use short cache windows. Errors share a stable JSON contract with a request ID.

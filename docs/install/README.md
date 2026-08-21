@@ -7,7 +7,7 @@ Habiter publishes checksummed desktop bundles through [GitHub Releases](https://
 - [Linux](/install/linux/) — AppImage installer plus distro-specific dependencies and troubleshooting.
 - [Windows](/install/windows) — PowerShell installer or verified ZIP bundle.
 - [macOS](/install/macos) — shell installer or verified application ZIP.
-- **Android** — use the [smart download](https://get.the.habiter.dev/?platform=android) for the signed direct APK or your configured store.
+- **Android** — use the [smart download](https://get-the.habiter.dev/?platform=android) for the signed direct APK or your configured store.
 
 ## Installer commands
 

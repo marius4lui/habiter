@@ -41,6 +41,16 @@ node -e '
   const value = JSON.parse(fs.readFileSync(0, "utf8"));
   if (value.installId !== "manifest-test-upgrade" || value.version !== "1.7.1" || value.integrationPaths.length !== 0) throw new Error("manifest upgrade mismatch");
 ' < "$manifest_root/.habiter-install.json"
+signed_app_root="${TMPDIR:-/tmp}/habiter-manifest-test-$$/Habiter.app"
+mkdir -p "$signed_app_root/Contents/MacOS"
+write_manifest "$signed_app_root" "$signed_app_root/Contents/MacOS/habiter" user '' '' "$signed_app_root.habiter-install.json"
+[ -f "$signed_app_root.habiter-install.json" ]
+[ ! -e "$signed_app_root/.habiter-install.json" ]
+node -e '
+  const fs = require("node:fs");
+  const value = JSON.parse(fs.readFileSync(0, "utf8"));
+  if (value.canonicalInstallRoot !== process.argv[1] || value.executable !== `${process.argv[1]}/Contents/MacOS/habiter`) throw new Error("external manifest target mismatch");
+' "$signed_app_root" < "$signed_app_root.habiter-install.json"
 rm -rf "${TMPDIR:-/tmp}/habiter-manifest-test-$$"
 
 control_root="${TMPDIR:-/tmp}/habiter-manifest-control-$$"

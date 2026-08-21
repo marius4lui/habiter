@@ -38,7 +38,8 @@ final class IoDesktopUpdateInstaller implements DesktopUpdateInstaller {
         !RegExp(r'^[a-f0-9]{64}$').hasMatch(request.sha256) ||
         !RegExp(r'^\d+\.\d+\.\d+$').hasMatch(request.version) ||
         request.size < 1 ||
-        (request.platform == 'windows' && !request.signed)) {
+        (const {'windows', 'macos'}.contains(request.platform) &&
+            !request.signed)) {
       return false;
     }
     final context = _detectContext(request.platform);
@@ -51,6 +52,7 @@ final class IoDesktopUpdateInstaller implements DesktopUpdateInstaller {
     return switch (request.platform) {
       'linux' => _launchPosix(context, request),
       'windows' => _launchWindows(context, request),
+      'macos' => _launchMacos(context, request),
       _ => false,
     };
   }
@@ -111,14 +113,32 @@ final class IoDesktopUpdateInstaller implements DesktopUpdateInstaller {
     ]);
   }
 
+  Future<bool> _launchMacos(
+    _InstallContext context,
+    DesktopInstallRequest request,
+  ) async {
+    final helper = File('${_helperDirectory.path}/desktop-update-helper-v1.sh');
+    await helper.writeAsString(_macosHelper, flush: true);
+    return _launcher('/bin/sh', [
+      helper.path,
+      '$_processId',
+      request.payloadPath,
+      context.root,
+      context.executable,
+      context.manifest,
+      request.sha256,
+      '${request.size}',
+      request.version,
+      request.errorPath,
+    ]);
+  }
+
   _InstallContext? _detectContext(String platform) {
     try {
       return switch (platform) {
         'linux' => _detectLinux(),
         'windows' => _detectWindows(),
-        // A marker inside Habiter.app invalidates a future signed bundle.
-        // Keep macOS external until ownership metadata moves outside the app.
-        'macos' => null,
+        'macos' => _detectMacos(),
         _ => null,
       };
     } on Object {
@@ -142,14 +162,43 @@ final class IoDesktopUpdateInstaller implements DesktopUpdateInstaller {
     return _validatedContext(root: root, executable: executable);
   }
 
+  _InstallContext? _detectMacos() {
+    final executable = _canonicalFile(File(_resolvedExecutable));
+    if (_leaf(executable) != 'habiter') return null;
+    final executableFile = File(executable);
+    final macos = executableFile.parent;
+    if (_leaf(macos.path) != 'MacOS') return null;
+    final contents = macos.parent;
+    if (_leaf(contents.path) != 'Contents') return null;
+    final app = contents.parent;
+    if (_leaf(app.path) != 'Habiter.app' ||
+        app.statSync().type != FileSystemEntityType.directory) {
+      return null;
+    }
+    final root = app.resolveSymbolicLinksSync();
+    final homeValue = _environment['HOME'];
+    if (homeValue == null || homeValue.isEmpty) return null;
+    final home = Directory(homeValue).resolveSymbolicLinksSync();
+    if (!_isStrictDescendant(root, home)) return null;
+    return _validatedContext(
+      root: root,
+      executable: executable,
+      manifestPath: '$root.habiter-install.json',
+    );
+  }
+
   _InstallContext? _validatedContext({
     required String root,
     required String executable,
+    String? manifestPath,
   }) {
     final manifestFile = File(
-      '$root${Platform.pathSeparator}.habiter-install.json',
+      manifestPath ?? '$root${Platform.pathSeparator}.habiter-install.json',
     );
-    if (!manifestFile.existsSync()) return null;
+    if (FileSystemEntity.typeSync(manifestFile.path, followLinks: false) !=
+        FileSystemEntityType.file) {
+      return null;
+    }
     final value = jsonDecode(manifestFile.readAsStringSync());
     if (value is! Map<String, dynamic> ||
         value['schemaVersion'] != 1 ||
@@ -165,12 +214,22 @@ final class IoDesktopUpdateInstaller implements DesktopUpdateInstaller {
         _canonicalFile(File(manifestExecutable)) != executable) {
       return null;
     }
-    return _InstallContext(root: root, executable: executable);
+    return _InstallContext(
+      root: root,
+      executable: executable,
+      manifest: manifestFile.resolveSymbolicLinksSync(),
+    );
+  }
+
+  static bool _isStrictDescendant(String child, String parent) {
+    final separator = Platform.pathSeparator;
+    final prefix = parent.endsWith(separator) ? parent : '$parent$separator';
+    return child.startsWith(prefix);
   }
 
   static String _canonicalFile(File file) {
-    if (!file.existsSync() ||
-        file.statSync().type != FileSystemEntityType.file) {
+    if (FileSystemEntity.typeSync(file.path, followLinks: false) !=
+        FileSystemEntityType.file) {
       throw const FileSystemException('Updater target is not a regular file.');
     }
     return file.resolveSymbolicLinksSync();
@@ -196,10 +255,15 @@ final class IoDesktopUpdateInstaller implements DesktopUpdateInstaller {
 }
 
 final class _InstallContext {
-  const _InstallContext({required this.root, required this.executable});
+  const _InstallContext({
+    required this.root,
+    required this.executable,
+    required this.manifest,
+  });
 
   final String root;
   final String executable;
+  final String manifest;
 }
 
 const String _linuxHelper = r'''#!/bin/sh
@@ -279,6 +343,156 @@ rm -f -- "$backup"
 backup=
 activated=0
 rm -f -- "$error_path" 2>/dev/null || true
+trap - EXIT HUP INT TERM
+exit 0
+''';
+
+const String _macosHelper = r'''#!/bin/sh
+set -eu
+
+parent_pid=$1
+payload=$2
+target=$3
+target_executable=$4
+manifest=$5
+expected_sha=$6
+expected_size=$7
+version=$8
+error_path=$9
+extract=
+stage=
+backup=
+manifest_next=
+activated=0
+
+fail() {
+  printf '%s\n' install_failed > "$error_path" 2>/dev/null || true
+  exit 1
+}
+
+rollback() {
+  status=$?
+  if [ "$status" -ne 0 ]; then
+    if [ "$activated" -eq 1 ] && [ -n "$backup" ] && [ -d "$backup" ]; then
+      rm -rf "$target" || true
+      mv "$backup" "$target" || true
+    fi
+    [ -z "$stage" ] || rm -rf "$stage" || true
+    [ -z "$extract" ] || rm -rf "$extract" || true
+    [ -z "$manifest_next" ] || rm -f "$manifest_next" || true
+    printf '%s\n' install_failed > "$error_path" 2>/dev/null || true
+  fi
+  exit "$status"
+}
+trap rollback EXIT HUP INT TERM
+
+case "$parent_pid:$expected_size:$version:$expected_sha" in
+  *[!0-9.:a-f-]*|*::*|:*|*:) fail ;;
+esac
+[ "$(basename "$target")" = Habiter.app ] || fail
+[ "$target_executable" = "$target/Contents/MacOS/habiter" ] || fail
+[ "$manifest" = "$target.habiter-install.json" ] || fail
+case "$target" in "$HOME"/*) ;; *) fail ;; esac
+[ -d "$target" ] && [ ! -L "$target" ] || fail
+[ -f "$target_executable" ] && [ ! -L "$target_executable" ] || fail
+[ -f "$manifest" ] && [ ! -L "$manifest" ] || fail
+[ -f "$payload" ] && [ ! -L "$payload" ] || fail
+
+manifest_value() {
+  /usr/bin/plutil -extract "$1" raw -o - "$manifest" 2>/dev/null || fail
+}
+[ "$(manifest_value schemaVersion)" = 1 ] || fail
+[ "$(manifest_value product)" = habiter ] || fail
+[ "$(manifest_value applicationId)" = dev.habiter.Habiter ] || fail
+[ "$(manifest_value scope)" = user ] || fail
+[ "$(manifest_value canonicalInstallRoot)" = "$target" ] || fail
+[ "$(manifest_value executable)" = "$target_executable" ] || fail
+
+actual_size=$(wc -c < "$payload" | tr -d ' ')
+[ "$actual_size" = "$expected_size" ] || fail
+actual_sha=$(shasum -a 256 "$payload" | awk '{print $1}')
+[ "$actual_sha" = "$expected_sha" ] || fail
+
+parent=$(dirname "$target")
+extract="$parent/.Habiter.extract-$$"
+stage="$parent/.Habiter.app.update-$$"
+backup="$parent/.Habiter.app.backup-$$"
+manifest_next="$manifest.update-$$"
+for path in "$extract" "$stage" "$backup" "$manifest_next"; do
+  [ ! -e "$path" ] && [ ! -L "$path" ] || fail
+done
+mkdir "$extract"
+listing="$extract/archive-list"
+/usr/bin/unzip -Z1 "$payload" > "$listing" || fail
+entry_count=0
+while IFS= read -r entry; do
+  [ -n "$entry" ] || fail
+  case "$entry" in
+    *\\*|/*|*:*) fail ;;
+  esac
+  normalized=${entry%/}
+  case "$normalized" in
+    Habiter.app|Habiter.app/*) ;;
+    *) fail ;;
+  esac
+  old_ifs=$IFS
+  IFS='/
+'
+  for component in $normalized; do
+    case "$component" in ''|.|..) IFS=$old_ifs; fail ;; esac
+  done
+  IFS=$old_ifs
+  entry_count=$((entry_count + 1))
+done < "$listing"
+[ "$entry_count" -gt 0 ] || fail
+rm -f "$listing"
+/usr/bin/ditto -x -k "$payload" "$extract" || fail
+[ -d "$extract/Habiter.app" ] && [ ! -L "$extract/Habiter.app" ] || fail
+[ -f "$extract/Habiter.app/Contents/MacOS/habiter" ] || fail
+mv "$extract/Habiter.app" "$stage"
+rm -rf "$extract"
+extract=
+
+bundle_id() {
+  /usr/bin/plutil -extract CFBundleIdentifier raw -o - "$1/Contents/Info.plist" 2>/dev/null || fail
+}
+team_id() {
+  /usr/bin/codesign -dv --verbose=4 "$1" 2>&1 | sed -n 's/^TeamIdentifier=//p'
+}
+[ "$(bundle_id "$target")" = dev.habiter.Habiter ] || fail
+[ "$(bundle_id "$stage")" = dev.habiter.Habiter ] || fail
+/usr/bin/codesign --verify --deep --strict --verbose=2 "$target" >/dev/null 2>&1 || fail
+/usr/bin/codesign --verify --deep --strict --verbose=2 "$stage" >/dev/null 2>&1 || fail
+/usr/sbin/spctl --assess --type execute --verbose=2 "$target" >/dev/null 2>&1 || fail
+/usr/sbin/spctl --assess --type execute --verbose=2 "$stage" >/dev/null 2>&1 || fail
+current_team=$(team_id "$target")
+next_team=$(team_id "$stage")
+[ -n "$current_team" ] && [ "$current_team" != "not set" ] || fail
+[ "$current_team" = "$next_team" ] || fail
+
+count=0
+while kill -0 "$parent_pid" 2>/dev/null; do
+  [ "$count" -lt 120 ] || fail
+  count=$((count + 1))
+  sleep 1
+done
+
+mv "$target" "$backup"
+mv "$stage" "$target"
+stage=
+activated=1
+"$target/Contents/MacOS/habiter" >/dev/null 2>&1 &
+new_pid=$!
+sleep 2
+kill -0 "$new_pid" 2>/dev/null || fail
+cp "$manifest" "$manifest_next"
+/usr/bin/plutil -replace version -string "$version" "$manifest_next" || fail
+mv "$manifest_next" "$manifest"
+manifest_next=
+rm -rf "$backup"
+backup=
+activated=0
+rm -f "$error_path" 2>/dev/null || true
 trap - EXIT HUP INT TERM
 exit 0
 ''';

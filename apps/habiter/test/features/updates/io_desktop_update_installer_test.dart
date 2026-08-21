@@ -122,21 +122,93 @@ void main() {
     },
   );
 
-  test('ownership scope and macOS signing boundary fail closed', () async {
+  test('ownership scope fails closed', () async {
     await _writeManifest(installRoot, executable, scope: 'system');
     final linux = IoDesktopUpdateInstaller(
       helperDirectory: helperRoot,
       platformOverride: 'linux',
       environment: {'APPIMAGE': executable.path},
     );
-    final macos = IoDesktopUpdateInstaller(
-      helperDirectory: helperRoot,
-      platformOverride: 'macos',
-    );
 
     expect(linux.canInstall('linux'), isFalse);
-    expect(macos.canInstall('macos'), isFalse);
   });
+
+  test(
+    'macOS handoff requires external ownership and matching signatures',
+    () async {
+      final home = await Directory('${fixture.path}/home').create();
+      final app = await Directory(
+        '${home.path}/Applications/Habiter.app/Contents/MacOS',
+      ).create(recursive: true);
+      final macExecutable = File('${app.path}/habiter');
+      await macExecutable.writeAsString('#!/bin/sh\n');
+      final appRoot = app.parent.parent;
+      final manifest = File('${appRoot.path}.habiter-install.json');
+      await _writeManifest(
+        appRoot,
+        macExecutable,
+        scope: 'user',
+        manifest: manifest,
+      );
+      final payload = File('${helperRoot.path}/next-macos.zip');
+      await payload.writeAsBytes([80, 75, 3, 4]);
+      final digest = sha256.convert(await payload.readAsBytes()).toString();
+      String? command;
+      List<String>? arguments;
+      final installer = IoDesktopUpdateInstaller(
+        helperDirectory: helperRoot,
+        platformOverride: 'macos',
+        resolvedExecutable: macExecutable.path,
+        environment: {'HOME': home.path},
+        processIdOverride: 999999,
+        launcher: (value, args) async {
+          command = value;
+          arguments = args;
+          return true;
+        },
+      );
+      final request = DesktopInstallRequest(
+        platform: 'macos',
+        payloadPath: payload.path,
+        sha256: digest,
+        size: await payload.length(),
+        version: '1.8.0',
+        signed: true,
+        errorPath: '${helperRoot.path}/install.error',
+      );
+
+      expect(installer.canInstall('macos'), isTrue);
+      expect(
+        await installer.launch(
+          DesktopInstallRequest(
+            platform: request.platform,
+            payloadPath: request.payloadPath,
+            sha256: request.sha256,
+            size: request.size,
+            version: request.version,
+            signed: false,
+            errorPath: request.errorPath,
+          ),
+        ),
+        isFalse,
+      );
+      expect(await installer.launch(request), isTrue);
+      expect(command, '/bin/sh');
+      expect(arguments, contains(manifest.resolveSymbolicLinksSync()));
+      final script = await File(arguments!.first).readAsString();
+      final syntax = await Process.run('/bin/sh', ['-n', arguments!.first]);
+      expect(syntax.exitCode, 0, reason: '${syntax.stdout}\n${syntax.stderr}');
+      expect(script, contains('codesign --verify --deep --strict'));
+      expect(script, contains('TeamIdentifier='));
+      expect(script, contains('spctl --assess --type execute'));
+      expect(script, contains('.Habiter.app.backup-'));
+      expect(script, contains('plutil -replace version'));
+
+      await manifest.delete();
+      await _writeManifest(appRoot, macExecutable, scope: 'user');
+      expect(installer.canInstall('macos'), isFalse);
+    },
+  );
 
   test(
     'Windows handoff includes archive, publisher, and rollback guards',
@@ -209,10 +281,11 @@ Future<void> _writeManifest(
   Directory root,
   File executable, {
   required String scope,
+  File? manifest,
 }) async {
   final canonicalRoot = root.resolveSymbolicLinksSync();
   final canonicalExecutable = executable.resolveSymbolicLinksSync();
-  await File('${root.path}/.habiter-install.json').writeAsString(
+  await (manifest ?? File('${root.path}/.habiter-install.json')).writeAsString(
     jsonEncode({
       'schemaVersion': 1,
       'product': 'habiter',

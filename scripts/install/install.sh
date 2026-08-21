@@ -155,14 +155,14 @@ assert_manifest_value() {
 }
 
 write_manifest() {
-  root=$1 executable=$2 scope=$3 integration_a=${4:-} integration_b=${5:-}
+  root=$1 executable=$2 scope=$3 integration_a=${4:-} integration_b=${5:-} manifest_path=${6:-$1/$MANIFEST_NAME}
   assert_manifest_value "$root" 'installation root'
   assert_manifest_value "$executable" 'executable path'
   assert_manifest_value "$integration_a" 'integration path'
   assert_manifest_value "$integration_b" 'integration path'
   assert_manifest_value "$INSTALL_ID" 'install ID'
   assert_manifest_value "$RELEASE_VERSION" 'version'
-  manifest=$root/$MANIFEST_NAME
+  manifest=$manifest_path
   escaped_root=$(json_escape "$root")
   escaped_executable=$(json_escape "$executable")
   escaped_a=$(json_escape "$integration_a")
@@ -226,8 +226,7 @@ install_macos() {
   if [ -e "$FINAL_PATH" ]; then BACKUP_PATH="$root/.Habiter.app.backup"; rm -rf "$BACKUP_PATH"; mv "$FINAL_PATH" "$BACKUP_PATH"; fi
   mv "$staged" "$FINAL_PATH"
   canonical_app=$(CDPATH='' cd -- "$FINAL_PATH" && pwd -P) || fail HAB-POSIX-053 "cannot canonicalize application bundle" "Check the destination path and links." 50
-  mkdir -p "$canonical_app/Contents/Resources"
-  write_manifest "$canonical_app" "$canonical_app/Contents/MacOS/habiter" "$(if [ "$SYSTEM" -eq 1 ]; then say system; else say user; fi)"
+  write_manifest "$canonical_app" "$canonical_app/Contents/MacOS/habiter" "$(if [ "$SYSTEM" -eq 1 ]; then say system; else say user; fi)" '' '' "$canonical_app.habiter-install.json"
   [ -z "$BACKUP_PATH" ] || rm -rf "$BACKUP_PATH"; BACKUP_PATH=
 }
 

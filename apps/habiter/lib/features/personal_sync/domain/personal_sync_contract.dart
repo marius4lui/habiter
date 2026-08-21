@@ -338,7 +338,7 @@ final class PersonalSyncEntityDocument {
     Map<String, Object?> additionalFields = const <String, Object?>{},
   }) : payload = _validatedPayloadForSchema(schemaVersion, entityId, payload),
        additionalFields = UnmodifiableMapView<String, Object?>(
-         Map<String, Object?>.from(_copyJson(additionalFields)! as Map),
+         _validatedAdditionalFields(additionalFields),
        ) {
     if (deleted == (this.payload != null)) {
       throw const PersonalSyncContractException(
@@ -354,7 +354,7 @@ final class PersonalSyncEntityDocument {
     final entityId = map['entityId'];
     final deleted = map['deleted'];
     final payload = map['payload'];
-    if (schemaVersion is! num ||
+    if (schemaVersion is! int ||
         entityId is! String ||
         deleted is! bool ||
         (payload != null && payload is! Map)) {
@@ -364,7 +364,7 @@ final class PersonalSyncEntityDocument {
       );
     }
     return PersonalSyncEntityDocument(
-      schemaVersion: schemaVersion.toInt(),
+      schemaVersion: schemaVersion,
       entityId: PersonalSyncEntityId.parse(entityId),
       deleted: deleted,
       payload: payload == null
@@ -388,6 +388,13 @@ final class PersonalSyncEntityDocument {
     'deleted': deleted,
     if (payload != null) 'payload': payload,
   };
+}
+
+Map<String, Object?> _validatedAdditionalFields(
+  Map<String, Object?> additionalFields,
+) {
+  _rejectSensitiveKeys(additionalFields);
+  return Map<String, Object?>.from(_copyJson(additionalFields)! as Map);
 }
 
 Map<String, Object?>? _validatedPayloadForSchema(
@@ -506,7 +513,8 @@ void _rejectSensitiveKeys(Object? value) {
 }
 
 Object? _copyJson(Object? value) => switch (value) {
-  null || bool() || num() || String() => value,
+  null || bool() || String() => value,
+  num number when number.isFinite => number,
   List<Object?> values => List<Object?>.unmodifiable(values.map(_copyJson)),
   Map<Object?, Object?> values => _copyJsonMap(values),
   _ => throw const PersonalSyncContractException(

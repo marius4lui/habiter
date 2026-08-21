@@ -27,13 +27,9 @@ Habiter does not change system packages automatically.
 
 Resolve `https://get.habiter.dev/api/v1/install/linux/x64?channel=stable&distro=opensuse`, download its HTTPS URL, verify `.artifact.sha256` with `sha256sum`, then place the executable AppImage at `~/.local/opt/habiter/Habiter.AppImage`. Rerun the installer for a staged update.
 
-```sh
-rm -f "$HOME/.local/bin/habiter"
-rm -f "$HOME/.local/share/applications/dev.habiter.Habiter.desktop"
-rm -rf "$HOME/.local/opt/habiter"
-```
+For uninstall, download and review `https://get.habiter.dev/uninstall.sh`, run `sh /tmp/habiter-uninstall.sh --dry-run --verbose`, then run the same reviewed file without `--dry-run` only after its exact plan is correct. Use `--system` or one exact `--install-dir` when applicable.
 
-Local application data remains.
+The uninstaller requires two confirmations, refuses ambiguous, malformed, redirected, unowned, broad, or running targets, stages removal for recovery, and preserves all application data. See the [complete Linux uninstall, automation, failure, and manual fallback contract](/install/linux/#uninstall-safely).
 
 ## AppImage, display, and libraries
 

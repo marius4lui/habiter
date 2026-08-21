@@ -46,6 +46,8 @@ const envelope: SignedManifestEnvelope = {
 const installers = {
   "install.sh": { body: "#!/bin/sh\necho Habiter\n", etag: '"shell-installer"' },
   "install.ps1": { body: "# Habiter PowerShell installer\nWrite-Output Habiter\n", etag: '"powershell-installer"' },
+  "uninstall.sh": { body: "#!/bin/sh\necho Uninstall Habiter\n", etag: '"shell-uninstaller"' },
+  "uninstall.ps1": { body: "# Habiter PowerShell uninstaller\nWrite-Output Uninstall\n", etag: '"powershell-uninstaller"' },
 };
 const handler = createHandler(manifest, envelope, installers);
 const call = (path: string, headers?: HeadersInit) => handler(new Request(`https://get.habiter.dev${path}`, { headers }), env);
@@ -117,6 +119,22 @@ describe("release API", () => {
     expect(powershell.headers.get("etag")).toBe('"powershell-installer"');
     expect((await call("/install.ps1", { "if-none-match": '"powershell-installer"' })).status).toBe(304);
     expect((await call("/install.sh/other")).status).toBe(404);
+
+    const shellUninstaller = await call("/uninstall.sh");
+    expect(shellUninstaller.status).toBe(200);
+    expect(shellUninstaller.headers.get("content-type")).toContain("shellscript");
+    expect(shellUninstaller.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(shellUninstaller.headers.get("x-habiter-installer-source")).toBe("repository");
+    expect(shellUninstaller.headers.get("cache-control")).toContain("s-maxage=300");
+    expect(shellUninstaller.headers.get("etag")).toBe('"shell-uninstaller"');
+    expect(await shellUninstaller.text()).toContain("#!/bin/sh");
+
+    const powershellUninstaller = await call("/uninstall.ps1");
+    expect(powershellUninstaller.status).toBe(200);
+    expect(await powershellUninstaller.text()).toContain("Habiter PowerShell uninstaller");
+    expect((await call("/uninstall.ps1", { "if-none-match": '"powershell-uninstaller"' })).status).toBe(304);
+    expect((await call("/uninstall.sh/other")).status).toBe(404);
+    expect((await call("/scripts/install/uninstall.sh")).status).toBe(404);
   });
 
   it("fails closed when bundled repository content is unavailable or malformed", async () => {
@@ -131,6 +149,13 @@ describe("release API", () => {
     const rejected = await malformed(new Request("https://get.habiter.dev/install.ps1"), env);
     expect(rejected.status).toBe(502);
     expect(rejected.headers.get("content-type")).toContain("text/plain");
+
+    const malformedUninstaller = createHandler(manifest, envelope, {
+      "uninstall.sh": { body: "<html>error</html>", etag: '"bad-uninstaller"' },
+    });
+    const rejectedUninstaller = await malformedUninstaller(new Request("https://get.habiter.dev/uninstall.sh"), env);
+    expect(rejectedUninstaller.status).toBe(502);
+    expect(rejectedUninstaller.headers.get("cache-control")).toBe("no-store");
   });
 
   it("resolves a complete primary desktop install artifact", async () => {

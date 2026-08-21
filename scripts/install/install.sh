@@ -14,6 +14,7 @@ BACKUP_PATH=
 FINAL_PATH=
 PHASE=startup
 INSTALL_ID="$(date +%s 2>/dev/null || say 0)-$$"
+MANIFEST_NAME=.habiter-install.json
 
 say() { printf '%s\n' "$*"; }
 fail() {
@@ -95,8 +96,8 @@ detect_system() {
       OS=linux
       release_file=${HABITER_OS_RELEASE_FILE:-/etc/os-release}
       [ -r "$release_file" ] || fail HAB-POSIX-012 "cannot read OS release file: $release_file" "Check the file path and permissions, or set HABITER_OS_RELEASE_FILE." 10
-      id=$(sed -n 's/^ID=//p' "$release_file" | head -n 1 | tr -d '"')
-      like=$(sed -n 's/^ID_LIKE=//p' "$release_file" | head -n 1 | tr -d '"')
+      id=$(sed -n 's/^ID=//p' "$release_file" | head -n 1 | tr -d '"\r')
+      like=$(sed -n 's/^ID_LIKE=//p' "$release_file" | head -n 1 | tr -d '"\r')
       DISTRO=$(normalize_distro "$id" "$like")
       ;;
     Darwin) OS=macos ;;
@@ -141,6 +142,51 @@ verify_sha256() {
   [ "$actual" = "$SHA256" ] || fail HAB-POSIX-041 "SHA-256 mismatch" "Delete the download and retry; never bypass checksum verification." 40
 }
 
+json_escape() {
+  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+assert_manifest_value() {
+  value=$1 label=$2
+  line_count=$(printf '%s\n' "$value" | wc -l | tr -d ' ')
+  if [ "$line_count" != 1 ] || printf '%s' "$value" | LC_ALL=C grep '[[:cntrl:]]' >/dev/null 2>&1; then
+    fail HAB-POSIX-070 "cannot record $label containing control characters" "Choose a normal installation path and retry." 70
+  fi
+}
+
+write_manifest() {
+  root=$1 executable=$2 scope=$3 integration_a=${4:-} integration_b=${5:-}
+  assert_manifest_value "$root" 'installation root'
+  assert_manifest_value "$executable" 'executable path'
+  assert_manifest_value "$integration_a" 'integration path'
+  assert_manifest_value "$integration_b" 'integration path'
+  assert_manifest_value "$INSTALL_ID" 'install ID'
+  assert_manifest_value "$RELEASE_VERSION" 'version'
+  manifest=$root/$MANIFEST_NAME
+  escaped_root=$(json_escape "$root")
+  escaped_executable=$(json_escape "$executable")
+  escaped_a=$(json_escape "$integration_a")
+  escaped_b=$(json_escape "$integration_b")
+  integrations=
+  [ -z "$integration_a" ] || integrations="\"$escaped_a\""
+  [ -z "$integration_b" ] || integrations="${integrations:+$integrations,}\"$escaped_b\""
+  umask 022
+  printf '%s\n' \
+    '{' \
+    '  "schemaVersion": 1,' \
+    '  "product": "habiter",' \
+    '  "applicationId": "dev.habiter.Habiter",' \
+    "  \"installId\": \"$(json_escape "$INSTALL_ID")\"," \
+    "  \"version\": \"$(json_escape "$RELEASE_VERSION")\"," \
+    "  \"scope\": \"$scope\"," \
+    "  \"canonicalInstallRoot\": \"$escaped_root\"," \
+    "  \"executable\": \"$escaped_executable\"," \
+    "  \"integrationPaths\": [$integrations]," \
+    '  "pathEntry": null,' \
+    '  "pathEntryAddedByInstaller": false' \
+    '}' > "$manifest" || fail HAB-POSIX-071 "cannot write the ownership manifest" "The installation was not finalized; check destination permissions." 70
+}
+
 install_linux() {
   PHASE=install-linux
   root=${INSTALL_DIR:-${HOME}/.local/opt/habiter}
@@ -159,6 +205,10 @@ install_linux() {
     ln -sfn "$FINAL_PATH" "$bin_dir/habiter"
     printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Name=Habiter' "Exec=$FINAL_PATH" 'Icon=dev.habiter.Habiter' 'Terminal=false' 'Categories=Utility;' > "$desktop_dir/dev.habiter.Habiter.desktop"
   fi
+  canonical_root=$(CDPATH='' cd -- "$root" && pwd -P) || fail HAB-POSIX-063 "cannot canonicalize installation root" "Check the installation path and links." 60
+  integration_a= integration_b=
+  if [ "$NO_DESKTOP" -eq 0 ]; then integration_a=$bin_dir/habiter; integration_b=$desktop_dir/dev.habiter.Habiter.desktop; fi
+  write_manifest "$canonical_root" "$canonical_root/Habiter.AppImage" "$(if [ "$SYSTEM" -eq 1 ]; then say system; else say user; fi)" "$integration_a" "$integration_b"
   [ -z "$BACKUP_PATH" ] || rm -f "$BACKUP_PATH"; BACKUP_PATH=
 }
 
@@ -174,7 +224,11 @@ install_macos() {
   [ -d "$TMP_DIR/extracted/Habiter.app/Contents/MacOS" ] || fail HAB-POSIX-052 "archive does not contain a valid Habiter.app" "Do not install this archive; report the Install ID." 50
   staged="$root/.Habiter.app.new"; rm -rf "$staged"; mv "$TMP_DIR/extracted/Habiter.app" "$staged"
   if [ -e "$FINAL_PATH" ]; then BACKUP_PATH="$root/.Habiter.app.backup"; rm -rf "$BACKUP_PATH"; mv "$FINAL_PATH" "$BACKUP_PATH"; fi
-  mv "$staged" "$FINAL_PATH"; [ -z "$BACKUP_PATH" ] || rm -rf "$BACKUP_PATH"; BACKUP_PATH=
+  mv "$staged" "$FINAL_PATH"
+  canonical_app=$(CDPATH='' cd -- "$FINAL_PATH" && pwd -P) || fail HAB-POSIX-053 "cannot canonicalize application bundle" "Check the destination path and links." 50
+  mkdir -p "$canonical_app/Contents/Resources"
+  write_manifest "$canonical_app" "$canonical_app/Contents/MacOS/habiter" "$(if [ "$SYSTEM" -eq 1 ]; then say system; else say user; fi)"
+  [ -z "$BACKUP_PATH" ] || rm -rf "$BACKUP_PATH"; BACKUP_PATH=
 }
 
 main() {

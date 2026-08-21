@@ -9,6 +9,9 @@ on:
       - 'apps/release-api/**'
       - 'packages/release-core/**'
       - 'docs/install/**'
+      - 'docs/guide/getting-started.md'
+      - 'docs/guide/data-and-privacy.md'
+      - 'docs/release-operations.md'
       - 'docs/.vitepress/**'
       - '.github/workflows/installer.yml'
       - '.github/workflows/release.yml'
@@ -20,6 +23,9 @@ on:
       - 'apps/release-api/**'
       - 'packages/release-core/**'
       - 'docs/install/**'
+      - 'docs/guide/getting-started.md'
+      - 'docs/guide/data-and-privacy.md'
+      - 'docs/release-operations.md'
       - 'docs/.vitepress/**'
       - '.github/workflows/installer.yml'
       - '.github/workflows/release.yml'
@@ -41,8 +47,10 @@ jobs:
       - uses: actions/checkout@v4
       - run: shellcheck --version
       - run: shellcheck -x -s sh scripts/install/install.sh scripts/install/test/*.sh scripts/release/package-linux-appimage.sh packaging/linux/AppRun
-      - run: sh -n scripts/install/install.sh scripts/release/package-linux-appimage.sh packaging/linux/AppRun
+      - run: sh -n scripts/install/*.sh scripts/install/test/*.sh scripts/release/package-linux-appimage.sh packaging/linux/AppRun
       - run: sh scripts/install/test/install-sh.test.sh
+      - run: sh scripts/install/test/uninstall-sh.test.sh
+      - run: sh scripts/install/test/uninstall-sh-lifecycle.test.sh
 
   linux-distros:
     name: Detect ${{ matrix.name }}
@@ -82,8 +90,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - run: sh -n scripts/install/install.sh
+      - run: sh -n scripts/install/install.sh scripts/install/uninstall.sh
       - run: sh scripts/install/test/install-sh.test.sh
+      - run: sh scripts/install/test/uninstall-sh.test.sh
+      - run: sh scripts/install/test/uninstall-sh-lifecycle.test.sh
 
   windows:
     name: Windows PowerShell installer
@@ -92,9 +102,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - shell: powershell
-        run: powershell.exe -NoProfile -File scripts/install/test/install-ps1.test.ps1
+        run: |
+          powershell.exe -NoProfile -File scripts/install/test/install-ps1.test.ps1
+          powershell.exe -NoProfile -File scripts/install/test/uninstall-ps1.test.ps1
+          powershell.exe -NoProfile -File scripts/install/test/uninstall-ps1-lifecycle.test.ps1
       - shell: pwsh
-        run: pwsh -NoProfile -File scripts/install/test/install-ps1.test.ps1
+        run: |
+          pwsh -NoProfile -File scripts/install/test/install-ps1.test.ps1
+          pwsh -NoProfile -File scripts/install/test/uninstall-ps1.test.ps1
+          pwsh -NoProfile -File scripts/install/test/uninstall-ps1-lifecycle.test.ps1
 
   contract:
     name: Resolver, release metadata and docs
@@ -111,6 +127,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm release:validate && pnpm release:test
+      - run: node scripts/release/sync-worker-data.mjs --installers-only && git diff --exit-code -- apps/release-api/src/generated/installers.json
       - run: pnpm --filter @habiter/release-api types
       - run: pnpm --filter @habiter/release-api check
       - run: node scripts/install/test/validate-docs.mjs

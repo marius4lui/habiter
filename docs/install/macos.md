@@ -41,13 +41,24 @@ Confirm `~/Applications/Habiter.app/Contents/MacOS` exists. Do not replace an ex
 
 Quit Habiter and rerun the installer. The new app is verified and staged before the previous bundle is moved aside. Manual updates repeat the resolver and checksum flow.
 
-## Uninstall
+## Uninstall safely
+
+Download, inspect, syntax-check, and preview the maintained uninstaller:
 
 ```sh
-rm -rf "$HOME/Applications/Habiter.app"
+curl -fL --proto '=https' --tlsv1.2 https://get.habiter.dev/uninstall.sh -o /tmp/habiter-uninstall.sh
+less /tmp/habiter-uninstall.sh
+sh -n /tmp/habiter-uninstall.sh
+sh /tmp/habiter-uninstall.sh --dry-run --verbose
 ```
 
-For an explicit system install, remove `/Applications/Habiter.app` with appropriate authorization. Application data remains and must be reviewed/exported separately.
+Run the same reviewed file without `--dry-run` only after its canonical bundle and removal list are correct. It requires `y` and then the printed `UNINSTALL HABITER <canonical-path>` challenge. Missing TTY input, EOF, mismatch, a running Habiter process, insufficient permissions, an unsupported manifest, a symlinked bundle/parent, or a bundle-identifier mismatch aborts without killing a process or invoking `sudo`.
+
+Use `--system` for `/Applications/Habiter.app`, or `--install-dir '/exact/custom/Habiter.app'` for one explicit custom bundle. Zero and multiple candidates fail closed; multiple installs are removed one at a time. Legacy bundles require both the expected executable structure and `CFBundleIdentifier` evidence and are clearly warned.
+
+Normal uninstall quarantines the verified bundle before final deletion and restores staged content if a later move fails. It preserves `~/Library` application support/preferences, Keychain entries, backups, exports, and operating-system backups. This version has no application-data deletion option.
+
+For a manual fallback, first reject `/`, the home directory, `/Applications`, symlinks, and redirected parents; verify `.habiter-install.json`, `Contents/MacOS/habiter`, and the exact `CFBundleIdentifier` in `Contents/Info.plist`. Rename only the verified `.app` to a unique adjacent quarantine, then remove that literal quarantine after review. Never start with recursive deletion of a name-only match, never remove `/Applications`, and preserve all data locations outside the bundle.
 
 ## Gatekeeper and signing
 

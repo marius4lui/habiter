@@ -47,15 +47,11 @@ Only create `~/.local/bin/habiter` and a desktop entry after the checksum succee
 
 Rerun the recommended installer. It stages and verifies the new AppImage before replacing the existing file. For a manual update, repeat the resolver/download/checksum sequence and replace `~/.local/opt/habiter/Habiter.AppImage` only after verification.
 
-## Uninstall
+## Uninstall safely
 
-```sh
-rm -f "$HOME/.local/bin/habiter"
-rm -f "$HOME/.local/share/applications/dev.habiter.Habiter.desktop"
-rm -rf "$HOME/.local/opt/habiter"
-```
+Download and review `https://get.habiter.dev/uninstall.sh`, run `sh /tmp/habiter-uninstall.sh --dry-run --verbose`, then run the same reviewed file without `--dry-run` only after its exact plan is correct. Use `--system` for `/opt/habiter` or `--install-dir '/exact/custom/habiter'` for one custom root.
 
-This removes installed binaries and integration, not Habiter's local application data. Review data separately before deleting it.
+The uninstaller requires two confirmations, refuses ambiguous, malformed, redirected, unowned, broad, or running targets, stages removal for recovery, and preserves all application data. See the [complete Linux uninstall, automation, failure, and manual fallback contract](/install/linux/#uninstall-safely).
 
 ## AppImage and FUSE troubleshooting
 

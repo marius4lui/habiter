@@ -41,3 +41,26 @@ Use `--verbose` when troubleshooting. Failures include the active phase, a stabl
 Code families identify argument errors (`00x`), platform detection (`01x`), resolver/metadata (`02x`), temporary storage/download (`03x`), checksum (`04x`), archive validation (`05x`), installation/permissions (`06x`) and unexpected errors (`999`). Do not bypass HTTPS, artifact-size or checksum checks.
 
 Use `--help` for the complete option list. `--system` is explicit and may require permissions for `/opt` and `/usr/local`; it never elevates privileges itself.
+
+## Uninstall safely
+
+Download and review the destructive workflow before executing it:
+
+```sh
+curl -fL --proto '=https' --tlsv1.2 https://get.habiter.dev/uninstall.sh -o /tmp/habiter-uninstall.sh
+less /tmp/habiter-uninstall.sh
+sh -n /tmp/habiter-uninstall.sh
+sh /tmp/habiter-uninstall.sh --dry-run --verbose
+```
+
+The dry-run checks only the user and system defaults plus direct integration references; it never scans a home directory or system tree. It prints every candidate, canonical root, scope, version, ownership evidence, literal application/integration target, missing optional integration, and confirms that application data is preserved. Run without `--dry-run` only after reviewing that plan. Two confirmations are mandatory: `y`, followed by `UNINSTALL HABITER <canonical-path>`.
+
+Use `--system` for `/opt/habiter`, or `--install-dir '/exact/custom/habiter'` for one custom installation. Zero candidates exit unchanged. Multiple candidates list both roots and abort until an exact target is selected. Unknown/malformed manifests, path escapes, symlinked roots or parents, broad targets, mismatched wrapper/desktop entries, a running process, or insufficient permissions fail closed. A pre-manifest installation needs matching AppImage, wrapper target, and desktop `Exec=` evidence and carries an additional legacy warning.
+
+Non-interactive use requires both `--install-dir` and the exact `--confirm-target 'UNINSTALL HABITER /canonical/path'`; there is no generic `--yes`. Verified targets are moved to unique adjacent quarantine paths first. Staging failures restore earlier moves; later failures report what was restored, finalized, or left in quarantine with a stable `HAB-UNIX-NNN` code and Uninstall ID.
+
+Normal uninstall preserves databases, preferences, reminders, keyring items, backups, exports, clipboard history, and operating-system backups. This version exposes no data-removal flag.
+
+### Manual fallback after script failure
+
+Do not fall back to a name-only recursive delete. Resolve the exact root with `cd -- "$root" && pwd -P`; reject `/`, the home directory, `/opt`, `/usr`, `/usr/local`, `/Applications`, symlinks, and redirected parents. Verify `.habiter-install.json`, the exact `Habiter.AppImage`, the wrapper's `readlink` target, and the desktop entry's exact `Exec=` value. Preserve every mismatch. Rename each verified literal target to a unique adjacent quarantine first, and remove only those literal quarantines after all moves succeed. Never remove shared parents or application data. Reinstalling Habiter to recreate ownership evidence is safer than guessing.

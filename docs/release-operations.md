@@ -72,20 +72,37 @@ pnpm exec wrangler rollback --env production
 
 After configuring the custom domain, set `RELEASE_API_BASE_URL` so deployment and release workflows smoke-test `/health` and the release routes on `get.habiter.dev`.
 
-## Desktop installer delivery and rollback
+## Desktop installer and uninstaller delivery and rollback
 
-The only installer source files are `scripts/install/install.sh` and `scripts/install/install.ps1`. The deployment workflow bundles their exact repository contents into the Worker, so `/install.sh` and `/install.ps1` have no runtime dependency on GitHub Raw and expose no generic path or upstream URL parameter. Successful responses use content-derived ETags, explicit text MIME types, `nosniff`, the repository-source marker, and `public, max-age=60, s-maxage=300`. Missing or malformed bundled content fails closed as non-executable plain text with `no-store`; changes to either canonical script trigger a Worker deployment.
+The only script source files are `scripts/install/install.sh`, `scripts/install/install.ps1`, `scripts/install/uninstall.sh`, and `scripts/install/uninstall.ps1`. The deployment workflow bundles their exact repository contents into the Worker, so the four exact endpoints `/install.sh`, `/install.ps1`, `/uninstall.sh`, and `/uninstall.ps1` have no runtime dependency on GitHub Raw and expose no generic path or upstream URL parameter. Successful responses use content-derived ETags, explicit text MIME types, `nosniff`, the repository-source marker, and `public, max-age=60, s-maxage=300`. Missing or malformed bundled content fails closed as non-executable plain text with `no-store`; changes to any canonical script trigger a Worker deployment.
+
+Installers write `.habiter-install.json` only after payload activation and configured integration succeed. Schema version 1 contains:
+
+| Field | Contract |
+| --- | --- |
+| `schemaVersion` | Exactly `1`; unknown versions fail closed. |
+| `product` / `applicationId` | Exactly `habiter` and `dev.habiter.Habiter`. |
+| `installId` / `version` / `scope` | Non-empty install correlation, SemVer, and `user` or `system`. |
+| `canonicalInstallRoot` / `executable` | Canonical literal root and exact platform executable below that root. |
+| `integrationPaths` | Only installer-created wrapper, desktop, command, or shortcut paths allowed for that platform. |
+| `pathEntry` / `pathEntryAddedByInstaller` | Windows command directory and whether this install appended that exact user-PATH component; POSIX uses `null` and `false`. |
+
+Linux and Windows keep the manifest at the installation root. macOS keeps it inside `Habiter.app`. The manifest is evidence, never a deletion instruction: uninstallers recanonicalize every value, reject broad roots and link/reparse escapes, verify executable/bundle identity and each integration target, and preserve mismatches. Pre-manifest installs require multiple matching legacy signals and an additional warning.
 
 Installers never derive release file names. They call `/api/v1/install/<platform>/<architecture>` with stable/beta, optional version, and Linux distro. The resolver selects exactly one artifact marked `primary: true` with an explicit `format`, HTTPS URL, SHA-256, and size. Ambiguity or incomplete metadata is a 404, not array-order fallback. A macOS `universal` artifact may satisfy an `arm64` or `x64` request. Linux browser requests without an explicit distro go to the chooser because a browser cannot reliably identify Fedora, Arch, Ubuntu, Debian, or openSUSE.
 
-The stable tag workflow blocks publication until script/API tests pass and at least three complete primary desktop artifacts exist. Linux publishes both the primary AppImage and the complete Flutter tar bundle. Windows and macOS archives retain the complete application bundle. `.github/workflows/installer.yml` separately checks ShellCheck/syntax, deterministic distro fixtures and containers, macOS, Windows PowerShell, resolver/proxy behavior, release metadata, documentation links, and the VitePress build.
+The stable tag workflow blocks publication until installer/uninstaller script and API tests pass and at least three complete primary desktop artifacts exist. Linux publishes both the primary AppImage and the complete Flutter tar bundle. Windows and macOS archives retain the complete application bundle. `.github/workflows/installer.yml` separately checks ShellCheck/syntax, deterministic distro fixtures and containers, POSIX discovery/lifecycle on Linux and macOS, Windows PowerShell 5 and pwsh discovery/lifecycle, manifest/install compatibility, resolver/endpoint behavior, generated-bundle drift, release metadata, documentation links, and the VitePress build. All lifecycle tests use injected temporary roots and never inspect or mutate runner home, PATH, Start Menu, `/Applications`, `/opt`, `/usr/local`, or `Program Files`.
 
 Smoke test a Worker preview or production endpoint without executing a script:
 
 ```bash
 curl --fail --dump-header - https://get.habiter.dev/install.sh --output /tmp/habiter-install.sh
+curl --fail --dump-header - https://get.habiter.dev/uninstall.sh --output /tmp/habiter-uninstall.sh
 head -n 1 /tmp/habiter-install.sh
 sh -n /tmp/habiter-install.sh
+sh -n /tmp/habiter-uninstall.sh
+curl --fail --dump-header - https://get.habiter.dev/uninstall.ps1 --output /tmp/habiter-uninstall.ps1
+head -n 1 /tmp/habiter-uninstall.ps1
 curl --fail 'https://get.habiter.dev/api/v1/install/linux/x64?channel=stable&distro=fedora' | jq .
 curl --head 'https://get-the.habiter.dev/?platform=linux&distro=fedora'
 ```
@@ -94,11 +111,12 @@ Expected headers include the correct `Content-Type`, `X-Content-Type-Options: no
 
 To roll back a script regression:
 
-1. Revert or fix only the affected repository script and validate both installer workflows.
-2. Merge the correction to `main`; the installer change triggers a Worker deployment that refreshes the bundled copy.
-3. Wait for revalidation (at most the documented shared-cache interval) or purge only the two installer URLs if an emergency requires it.
-4. Fetch both endpoints, validate markers/syntax and inspect headers without piping them to a shell.
-5. Exercise `--dry-run` and one isolated user-scoped test install before declaring recovery.
+1. Revert or fix only the affected repository script and validate installer plus uninstaller lifecycle workflows.
+2. Regenerate `apps/release-api/src/generated/installers.json` and require a clean second generation before review.
+3. Merge the correction to `main`; the script change triggers a Worker deployment that refreshes the bundled copy.
+4. Wait for revalidation (at most the documented shared-cache interval) or purge only the affected exact script URL; never purge or expose a broader repository path.
+5. Fetch all four endpoints, validate markers/syntax, ETag, MIME, cache, `nosniff`, and repository-source headers without executing them.
+6. Exercise installer and uninstaller dry-runs plus isolated user-scoped lifecycle fixtures before declaring recovery. Never test destructive recovery against an operator's real installation or data.
 
 If the resolver/proxy contract itself regressed, revert the Worker change, let `worker-deploy.yml` publish the known-good version, and use Wrangler version rollback only when the normal revert cannot recover production quickly. Never work around a bad resolver by hard-coding a release URL or checksum into an installer.
 

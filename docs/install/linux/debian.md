@@ -45,15 +45,11 @@ The full Flutter `.tar.gz` bundle remains on GitHub Releases for advanced/manual
 
 Rerun the installer for an atomic, verified replacement. Manual updates must resolve fresh metadata and pass SHA-256 before replacing the stable AppImage path.
 
-## Uninstall
+## Uninstall safely
 
-```sh
-rm -f "$HOME/.local/bin/habiter"
-rm -f "$HOME/.local/share/applications/dev.habiter.Habiter.desktop"
-rm -rf "$HOME/.local/opt/habiter"
-```
+Download and review `https://get.habiter.dev/uninstall.sh`, run `sh /tmp/habiter-uninstall.sh --dry-run --verbose`, then run the same reviewed file without `--dry-run` only after its exact plan is correct. Use `--system` for `/opt/habiter` or `--install-dir '/exact/custom/habiter'` for one custom root.
 
-User data is deliberately not removed by these commands.
+The uninstaller requires two confirmations, refuses ambiguous, malformed, redirected, unowned, broad, or running targets, stages removal for recovery, and preserves all application data. See the [complete Linux uninstall, automation, failure, and manual fallback contract](/install/linux/#uninstall-safely).
 
 ## AppImage and FUSE troubleshooting
 

@@ -24,15 +24,9 @@ Confirm names against the enabled Fedora repositories with `dnf info PACKAGE`. H
 
 Resolve `https://get.habiter.dev/api/v1/install/linux/x64?channel=stable&distro=fedora`, download the returned HTTPS URL, and compare `sha256sum FILE` with `.artifact.sha256` before making the AppImage executable. Keep it at `~/.local/opt/habiter/Habiter.AppImage`; the complete tar bundle is an advanced alternative and its `lib/` and `data/` directories must stay beside `habiter`.
 
-Rerun the installer to update. To remove integration and binaries:
+Rerun the installer to update. To uninstall, download and review `https://get.habiter.dev/uninstall.sh`, run `sh /tmp/habiter-uninstall.sh --dry-run --verbose`, then run the same reviewed file without `--dry-run` only after its exact plan is correct. Use `--system` or one exact `--install-dir` when applicable.
 
-```sh
-rm -f "$HOME/.local/bin/habiter"
-rm -f "$HOME/.local/share/applications/dev.habiter.Habiter.desktop"
-rm -rf "$HOME/.local/opt/habiter"
-```
-
-Application data is not deleted.
+The uninstaller requires two confirmations, refuses ambiguous, malformed, redirected, unowned, broad, or running targets, stages removal for recovery, and preserves all application data. See the [complete Linux uninstall, automation, failure, and manual fallback contract](/install/linux/#uninstall-safely).
 
 ## AppImage/FUSE and runtime debugging
 

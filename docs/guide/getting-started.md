@@ -39,6 +39,12 @@ Open **Settings → Data & privacy** to copy a versioned JSON backup to the clip
 
 Habiter does not require a cloud account. Paste exported backups into secure storage you control, then clear clipboard history if your platform retains it.
 
+## Leaving or reinstalling Habiter
+
+Desktop uninstall is intentionally separate from data deletion. Start from the maintained [installation and uninstall guide](/install/), download and review the repository-backed uninstaller, and run its dry-run before approving anything. A normal uninstall removes only a verified application bundle and installer-owned integration; local habits, history, preferences, reminders, credentials, backups, exports, clipboard history, and operating-system backups remain.
+
+Export a backup before any separate reset or manual data cleanup. Android remains managed by the operating system. See [Data and privacy](/guide/data-and-privacy#deletion-and-reset-scope) for the exact boundaries after an app is removed.
+
 ## Next steps
 
 - Review all [features and platform limits](/guide/features).

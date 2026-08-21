@@ -19,6 +19,11 @@ $script:SelectedVersion = 'unknown'
 $script:SelectedLegacy = $false
 $script:SelectedIntegrations = @()
 $script:MissingIntegrations = @()
+$script:SelectedPathEntry = $null
+$script:OriginalUserPath = $null
+$script:UpdatedUserPath = $null
+$script:PathChanged = $false
+$script:Staged = @()
 
 function Write-Step([int]$Number, [string]$Message) { Write-Host "[$Number/7] $Message" }
 function Write-Detail([string]$Message) { Write-Host "      $Message" }
@@ -98,6 +103,46 @@ function Get-ShortcutTarget([string]$Path) {
     } catch { Throw-UninstallError 'HAB-UNWIN-041' "Cannot inspect Start Menu shortcut: $Path" 'The shortcut will be preserved for manual review.' 40 }
 }
 
+function Get-UserPathValue {
+    if ($env:HABITER_TEST_PATH_STATE_FILE) {
+        if (-not (Test-Path -LiteralPath $env:HABITER_TEST_PATH_STATE_FILE)) { return '' }
+        return [IO.File]::ReadAllText($env:HABITER_TEST_PATH_STATE_FILE)
+    }
+    return [Environment]::GetEnvironmentVariable('Path', 'User')
+}
+
+function Set-UserPathValue([string]$Value) {
+    if ($env:HABITER_TEST_PATH_STATE_FILE) {
+        if ($env:HABITER_UNINSTALL_TEST -ne '1') { Throw-UninstallError 'HAB-UNWIN-045' 'Test PATH state is disabled.' 'Use the normal user PATH store.' 40 }
+        [IO.File]::WriteAllText($env:HABITER_TEST_PATH_STATE_FILE, $Value)
+        return
+    }
+    [Environment]::SetEnvironmentVariable('Path', $Value, 'User')
+}
+
+function Get-NormalizedPathEntry([string]$Value) {
+    if ([string]::IsNullOrWhiteSpace($Value) -or -not [IO.Path]::IsPathRooted($Value)) { return $null }
+    try { return (Get-CanonicalPath $Value).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar) } catch { return $null }
+}
+
+function Prepare-PathChange([string]$OwnedEntry) {
+    if (-not $OwnedEntry) { return }
+    $target = Get-NormalizedPathEntry $OwnedEntry
+    if (-not $target) { Throw-UninstallError 'HAB-UNWIN-046' 'Installer-owned PATH entry is unresolved.' 'Refusing PATH cleanup.' 40 }
+    $original = [string](Get-UserPathValue)
+    $entries = $original.Split([char]';')
+    $matches = @()
+    for ($index = 0; $index -lt $entries.Length; $index++) {
+        $normalized = Get-NormalizedPathEntry $entries[$index]
+        if ($normalized -and (Test-PathEqual $normalized $target)) { $matches += $index }
+    }
+    if ($matches.Count -eq 0) { $script:MissingIntegrations += "PATH entry: $OwnedEntry"; return }
+    if ($matches.Count -gt 1) { Throw-UninstallError 'HAB-UNWIN-047' 'Installer-owned PATH entry occurs more than once.' 'Refusing an ambiguous PATH rewrite.' 40 }
+    $remaining = for ($index = 0; $index -lt $entries.Length; $index++) { if ($index -ne $matches[0]) { $entries[$index] } }
+    $script:OriginalUserPath = $original
+    $script:UpdatedUserPath = [string]::Join(';', [string[]]$remaining)
+}
+
 function Assert-ShortcutOwned([string]$Path, [string]$Executable) {
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { $script:MissingIntegrations += $Path; return $false }
     Assert-NoReparsePath $Path 'Start Menu shortcut'
@@ -143,6 +188,7 @@ function Read-OwnershipManifest([string]$Root, [string]$Scope, [string]$StartMen
     $script:SelectedExecutable = $executable
     $script:SelectedVersion = [string]$manifest.version
     $script:SelectedPathEntry = if ($manifest.pathEntryAddedByInstaller) { Get-CanonicalPath $manifest.pathEntry } else { $null }
+    Prepare-PathChange $script:SelectedPathEntry
     $script:SelectedLegacy = $false
 }
 
@@ -201,18 +247,97 @@ function Write-RemovalPlan {
     Write-Detail "Confirmation challenge: UNINSTALL HABITER $($script:SelectedRoot)"
 }
 
+function Assert-HabiterNotRunning {
+    $script:Phase = 'check-running-processes'
+    $running = @(if ($env:HABITER_TEST_RUNNING -eq '1') { [pscustomobject]@{ Id = 'fixture' } } else { Get-Process -Name habiter -ErrorAction SilentlyContinue })
+    if ($running.Count -gt 0) { Throw-UninstallError 'HAB-UNWIN-071' 'Habiter is still running.' 'Close Habiter normally, then rerun the same reviewed plan.' 71 }
+    Write-Detail 'Not running'
+}
+
+function Read-ConfirmationValue([string]$Prompt) {
+    if ($env:HABITER_TEST_CONFIRM_FILE) {
+        if ($env:HABITER_UNINSTALL_TEST -ne '1') { Throw-UninstallError 'HAB-UNWIN-072' 'Test confirmation input is disabled.' 'Use an interactive terminal.' 72 }
+        if ($null -eq $script:ConfirmationValues) { $script:ConfirmationValues = @(Get-Content -LiteralPath $env:HABITER_TEST_CONFIRM_FILE); $script:ConfirmationIndex = 0 }
+        if ($script:ConfirmationIndex -ge $script:ConfirmationValues.Count) { Throw-UninstallError 'HAB-UNWIN-073' 'Confirmation input closed before approval.' 'No files or settings were changed.' 73 }
+        $value = $script:ConfirmationValues[$script:ConfirmationIndex]
+        $script:ConfirmationIndex++
+        return $value
+    }
+    if ($env:HABITER_TEST_NO_TTY -eq '1' -or [Console]::IsInputRedirected) { Throw-UninstallError 'HAB-UNWIN-074' 'An interactive terminal is required.' 'For automation, pass both -InstallDir and -ConfirmTarget.' 74 }
+    return Read-Host $Prompt
+}
+
+function Confirm-Removal {
+    $script:Phase = 'confirm-removal'
+    $challenge = "UNINSTALL HABITER $($script:SelectedRoot)"
+    if ($ConfirmTarget) {
+        if ($ConfirmTarget -ne $challenge) { Throw-UninstallError 'HAB-UNWIN-075' 'Automation challenge does not match the canonical target.' 'Copy the exact challenge from -DryRun.' 75 }
+        Write-Detail 'Exact non-interactive target and challenge accepted'
+        return
+    }
+    $answer = Read-ConfirmationValue 'Continue with this exact removal plan? [y/N]'
+    if ($answer -notin @('y', 'Y')) { Throw-UninstallError 'HAB-UNWIN-076' 'Uninstall cancelled at the first confirmation.' 'No files or settings were changed.' 76 }
+    $typed = Read-ConfirmationValue "Type $challenge"
+    if ($typed -ne $challenge) { Throw-UninstallError 'HAB-UNWIN-077' 'Typed challenge did not match the canonical target.' 'No files or settings were changed.' 77 }
+}
+
+function Stage-RemovalPath([string]$Original) {
+    $quarantine = "$Original.habiter-uninstall-$($script:UninstallId)"
+    if (Test-Path -LiteralPath $quarantine) { Throw-UninstallError 'HAB-UNWIN-080' "Quarantine already exists: $quarantine" 'Review the previous recovery state; nothing was overwritten.' 80 }
+    $next = $script:Staged.Count + 1
+    if ($env:HABITER_TEST_FAIL_STAGE_AT -eq [string]$next) { Throw-UninstallError 'HAB-UNWIN-081' "Injected staging failure before: $Original" 'Already staged targets will be restored.' 81 }
+    try { Move-Item -LiteralPath $Original -Destination $quarantine } catch { Throw-UninstallError 'HAB-UNWIN-082' "Cannot move target to quarantine: $Original" 'Check permissions; already staged targets will be restored.' 82 }
+    $script:Staged += [pscustomobject]@{ Original = $Original; Quarantine = $quarantine }
+}
+
+function Restore-StagedRemoval {
+    if ($script:PathChanged) {
+        try { Set-UserPathValue $script:OriginalUserPath; [Console]::Error.WriteLine('  Restored: user PATH') } catch { [Console]::Error.WriteLine("  Recovery warning: could not restore user PATH: $($_.Exception.Message)") }
+        $script:PathChanged = $false
+    }
+    if ($script:Staged.Count -eq 0) { return }
+    [Console]::Error.WriteLine('Recovery summary:')
+    for ($index = $script:Staged.Count - 1; $index -ge 0; $index--) {
+        $item = $script:Staged[$index]
+        if (Test-Path -LiteralPath $item.Quarantine) {
+            if (Test-Path -LiteralPath $item.Original) { [Console]::Error.WriteLine("  Recovery warning: preserved quarantine because the original path reappeared: $($item.Quarantine)") }
+            else { try { Move-Item -LiteralPath $item.Quarantine -Destination $item.Original; [Console]::Error.WriteLine("  Restored: $($item.Original)") } catch { [Console]::Error.WriteLine("  Recovery warning: left in quarantine: $($item.Quarantine)") } }
+        } else { [Console]::Error.WriteLine("  Already finalized: $($item.Original)") }
+    }
+}
+
+function Finalize-StagedItem($Item) {
+    if ($env:HABITER_TEST_FAIL_FINALIZE_AT -eq $Item.Original) { Throw-UninstallError 'HAB-UNWIN-083' "Injected finalization failure: $($Item.Original)" 'Recoverable quarantine paths are listed below.' 83 }
+    try { Remove-Item -LiteralPath $Item.Quarantine -Recurse -Force } catch { Throw-UninstallError 'HAB-UNWIN-084' "Cannot finalize quarantined target: $($Item.Quarantine)" 'Recoverable quarantine paths are listed below.' 84 }
+}
+
+function Remove-SelectedInstallation {
+    $script:Phase = 'stage-removal'
+    foreach ($path in $script:SelectedIntegrations) { Stage-RemovalPath $path }
+    Stage-RemovalPath $script:SelectedRoot
+    if ($null -ne $script:UpdatedUserPath) { Set-UserPathValue $script:UpdatedUserPath; $script:PathChanged = $true }
+    $script:Phase = 'finalize-removal'
+    foreach ($item in @($script:Staged | Sort-Object { if (Test-PathEqual $_.Original $script:SelectedRoot) { 0 } else { 1 } })) { Finalize-StagedItem $item }
+    $script:PathChanged = $false
+    $script:Staged = @()
+}
+
 function Invoke-HabiterUninstall {
     if ($Help) { Show-Usage; return }
     if ($ConfirmTarget -and -not $InstallDir) { Throw-UninstallError 'HAB-UNWIN-005' '-ConfirmTarget requires -InstallDir.' 'Automation must name one exact installation.' 2 }
     Write-Host 'Habiter uninstaller'; Write-Host ''
     Write-Step 1 'Detecting installations'; Find-HabiterInstallation
     Write-Step 2 'Verifying ownership'; Write-Detail "Verified: $($script:SelectedRoot)"
-    Write-Step 3 'Checking running processes'; Write-Detail 'Deferred until the final removal gate'
+    Write-Step 3 'Checking running processes'; Assert-HabiterNotRunning
     Write-RemovalPlan
     if ($DryRun) { Write-Step 5 'Dry run'; Write-Detail 'No files or settings were changed.'; Write-Step 6 'Removal skipped'; Write-Step 7 'Done'; return }
-    Throw-UninstallError 'HAB-UNWIN-070' 'Removal is unavailable until the transactional confirmation gate is active.' 'Run with -DryRun; no files were changed.' 70
+    Write-Step 5 'Confirming removal'; Confirm-Removal
+    Write-Step 6 'Removing and verifying'; Remove-SelectedInstallation
+    Write-Step 7 'Done'
+    Write-Detail "Removed application: $($script:SelectedRoot)"
+    Write-Detail 'Application data, backups, exports, credentials, and OS backups: preserved'
 }
 
 if ($env:HABITER_TEST_MODE -ne 'functions') {
-    try { Invoke-HabiterUninstall } catch { exit (Write-UninstallFailure $_) }
+    try { Invoke-HabiterUninstall } catch { Restore-StagedRemoval; exit (Write-UninstallFailure $_) }
 }

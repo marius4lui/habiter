@@ -53,7 +53,12 @@ try {
 
     $env:HABITER_TEST_RUNNING = '1'; Assert-Failure 'HAB-UNWIN-071' @('-DryRun', '-InstallDir', $installRoot); Remove-Item Env:HABITER_TEST_RUNNING
     $challenge = "UNINSTALL HABITER $([IO.Path]::GetFullPath($installRoot))"
+    [IO.File]::WriteAllText($pathState, "C:\Tools;$binPath;$binPath;C:\Other")
+    Assert-Failure 'HAB-UNWIN-047' @('-DryRun', '-InstallDir', $installRoot)
+    [IO.File]::WriteAllText($pathState, "C:\Tools;$binPath;C:\Other;$binPath-extra")
     $env:HABITER_TEST_NO_TTY = '1'; Assert-Failure 'HAB-UNWIN-074' @('-InstallDir', $installRoot); Remove-Item Env:HABITER_TEST_NO_TTY
+    $force = Invoke-Uninstaller @('-Force')
+    if ($force.ExitCode -eq 0 -or -not (Test-Path -LiteralPath $installRoot)) { throw 'Generic -Force unexpectedly authorized removal' }
     Assert-Failure 'HAB-UNWIN-075' @('-InstallDir', $installRoot, '-ConfirmTarget', 'UNINSTALL HABITER C:\wrong')
 
     $confirmFile = Join-Path $testRoot 'confirm.txt'

@@ -43,6 +43,16 @@ node -e '
 ' < "$manifest_root/.habiter-install.json"
 rm -rf "${TMPDIR:-/tmp}/habiter-manifest-test-$$"
 
+control_root="${TMPDIR:-/tmp}/habiter-manifest-control-$$"
+mkdir -p "$control_root"
+bad_executable="$control_root/Habiter
+escape.AppImage"
+if HABITER_TEST_MODE=functions sh -c '. "$1"; RELEASE_VERSION=1.7.1; INSTALL_ID=control-test; write_manifest "$2" "$3" user' sh "$INSTALLER" "$control_root" "$bad_executable" >/dev/null 2>"$control_root/error"; then
+  echo 'control character was accepted in ownership manifest' >&2; exit 1
+fi
+grep -q 'HAB-POSIX-070' "$control_root/error" || { echo 'missing manifest control-character error' >&2; exit 1; }
+rm -rf "$control_root"
+
 for fixture in ubuntu debian fedora arch opensuse generic; do
   HABITER_UNAME_S=Linux HABITER_UNAME_M=x86_64 HABITER_OS_RELEASE_FILE="$FIXTURES/$fixture"
   export HABITER_UNAME_S HABITER_UNAME_M HABITER_OS_RELEASE_FILE

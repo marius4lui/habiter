@@ -75,6 +75,16 @@ $integratedManifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-
 if (@($integratedManifest.integrationPaths).Count -ne 2 -or $integratedManifest.pathEntry -ne (Join-Path ([IO.Path]::GetFullPath($installRoot)) 'bin')) { throw 'Desktop integration was not recorded in the ownership manifest' }
 if ($integratedManifest.pathEntryAddedByInstaller -ne $false) { throw 'Skipped PATH update was recorded as installer-owned' }
 
+$relativeRoot = 'relative-install'
+Push-Location $testRoot
+try {
+    & $hostExecutable -NoProfile -File $installer -InstallDir $relativeRoot -NoDesktopIntegration | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw 'Relative-path test install failed' }
+    $relativeCanonical = [IO.Path]::GetFullPath((Join-Path $testRoot $relativeRoot))
+    $relativeManifest = Get-Content -Raw -LiteralPath (Join-Path $relativeCanonical '.habiter-install.json') | ConvertFrom-Json
+    if ($relativeManifest.canonicalInstallRoot -ne $relativeCanonical -or $relativeManifest.executable -ne (Join-Path $relativeCanonical 'habiter.exe')) { throw 'Relative install root was not canonicalized before manifest creation' }
+} finally { Pop-Location }
+
 $badRoot = Join-Path $testRoot 'bad-install'
 $valid.artifact.sha256 = 'b' * 64
 $env:HABITER_RESOLVER_JSON = $valid | ConvertTo-Json -Depth 4 -Compress

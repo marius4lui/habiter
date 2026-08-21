@@ -94,6 +94,7 @@ absolute_lexical_path() {
 assert_safe_root() {
   requested=$1
   [ -n "$requested" ] || fail HAB-UNIX-020 'empty installation target' 'Pass a non-empty absolute path.' 20
+  while [ "$requested" != / ] && [ "${requested%/}" != "$requested" ]; do requested=${requested%/}; done
   case "$requested" in /*) ;; *) fail HAB-UNIX-021 "installation target is not absolute: $requested" 'Use an absolute path.' 20 ;; esac
   [ ! -L "$requested" ] || fail HAB-UNIX-022 "installation root is a symbolic link: $requested" 'Select the real installation root and review the link manually.' 20
   canonical=$(CDPATH='' cd -- "$requested" 2>/dev/null && pwd -P) || fail HAB-UNIX-023 "cannot canonicalize installation root: $requested" 'Check the exact path and permissions.' 20
@@ -151,11 +152,19 @@ assert_regular_target() {
 
 desktop_exec() { sed -n 's/^Exec=//p' "$1" | head -n 1; }
 
+macos_bundle_id() {
+  info=$1
+  if command -v plutil >/dev/null 2>&1; then plutil -extract CFBundleIdentifier raw -o - "$info" 2>/dev/null || true
+  else sed -n 's#.*<key>CFBundleIdentifier</key>[[:space:]]*<string>\([^<]*\)</string>.*#\1#p' "$info" | head -n 1; fi
+}
+
 classify_integration() {
   path=$1 executable=$2 scope=$3
   case "$OS:$scope:$path" in
     linux:user:"$USER_WRAPPER"|linux:system:"$SYSTEM_WRAPPER")
       [ -L "$path" ] || { [ ! -e "$path" ] && { printf 'MISSING:%s\n' "$path"; return 0; }; fail HAB-UNIX-043 "wrapper is not an owned symbolic link: $path" 'It will be preserved for manual review.' 40; }
+      wrapper_parent=${path%/*}; canonical_wrapper_parent=$(CDPATH='' cd -- "$wrapper_parent" 2>/dev/null && pwd -P) || fail HAB-UNIX-049 "cannot canonicalize wrapper parent: $wrapper_parent" 'It will be preserved for manual review.' 40
+      [ "$canonical_wrapper_parent" = "$wrapper_parent" ] || fail HAB-UNIX-049 "wrapper parent redirects to another directory: $wrapper_parent" 'It will be preserved for manual review.' 40
       target=$(CDPATH='' cd -- "${path%/*}" 2>/dev/null && readlink "$path") || fail HAB-UNIX-043 "cannot resolve wrapper: $path" 'It will be preserved for manual review.' 40
       case "$target" in /*) resolved=$target ;; *) resolved=${path%/*}/$target ;; esac
       resolved=$(absolute_lexical_path "$resolved") || fail HAB-UNIX-043 "cannot resolve wrapper: $path" 'It will be preserved for manual review.' 40
@@ -185,14 +194,14 @@ verify_manifest_candidate() {
   [ "$(manifest_string scope "$manifest")" = "$scope" ] || fail HAB-UNIX-036 'ownership manifest scope mismatch' 'Select the matching user or system installation.' 30
   [ "$(manifest_string canonicalInstallRoot "$manifest")" = "$root" ] || fail HAB-UNIX-037 'ownership manifest root mismatch' 'Refusing a manifest that points outside the selected installation.' 30
   version=$(manifest_string version "$manifest")
-  case "$version" in *[!0-9.]*|'') fail HAB-UNIX-038 'ownership manifest version is malformed' 'Reinstall Habiter before uninstalling.' 30 ;; esac
+  printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || fail HAB-UNIX-038 'ownership manifest version is malformed' 'Reinstall Habiter before uninstalling.' 30
   executable=$(manifest_string executable "$manifest")
   if [ "$OS" = linux ]; then expected=$root/Habiter.AppImage; else expected=$root/Contents/MacOS/habiter; fi
   [ "$executable" = "$expected" ] || fail HAB-UNIX-039 'ownership manifest executable escapes the selected installation' 'Refusing the target.' 30
   assert_regular_target "$executable" 'Habiter executable'
   if [ "$OS" = macos ]; then
     info=$root/Contents/Info.plist; assert_regular_target "$info" 'macOS bundle metadata'
-    grep -q 'dev\.habiter\.Habiter' "$info" || fail HAB-UNIX-047 'macOS bundle identifier mismatch' 'The selected bundle is not verified as Habiter.' 40
+    [ "$(macos_bundle_id "$info")" = dev.habiter.Habiter ] || fail HAB-UNIX-047 'macOS bundle identifier mismatch' 'The selected bundle is not verified as Habiter.' 40
   fi
   integration_strings=$(manifest_line integrationPaths "$manifest" | json_strings) || fail HAB-UNIX-048 'manifest integration list is malformed' 'Reinstall Habiter before uninstalling.' 40
   [ "$(printf '%s\n' "$integration_strings" | sed -n '1p')" = integrationPaths ] || fail HAB-UNIX-048 'manifest integration list is malformed' 'Reinstall Habiter before uninstalling.' 40
@@ -230,7 +239,7 @@ $desktop_owned"
   else
     executable=$root/Contents/MacOS/habiter; assert_regular_target "$executable" 'legacy Habiter executable'
     info=$root/Contents/Info.plist; assert_regular_target "$info" 'legacy macOS bundle metadata'
-    grep -q 'dev\.habiter\.Habiter' "$info" || fail HAB-UNIX-052 'legacy macOS bundle identifier mismatch' 'The selected bundle is not verified as Habiter.' 50
+    [ "$(macos_bundle_id "$info")" = dev.habiter.Habiter ] || fail HAB-UNIX-052 'legacy macOS bundle identifier mismatch' 'The selected bundle is not verified as Habiter.' 50
     integrations=
   fi
   SELECTED_EXECUTABLE=$executable SELECTED_VERSION=legacy SELECTED_INTEGRATIONS=$integrations SELECTED_LEGACY=1
@@ -286,8 +295,10 @@ print_plan() {
 check_running() {
   PHASE=check-running-processes
   if [ "${HABITER_TEST_RUNNING:-0}" = 1 ]; then running=fixture
-  elif command -v pgrep >/dev/null 2>&1; then running=$(pgrep -f -- "$SELECTED_EXECUTABLE" 2>/dev/null || true)
-  else running=$(ps -eo pid=,args= 2>/dev/null | awk -v target="$SELECTED_EXECUTABLE" 'index($0,target) { print $1 }' || true)
+  else
+    HABITER_PROCESS_TARGET=$SELECTED_EXECUTABLE; export HABITER_PROCESS_TARGET
+    running=$(ps -ax -o pid= -o command= 2>/dev/null | awk 'index($0,ENVIRON["HABITER_PROCESS_TARGET"]) { print $1 }' || true)
+    unset HABITER_PROCESS_TARGET
   fi
   [ -z "$running" ] || fail HAB-UNIX-071 'Habiter is still running' 'Close Habiter normally, then rerun the same reviewed plan.' 71
   say '      Not running'

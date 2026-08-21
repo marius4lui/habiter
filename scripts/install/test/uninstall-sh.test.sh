@@ -88,6 +88,8 @@ custom_root=$TEST_ROOT/custom/Habiter
 make_linux_install "$custom_root" user no
 "$UNINSTALLER" --dry-run --install-dir "$custom_root" >"$OUTPUT"
 grep -q "Candidate: $custom_root" "$OUTPUT"
+"$UNINSTALLER" --dry-run --install-dir "$custom_root/" >"$OUTPUT"
+grep -q "Candidate: $custom_root" "$OUTPUT"
 
 reset_fixtures
 make_linux_install "$SYSTEM_FIXTURE" system no
@@ -107,6 +109,12 @@ make_linux_install "$HOME_FIXTURE/.local/opt/habiter" user no
 sed 's/"schemaVersion": 1/"schemaVersion": 99/' "$HOME_FIXTURE/.local/opt/habiter/.habiter-install.json" > "$TEST_ROOT/tampered"
 mv "$TEST_ROOT/tampered" "$HOME_FIXTURE/.local/opt/habiter/.habiter-install.json"
 expect_failure HAB-UNIX-033 "$UNINSTALLER" --dry-run
+
+reset_fixtures
+make_linux_install "$HOME_FIXTURE/.local/opt/habiter" user no
+sed 's/"version": "1.7.1"/"version": "1..7"/' "$HOME_FIXTURE/.local/opt/habiter/.habiter-install.json" > "$TEST_ROOT/tampered"
+mv "$TEST_ROOT/tampered" "$HOME_FIXTURE/.local/opt/habiter/.habiter-install.json"
+expect_failure HAB-UNIX-038 "$UNINSTALLER" --dry-run
 
 reset_fixtures
 make_linux_install "$HOME_FIXTURE/.local/opt/habiter" user no
@@ -138,6 +146,16 @@ ln -s "$TEST_ROOT/not-habiter" "$HOME_FIXTURE/.local/bin/habiter"
 expect_failure HAB-UNIX-044 "$UNINSTALLER" --dry-run
 
 reset_fixtures
+redirect_root=$TEST_ROOT/redirected-bin
+make_linux_install "$HOME_FIXTURE/.local/opt/habiter" user no
+mkdir -p "$HOME_FIXTURE/.local" "$redirect_root" "$HOME_FIXTURE/.local/share/applications"
+ln -s "$redirect_root" "$HOME_FIXTURE/.local/bin"
+ln -s "$HOME_FIXTURE/.local/opt/habiter/Habiter.AppImage" "$redirect_root/habiter"
+printf '%s\n' '[Desktop Entry]' "Exec=$HOME_FIXTURE/.local/opt/habiter/Habiter.AppImage" > "$HOME_FIXTURE/.local/share/applications/dev.habiter.Habiter.desktop"
+write_manifest "$HOME_FIXTURE/.local/opt/habiter" "$HOME_FIXTURE/.local/opt/habiter/Habiter.AppImage" user 1.7.1 "\"$HOME_FIXTURE/.local/bin/habiter\",\"$HOME_FIXTURE/.local/share/applications/dev.habiter.Habiter.desktop\""
+expect_failure HAB-UNIX-049 "$UNINSTALLER" --dry-run
+
+reset_fixtures
 mkdir -p "$HOME_FIXTURE/Applications/Habiter.app/Contents/MacOS"
 mac_root=$HOME_FIXTURE/Applications/Habiter.app
 printf '#!/bin/sh\n' > "$mac_root/Contents/MacOS/habiter"; chmod 755 "$mac_root/Contents/MacOS/habiter"
@@ -145,6 +163,8 @@ printf '%s\n' '<plist><dict><key>CFBundleIdentifier</key><string>dev.habiter.Hab
 write_manifest "$mac_root" "$mac_root/Contents/MacOS/habiter" user 1.7.1
 HABITER_UNINSTALL_OS=Darwin "$UNINSTALLER" --dry-run >"$OUTPUT"
 grep -q "Candidate: $mac_root" "$OUTPUT"
+printf '%s\n' '<plist><dict><key>CFBundleIdentifier</key><string>dev.example.Other</string></dict></plist>' > "$mac_root/Contents/Info.plist"
+HABITER_UNINSTALL_OS=Darwin expect_failure HAB-UNIX-047 "$UNINSTALLER" --dry-run
 
 reset_fixtures
 expect_failure HAB-UNIX-025 "$UNINSTALLER" --dry-run --install-dir "$HOME_FIXTURE"

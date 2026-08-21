@@ -185,6 +185,7 @@ function Invoke-HabiterInstall {
     $release = Resolve-HabiterRelease $architecture
     Write-Detail "$Channel · $($release.version) · $($release.artifact.format)"
     $root = if ($InstallDir) { $InstallDir } elseif ($System) { Join-Path $env:ProgramFiles 'Habiter' } else { Join-Path $env:LOCALAPPDATA 'Programs\Habiter' }
+    $root = [IO.Path]::GetFullPath($root)
     $script:FinalDirectory = $root
     if (-not $DryRun) { Assert-HabiterNotRunning $root }
 

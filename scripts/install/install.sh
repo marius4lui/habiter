@@ -96,8 +96,8 @@ detect_system() {
       OS=linux
       release_file=${HABITER_OS_RELEASE_FILE:-/etc/os-release}
       [ -r "$release_file" ] || fail HAB-POSIX-012 "cannot read OS release file: $release_file" "Check the file path and permissions, or set HABITER_OS_RELEASE_FILE." 10
-      id=$(sed -n 's/^ID=//p' "$release_file" | head -n 1 | tr -d '"')
-      like=$(sed -n 's/^ID_LIKE=//p' "$release_file" | head -n 1 | tr -d '"')
+      id=$(sed -n 's/^ID=//p' "$release_file" | head -n 1 | tr -d '"\r')
+      like=$(sed -n 's/^ID_LIKE=//p' "$release_file" | head -n 1 | tr -d '"\r')
       DISTRO=$(normalize_distro "$id" "$like")
       ;;
     Darwin) OS=macos ;;
@@ -146,8 +146,22 @@ json_escape() {
   printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
 
+assert_manifest_value() {
+  value=$1 label=$2
+  line_count=$(printf '%s\n' "$value" | wc -l | tr -d ' ')
+  if [ "$line_count" != 1 ] || printf '%s' "$value" | LC_ALL=C grep '[[:cntrl:]]' >/dev/null 2>&1; then
+    fail HAB-POSIX-070 "cannot record $label containing control characters" "Choose a normal installation path and retry." 70
+  fi
+}
+
 write_manifest() {
   root=$1 executable=$2 scope=$3 integration_a=${4:-} integration_b=${5:-}
+  assert_manifest_value "$root" 'installation root'
+  assert_manifest_value "$executable" 'executable path'
+  assert_manifest_value "$integration_a" 'integration path'
+  assert_manifest_value "$integration_b" 'integration path'
+  assert_manifest_value "$INSTALL_ID" 'install ID'
+  assert_manifest_value "$RELEASE_VERSION" 'version'
   manifest=$root/$MANIFEST_NAME
   escaped_root=$(json_escape "$root")
   escaped_executable=$(json_escape "$executable")

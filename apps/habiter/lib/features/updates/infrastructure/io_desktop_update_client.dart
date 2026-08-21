@@ -39,6 +39,7 @@ final class IoDesktopUpdateClient implements DesktopUpdateClient {
   static final RegExp _idPattern = RegExp(
     r'^desktop-(windows|linux|macos)-[1-9][0-9]*-[a-f0-9]{16}$',
   );
+  static const int _maxArtifactBytes = 2 * 1024 * 1024 * 1024;
 
   @override
   bool canSelfUpdate(String platform) => _installer.canInstall(platform);
@@ -254,6 +255,9 @@ final class IoDesktopUpdateClient implements DesktopUpdateClient {
       if (response.statusCode != HttpStatus.ok && !append) {
         throw const _DownloadFailure('download_http_error');
       }
+      if (append && !_validContentRange(response, offset, record.size)) {
+        throw const _DownloadFailure('unsafe_range_response');
+      }
       if (!append) offset = 0;
       final sink = part.openWrite(
         mode: append ? FileMode.append : FileMode.write,
@@ -318,6 +322,23 @@ final class IoDesktopUpdateClient implements DesktopUpdateClient {
   Future<void> _writeError(String id, String code) =>
       _errorFile(id).writeAsString('$code\n', flush: true);
 
+  static bool _validContentRange(
+    http.StreamedResponse response,
+    int offset,
+    int total,
+  ) {
+    final value = response.headers[HttpHeaders.contentRangeHeader];
+    if (value == null) return false;
+    final match = RegExp(
+      r'^bytes ([0-9]+)-([0-9]+)/([0-9]+)$',
+    ).firstMatch(value);
+    if (match == null) return false;
+    final start = int.tryParse(match.group(1)!);
+    final end = int.tryParse(match.group(2)!);
+    final declaredTotal = int.tryParse(match.group(3)!);
+    return start == offset && end == total - 1 && declaredTotal == total;
+  }
+
   File _metadataFile(String id) => File('${_root.path}/$id.json');
   File _partFile(String id) => File('${_root.path}/$id.part');
   File _errorFile(String id) => File('${_root.path}/$id.error');
@@ -351,8 +372,14 @@ final class _DesktopDownloadRecord {
   factory _DesktopDownloadRecord.fromCandidate(UpdateCandidate candidate) {
     final artifact = candidate.artifact;
     final format = artifact.format;
-    if (!const {'windows', 'linux', 'macos'}.contains(artifact.platform) ||
-        format == null) {
+    final supported = switch (artifact.platform) {
+      'windows' || 'macos' => format == UpdateArtifactFormat.zip,
+      'linux' => format == UpdateArtifactFormat.appImage,
+      _ => false,
+    };
+    if (!supported ||
+        artifact.size < 1 ||
+        artifact.size > IoDesktopUpdateClient._maxArtifactBytes) {
       throw const FormatException('Unsupported desktop update artifact.');
     }
     return _DesktopDownloadRecord(
@@ -361,7 +388,7 @@ final class _DesktopDownloadRecord {
       buildNumber: candidate.release.buildNumber,
       url: artifact.url.toString(),
       fileName: artifact.fileName,
-      format: format.name,
+      format: format!.name,
       sha256: artifact.sha256,
       size: artifact.size,
       signed: artifact.signed,
@@ -383,12 +410,26 @@ final class _DesktopDownloadRecord {
       size: value['size'] as int,
       signed: value['signed'] as bool,
     );
+    final uri = Uri.tryParse(record.url);
+    final expectedId = record.sha256.length >= 16
+        ? 'desktop-${record.platform}-${record.buildNumber}-${record.sha256.substring(0, 16)}'
+        : '';
+    final supported = switch (record.platform) {
+      'windows' || 'macos' => record.format == 'zip',
+      'linux' => record.format == 'appImage',
+      _ => false,
+    };
     if (!IoDesktopUpdateClient._idPattern.hasMatch(record.id) ||
-        Uri.tryParse(record.url)?.scheme != 'https' ||
+        record.id != expectedId ||
+        !supported ||
+        record.buildNumber < 1 ||
+        uri?.scheme != 'https' ||
+        uri?.hasAuthority != true ||
+        uri!.userInfo.isNotEmpty ||
         !RegExp(r'^[A-Za-z0-9][A-Za-z0-9._-]+$').hasMatch(record.fileName) ||
         !RegExp(r'^[a-f0-9]{64}$').hasMatch(record.sha256) ||
         record.size < 1 ||
-        !const {'zip', 'appImage'}.contains(record.format)) {
+        record.size > IoDesktopUpdateClient._maxArtifactBytes) {
       throw const FormatException('Unsafe desktop update record.');
     }
     return record;

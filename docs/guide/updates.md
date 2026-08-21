@@ -29,6 +29,8 @@ Habiter offers three profiles for automatic checks. Automatic download applies o
 - **Balanced** checks daily and auto-downloads only on an unmetered validated network.
 - **Saver** checks weekly and never auto-downloads; starting a transfer remains your decision.
 
+Desktop systems are treated as metered because Habiter cannot establish connection cost portably. Consequently, Balanced never starts an automatic desktop download; manual downloads and the explicit Immediate profile remain available.
+
 Android's Download Manager, Google Play, or Habiter's bounded desktop download cache owns the transfer as appropriate. Habiter persists the transfer identifier and expected build, reports progress, and reconciles it after process recreation. Direct transfers can be canceled and retried. A declined Store or operating-system prompt returns to the available state without deleting user data.
 
 ## Trust, installation, and rollback

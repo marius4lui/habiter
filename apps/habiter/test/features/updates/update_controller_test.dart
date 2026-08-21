@@ -376,6 +376,37 @@ void main() {
     },
   );
 
+  test('a signed deadline withdrawal releases a mandatory lock', () async {
+    final mandatory = await signed([
+      releaseJson(
+        build: 10500,
+        channel: 'stable',
+        mandatoryAfter: DateTime.utc(2026, 8, 16),
+      ),
+    ]);
+    final voluntary = await signed([
+      releaseJson(build: 10500, channel: 'stable'),
+    ]);
+    var serverEnvelope = mandatory.envelope;
+    final clock = FakeClock(DateTime.utc(2026, 8, 17, 12));
+    final controller = await controllerFor(
+      envelope: mandatory.envelope,
+      publicKey: mandatory.publicKey,
+      platform: FakeUpdatePlatform(buildNumber: 10400),
+      clock: clock,
+      responseEnvelopeProvider: () => serverEnvelope,
+    );
+    await controller.check(UpdateCheckTrigger.manual);
+    expect(controller.state.phase, UpdatePhase.mandatory);
+
+    serverEnvelope = voluntary.envelope;
+    await controller.check(UpdateCheckTrigger.manual);
+
+    expect(controller.state.phase, UpdatePhase.available);
+    expect(controller.mandatoryEnforced, isFalse);
+    controller.dispose();
+  });
+
   test('tampered server data cannot replace the last verified cache', () async {
     final fixture = await signed([
       releaseJson(build: 10500, channel: 'stable'),

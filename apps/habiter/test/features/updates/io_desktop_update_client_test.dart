@@ -118,6 +118,69 @@ void main() {
   });
 
   test(
+    'interrupted downloads resume only from an exact Content-Range',
+    () async {
+      final bytes = List<int>.generate(160, (index) => index);
+      final candidate = _candidate(bytes);
+      const cutoff = 48;
+      final interrupted = IoDesktopUpdateClient(
+        root: root,
+        httpClientFactory: () => _InterruptingClient(bytes, cutoff),
+      );
+      final id = await interrupted.enqueueDownload(candidate);
+      final interruptedStatus = await _waitForPhase(
+        interrupted,
+        id,
+        UpdateDownloadPhase.failed,
+      );
+      expect(interruptedStatus.downloadedBytes, cutoff);
+
+      final badRange = IoDesktopUpdateClient(
+        root: root,
+        httpClientFactory: () => MockClient(
+          (_) async => http.Response.bytes(
+            bytes.sublist(cutoff),
+            HttpStatus.partialContent,
+            headers: {
+              HttpHeaders.contentRangeHeader:
+                  'bytes 0-${bytes.length - 1}/${bytes.length}',
+            },
+          ),
+        ),
+      );
+      await badRange.enqueueDownload(candidate);
+      final rejected = await _waitForPhase(
+        badRange,
+        id,
+        UpdateDownloadPhase.failed,
+      );
+      expect(rejected.failureCode, 'unsafe_range_response');
+
+      var sawRange = false;
+      final resumed = IoDesktopUpdateClient(
+        root: root,
+        httpClientFactory: () => MockClient((request) async {
+          sawRange =
+              request.headers[HttpHeaders.rangeHeader] == 'bytes=$cutoff-';
+          return http.Response.bytes(
+            bytes.sublist(cutoff),
+            HttpStatus.partialContent,
+            headers: {
+              HttpHeaders.contentRangeHeader:
+                  'bytes $cutoff-${bytes.length - 1}/${bytes.length}',
+            },
+          );
+        }),
+      );
+      await resumed.enqueueDownload(candidate);
+      await _waitForPhase(resumed, id, UpdateDownloadPhase.complete);
+
+      expect(sawRange, isTrue);
+      expect((await resumed.verifyDownload(id, candidate)).isValid, isTrue);
+    },
+  );
+
+  test(
     'install re-verifies the payload before launching and terminating',
     () async {
       final bytes = List<int>.generate(64, (index) => 255 - index);
@@ -141,6 +204,22 @@ void main() {
       expect(exitCode, 0);
     },
   );
+}
+
+final class _InterruptingClient extends http.BaseClient {
+  _InterruptingClient(this.bytes, this.cutoff);
+
+  final List<int> bytes;
+  final int cutoff;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async =>
+      http.StreamedResponse(_interruptedBytes(), HttpStatus.ok);
+
+  Stream<List<int>> _interruptedBytes() async* {
+    yield bytes.sublist(0, cutoff);
+    throw const SocketException('interrupted test transfer');
+  }
 }
 
 final class _FakeInstaller implements DesktopUpdateInstaller {

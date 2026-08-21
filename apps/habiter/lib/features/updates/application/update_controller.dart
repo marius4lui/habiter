@@ -337,7 +337,7 @@ final class UpdateController extends ChangeNotifier {
     } else {
       final mandatory =
           verifiedOnline && candidate.release.isMandatoryAt(_clock.now());
-      if (mandatory) _mandatoryEnforced = true;
+      _mandatoryEnforced = mandatory;
       _state = UpdateState(
         phase:
             retainedPhase ??

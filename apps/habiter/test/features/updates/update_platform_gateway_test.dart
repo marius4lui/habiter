@@ -42,6 +42,7 @@ void main() {
 
       expect(runtime.supportsUpdates, isTrue);
       expect(runtime.supportsDirectInstall, isTrue);
+      expect((await gateway.networkStatus()).isMetered, isTrue);
       expect(
         await gateway.enqueueDownload(candidate, allowMetered: true),
         'desktop-download',

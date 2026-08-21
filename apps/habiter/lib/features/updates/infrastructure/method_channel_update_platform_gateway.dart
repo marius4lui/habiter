@@ -71,7 +71,9 @@ final class MethodChannelUpdatePlatformGateway
   @override
   Future<UpdateNetworkStatus> networkStatus() async {
     if (_platformName != 'android') {
-      return const UpdateNetworkStatus(isOnline: true, isMetered: false);
+      // Dart has no portable desktop cost API. Treat the connection as metered
+      // so only the user's explicit Immediate profile can background-download.
+      return const UpdateNetworkStatus(isOnline: true, isMetered: true);
     }
     final data = await _channel.invokeMapMethod<String, Object?>(
       'getNetworkStatus',

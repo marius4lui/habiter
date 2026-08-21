@@ -1,0 +1,577 @@
+.frame {
+  width: min(100%, 480px);
+  margin-inline: auto;
+  color: #111;
+  perspective: 1200px;
+}
+
+.glass {
+  position: relative;
+  min-height: 720px;
+  overflow: hidden;
+  border: 9px solid #1d211f;
+  border-radius: 52px;
+  background:
+    radial-gradient(circle at 20% 5%, rgba(255, 255, 255, 0.8), transparent 22%),
+    linear-gradient(168deg, #c5e9df 0%, #d7ead7 34%, #ffd18d 70%, #dfacaa 100%);
+  box-shadow:
+    0 60px 130px rgba(28, 46, 37, 0.32),
+    0 0 0 1px rgba(255, 255, 255, 0.28) inset,
+    0 0 0 1px rgba(0, 0, 0, 0.28);
+  transform: rotateY(-2deg) rotateX(1deg);
+  transform-origin: 50% 70%;
+  transition: transform 400ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.frame:hover .glass {
+  transform: rotateY(0) rotateX(0) translateY(-4px);
+}
+
+.glass::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background:
+    linear-gradient(105deg, rgba(255, 255, 255, 0.12), transparent 30%),
+    radial-gradient(circle at 80% 40%, rgba(255, 255, 255, 0.16), transparent 30%);
+  mix-blend-mode: overlay;
+}
+
+.statusBar {
+  height: 38px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 28px 5px;
+  font-size: 9px;
+  font-weight: 780;
+  letter-spacing: 0.04em;
+}
+
+.appActions {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 9px 18px 0;
+}
+
+.roundAction {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.52);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.36);
+  box-shadow: 0 10px 24px rgba(31, 65, 51, 0.1);
+  font-size: 19px;
+  backdrop-filter: blur(12px);
+}
+
+.roundAction:last-child {
+  justify-self: end;
+}
+
+.demoBrand {
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+}
+
+.panel {
+  position: relative;
+  z-index: 2;
+  min-height: 430px;
+  padding: 26px 28px 20px;
+}
+
+.view {
+  min-height: 382px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: view-in 360ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.viewLabel {
+  display: block;
+  margin-top: 14px;
+  color: rgba(17, 17, 17, 0.58);
+  font-size: 9px;
+  font-weight: 860;
+  letter-spacing: 0.17em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.habitEmoji {
+  margin-top: 26px;
+  font-size: 46px;
+  filter: drop-shadow(0 10px 14px rgba(31, 65, 51, 0.12));
+}
+
+.todayView h3 {
+  max-width: 340px;
+  margin: 10px 0 0;
+  font-size: clamp(38px, 9vw, 49px);
+  line-height: 0.96;
+  letter-spacing: -0.065em;
+  text-align: center;
+}
+
+.completeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.statusPill {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.56);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  font-weight: 760;
+  backdrop-filter: blur(10px);
+}
+
+.statusPill i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1c6b55;
+}
+
+.statusComplete i {
+  background: #39784f;
+  box-shadow: 0 0 0 5px rgba(57, 120, 79, 0.1);
+}
+
+.completeButton {
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  color: white;
+  background: #14261f;
+  box-shadow: 0 12px 28px rgba(20, 38, 31, 0.22);
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 800;
+  transition: scale 180ms ease, background 180ms ease;
+}
+
+.completeButton:hover {
+  scale: 1.06;
+}
+
+.completeButtonDone {
+  color: #173629;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.microcopy {
+  margin: 13px 0 0;
+  color: rgba(17, 17, 17, 0.56);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.rhythmView,
+.insightView,
+.focusView {
+  align-items: stretch;
+}
+
+.rhythmHeadline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 28px;
+}
+
+.rhythmHeadline span,
+.rhythmHeadline strong {
+  display: block;
+}
+
+.rhythmHeadline span {
+  color: rgba(17, 17, 17, 0.58);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.rhythmHeadline strong {
+  margin-top: 4px;
+  font-size: 28px;
+  letter-spacing: -0.055em;
+}
+
+.rhythmHeadline b {
+  font-size: 48px;
+  line-height: 0.9;
+  letter-spacing: -0.07em;
+}
+
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 24px;
+}
+
+.day {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.day span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(17, 17, 17, 0.1);
+  border-radius: 50%;
+  color: white;
+  background: rgba(255, 255, 255, 0.24);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.day .dayDone {
+  border-color: #356859;
+  background: #356859;
+}
+
+.day small {
+  color: rgba(17, 17, 17, 0.55);
+  font-size: 9px;
+  font-weight: 780;
+}
+
+.rhythmCard,
+.insightAction,
+.focusRule {
+  margin-top: 28px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.38);
+  box-shadow: 0 18px 40px rgba(31, 65, 51, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.rhythmCard > div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.rhythmCard svg {
+  width: 100%;
+  margin-top: 10px;
+  overflow: visible;
+}
+
+.area {
+  fill: url(#demo-area);
+}
+
+.line {
+  fill: none;
+  stroke: #356859;
+  stroke-linecap: round;
+  stroke-width: 4;
+}
+
+.spark {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  margin-top: 24px;
+  border-radius: 18px;
+  color: white;
+  background: #356859;
+  box-shadow: 0 15px 30px rgba(53, 104, 89, 0.22);
+  font-size: 24px;
+}
+
+.insightView h3,
+.focusView h3 {
+  max-width: 340px;
+  margin: 18px 0 0;
+  font-size: 35px;
+  line-height: 1;
+  letter-spacing: -0.058em;
+}
+
+.insightView > p,
+.focusView > p {
+  margin: 13px 0 0;
+  color: rgba(17, 17, 17, 0.64);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.insightSignal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+  padding: 12px 0;
+  border-block: 1px solid rgba(17, 17, 17, 0.09);
+  font-size: 11px;
+}
+
+.insightSignal span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+}
+
+.insightSignal i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #356859;
+}
+
+.insightSignal strong {
+  font-size: 16px;
+}
+
+.insightAction span,
+.insightAction strong,
+.focusRule span,
+.focusRule strong {
+  display: block;
+}
+
+.insightAction span,
+.focusRule span {
+  color: rgba(17, 17, 17, 0.52);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.insightAction strong,
+.focusRule strong {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.shield {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  display: grid;
+  place-items: center;
+  margin-top: 22px;
+  border: 1px solid rgba(53, 104, 89, 0.25);
+  border-radius: 50%;
+  color: white;
+  background: rgba(53, 104, 89, 0.92);
+  box-shadow: 0 0 0 12px rgba(53, 104, 89, 0.09), 0 20px 44px rgba(53, 104, 89, 0.24);
+  font-size: 32px;
+}
+
+.blockedApps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.blockedApps span {
+  display: grid;
+  gap: 4px;
+  padding: 10px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.32);
+  font-size: 9px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.blockedApps b {
+  color: #356859;
+  font-size: 8px;
+}
+
+.focusRule {
+  margin-top: 14px;
+}
+
+.wheel {
+  position: absolute;
+  z-index: 3;
+  inset: auto -22px -25px;
+  min-height: 218px;
+  padding: 30px 30px 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.56);
+  border-radius: 50% 50% 0 0 / 18% 18% 0 0;
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 -20px 50px rgba(93, 71, 57, 0.08);
+  backdrop-filter: blur(17px);
+}
+
+.wheelHint {
+  display: block;
+  color: rgba(17, 17, 17, 0.5);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.wheelCards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: flex-end;
+  gap: 7px;
+  margin-top: 17px;
+}
+
+.wheelCard {
+  min-width: 0;
+  min-height: 94px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  padding: 10px 5px;
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  border-radius: 19px;
+  color: rgba(17, 17, 17, 0.62);
+  background: rgba(255, 255, 255, 0.31);
+  cursor: pointer;
+  transform: translateY(10px) scale(0.92);
+  transition: color 220ms ease, transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1), background 220ms ease;
+}
+
+.wheelCard span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: rgba(17, 17, 17, 0.06);
+  font-size: 17px;
+}
+
+.wheelCard strong {
+  min-width: 0;
+  font-size: 9px;
+  letter-spacing: -0.02em;
+}
+
+.wheelCard:hover,
+.wheelCardActive {
+  color: #10251d;
+  background: rgba(255, 255, 255, 0.66);
+  transform: translateY(0) scale(1);
+}
+
+.wheelCardActive {
+  box-shadow: 0 14px 28px rgba(48, 65, 56, 0.14);
+}
+
+.demoNote {
+  display: block;
+  margin-top: 22px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 720;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.compact {
+  max-width: 420px;
+}
+
+.compact .glass {
+  min-height: 650px;
+}
+
+.compact .panel {
+  min-height: 390px;
+  padding-inline: 24px;
+}
+
+.compact .view {
+  min-height: 348px;
+}
+
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+}
+
+@media (max-width: 520px) {
+  .glass {
+    min-height: 650px;
+    border-width: 7px;
+    border-radius: 42px;
+    transform: none;
+  }
+
+  .frame:hover .glass {
+    transform: translateY(-3px);
+  }
+
+  .panel {
+    min-height: 390px;
+    padding-inline: 22px;
+  }
+
+  .view {
+    min-height: 340px;
+  }
+
+  .todayView h3 {
+    font-size: clamp(36px, 12vw, 46px);
+  }
+
+  .wheel {
+    min-height: 205px;
+    padding-inline: 24px;
+  }
+
+  .wheelCard {
+    min-height: 86px;
+  }
+
+  .wheelCard span {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass,
+  .frame:hover .glass,
+  .view,
+  .wheelCard {
+    animation: none;
+    transform: none;
+  }
+}

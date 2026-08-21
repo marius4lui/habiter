@@ -5,8 +5,8 @@
       "version": "1.7.3",
       "buildNumber": 10703,
       "channel": "stable",
-      "status": "draft",
-      "publishedAt": null,
+      "status": "published",
+      "publishedAt": "2026-08-21T20:52:42+02:00",
       "minimumSupportedVersion": "1.5.0",
       "mandatoryAfter": null,
       "notes": {
@@ -24,12 +24,72 @@
         ]
       },
       "artifacts": [
-        { "platform": "android", "architecture": "universal", "format": "apk", "fileName": "habiter-1.7.3-android-universal.apk", "signed": true, "distribution": "direct" },
-        { "platform": "android", "architecture": "universal", "format": "aab", "fileName": "habiter-1.7.3-android-playstore.aab", "signed": true, "distribution": "play" },
-        { "platform": "linux", "architecture": "x64", "format": "tar.gz", "primary": false, "fileName": "habiter-1.7.3-linux-x64.tar.gz", "signed": false },
-        { "platform": "linux", "architecture": "x64", "format": "appimage", "primary": true, "fileName": "Habiter-1.7.3-x86_64.AppImage", "signed": false },
-        { "platform": "windows", "architecture": "x64", "format": "zip", "primary": true, "fileName": "habiter-1.7.3-windows-x64.zip", "signed": false },
-        { "platform": "macos", "architecture": "universal", "format": "zip", "primary": true, "fileName": "habiter-1.7.3-macos-universal.zip", "signed": false }
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.7.3-android-universal.apk",
+          "signed": true,
+          "distribution": "direct",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.3/habiter-1.7.3-android-universal.apk",
+          "sha256": "6a2e0f3abaf7522ec3c48d42c16b481928af377d5210ae75ada2fb1b16b4b589",
+          "size": 64245848
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.7.3-android-playstore.aab",
+          "signed": true,
+          "distribution": "play",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.3/habiter-1.7.3-android-playstore.aab",
+          "sha256": "3914069ae457f8d6e86ccd8492444bbfd9e8871359c8034f16122f5b3f75d8b0",
+          "size": 62632811
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.7.3-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.3/habiter-1.7.3-linux-x64.tar.gz",
+          "sha256": "9fce70bb9cc80716ffc8d8a40f7d3893f729b7002f2a3a0b891e3d65f0b75550",
+          "size": 11871220
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.7.3-x86_64.AppImage",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.3/Habiter-1.7.3-x86_64.AppImage",
+          "sha256": "e3e0e27ebcd426675abd623afadbe838a0cd8e66c120a1f988421c3fd9b1416b",
+          "size": 11770360
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.7.3-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.3/habiter-1.7.3-windows-x64.zip",
+          "sha256": "8a87856ab15d5cfec91ce333c52dbfff02d6a7e1bcda96c55c04d3d209543fc5",
+          "size": 14583462
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.7.3-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.3/habiter-1.7.3-macos-universal.zip",
+          "sha256": "81312f628e74c7dc3cadfb26b5bc945fb70f697e18cf600dfbdb5d5613418681",
+          "size": 20931627
+        }
       ]
     },
     {
@@ -53,12 +113,54 @@
         ]
       },
       "artifacts": [
-        { "platform": "android", "architecture": "universal", "format": "apk", "fileName": "habiter-1.7.2-android-universal.apk", "signed": true, "distribution": "direct" },
-        { "platform": "android", "architecture": "universal", "format": "aab", "fileName": "habiter-1.7.2-android-playstore.aab", "signed": true, "distribution": "play" },
-        { "platform": "linux", "architecture": "x64", "format": "tar.gz", "primary": false, "fileName": "habiter-1.7.2-linux-x64.tar.gz", "signed": false },
-        { "platform": "linux", "architecture": "x64", "format": "appimage", "primary": true, "fileName": "Habiter-1.7.2-x86_64.AppImage", "signed": false },
-        { "platform": "windows", "architecture": "x64", "format": "zip", "primary": true, "fileName": "habiter-1.7.2-windows-x64.zip", "signed": false },
-        { "platform": "macos", "architecture": "universal", "format": "zip", "primary": true, "fileName": "habiter-1.7.2-macos-universal.zip", "signed": false }
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.7.2-android-universal.apk",
+          "signed": true,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.7.2-android-playstore.aab",
+          "signed": true,
+          "distribution": "play"
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.7.2-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.7.2-x86_64.AppImage",
+          "signed": false
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.7.2-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.7.2-macos-universal.zip",
+          "signed": false
+        }
       ]
     },
     {

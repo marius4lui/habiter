@@ -14,3 +14,11 @@ data class RuntimeFeatureState(
         else -> "Habiter background features are inactive."
     }
 }
+
+object RuntimeRecoveryPolicy {
+    fun nextWakeAt(
+        now: Long,
+        plannedEvaluationAt: Long,
+        remindersEnabled: Boolean,
+    ): Long? = plannedEvaluationAt.takeIf { remindersEnabled && it > now }
+}

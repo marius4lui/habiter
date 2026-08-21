@@ -55,6 +55,7 @@ class HabiterRuntimeService : Service() {
             intent?.getStringExtra(EXTRA_START_REASON) ?: REASON_STICKY,
         )
         reconcileFeatures()
+        RuntimeRecoveryReceiver.reconcilePersisted(this)
         handler.removeCallbacks(heartbeat)
         handler.post(heartbeat)
         return START_STICKY
@@ -114,8 +115,12 @@ class HabiterRuntimeService : Service() {
 
     companion object {
         const val EXTRA_START_REASON = "start_reason"
+        const val ACTION_EVALUATE_REMINDERS = "com.habiter.app.action.EVALUATE_REMINDERS"
         const val REASON_STICKY = "sticky_restart"
         const val REASON_APP_BLOCK = "app_block_changed"
+        const val REASON_RECOVERY = "recovery_alarm"
+        const val REASON_BOOT = "boot"
+        const val REASON_PACKAGE_REPLACED = "package_replaced"
 
         private const val NOTIFICATION_ID = 1001
         private const val CHANNEL_ID = "habiter_runtime_channel"

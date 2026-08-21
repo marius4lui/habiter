@@ -301,9 +301,6 @@ class MainActivity: FlutterActivity() {
             startService(intent)
         }
         
-        // Schedule watchdog to keep service alive
-        WatchdogReceiver.schedule(this)
-        
         return true
     }
 
@@ -329,8 +326,6 @@ class MainActivity: FlutterActivity() {
             stopService(intent)
         }
         
-        // Cancel watchdog
-        WatchdogReceiver.cancel(this)
     }
 
     private fun updateLockedApps(lockedPackages: List<String>) {

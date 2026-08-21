@@ -1,6 +1,7 @@
 package com.habiter.app
 
 import com.habiter.app.runtime.RuntimeFeatureState
+import com.habiter.app.runtime.RuntimeRecoveryPolicy
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -33,6 +34,34 @@ class RuntimeFeatureStateTest {
             "Reminders and App Block are active.",
             RuntimeFeatureState(remindersEnabled = true, appBlockEnabled = true)
                 .notificationText(),
+        )
+    }
+
+    @Test
+    fun `recovery only wakes for a future reminder evaluation`() {
+        assertEquals(
+            2_000L,
+            RuntimeRecoveryPolicy.nextWakeAt(
+                now = 1_000L,
+                plannedEvaluationAt = 2_000L,
+                remindersEnabled = true,
+            ),
+        )
+        assertEquals(
+            null,
+            RuntimeRecoveryPolicy.nextWakeAt(
+                now = 1_000L,
+                plannedEvaluationAt = 2_000L,
+                remindersEnabled = false,
+            ),
+        )
+        assertEquals(
+            null,
+            RuntimeRecoveryPolicy.nextWakeAt(
+                now = 2_000L,
+                plannedEvaluationAt = 2_000L,
+                remindersEnabled = true,
+            ),
         )
     }
 }

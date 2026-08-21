@@ -31,7 +31,18 @@ class RuntimeStateStore(context: Context) {
     fun setRemindersEnabled(enabled: Boolean): RuntimeFeatureState {
         val next = features().copy(remindersEnabled = enabled)
         setFeatures(next)
+        if (!enabled) setNextReminderEvaluation(null)
         return next
+    }
+
+    fun nextReminderEvaluation(): Long =
+        preferences.getLong(NEXT_REMINDER_EVALUATION_AT, 0L)
+
+    fun setNextReminderEvaluation(value: Long?) {
+        preferences.edit().apply {
+            if (value == null) remove(NEXT_REMINDER_EVALUATION_AT)
+            else putLong(NEXT_REMINDER_EVALUATION_AT, value)
+        }.apply()
     }
 
     fun recordStarted(reason: String, now: Long = System.currentTimeMillis()) {

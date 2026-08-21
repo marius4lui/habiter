@@ -47,6 +47,8 @@ void main() {
       expect(theme.navigationBarTheme.height, greaterThanOrEqualTo(64));
       expect(theme.inputDecorationTheme.filled, isTrue);
       expect(theme.visualDensity, VisualDensity.adaptivePlatformDensity);
+      expect(theme.focusColor.a, greaterThan(0));
+      expect(theme.hoverColor.a, greaterThan(0));
     }
   });
 

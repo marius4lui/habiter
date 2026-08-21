@@ -110,6 +110,36 @@ void main() {
     expect(selected, AppRoute.rhythm);
   });
 
+  testWidgets(
+    'large-shell utility actions are focus-visible and keyboard usable',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      var settingsOpened = false;
+      await tester.pumpWidget(
+        _fixture(onOpenSettings: () => settingsOpened = true),
+      );
+      await tester.pump();
+
+      final settingsButton = find.ancestor(
+        of: find.text('Settings'),
+        matching: find.byType(TextButton),
+      );
+      expect(settingsButton, findsOneWidget);
+
+      for (var index = 0; index < 10 && !settingsOpened; index += 1) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pump();
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pump();
+      }
+
+      expect(settingsOpened, isTrue);
+    },
+  );
+
   testWidgets('compact pill navigation selects a different page on tap', (
     tester,
   ) async {
@@ -205,19 +235,26 @@ void main() {
 Widget _fixture({
   AppRoute selected = AppRoute.today,
   ValueChanged<AppRoute>? onSelected,
+  VoidCallback? onOpenSettings,
   Widget child = const ColoredBox(color: Colors.white),
 }) => MaterialApp(
-  home: _fixtureShell(selected: selected, onSelected: onSelected, child: child),
+  home: _fixtureShell(
+    selected: selected,
+    onSelected: onSelected,
+    onOpenSettings: onOpenSettings,
+    child: child,
+  ),
 );
 
 Widget _fixtureShell({
   AppRoute selected = AppRoute.today,
   ValueChanged<AppRoute>? onSelected,
+  VoidCallback? onOpenSettings,
   Widget child = const ColoredBox(color: Colors.white),
 }) => AdaptiveAppShell(
   selected: selected,
   onSelected: onSelected ?? (_) {},
-  onOpenSettings: () {},
+  onOpenSettings: onOpenSettings ?? () {},
   onOpenAppLock: () {},
   child: child,
 );

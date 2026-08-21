@@ -202,6 +202,7 @@ abstract final class HabiterTheme {
         ),
       ),
       focusColor: palette.primary.withValues(alpha: HabiterState.hoverOpacity),
+      hoverColor: palette.primary.withValues(alpha: HabiterState.hoverOpacity),
     );
   }
 }

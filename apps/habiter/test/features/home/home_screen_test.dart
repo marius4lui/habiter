@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/core/design_system/habiter_theme.dart';
 import 'package:habiter/core/design_system/haptics.dart';
@@ -74,6 +75,49 @@ void main() {
       HabitHubDestination.appLock,
       HabitHubDestination.settings,
     ]);
+  });
+
+  testWidgets('hub promotes to two panes without resetting wheel state', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(700, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final fixture = await _Fixture.withHabits();
+    addTearDown(fixture.dispose);
+    final opened = <HabitHubDestination>[];
+
+    await tester.pumpWidget(fixture.app(onOpenDestination: opened.add));
+    await tester.pumpAndSettle();
+    final compactPrimary = tester.getCenter(
+      find.byKey(const Key('habit-hub-primary-pane')),
+    );
+    final compactSecondary = tester.getCenter(
+      find.byKey(const Key('habit-hub-secondary-pane')),
+    );
+    expect(compactSecondary.dx, compactPrimary.dx);
+
+    await tester.tap(find.byKey(const Key('hub-wheel-card-today')));
+    opened.clear();
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+
+    tester.view.physicalSize = const Size(1000, 700);
+    await tester.pumpAndSettle();
+    final expandedPrimary = tester.getCenter(
+      find.byKey(const Key('habit-hub-primary-pane')),
+    );
+    final expandedSecondary = tester.getCenter(
+      find.byKey(const Key('habit-hub-secondary-pane')),
+    );
+    expect(expandedSecondary.dx, greaterThan(expandedPrimary.dx));
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    expect(opened, <HabitHubDestination>[HabitHubDestination.analytics]);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('hub light visual contract at 390 by 844', (tester) async {

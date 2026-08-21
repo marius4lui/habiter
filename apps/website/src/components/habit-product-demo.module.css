@@ -42,7 +42,7 @@
   height: 38px;
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: flex-end;
   padding: 0 28px 5px;
   font-size: 9px;
   font-weight: 780;
@@ -194,7 +194,7 @@
 .rhythmHeadline {
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: flex-end;
   margin-top: 28px;
 }
 
@@ -443,7 +443,7 @@
 .wheelCards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  align-items: end;
+  align-items: flex-end;
   gap: 7px;
   margin-top: 17px;
 }

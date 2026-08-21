@@ -54,7 +54,7 @@ final class HabiterLayout {
       : Orientation.portrait;
 
   double get horizontalPagePadding => switch (layoutClass) {
-    HabiterLayoutClass.compact => 16,
+    HabiterLayoutClass.compact => 20,
     HabiterLayoutClass.medium => 24,
     HabiterLayoutClass.expanded => 32,
     HabiterLayoutClass.large => 48,

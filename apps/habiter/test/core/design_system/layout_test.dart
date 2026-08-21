@@ -76,7 +76,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    expect((await paddingAt(320)).left, 16);
+    expect((await paddingAt(320)).left, 20);
     expect((await paddingAt(700)).left, 24);
     expect((await paddingAt(1000)).left, 32);
     expect((await paddingAt(1440)).left, 48);

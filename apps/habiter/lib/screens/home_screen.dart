@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../app/navigation/app_route.dart';
+import '../core/design_system/adaptive_presentation.dart';
 import '../core/design_system/components.dart';
 import '../core/design_system/haptics.dart';
 import '../core/time/local_date.dart';
@@ -219,11 +220,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openEditor(BuildContext context, [Habit? habit]) {
-    showModalBottomSheet<void>(
+    showHabiterAdaptivePane<void>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
+      frameSheet: false,
       builder: (_) => AddHabitSheet(habit: habit),
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../core/design_system/adaptive_presentation.dart';
 import '../core/design_system/components.dart';
 import '../core/design_system/tokens.dart';
 import '../features/reminders/domain/availability_profile.dart';
@@ -894,10 +895,8 @@ class _GlobalReminderSettings extends StatefulWidget {
     BuildContext context, {
     required ReminderPreferences value,
     required Future<void> Function(ReminderPreferences value) onSave,
-  }) => showModalBottomSheet<void>(
+  }) => showHabiterAdaptivePane<void>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
     builder: (_) => _GlobalReminderSettings(value: value, onSave: onSave),
   );
 

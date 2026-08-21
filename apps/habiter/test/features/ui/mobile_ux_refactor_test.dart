@@ -160,6 +160,148 @@ void main() {
     }
   });
 
+  testWidgets('settings groups use available tablet width without stretching', (
+    tester,
+  ) async {
+    final provider = await _providerWithHabits();
+    final settings = SettingsProvider();
+    addTearDown(provider.dispose);
+    addTearDown(settings.dispose);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.devicePixelRatio = 1;
+
+    Future<void> pumpAt(Size size) async {
+      tester.view.physicalSize = size;
+      await tester.pumpWidget(
+        _app(
+          provider: provider,
+          settings: settings,
+          home: const SettingsScreen(),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await pumpAt(const Size(600, 1000));
+    final compactAppearance = tester.getTopLeft(
+      find.byKey(const Key('settings-appearance-section')),
+    );
+    final compactNotifications = tester.getTopLeft(
+      find.byKey(const Key('settings-notifications-section')),
+    );
+    expect(compactNotifications.dx, compactAppearance.dx);
+    expect(compactNotifications.dy, greaterThan(compactAppearance.dy));
+
+    await pumpAt(const Size(700, 1000));
+    final tabletAppearance = tester.getTopLeft(
+      find.byKey(const Key('settings-appearance-section')),
+    );
+    final tabletNotifications = tester.getTopLeft(
+      find.byKey(const Key('settings-notifications-section')),
+    );
+    expect(tabletNotifications.dx, greaterThan(tabletAppearance.dx));
+    expect(tabletNotifications.dy, tabletAppearance.dy);
+  });
+
+  testWidgets('analytics preserves selection across tablet rotation', (
+    tester,
+  ) async {
+    final provider = await _providerWithHabits();
+    addTearDown(provider.dispose);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(700, 1000);
+
+    await tester.pumpWidget(
+      _app(provider: provider, home: const AnalyticsScreen()),
+    );
+    await tester.pumpAndSettle();
+    final portraitWeek = tester.getTopLeft(
+      find.byKey(const Key('analytics-week-column')),
+    );
+    final portraitDetail = tester.getTopLeft(
+      find.byKey(const Key('analytics-detail-column')),
+    );
+    expect(portraitDetail.dx, portraitWeek.dx);
+    expect(portraitDetail.dy, greaterThan(portraitWeek.dy));
+
+    final selectedId = provider.habits.last.id;
+    final selector = find.descendant(
+      of: find.byKey(const Key('analytics-habit-selector')),
+      matching: find.byType(DropdownButtonFormField<String>),
+    );
+    tester.widget<DropdownButtonFormField<String>>(selector).onChanged!(
+      selectedId,
+    );
+    await tester.pumpAndSettle();
+
+    final habitIdsBefore = provider.habits.map((habit) => habit.id).toList();
+    final entryCountBefore = provider.habitEntries.length;
+    tester.view.physicalSize = const Size(1000, 700);
+    await tester.pumpAndSettle();
+
+    final landscapeWeek = tester.getTopLeft(
+      find.byKey(const Key('analytics-week-column')),
+    );
+    final landscapeDetail = tester.getTopLeft(
+      find.byKey(const Key('analytics-detail-column')),
+    );
+    expect(landscapeDetail.dx, greaterThan(landscapeWeek.dx));
+    expect(landscapeDetail.dy, landscapeWeek.dy);
+    expect(
+      tester.widget<DropdownButtonFormField<String>>(selector).initialValue,
+      selectedId,
+    );
+    expect(provider.habits.map((habit) => habit.id), habitIdsBefore);
+    expect(provider.habitEntries, hasLength(entryCountBefore));
+  });
+
+  testWidgets('rhythm promotes overview and plans into tablet columns', (
+    tester,
+  ) async {
+    final provider = await _providerWithHabits();
+    addTearDown(provider.dispose);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(700, 1000);
+
+    await tester.pumpWidget(
+      _app(provider: provider, home: const RhythmScreen()),
+    );
+    await tester.pumpAndSettle();
+    final portraitCalibration = tester.getTopLeft(
+      find.byKey(const Key('rhythm-calibration-column')),
+    );
+    final portraitProfile = tester.getTopLeft(
+      find.byKey(const Key('rhythm-profile-column')),
+    );
+    expect(portraitProfile.dx, portraitCalibration.dx);
+    expect(portraitProfile.dy, greaterThan(portraitCalibration.dy));
+
+    tester.view.physicalSize = const Size(1000, 700);
+    await tester.pumpAndSettle();
+    final landscapeCalibration = tester.getTopLeft(
+      find.byKey(const Key('rhythm-calibration-column')),
+    );
+    final landscapeProfile = tester.getTopLeft(
+      find.byKey(const Key('rhythm-profile-column')),
+    );
+    expect(landscapeProfile.dx, greaterThan(landscapeCalibration.dx));
+    expect(landscapeProfile.dy, landscapeCalibration.dy);
+
+    final firstPlan = tester.getTopLeft(
+      find.byKey(ValueKey('rhythm-plan-${provider.habits.first.id}')),
+    );
+    final secondPlan = tester.getTopLeft(
+      find.byKey(ValueKey('rhythm-plan-${provider.habits.last.id}')),
+    );
+    expect(secondPlan.dx, greaterThan(firstPlan.dx));
+    expect(secondPlan.dy, firstPlan.dy);
+  });
+
   testWidgets('guided editor keeps primary controls reachable at 200 percent', (
     tester,
   ) async {

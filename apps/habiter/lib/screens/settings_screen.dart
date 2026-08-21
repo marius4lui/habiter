@@ -78,7 +78,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         key: const Key('progressive-settings'),
         children: [
           HabiterContent(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
+            maxWidth: HabiterSize.wideContentMax,
+            bottomPadding: 40,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -87,268 +88,291 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: context.l10n.settingsBody,
                 ),
                 const SizedBox(height: HabiterSpace.lg),
-                _SettingsSection(
-                  icon: Icons.palette_outlined,
-                  title: context.l10n.appearance,
+                HabiterAdaptiveGrid(
+                  key: const Key('settings-sections-grid'),
+                  minimumColumnWidth: 300,
+                  spacing: HabiterSpace.lg,
+                  runSpacing: 0,
+                  maxColumns: 2,
                   children: [
-                    DropdownButtonFormField<ThemeMode>(
-                      initialValue: settings.themeMode,
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        labelText: context.l10n.theme,
-                      ),
-                      items: [
-                        DropdownMenuItem(
-                          value: ThemeMode.system,
-                          child: Text(context.l10n.themeSystem),
-                        ),
-                        DropdownMenuItem(
-                          value: ThemeMode.light,
-                          child: Text(context.l10n.themeLight),
-                        ),
-                        DropdownMenuItem(
-                          value: ThemeMode.dark,
-                          child: Text(context.l10n.themeDark),
-                        ),
-                      ],
-                      onChanged: (value) async {
-                        if (value != null) {
-                          await settings.setThemeMode(value);
-                          await _syncWidgetPresentation(
-                            settings.locale.languageCode,
-                          );
-                        }
-                      },
-                    ),
-                    const SizedBox(height: HabiterSpace.md),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final compact =
-                            constraints.maxWidth < 360 ||
-                            MediaQuery.textScalerOf(context).scale(1) > 1.3;
-                        if (compact) {
-                          return DropdownButtonFormField<String>(
-                            initialValue: settings.locale.languageCode,
-                            isExpanded: true,
-                            decoration: InputDecoration(
-                              labelText: context.l10n.language,
+                    _SettingsSection(
+                      key: const Key('settings-appearance-section'),
+                      icon: Icons.palette_outlined,
+                      title: context.l10n.appearance,
+                      children: [
+                        DropdownButtonFormField<ThemeMode>(
+                          initialValue: settings.themeMode,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.theme,
+                          ),
+                          items: [
+                            DropdownMenuItem(
+                              value: ThemeMode.system,
+                              child: Text(context.l10n.themeSystem),
                             ),
-                            items: [
-                              DropdownMenuItem(
-                                value: 'de',
-                                child: Text(context.l10n.german),
-                              ),
-                              DropdownMenuItem(
-                                value: 'en',
-                                child: Text(context.l10n.english),
-                              ),
-                            ],
-                            onChanged: (value) async {
-                              if (value != null) {
-                                await settings.setLocale(Locale(value));
-                                await _syncWidgetPresentation(value);
-                              }
-                            },
-                          );
-                        }
-                        return SegmentedButton<String>(
-                          segments: [
-                            ButtonSegment(
-                              value: 'de',
-                              label: Text(context.l10n.german),
+                            DropdownMenuItem(
+                              value: ThemeMode.light,
+                              child: Text(context.l10n.themeLight),
                             ),
-                            ButtonSegment(
-                              value: 'en',
-                              label: Text(context.l10n.english),
+                            DropdownMenuItem(
+                              value: ThemeMode.dark,
+                              child: Text(context.l10n.themeDark),
                             ),
                           ],
-                          selected: {settings.locale.languageCode},
-                          onSelectionChanged: (value) async {
-                            await settings.setLocale(Locale(value.single));
-                            await _syncWidgetPresentation(value.single);
+                          onChanged: (value) async {
+                            if (value != null) {
+                              await settings.setThemeMode(value);
+                              await _syncWidgetPresentation(
+                                settings.locale.languageCode,
+                              );
+                            }
                           },
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                _SettingsSection(
-                  icon: Icons.notifications_none_rounded,
-                  title: context.l10n.notifications,
-                  children: [
-                    SwitchListTile.adaptive(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(context.l10n.dailyReminder),
-                      subtitle: Text(
-                        preferences.notifications
-                            ? context.l10n.dailyReminderAt(
-                                preferences.reminderTime,
-                              )
-                            : context.l10n.dailyReminderOff,
-                      ),
-                      value: preferences.notifications,
-                      onChanged: (value) async {
-                        if (value) {
-                          final state = await _permissions
-                              .requestAfterUserIntent();
-                          if (!state.canSchedule || !mounted) return;
-                        }
-                        await _update(
-                          preferences.copyWith(notifications: value),
-                        );
-                      },
-                    ),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      enabled: preferences.notifications,
-                      leading: const Icon(Icons.schedule_outlined),
-                      title: Text(context.l10n.reminderTime),
-                      trailing: Text(preferences.reminderTime),
-                      onTap: preferences.notifications
-                          ? () => _chooseReminderTime(preferences)
-                          : null,
-                    ),
-                  ],
-                ),
-                _SettingsSection(
-                  icon: Icons.widgets_outlined,
-                  title: context.l10n.widgetSettingsTitle,
-                  children: [
-                    FutureBuilder<bool>(
-                      future:
-                          widgetBridge?.hasInstalledWidgets() ??
-                          Future<bool>.value(false),
-                      builder: (context, snapshot) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.add_to_home_screen_rounded),
-                        title: Text(context.l10n.widgetSettingsTitle),
-                        subtitle: Text(
-                          snapshot.data == true
-                              ? context.l10n.widgetStatusAdded
-                              : context.l10n.widgetStatusNotAdded,
                         ),
-                        trailing: const Icon(Icons.chevron_right_rounded),
-                        onTap: widgetBridge == null
-                            ? null
-                            : () => showWidgetManagementDialog(context),
-                      ),
+                        const SizedBox(height: HabiterSpace.md),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final compact =
+                                constraints.maxWidth < 360 ||
+                                MediaQuery.textScalerOf(context).scale(1) > 1.3;
+                            if (compact) {
+                              return DropdownButtonFormField<String>(
+                                initialValue: settings.locale.languageCode,
+                                isExpanded: true,
+                                decoration: InputDecoration(
+                                  labelText: context.l10n.language,
+                                ),
+                                items: [
+                                  DropdownMenuItem(
+                                    value: 'de',
+                                    child: Text(context.l10n.german),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'en',
+                                    child: Text(context.l10n.english),
+                                  ),
+                                ],
+                                onChanged: (value) async {
+                                  if (value != null) {
+                                    await settings.setLocale(Locale(value));
+                                    await _syncWidgetPresentation(value);
+                                  }
+                                },
+                              );
+                            }
+                            return SegmentedButton<String>(
+                              segments: [
+                                ButtonSegment(
+                                  value: 'de',
+                                  label: Text(context.l10n.german),
+                                ),
+                                ButtonSegment(
+                                  value: 'en',
+                                  label: Text(context.l10n.english),
+                                ),
+                              ],
+                              selected: {settings.locale.languageCode},
+                              onSelectionChanged: (value) async {
+                                await settings.setLocale(Locale(value.single));
+                                await _syncWidgetPresentation(value.single);
+                              },
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                _SettingsSection(
-                  icon: Icons.system_update_alt_rounded,
-                  title: context.l10n.updateSettingsEntry,
-                  children: [
-                    ListTile(
-                      key: const Key('update-center-entry'),
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.rocket_launch_outlined),
-                      title: Text(context.l10n.updateSettingsEntry),
-                      subtitle: Text(_updateSummary(context, updates)),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (updates.state.candidate != null)
-                            const Badge(
-                              label: Text('1'),
-                              child: Icon(Icons.new_releases_outlined),
+                    _SettingsSection(
+                      key: const Key('settings-notifications-section'),
+                      icon: Icons.notifications_none_rounded,
+                      title: context.l10n.notifications,
+                      children: [
+                        SwitchListTile.adaptive(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(context.l10n.dailyReminder),
+                          subtitle: Text(
+                            preferences.notifications
+                                ? context.l10n.dailyReminderAt(
+                                    preferences.reminderTime,
+                                  )
+                                : context.l10n.dailyReminderOff,
+                          ),
+                          value: preferences.notifications,
+                          onChanged: (value) async {
+                            if (value) {
+                              final state = await _permissions
+                                  .requestAfterUserIntent();
+                              if (!state.canSchedule || !mounted) return;
+                            }
+                            await _update(
+                              preferences.copyWith(notifications: value),
+                            );
+                          },
+                        ),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          enabled: preferences.notifications,
+                          leading: const Icon(Icons.schedule_outlined),
+                          title: Text(context.l10n.reminderTime),
+                          trailing: Text(preferences.reminderTime),
+                          onTap: preferences.notifications
+                              ? () => _chooseReminderTime(preferences)
+                              : null,
+                        ),
+                      ],
+                    ),
+                    _SettingsSection(
+                      key: const Key('settings-widget-section'),
+                      icon: Icons.widgets_outlined,
+                      title: context.l10n.widgetSettingsTitle,
+                      children: [
+                        FutureBuilder<bool>(
+                          future:
+                              widgetBridge?.hasInstalledWidgets() ??
+                              Future<bool>.value(false),
+                          builder: (context, snapshot) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(
+                              Icons.add_to_home_screen_rounded,
                             ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.chevron_right_rounded),
+                            title: Text(context.l10n.widgetSettingsTitle),
+                            subtitle: Text(
+                              snapshot.data == true
+                                  ? context.l10n.widgetStatusAdded
+                                  : context.l10n.widgetStatusNotAdded,
+                            ),
+                            trailing: const Icon(Icons.chevron_right_rounded),
+                            onTap: widgetBridge == null
+                                ? null
+                                : () => showWidgetManagementDialog(context),
+                          ),
+                        ),
+                      ],
+                    ),
+                    _SettingsSection(
+                      key: const Key('settings-updates-section'),
+                      icon: Icons.system_update_alt_rounded,
+                      title: context.l10n.updateSettingsEntry,
+                      children: [
+                        ListTile(
+                          key: const Key('update-center-entry'),
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.rocket_launch_outlined),
+                          title: Text(context.l10n.updateSettingsEntry),
+                          subtitle: Text(_updateSummary(context, updates)),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (updates.state.candidate != null)
+                                const Badge(
+                                  label: Text('1'),
+                                  child: Icon(Icons.new_releases_outlined),
+                                ),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.chevron_right_rounded),
+                            ],
+                          ),
+                          onTap: () => Navigator.of(
+                            context,
+                          ).pushNamed(AppRouteCodec.encode(AppRoute.updates)),
+                        ),
+                      ],
+                    ),
+                    _SettingsSection(
+                      key: const Key('settings-focus-section'),
+                      icon: Icons.center_focus_strong_outlined,
+                      title: context.l10n.focusAndAppLock,
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.lock_outline_rounded),
+                          title: Text(context.l10n.configureAppLock),
+                          subtitle: Text(context.l10n.configureAppLockBody),
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const AppLockScreen(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    _SettingsSection(
+                      key: const Key('settings-privacy-section'),
+                      icon: Icons.shield_outlined,
+                      title: context.l10n.privacyAndData,
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.smartphone_outlined),
+                          title: Text(context.l10n.localFirstTitle),
+                          subtitle: Text(context.l10n.localFirstBody),
+                        ),
+                        SwitchListTile.adaptive(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(context.l10n.recoverySupport),
+                          subtitle: Text(context.l10n.recoverySupportBody),
+                          value: preferences.showRecoverySupport,
+                          onChanged: (value) => _update(
+                            preferences.copyWith(showRecoverySupport: value),
+                          ),
+                        ),
+                        const Divider(),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.copy_all_outlined),
+                          title: Text(context.l10n.exportData),
+                          subtitle: Text(context.l10n.exportDataBody),
+                          onTap: _exportData,
+                        ),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.file_download_outlined),
+                          title: Text(context.l10n.importData),
+                          subtitle: Text(context.l10n.importDataBody),
+                          onTap: _importData,
+                        ),
+                      ],
+                    ),
+                    HabiterSurface(
+                      key: const Key('settings-advanced-section'),
+                      padding: EdgeInsets.zero,
+                      child: ExpansionTile(
+                        key: const Key('advanced-integrations'),
+                        leading: const Icon(Icons.tune_rounded),
+                        title: Text(context.l10n.advancedIntegrations),
+                        subtitle: Text(context.l10n.advancedIntegrationsBody),
+                        childrenPadding: const EdgeInsets.fromLTRB(
+                          16,
+                          0,
+                          16,
+                          12,
+                        ),
+                        children: [
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(context.l10n.classlyImport),
+                            subtitle: Text(context.l10n.trustedHttpsOnly),
+                            trailing: const Icon(Icons.chevron_right_rounded),
+                            onTap: _openClassly,
+                          ),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(context.l10n.experimentalAi),
+                            subtitle: Text(
+                              AIManager.isConfigured
+                                  ? context.l10n.remoteAiOn
+                                  : context.l10n.remoteAiOff,
+                            ),
+                            trailing: const Icon(Icons.chevron_right_rounded),
+                            onTap: () => showDialog<void>(
+                              context: context,
+                              builder: (_) => const AISetupDialog(),
+                            ),
+                          ),
                         ],
                       ),
-                      onTap: () => Navigator.of(
-                        context,
-                      ).pushNamed(AppRouteCodec.encode(AppRoute.updates)),
                     ),
                   ],
-                ),
-                _SettingsSection(
-                  icon: Icons.center_focus_strong_outlined,
-                  title: context.l10n.focusAndAppLock,
-                  children: [
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.lock_outline_rounded),
-                      title: Text(context.l10n.configureAppLock),
-                      subtitle: Text(context.l10n.configureAppLockBody),
-                      trailing: const Icon(Icons.chevron_right_rounded),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const AppLockScreen(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                _SettingsSection(
-                  icon: Icons.shield_outlined,
-                  title: context.l10n.privacyAndData,
-                  children: [
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.smartphone_outlined),
-                      title: Text(context.l10n.localFirstTitle),
-                      subtitle: Text(context.l10n.localFirstBody),
-                    ),
-                    SwitchListTile.adaptive(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(context.l10n.recoverySupport),
-                      subtitle: Text(context.l10n.recoverySupportBody),
-                      value: preferences.showRecoverySupport,
-                      onChanged: (value) => _update(
-                        preferences.copyWith(showRecoverySupport: value),
-                      ),
-                    ),
-                    const Divider(),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.copy_all_outlined),
-                      title: Text(context.l10n.exportData),
-                      subtitle: Text(context.l10n.exportDataBody),
-                      onTap: _exportData,
-                    ),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.file_download_outlined),
-                      title: Text(context.l10n.importData),
-                      subtitle: Text(context.l10n.importDataBody),
-                      onTap: _importData,
-                    ),
-                  ],
-                ),
-                HabiterSurface(
-                  padding: EdgeInsets.zero,
-                  child: ExpansionTile(
-                    key: const Key('advanced-integrations'),
-                    leading: const Icon(Icons.tune_rounded),
-                    title: Text(context.l10n.advancedIntegrations),
-                    subtitle: Text(context.l10n.advancedIntegrationsBody),
-                    childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                    children: [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(context.l10n.classlyImport),
-                        subtitle: Text(context.l10n.trustedHttpsOnly),
-                        trailing: const Icon(Icons.chevron_right_rounded),
-                        onTap: _openClassly,
-                      ),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(context.l10n.experimentalAi),
-                        subtitle: Text(
-                          AIManager.isConfigured
-                              ? context.l10n.remoteAiOn
-                              : context.l10n.remoteAiOff,
-                        ),
-                        trailing: const Icon(Icons.chevron_right_rounded),
-                        onTap: () => showDialog<void>(
-                          context: context,
-                          builder: (_) => const AISetupDialog(),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             ),
@@ -465,6 +489,7 @@ String _updateSummary(BuildContext context, UpdateController controller) =>
 
 class _SettingsSection extends StatelessWidget {
   const _SettingsSection({
+    super.key,
     required this.icon,
     required this.title,
     required this.children,

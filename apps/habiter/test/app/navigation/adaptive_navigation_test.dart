@@ -65,7 +65,7 @@ void main() {
   testWidgets('content state survives bottom-navigation and rail changes', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(700, 800);
+    tester.view.physicalSize = const Size(700, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -77,12 +77,12 @@ void main() {
     await tester.pump();
     expect(find.text('Count 1'), findsOneWidget);
 
-    tester.view.physicalSize = const Size(900, 800);
+    tester.view.physicalSize = const Size(1000, 700);
     await tester.pump();
     expect(find.byType(NavigationRail), findsOneWidget);
     expect(find.text('Count 1'), findsOneWidget);
 
-    tester.view.physicalSize = const Size(700, 800);
+    tester.view.physicalSize = const Size(700, 1000);
     await tester.pump();
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.text('Count 1'), findsOneWidget);

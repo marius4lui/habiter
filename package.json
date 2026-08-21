@@ -9,6 +9,7 @@
     "release:validate": "pnpm --filter @habiter/release-core validate",
     "release:test": "pnpm --filter @habiter/release-core test",
     "release:notes": "pnpm --filter @habiter/release-core notes",
+    "sync:check": "pnpm --filter @habiter/sync-core check",
     "website:dev": "pnpm --filter @habiter/website dev",
     "website:build": "pnpm --filter @habiter/website build",
     "website:typecheck": "pnpm --filter @habiter/website typecheck",

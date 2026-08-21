@@ -6,6 +6,11 @@ and is shared by clients and storage adapters. Backend, HTTP, authentication,
 and Flutter orchestration code must not replace these rules with adapter-local
 conflict behavior.
 
+`@habiter/sync-core` is the authoritative TypeScript service implementation
+used by both SQLite and D1. The pure-Dart client mirror uses the same wire and
+merge rules for offline application behavior; backend adapters must import the
+TypeScript package instead of reimplementing convergence.
+
 ## Logical identity and ordering
 
 Every installation owns a stable, random, URL-safe device ID and a durable

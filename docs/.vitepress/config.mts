@@ -74,6 +74,12 @@ export default defineConfig({
           text: 'Developer Guide',
           items: [
             { text: 'Architecture', link: '/dev/architecture' },
+            { text: 'Agent Workflows', link: '/dev/agent-workflows/' },
+            { text: 'Agent Modes', link: '/dev/agent-workflows/modes' },
+            { text: 'Issue Trigger', link: '/dev/agent-workflows/issue-trigger' },
+            { text: 'Change Playbooks', link: '/dev/agent-workflows/playbooks' },
+            { text: 'Execution Checklists', link: '/dev/agent-workflows/checklists' },
+            { text: 'Handoffs and Evidence', link: '/dev/agent-workflows/handoffs' },
             { text: 'Branch Workflow', link: '/dev/branches' },
             { text: 'State Management', link: '/dev/state' },
             { text: 'Services', link: '/dev/services' },

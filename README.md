@@ -285,7 +285,9 @@ The [mobile UX system](docs/mobile-ux-system.md) documents the product hierarchy
 
 Issues and focused pull requests are welcome. Before opening a change, run the relevant local checks above and keep application, Worker, release-core, website, and documentation changes logically separated.
 
-Create branches using the purpose-based `<type>/<short-description>` convention described in the [branch workflow](docs/dev/branches.md). Tool or agent prefixes such as `codex/` and `claude/` are not allowed.
+Every contributor and AI agent follows the [agent workflows](docs/dev/agent-workflows/index.md): select a flow, plan reviewable batches, commit each completed batch locally, and report validation honestly. The compact mandatory entry point for agents is [AGENTS.md](AGENTS.md); detailed rules are maintained in the developer documentation.
+
+Create branches using the purpose-based `<type>/<short-description>` convention described in the [branch workflow](docs/dev/branches.md). `main` can be updated only by a pull-request merge or by a task-specific direct-push confirmation from the owner. Pushes, pull requests, merges, releases, and deployments require explicit authorization.
 
 For larger changes, describe the user problem and migration impact first so behavior and data compatibility can be reviewed alongside the implementation. Documentation changes should follow the [documentation guide](docs/dev/documentation.md).
 

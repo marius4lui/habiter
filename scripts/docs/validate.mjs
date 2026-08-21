@@ -197,12 +197,47 @@ for (const link of [
   "/api/backup-format",
   "/dev/platform-contracts",
   "/dev/testing",
+  "/dev/agent-workflows/issue-trigger",
   "/guide/data-and-privacy",
   "/guide/reminders",
   "/guide/updates",
 ]) {
   assert.ok(vitePressConfig.includes(link), `VitePress navigation is missing ${link}.`);
 }
+
+const agentInstructions = await readFile(new URL("AGENTS.md", root), "utf8");
+assert.match(
+  agentInstructions,
+  /!issue[\s\S]*issue-trigger contract/,
+  "AGENTS.md must route !issue commands to the issue-trigger contract.",
+);
+
+const issueTrigger = await readFile(
+  new URL("docs/dev/agent-workflows/issue-trigger.md", root),
+  "utf8",
+);
+for (const requiredRule of [
+  "--workspace=auto|worktree|repo",
+  "--goal=auto|on|off",
+  "--mode=implement|plan",
+  "--deliver=none|push|pr",
+  "Fail-closed conditions",
+]) {
+  assert.ok(
+    issueTrigger.includes(requiredRule),
+    `The issue-trigger contract is missing ${requiredRule}.`,
+  );
+}
+
+const checklists = await readFile(
+  new URL("docs/dev/agent-workflows/checklists.md", root),
+  "utf8",
+);
+assert.match(
+  checklists,
+  /## `!issue` trigger/,
+  "Execution checklists must include the !issue trigger.",
+);
 
 const readme = await readFile(new URL("README.md", root), "utf8");
 assert.doesNotMatch(

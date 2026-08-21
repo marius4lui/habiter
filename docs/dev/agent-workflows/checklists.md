@@ -19,6 +19,16 @@ Use the smallest checklist that covers the current mode and flow. Checklists mak
 - [ ] For a plan, define acceptance, validation, rollback, and batch outcomes.
 - [ ] Stop for owner input when a decision changes scope, user behavior, security, cost, or delivery authority.
 
+## `!issue` trigger
+
+- [ ] Parse the issue number and every option exactly; reject unknown or conflicting options.
+- [ ] Read the issue through `gh`, verify it is open, and record title, labels, acceptance criteria, and URL.
+- [ ] Resolve `workspace=auto|worktree|repo` through the [issue-trigger contract](/dev/agent-workflows/issue-trigger).
+- [ ] Resolve `goal=auto|on|off`; record the Goal identifier or the explicit Non-Goal fallback reason.
+- [ ] Select flow and branch type from evidence; Yeet is never automatic.
+- [ ] Print the issue execution record before editing.
+- [ ] Treat `deliver=none` as the default. Deliver only the exact remote action authorized by the parsed option.
+
 ## Diagnose or Review
 
 - [ ] State expected and actual behavior.

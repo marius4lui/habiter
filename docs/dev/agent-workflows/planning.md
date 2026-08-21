@@ -11,7 +11,7 @@ Planning turns a request into independently reviewable outcomes before implement
 | Cross-layer, migration, security, release, or more than three batches | A written plan with risks, dependencies, rollback, validation, and a batch ledger. |
 | Owner-specified batch count | A written ledger with exactly that many numbered batches and one commit per batch. |
 
-Plans are durable decision records, not agent transcripts. Keep ephemeral reasoning in the task or pull request. Commit a plan under `docs/plans/` only when the owner requests a repository-visible plan or when it documents a lasting technical decision.
+Plans are durable decision records, not agent transcripts. Keep ephemeral reasoning, execution ledgers, and handoffs in the task or pull request; published `docs/` must not contain them. Commit a repository-visible technical decision only in an approved non-published planning location.
 
 ## Plan template
 

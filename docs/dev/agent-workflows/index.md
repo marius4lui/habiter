@@ -47,6 +47,7 @@ The branch naming and cleanup mechanics are maintained in the [branch workflow](
 | Design a multi-step change | [Planning](/dev/agent-workflows/planning) |
 | Split work and create commits | [Batches and commits](/dev/agent-workflows/batches) |
 | Choose Standard, Yeet, Hotfix, or Release | [Delivery flows](/dev/agent-workflows/flows) |
+| Start a GitHub issue from `!issue` | [Issue trigger](/dev/agent-workflows/issue-trigger) |
 | Start a common type of development task | [Change playbooks](/dev/agent-workflows/playbooks) |
 | Transfer work without losing evidence | [Handoffs](/dev/agent-workflows/handoffs) |
 | Execute a task reliably | [Checklists](/dev/agent-workflows/checklists) |

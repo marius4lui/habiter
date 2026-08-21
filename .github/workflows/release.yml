@@ -297,8 +297,12 @@ jobs:
         env:
           VERSION: ${{ needs.validate.outputs.version }}
         run: |
-          sh -n scripts/install/install.sh
+          sh -n scripts/install/install.sh scripts/install/uninstall.sh
           sh scripts/install/test/install-sh.test.sh
+          sh scripts/install/test/uninstall-sh.test.sh
+          sh scripts/install/test/uninstall-sh-lifecycle.test.sh
+          node scripts/release/sync-worker-data.mjs --installers-only
+          git diff --exit-code -- apps/release-api/src/generated/installers.json
           pnpm --filter @habiter/release-api types
           pnpm --filter @habiter/release-api check
           jq --exit-status --arg version "$VERSION" '

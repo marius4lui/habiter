@@ -5,6 +5,7 @@ DRY_RUN=0
 VERBOSE=0
 SYSTEM_ONLY=0
 INSTALL_DIR=
+CONFIRM_TARGET=
 PHASE=startup
 UNINSTALL_ID="$(date +%s 2>/dev/null || printf 0)-$$"
 MANIFEST_NAME=.habiter-install.json
@@ -16,6 +17,10 @@ SELECTED_VERSION=unknown
 SELECTED_LEGACY=0
 SELECTED_INTEGRATIONS=
 MISSING_INTEGRATIONS=
+STAGED_COUNT=0
+STAGED_ORIGINAL_1= STAGED_QUARANTINE_1=
+STAGED_ORIGINAL_2= STAGED_QUARANTINE_2=
+STAGED_ORIGINAL_3= STAGED_QUARANTINE_3=
 
 say() { printf '%s\n' "$*"; }
 debug() { [ "$VERBOSE" -eq 0 ] || printf '      %s\n' "$*"; }
@@ -30,7 +35,7 @@ fail() {
 usage() {
   say 'Habiter desktop uninstaller'
   say 'Usage: uninstall.sh [--dry-run] [--verbose] [--no-color] [--system]'
-  say '                    [--install-dir PATH] [--help]'
+  say '                    [--install-dir PATH] [--confirm-target CHALLENGE] [--help]'
   say ''
   say 'Download and review this repository-backed script before running it.'
 }
@@ -43,10 +48,12 @@ parse_args() {
       --no-color) NO_COLOR=1; export NO_COLOR; shift ;;
       --system) SYSTEM_ONLY=1; shift ;;
       --install-dir) [ "$#" -ge 2 ] || fail HAB-UNIX-001 '--install-dir requires an exact path' 'Pass the selected installation root.' 2; INSTALL_DIR=$2; shift 2 ;;
+      --confirm-target) [ "$#" -ge 2 ] || fail HAB-UNIX-004 '--confirm-target requires the full typed challenge' 'Pass the exact challenge printed by --dry-run.' 2; CONFIRM_TARGET=$2; shift 2 ;;
       --help|-h) usage; exit 0 ;;
       *) fail HAB-UNIX-002 "unknown option: $1" 'Run with --help to list supported options.' 2 ;;
     esac
   done
+  [ -z "$CONFIRM_TARGET" ] || [ -n "$INSTALL_DIR" ] || fail HAB-UNIX-005 '--confirm-target requires --install-dir' 'Automation must name one exact installation.' 2
 }
 
 detect_system() {
@@ -273,6 +280,109 @@ print_plan() {
   say '      Application data: preserved'
   say '      Backups, exports, credentials, and OS backups: preserved'
   [ "$SELECTED_LEGACY" -eq 0 ] || say '      Warning: legacy installation without an ownership manifest'
+  say "      Confirmation challenge: UNINSTALL HABITER $SELECTED_ROOT"
+}
+
+check_running() {
+  PHASE=check-running-processes
+  if [ "${HABITER_TEST_RUNNING:-0}" = 1 ]; then running=fixture
+  elif command -v pgrep >/dev/null 2>&1; then running=$(pgrep -f -- "$SELECTED_EXECUTABLE" 2>/dev/null || true)
+  else running=$(ps -eo pid=,args= 2>/dev/null | awk -v target="$SELECTED_EXECUTABLE" 'index($0,target) { print $1 }' || true)
+  fi
+  [ -z "$running" ] || fail HAB-UNIX-071 'Habiter is still running' 'Close Habiter normally, then rerun the same reviewed plan.' 71
+  say '      Not running'
+}
+
+confirm_removal() {
+  PHASE=confirm-removal
+  challenge="UNINSTALL HABITER $SELECTED_ROOT"
+  if [ -n "$CONFIRM_TARGET" ]; then
+    [ "$CONFIRM_TARGET" = "$challenge" ] || fail HAB-UNIX-072 'automation challenge does not match the canonical target' 'Copy the exact challenge from --dry-run.' 72
+    say '      Exact non-interactive target and challenge accepted'
+    return
+  fi
+  if [ "${HABITER_TEST_NO_TTY:-0}" = 1 ]; then
+    [ "${HABITER_UNINSTALL_TEST:-0}" = 1 ] || fail HAB-UNIX-073 'test terminal override is disabled' 'Use an interactive terminal.' 73
+    fail HAB-UNIX-073 'an interactive terminal is required' 'For automation, pass both --install-dir and --confirm-target.' 73
+  elif [ -n "${HABITER_TEST_CONFIRM_FILE:-}" ]; then
+    [ "${HABITER_UNINSTALL_TEST:-0}" = 1 ] || fail HAB-UNIX-073 'test confirmation input is disabled' 'Use an interactive terminal.' 73
+    exec 3< "$HABITER_TEST_CONFIRM_FILE" || fail HAB-UNIX-073 'cannot open confirmation input' 'No files were changed.' 73
+  else
+    exec 3< /dev/tty 2>/dev/null || fail HAB-UNIX-073 'an interactive terminal is required' 'For automation, pass both --install-dir and --confirm-target.' 73
+  fi
+  printf 'Continue with this exact removal plan? [y/N] ' >&2
+  IFS= read -r answer <&3 || fail HAB-UNIX-074 'confirmation input closed before approval' 'No files were changed.' 74
+  case "$answer" in y|Y) ;; *) fail HAB-UNIX-075 'uninstall cancelled at the first confirmation' 'No files were changed.' 75 ;; esac
+  printf 'Type %s: ' "$challenge" >&2
+  IFS= read -r typed <&3 || fail HAB-UNIX-076 'confirmation input closed before the typed challenge' 'No files were changed.' 76
+  [ "$typed" = "$challenge" ] || fail HAB-UNIX-077 'typed challenge did not match the canonical target' 'No files were changed.' 77
+  exec 3<&-
+}
+
+remember_stage() {
+  original=$1 quarantine=$2
+  STAGED_COUNT=$((STAGED_COUNT + 1))
+  case "$STAGED_COUNT" in
+    1) STAGED_ORIGINAL_1=$original STAGED_QUARANTINE_1=$quarantine ;;
+    2) STAGED_ORIGINAL_2=$original STAGED_QUARANTINE_2=$quarantine ;;
+    3) STAGED_ORIGINAL_3=$original STAGED_QUARANTINE_3=$quarantine ;;
+    *) fail HAB-UNIX-080 'removal plan exceeded the bounded staging ledger' 'No additional target was moved.' 80 ;;
+  esac
+}
+
+stage_path() {
+  original=$1
+  quarantine=$original.habiter-uninstall-$UNINSTALL_ID
+  [ ! -e "$quarantine" ] && [ ! -L "$quarantine" ] || fail HAB-UNIX-081 "quarantine already exists: $quarantine" 'Review the previous recovery state; nothing was overwritten.' 81
+  next=$((STAGED_COUNT + 1))
+  [ "${HABITER_TEST_FAIL_STAGE_AT:-0}" != "$next" ] || fail HAB-UNIX-082 "injected staging failure before: $original" 'The staged targets will be restored.' 82
+  mv -- "$original" "$quarantine" || fail HAB-UNIX-083 "cannot move target to quarantine: $original" 'Check permissions; already staged targets will be restored.' 83
+  remember_stage "$original" "$quarantine"
+}
+
+restore_one() {
+  original=$1 quarantine=$2
+  [ -n "$quarantine" ] || return 0
+  if [ -e "$quarantine" ] || [ -L "$quarantine" ]; then
+    if [ -e "$original" ] || [ -L "$original" ]; then printf '  Recovery warning: preserved quarantine because the original path reappeared: %s\n' "$quarantine" >&2
+    elif mv -- "$quarantine" "$original"; then printf '  Restored: %s\n' "$original" >&2
+    else printf '  Recovery warning: left in quarantine: %s\n' "$quarantine" >&2; fi
+  else printf '  Already finalized: %s\n' "$original" >&2; fi
+}
+
+restore_staged() {
+  [ "$STAGED_COUNT" -gt 0 ] || return 0
+  printf 'Recovery summary:\n' >&2
+  [ "$STAGED_COUNT" -lt 3 ] || restore_one "$STAGED_ORIGINAL_3" "$STAGED_QUARANTINE_3"
+  [ "$STAGED_COUNT" -lt 2 ] || restore_one "$STAGED_ORIGINAL_2" "$STAGED_QUARANTINE_2"
+  restore_one "$STAGED_ORIGINAL_1" "$STAGED_QUARANTINE_1"
+}
+
+cleanup_on_exit() {
+  status=$?
+  trap - EXIT HUP INT TERM
+  [ "$status" -eq 0 ] || restore_staged
+  exit "$status"
+}
+
+finalize_one() {
+  quarantine=$1 original=$2
+  [ "${HABITER_TEST_FAIL_FINALIZE_AT:-0}" != "$original" ] || fail HAB-UNIX-084 "injected finalization failure: $original" 'Recoverable quarantine paths are listed below.' 84
+  rm -rf -- "$quarantine" || fail HAB-UNIX-085 "cannot finalize quarantined target: $quarantine" 'Recoverable quarantine paths are listed below.' 85
+}
+
+remove_selected() {
+  PHASE=stage-removal
+  old_ifs=$IFS; IFS='
+'
+  for path in $SELECTED_INTEGRATIONS; do [ -z "$path" ] || stage_path "$path"; done
+  IFS=$old_ifs
+  stage_path "$SELECTED_ROOT"
+  PHASE=finalize-removal
+  [ "$STAGED_COUNT" -lt 1 ] || finalize_one "$STAGED_QUARANTINE_1" "$STAGED_ORIGINAL_1"
+  [ "$STAGED_COUNT" -lt 2 ] || finalize_one "$STAGED_QUARANTINE_2" "$STAGED_ORIGINAL_2"
+  [ "$STAGED_COUNT" -lt 3 ] || finalize_one "$STAGED_QUARANTINE_3" "$STAGED_ORIGINAL_3"
+  STAGED_COUNT=0
 }
 
 main() {
@@ -280,10 +390,18 @@ main() {
   say 'Habiter uninstaller'; say ''
   say '[1/7] Detecting installations'; detect_system; discover
   say '[2/7] Verifying ownership'; say "      Verified: $SELECTED_ROOT"
-  say '[3/7] Checking running processes'; say '      Deferred until the final removal gate'
+  say '[3/7] Checking running processes'; check_running
   print_plan
   if [ "$DRY_RUN" -eq 1 ]; then say '[5/7] Dry run'; say '      No files or settings were changed.'; say '[6/7] Removal skipped'; say '[7/7] Done'; exit 0; fi
-  fail HAB-UNIX-070 'removal is unavailable until the transactional confirmation gate is active' 'Run with --dry-run; no files were changed.' 70
+  say '[5/7] Confirming removal'; confirm_removal
+  say '[6/7] Removing and verifying'; remove_selected
+  say '[7/7] Done'
+  say "      Removed application: $SELECTED_ROOT"
+  say '      Application data, backups, exports, credentials, and OS backups: preserved'
 }
 
-[ "${HABITER_TEST_MODE:-}" = functions ] || main "$@"
+if [ "${HABITER_TEST_MODE:-}" != functions ]; then
+  trap cleanup_on_exit EXIT
+  trap 'exit 130' HUP INT TERM
+  main "$@"
+fi

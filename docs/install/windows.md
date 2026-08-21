@@ -57,21 +57,32 @@ Confirm the extracted directory contains `habiter.exe`, DLLs, and `data`; do not
 
 Rerun the recommended installer. It verifies and stages the new bundle before moving the previous install aside, and restores the previous directory if replacement fails. A repeated installation of the same release is safe.
 
-## Uninstall
+## Uninstall safely
 
-Close Habiter, then remove installer-owned files and the exact user PATH entry:
+Download the maintained script, inspect it, and preview the complete plan:
 
 ```powershell
-$root = Join-Path $env:LOCALAPPDATA 'Programs\Habiter'
-$bin = Join-Path $root 'bin'
-$path = [Environment]::GetEnvironmentVariable('Path', 'User')
-$clean = (($path -split ';' | Where-Object { $_ -and $_ -ne $bin }) -join ';')
-[Environment]::SetEnvironmentVariable('Path', $clean, 'User')
-Remove-Item "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Habiter.lnk" -Force -ErrorAction SilentlyContinue
-Remove-Item $root -Recurse -Force
+$script = Join-Path $env:TEMP 'habiter-uninstall.ps1'
+Invoke-WebRequest https://get.habiter.dev/uninstall.ps1 -OutFile $script
+Get-Content $script
+powershell.exe -NoProfile -File $script -DryRun -VerboseOutput
 ```
 
-This does not remove local Habiter data. Review/export it separately.
+If the candidate, canonical root, version, ownership evidence, Start Menu shortcut, and PATH entry are correct, run the same downloaded file without `-DryRun`. Interactive removal first asks `Continue with this exact removal plan? [y/N]`, then requires the printed `UNINSTALL HABITER <canonical-path>` challenge. Blank input, EOF, redirected input, a mismatch, or a running `habiter.exe` stops before mutation; the script never kills the process or bypasses permissions.
+
+Use `-System` for `%ProgramFiles%\Habiter`, or `-InstallDir 'C:\exact\custom\Habiter'` for one explicit custom installation. Zero candidates exit unchanged. Multiple candidates or conflicting ownership signals abort until one exact `-InstallDir` is selected. A malformed, unsupported, redirected, or path-escaping manifest is rejected. Legacy installs require the expected executable, matching Start Menu shortcut, and matching `bin\habiter.cmd`, and are marked with an extra warning.
+
+Automation is deliberately target-bound: provide both `-InstallDir` and `-ConfirmTarget 'UNINSTALL HABITER C:\exact\canonical\path'`. A generic `-Force` is unsupported and cannot authorize an auto-discovered target.
+
+The uninstaller stages the verified application and owned shortcut beside their original locations, restores them and the original user PATH when staging/finalization fails where recovery is still possible, and never overwrites an existing quarantine. Its error includes a stable `HAB-UNWIN-NNN` code, phase, recovery instruction, and Uninstall ID.
+
+Normal uninstall preserves databases, preferences, reminders, credentials, backups, exports, clipboard history, and operating-system backups. Export a backup before making a separate data-removal decision; this first version exposes no data-deletion flag.
+
+### Manual fallback after script failure
+
+Use a manual fallback only after the script has identified the exact blocker. Inspect `.habiter-install.json`, resolve the root with `[IO.Path]::GetFullPath`, reject drive/profile/`Program Files`/`%LOCALAPPDATA%\Programs` roots and every reparse point, verify that `executable` is exactly `<root>\habiter.exe`, inspect the `.lnk` target through `WScript.Shell`, and compare the exact normalized `bin` component in the user PATH. Preserve any mismatch.
+
+After those checks, rename each verified literal target to a unique adjacent quarantine first. Delete the quarantine only after every rename succeeds; never use a wildcard or an unresolved variable. Do not remove parent directories, unrelated PATH entries, or application data. If any check is unclear, reinstall Habiter to recreate the manifest and rerun the maintained uninstaller instead of guessing.
 
 ## SmartScreen and signing
 

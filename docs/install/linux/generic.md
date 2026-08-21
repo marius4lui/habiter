@@ -24,15 +24,9 @@ The advanced `.tar.gz` release is a complete Flutter bundle: `habiter`, `lib/`, 
 
 ## Update and uninstall
 
-Rerun the installer to update. To remove installer-owned files:
+Rerun the installer to update. To uninstall, download and review `https://get.habiter.dev/uninstall.sh`, run `sh /tmp/habiter-uninstall.sh --dry-run --verbose`, then run the same reviewed file without `--dry-run` only after its exact plan is correct. Use `--system` or one exact `--install-dir` when applicable.
 
-```sh
-rm -f "$HOME/.local/bin/habiter"
-rm -f "$HOME/.local/share/applications/dev.habiter.Habiter.desktop"
-rm -rf "$HOME/.local/opt/habiter"
-```
-
-This intentionally preserves local application data.
+The uninstaller requires two confirmations, refuses ambiguous, malformed, redirected, unowned, broad, or running targets, stages removal for recovery, and preserves all application data. See the [complete Linux uninstall, automation, failure, and manual fallback contract](/install/linux/#uninstall-safely).
 
 ## Troubleshooting
 

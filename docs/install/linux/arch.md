@@ -24,13 +24,9 @@ Review current package metadata with `pacman -Si PACKAGE`. Avoid replacing offic
 
 Query `https://get.habiter.dev/api/v1/install/linux/x64?channel=stable&distro=arch`, download only its HTTPS artifact URL, compare the response SHA-256 with `sha256sum`, then install the executable AppImage to `~/.local/opt/habiter/Habiter.AppImage`. Rerun the repository installer to update atomically.
 
-```sh
-rm -f "$HOME/.local/bin/habiter"
-rm -f "$HOME/.local/share/applications/dev.habiter.Habiter.desktop"
-rm -rf "$HOME/.local/opt/habiter"
-```
+For uninstall, download and review `https://get.habiter.dev/uninstall.sh`, run `sh /tmp/habiter-uninstall.sh --dry-run --verbose`, then run the same reviewed file without `--dry-run` only after its exact plan is correct. Use `--system` or one exact `--install-dir` when applicable.
 
-These commands retain local Habiter data.
+The uninstaller requires two confirmations, refuses ambiguous, malformed, redirected, unowned, broad, or running targets, stages removal for recovery, and preserves all application data. See the [complete Linux uninstall, automation, failure, and manual fallback contract](/install/linux/#uninstall-safely).
 
 ## AppImage/FUSE and dynamic libraries
 

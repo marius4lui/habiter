@@ -280,6 +280,7 @@
   "stepOf": "Step {step} of {total}",
   "@stepOf": {"placeholders": {"step": {"type": "int"}, "total": {"type": "int"}}},
   "scheduleRequired": "Choose at least one day.",
+  "scheduleUnavailable": "Schedule unavailable",
   "reminderTimeRequired": "Choose a reminder time or turn reminders off.",
   "optional": "Optional",
   "analyticsTitle": "Your rhythm",

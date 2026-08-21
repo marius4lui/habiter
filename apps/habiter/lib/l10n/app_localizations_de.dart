@@ -637,6 +637,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get scheduleRequired => 'Wähle mindestens einen Tag.';
 
   @override
+  String get scheduleUnavailable => 'Zeitplan nicht verfügbar';
+
+  @override
   String get reminderTimeRequired =>
       'Wähle eine Uhrzeit oder schalte Erinnerungen aus.';
 

@@ -58,6 +58,28 @@ void main() {
     expect(find.byType(HabitDetailDialog), findsOneWidget);
   });
 
+  testWidgets(
+    'hero renders a stable custom schedule without implementation text',
+    (tester) async {
+      final custom = await _Fixture.withSchedule(
+        frequency: HabitFrequency.custom,
+        targetCount: 1,
+        customDays: const <int>[1, 3, 5],
+      );
+      addTearDown(custom.dispose);
+      await tester.pumpWidget(custom.app());
+      await tester.pumpAndSettle();
+
+      final schedule = tester.widget<Text>(
+        find.byKey(const Key('latest-habit-schedule')),
+      );
+      expect(schedule.data, '1 on 3 days');
+      expect(schedule.data, isNot(contains('Closure')));
+      expect(schedule.data, isNot(contains('Function')));
+      expect(schedule.data, isNot(contains('onDays')));
+    },
+  );
+
   testWidgets('top controls use the same destination callback as the wheel', (
     tester,
   ) async {
@@ -176,6 +198,29 @@ final class _Fixture {
       );
       await provider.archiveHabit(archivedId);
     }
+    return _Fixture(provider, SettingsProvider());
+  }
+
+  static Future<_Fixture> withSchedule({
+    required HabitFrequency frequency,
+    required int targetCount,
+    List<int>? customDays,
+  }) async {
+    final provider = HabitProvider(
+      repository: KeyValueHabitRepository(InMemoryKeyValueStore()),
+      lifecycleReminders: const _NoLifecycleReminders(),
+      clock: FakeClock(DateTime(2026, 8, 20, 12)),
+    );
+    await provider.load();
+    await provider.addHabit(
+      name: 'Training',
+      category: 'Health',
+      frequency: frequency,
+      targetCount: targetCount,
+      customDays: customDays,
+      color: '#6B8E7A',
+      icon: '🏋️',
+    );
     return _Fixture(provider, SettingsProvider());
   }
 

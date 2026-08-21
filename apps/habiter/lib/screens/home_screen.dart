@@ -10,6 +10,7 @@ import '../core/design_system/haptics.dart';
 import '../core/time/local_date.dart';
 import '../features/home/application/habit_hub_model.dart';
 import '../features/home/presentation/habit_navigation_wheel.dart';
+import '../features/habits/presentation/habit_schedule_label.dart';
 import '../features/history/presentation/habit_lifecycle_panel.dart';
 import '../features/today/application/today_query.dart';
 import '../l10n/l10n.dart';
@@ -475,6 +476,17 @@ class _LatestHabitHero extends StatelessWidget {
                     height: .98,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -1.6,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  localizedHabitSchedule(context.l10n, habit),
+                  key: const Key('latest-habit-schedule'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: foreground.withValues(alpha: .68),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],

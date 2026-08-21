@@ -2,6 +2,7 @@ package com.habiter.app.widget
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -13,9 +14,10 @@ import androidx.glance.action.Action
 import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.SizeMode
-import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.action.actionRunCallback
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
@@ -31,11 +33,11 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
+import androidx.glance.semantics.contentDescription
+import androidx.glance.semantics.semantics
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import androidx.glance.semantics.contentDescription
-import androidx.glance.semantics.semantics
 import com.habiter.app.MainActivity
 import es.antonborri.home_widget.HomeWidgetGlanceState
 import es.antonborri.home_widget.HomeWidgetGlanceStateDefinition
@@ -59,12 +61,18 @@ class HabiterWidget : GlanceAppWidget() {
     )
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        val widgetId = GlanceAppWidgetManager(context).getAppWidgetId(id)
+        val configuration = HabiterWidgetConfigurationRepository.read(context, widgetId)
         provideContent {
             val homeWidgetState = currentState<HomeWidgetGlanceState>()
             val content = HabiterWidgetStateRepository.read(homeWidgetState.preferences)
             val size = LocalSize.current
-            val layout = HabiterWidgetLayout.forSize(size.width.value.toInt(), size.height.value.toInt())
-            WidgetSurface(context, content, layout)
+            val layout = HabiterWidgetLayout.forSize(
+                size.width.value.toInt(),
+                size.height.value.toInt(),
+            )
+            val presentation = HabiterWidgetProjector.project(content, configuration, layout)
+            WidgetSurface(context, presentation, layout)
         }
     }
 }
@@ -72,32 +80,103 @@ class HabiterWidget : GlanceAppWidget() {
 @Composable
 private fun WidgetSurface(
     context: Context,
-    content: HabiterWidgetContentState,
+    presentation: HabiterWidgetPresentation,
     layout: HabiterWidgetLayout,
 ) {
+    val effective = presentation.effective
+    val colors = HabiterWidgetTheme.colorsFor(effective)
+    val state = presentation.content.stateOrNull
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(HabiterWidgetTheme.surface)
-            .cornerRadius(24.dp)
-            .clickable(onClick = launchHabiter(context)),
+            .background(colors.surface)
+            .cornerRadius((effective.cornerRadius ?: 24.0).toInt().dp)
+            .clickable(
+                onClick = launchAction(
+                    context,
+                    effective.interactions.background,
+                    state?.nextHabit,
+                ),
+            ),
     ) {
-        when (content) {
-            HabiterWidgetContentState.Missing -> EmptyState(layout, java.util.Locale.getDefault().language == "de", "Open Habiter to get started.", "Habiter öffnen, um zu starten.")
-            is HabiterWidgetContentState.Stale -> EmptyState(layout, content.state?.isGerman ?: (java.util.Locale.getDefault().language == "de"), "Open Habiter to sync.", "Öffne Habiter zum Synchronisieren.")
-            is HabiterWidgetContentState.NoHabits -> EmptyState(layout, content.state.isGerman, "Your first habit is waiting.", "Dein erstes Habit wartet.")
-            is HabiterWidgetContentState.FreeToday -> EmptyState(layout, content.state.isGerman, "🍃 Today is free.", "🍃 Heute ist frei.")
-            is HabiterWidgetContentState.AllComplete -> CompletedState(content.state, layout)
-            is HabiterWidgetContentState.JustCompleted -> JustCompletedState(content.state, layout)
-            is HabiterWidgetContentState.Active -> ActiveState(content.state, layout)
+        when (val content = presentation.content) {
+            HabiterWidgetContentState.Missing -> EmptyState(
+                layout,
+                effective,
+                colors,
+                java.util.Locale.getDefault().language == "de",
+                EmptyKind.MISSING,
+            )
+            is HabiterWidgetContentState.Stale -> EmptyState(
+                layout,
+                effective,
+                colors,
+                content.state?.isGerman ?: (java.util.Locale.getDefault().language == "de"),
+                EmptyKind.STALE,
+            )
+            is HabiterWidgetContentState.NoHabits -> EmptyState(
+                layout,
+                effective,
+                colors,
+                content.state.isGerman,
+                EmptyKind.NO_HABITS,
+            )
+            is HabiterWidgetContentState.FreeToday -> EmptyState(
+                layout,
+                effective,
+                colors,
+                content.state.isGerman,
+                EmptyKind.FREE_TODAY,
+            )
+            is HabiterWidgetContentState.AllComplete -> CompletedState(
+                content.state,
+                layout,
+                effective,
+                colors,
+            )
+            is HabiterWidgetContentState.JustCompleted -> JustCompletedState(
+                context,
+                content.state,
+                layout,
+                effective,
+                colors,
+            )
+            is HabiterWidgetContentState.Active -> ActiveState(
+                context,
+                content.state,
+                layout,
+                effective,
+                colors,
+            )
         }
     }
 }
 
-private fun launchHabiter(context: Context): Action {
+private fun launchAction(
+    context: Context,
+    mapping: HabiterWidgetBackgroundAction,
+    nextHabit: HabiterWidgetHabit?,
+): Action = when (mapping) {
+    HabiterWidgetBackgroundAction.NEXT_HABIT -> launchHabiter(context, nextHabit?.id)
+    HabiterWidgetBackgroundAction.TODAY -> launchHabiter(context, openToday = true)
+    HabiterWidgetBackgroundAction.APP -> launchHabiter(context)
+}
+
+private fun launchHabiter(
+    context: Context,
+    habitId: String? = null,
+    openToday: Boolean = false,
+): Action {
     val intent = Intent(context, MainActivity::class.java).apply {
         action = HomeWidgetLaunchIntent.HOME_WIDGET_LAUNCH_ACTION
         flags = habiterWidgetLaunchFlags
+        data = when {
+            habitId != null -> Uri.parse("habiter://habit/$habitId")
+            openToday -> Uri.parse("habiter://today")
+            else -> Uri.parse("habiter://app")
+        }
+        habitId?.let { putExtra("openHabitId", it) }
+        putExtra("openToday", openToday)
     }
     return actionStartActivity(intent)
 }
@@ -106,275 +185,324 @@ internal val habiterWidgetLaunchFlags =
     Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
 
 @Composable
-private fun JustCompletedState(state: HabiterWidgetState, layout: HabiterWidgetLayout) {
-    val completion = state.lastCompletion ?: return
-    val completionLayout = HabiterWidgetCompletionLayout.forLayout(layout)
-    val action = actionRunCallback<HabiterWidgetUndoActionCallback>(
-        actionParametersOf(
-            HabiterWidgetAction.habitIdKey to completion.habitId,
-            HabiterWidgetAction.localDateKey to state.localDate,
-            HabiterWidgetAction.sourceActionIdKey to completion.actionId,
-        ),
-    )
-    when (completionLayout.transientArrangement) {
-        HabiterWidgetCompletionArrangement.STACKED -> Column(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .padding(
-                    horizontal = completionLayout.horizontalPaddingDp.dp,
-                    vertical = completionLayout.verticalPaddingDp.dp,
-                ),
-            verticalAlignment = Alignment.Vertical.CenterVertically,
-            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
-        ) {
-            Row(
-                modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Vertical.CenterVertically,
-            ) {
-                CompletionSummary(
-                    state,
-                    completion,
-                    completionLayout,
-                    GlanceModifier.defaultWeight(),
-                )
-            }
-            Spacer(GlanceModifier.height(6.dp))
-            CompletionUndoControl(state, completion, completionLayout, action)
+private fun ActiveState(
+    context: Context,
+    state: HabiterWidgetState,
+    layout: HabiterWidgetLayout,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+) {
+    when (effective.contentMode) {
+        HabiterWidgetContentMode.MINIMAL -> MinimalState(context, state, effective, colors)
+        HabiterWidgetContentMode.FOCUS -> when (layout) {
+            HabiterWidgetLayout.COMPACT -> Compact(context, state, effective, colors)
+            HabiterWidgetLayout.COMPACT_SQUARE -> CompactSquare(context, state, effective, colors)
+            else -> FocusState(context, state, effective, colors)
         }
-
-        HabiterWidgetCompletionArrangement.INLINE,
-        HabiterWidgetCompletionArrangement.ICON_ONLY,
-        -> Row(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .padding(
-                    horizontal = completionLayout.horizontalPaddingDp.dp,
-                    vertical = completionLayout.verticalPaddingDp.dp,
-                ),
-            verticalAlignment = Alignment.Vertical.CenterVertically,
-        ) {
-            CompletionSummary(
-                state,
-                completion,
-                completionLayout,
-                GlanceModifier.defaultWeight(),
-            )
-            Spacer(GlanceModifier.width(6.dp))
-            CompletionUndoControl(state, completion, completionLayout, action)
+        HabiterWidgetContentMode.LIST -> when (layout) {
+            HabiterWidgetLayout.COMPACT -> Compact(context, state, effective, colors)
+            HabiterWidgetLayout.WIDE -> Wide(context, state, effective, colors)
+            else -> HabitList(context, state, layout, effective, colors)
+        }
+        HabiterWidgetContentMode.AUTO -> when (layout) {
+            HabiterWidgetLayout.COMPACT -> Compact(context, state, effective, colors)
+            HabiterWidgetLayout.COMPACT_SQUARE -> CompactSquare(context, state, effective, colors)
+            HabiterWidgetLayout.WIDE -> Wide(context, state, effective, colors)
+            HabiterWidgetLayout.MEDIUM_HERO -> FocusState(context, state, effective, colors)
+            HabiterWidgetLayout.LARGE,
+            HabiterWidgetLayout.EXTRA_LARGE,
+            -> HabitList(context, state, layout, effective, colors)
         }
     }
 }
 
 @Composable
-private fun CompletionSummary(
+private fun MinimalState(
+    context: Context,
     state: HabiterWidgetState,
-    completion: HabiterWidgetCompletion,
-    layout: HabiterWidgetCompletionLayout,
-    textModifier: GlanceModifier,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
 ) {
-    Text(
-        "✓",
-        style = TextStyle(
-            color = HabiterWidgetTheme.success,
-            fontSize = layout.transientIconSizeSp.sp,
-            fontWeight = FontWeight.Bold,
-        ),
-    )
-    Spacer(GlanceModifier.width(8.dp))
-    Column(modifier = textModifier) {
-        Text(completion.habitName, maxLines = 1, style = titleStyle(layout.titleSizeSp))
-        if (layout.showTransientStatus) {
-            Text(
-                HabiterWidgetCompletionCopy.status(state.isGerman),
-                maxLines = 1,
-                style = mutedStyle(layout.statusSizeSp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun CompletionUndoControl(
-    state: HabiterWidgetState,
-    completion: HabiterWidgetCompletion,
-    layout: HabiterWidgetCompletionLayout,
-    action: Action,
-) {
-    Box(
-        modifier = GlanceModifier
-            .background(HabiterWidgetTheme.surfaceAccent)
-            .cornerRadius(14.dp)
-            .clickable(onClick = action)
-            .semantics {
-                contentDescription = HabiterWidgetCompletionCopy.undoDescription(
-                    habitName = completion.habitName,
-                    isGerman = state.isGerman,
-                )
-            }
-            .padding(
-                horizontal = if (layout.showFullUndoLabel) 12.dp else 10.dp,
-                vertical = if (layout.showFullUndoLabel) 7.dp else 6.dp,
-            ),
-        contentAlignment = Alignment.Center,
+    val habit = state.nextHabit ?: state.habits.firstOrNull() ?: return
+    Row(
+        modifier = GlanceModifier.fillMaxSize().configuredPadding(effective, 12, 8),
+        verticalAlignment = Alignment.Vertical.CenterVertically,
     ) {
         Text(
-            HabiterWidgetCompletionCopy.undoLabel(
-                isGerman = state.isGerman,
-                full = layout.showFullUndoLabel,
-            ),
+            habitText(habit, effective),
+            modifier = GlanceModifier.defaultWeight(),
             maxLines = 1,
-            style = titleStyle(layout.statusSizeSp),
+            style = titleStyle(colors, effective, 16),
         )
+        if (!habit.completed) CompletionControl(context, state, habit, true, effective, colors)
     }
 }
 
 @Composable
-private fun ActiveState(state: HabiterWidgetState, layout: HabiterWidgetLayout) {
-    when (layout) {
-        HabiterWidgetLayout.COMPACT -> Compact(state)
-        HabiterWidgetLayout.COMPACT_SQUARE -> CompactSquare(state)
-        HabiterWidgetLayout.WIDE -> Wide(state)
-        HabiterWidgetLayout.MEDIUM_HERO -> MediumHero(state)
-        HabiterWidgetLayout.LARGE -> HabitList(state, maximumHabits = 3, padding = 18)
-        HabiterWidgetLayout.EXTRA_LARGE -> HabitList(state, maximumHabits = 6, padding = 22)
-    }
-}
-
-@Composable
-private fun Compact(state: HabiterWidgetState) {
-    val habit = state.nextHabit ?: return
+private fun Compact(
+    context: Context,
+    state: HabiterWidgetState,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+) {
+    val habit = state.nextHabit ?: state.habits.firstOrNull() ?: return
     Row(
-        modifier = GlanceModifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp),
+        modifier = GlanceModifier.fillMaxSize().configuredPadding(effective, 12, 6),
         verticalAlignment = Alignment.Vertical.CenterVertically,
     ) {
         Column(modifier = GlanceModifier.defaultWeight()) {
-            Text(
-                "${habit.icon} ${habit.name}",
-                maxLines = 1,
-                style = titleStyle(15),
-            )
-            Text(progressLabel(state), maxLines = 1, style = mutedStyle(12))
+            Text(habitText(habit, effective), maxLines = 1, style = titleStyle(colors, effective, 15))
+            if (showsCounter(effective, default = true)) {
+                Text(progressLabel(state), maxLines = 1, style = mutedStyle(colors, effective, 12))
+            }
         }
-        CompleteControl(state, habit, compact = true)
+        if (!habit.completed) CompletionControl(context, state, habit, true, effective, colors)
     }
 }
 
 @Composable
-private fun CompactSquare(state: HabiterWidgetState) {
-    val habit = state.nextHabit ?: return
+private fun CompactSquare(
+    context: Context,
+    state: HabiterWidgetState,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+) {
+    val habit = state.nextHabit ?: state.habits.firstOrNull() ?: return
     Column(
-        modifier = GlanceModifier.fillMaxSize().padding(10.dp),
+        modifier = GlanceModifier.fillMaxSize().configuredPadding(effective, 10, 10),
         horizontalAlignment = Alignment.Horizontal.Start,
     ) {
-        Text(progressLabel(state), maxLines = 1, style = mutedStyle(11))
-        Spacer(GlanceModifier.height(5.dp))
-        Text("${habit.icon} ${habit.name}", maxLines = 1, style = titleStyle(15))
+        if (showsCounter(effective, default = true)) {
+            Text(progressLabel(state), maxLines = 1, style = mutedStyle(colors, effective, 11))
+            Spacer(GlanceModifier.height(sectionGap(effective, 5).dp))
+        }
+        Text(habitText(habit, effective), maxLines = 1, style = titleStyle(colors, effective, 15))
         Spacer(GlanceModifier.defaultWeight())
-        CompactSquareCompleteControl(state, habit)
+        if (!habit.completed) CompletionControl(context, state, habit, false, effective, colors, fill = true)
     }
 }
 
 @Composable
-private fun CompactSquareCompleteControl(state: HabiterWidgetState, habit: HabiterWidgetHabit) {
-    Box(
-        modifier = GlanceModifier
-            .fillMaxWidth()
-            .background(HabiterWidgetTheme.primary)
-            .cornerRadius(12.dp)
-            .clickable(onClick = completionAction(state, habit))
-            .semantics { contentDescription = if (state.isGerman) "${habit.name} erledigen" else "Complete ${habit.name}" }
-            .padding(horizontal = 8.dp, vertical = 7.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text("✓ ${completeLabel(state)}", maxLines = 1, style = TextStyle(color = HabiterWidgetTheme.surface, fontSize = 12.sp, fontWeight = FontWeight.Bold))
-    }
-}
-
-@Composable
-private fun Wide(state: HabiterWidgetState) {
-    val habit = state.nextHabit ?: return
+private fun Wide(
+    context: Context,
+    state: HabiterWidgetState,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+) {
+    val habit = state.nextHabit ?: state.habits.firstOrNull() ?: return
     Row(
-        modifier = GlanceModifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 10.dp),
+        modifier = GlanceModifier.fillMaxSize().configuredPadding(effective, 16, 6),
         verticalAlignment = Alignment.Vertical.CenterVertically,
     ) {
-        Text(progressLabel(state), maxLines = 1, style = mutedStyle(13))
-        Spacer(GlanceModifier.width(14.dp))
-        Text("${habit.icon} ${habit.name}", modifier = GlanceModifier.defaultWeight(), maxLines = 1, style = titleStyle(16))
-        CompleteControl(state, habit, compact = true)
+        if (showsCounter(effective, default = true)) {
+            Text(progressLabel(state), maxLines = 1, style = mutedStyle(colors, effective, 13))
+            Spacer(GlanceModifier.width(sectionGap(effective, 14).dp))
+        }
+        Text(
+            habitText(habit, effective),
+            modifier = GlanceModifier.defaultWeight(),
+            maxLines = 1,
+            style = titleStyle(colors, effective, 16),
+        )
+        if (!habit.completed) CompletionControl(context, state, habit, true, effective, colors)
     }
 }
 
 @Composable
-private fun MediumHero(state: HabiterWidgetState) {
-    val habit = state.nextHabit ?: return
-    Column(modifier = GlanceModifier.fillMaxSize().padding(18.dp)) {
-        Row(modifier = GlanceModifier.fillMaxWidth()) {
-            Text(todayLabel(state), style = mutedStyle(13))
-            Spacer(GlanceModifier.defaultWeight())
-            Text("${state.completedCount} / ${state.scheduledCount}", style = titleStyle(14))
+private fun FocusState(
+    context: Context,
+    state: HabiterWidgetState,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+) {
+    val habit = state.nextHabit ?: state.habits.firstOrNull() ?: return
+    Column(modifier = GlanceModifier.fillMaxSize().configuredPadding(effective, 18, 14)) {
+        Header(state, effective, colors)
+        if (showsSegments(effective, default = true)) {
+            Spacer(GlanceModifier.height(sectionGap(effective, 8).dp))
+            ProgressSegments(state, effective, colors)
         }
-        Spacer(GlanceModifier.height(8.dp))
-        ProgressSegments(state)
-        Spacer(GlanceModifier.height(12.dp))
+        Spacer(GlanceModifier.defaultWeight())
         Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
             Column(modifier = GlanceModifier.defaultWeight()) {
-                Text("${habit.icon} ${habit.name}", maxLines = 1, style = titleStyle(19))
-                Text(habit.scheduleLabel, maxLines = 1, style = mutedStyle(13))
+                Text(habitText(habit, effective), maxLines = 1, style = titleStyle(colors, effective, 19))
+                if (effective.shows(HabiterWidgetElement.SCHEDULE_LABEL)) {
+                    Text(habit.scheduleLabel, maxLines = 1, style = mutedStyle(colors, effective, 13))
+                }
             }
-            Spacer(GlanceModifier.width(12.dp))
-            CompleteControl(state, habit, compact = false)
+            Spacer(GlanceModifier.width(sectionGap(effective, 12).dp))
+            if (!habit.completed) CompletionControl(context, state, habit, false, effective, colors)
         }
     }
 }
 
 @Composable
-private fun HabitList(state: HabiterWidgetState, maximumHabits: Int, padding: Int) {
-    Column(modifier = GlanceModifier.fillMaxSize().padding(padding.dp)) {
-        Row(modifier = GlanceModifier.fillMaxWidth()) {
-            Text(todayLabel(state), style = titleStyle(17))
-            Spacer(GlanceModifier.defaultWeight())
-            Text("${state.completedCount} / ${state.scheduledCount}", style = titleStyle(15))
+private fun HabitList(
+    context: Context,
+    state: HabiterWidgetState,
+    layout: HabiterWidgetLayout,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+) {
+    val fallbackPadding = if (layout == HabiterWidgetLayout.EXTRA_LARGE) 22 else 18
+    Column(modifier = GlanceModifier.fillMaxSize().configuredPadding(effective, fallbackPadding, fallbackPadding)) {
+        Header(state, effective, colors)
+        if (showsSegments(effective, default = true)) {
+            Spacer(GlanceModifier.height(sectionGap(effective, 9).dp))
+            ProgressSegments(state, effective, colors)
         }
-        Spacer(GlanceModifier.height(9.dp))
-        ProgressSegments(state)
-        Spacer(GlanceModifier.height(12.dp))
-        state.habits.take(maximumHabits).forEach { habit ->
-            HabitRow(state, habit)
-            Spacer(GlanceModifier.height(7.dp))
+        Spacer(GlanceModifier.height(sectionGap(effective, 12).dp))
+        state.habits.forEachIndexed { index, habit ->
+            HabitRow(context, state, habit, effective, colors)
+            if (index < state.habits.lastIndex) {
+                Spacer(GlanceModifier.height(rowGap(effective, 7).dp))
+            }
         }
     }
 }
 
 @Composable
-private fun HabitRow(state: HabiterWidgetState, habit: HabiterWidgetHabit) {
+private fun Header(
+    state: HabiterWidgetState,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+) {
+    if (!effective.shows(HabiterWidgetElement.TODAY_HEADER) &&
+        !showsCounter(effective, default = true)
+    ) return
+    Row(modifier = GlanceModifier.fillMaxWidth()) {
+        if (effective.shows(HabiterWidgetElement.TODAY_HEADER)) {
+            Text(todayLabel(state), style = titleStyle(colors, effective, 15))
+        }
+        Spacer(GlanceModifier.defaultWeight())
+        if (showsCounter(effective, default = true)) {
+            Text(
+                "${state.completedCount} / ${state.scheduledCount}",
+                style = counterStyle(colors, effective, 14),
+            )
+        }
+    }
+}
+
+@Composable
+private fun HabitRow(
+    context: Context,
+    state: HabiterWidgetState,
+    habit: HabiterWidgetHabit,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+) {
+    val base = GlanceModifier
+        .fillMaxWidth()
+        .background(colors.surfaceAccent)
+        .cornerRadius((effective.geometry.habitRowRadius ?: 14.0).toInt().dp)
+        .padding(
+            horizontal = (effective.geometry.horizontalPadding ?: 12.0).toInt().dp,
+            vertical = (effective.geometry.verticalPadding ?: densityValue(effective, 7, 9)).toInt().dp,
+        )
     Row(
-        modifier = GlanceModifier
-            .fillMaxWidth()
-            .background(HabiterWidgetTheme.surfaceAccent)
-            .cornerRadius(14.dp)
-            .padding(horizontal = 12.dp, vertical = 9.dp),
+        modifier = base.withHabitRowAction(context, state, habit, effective),
         verticalAlignment = Alignment.Vertical.CenterVertically,
     ) {
-        Text(if (habit.completed) "✓" else habit.icon, style = titleStyle(17))
-        Spacer(GlanceModifier.width(10.dp))
-        Text(habit.name, modifier = GlanceModifier.defaultWeight(), maxLines = 1, style = titleStyle(15))
-        if (!habit.completed) CompleteControl(state, habit, compact = true)
+        if (habit.completed && effective.shows(HabiterWidgetElement.COMPLETION_CHECKMARK)) {
+            Text("✓", style = TextStyle(color = colors.success, fontSize = textSize(effective, 17).sp))
+            Spacer(GlanceModifier.width(8.dp))
+        } else if (effective.shows(HabiterWidgetElement.HABIT_ICON)) {
+            Text(habit.icon, style = titleStyle(colors, effective, 17))
+            Spacer(GlanceModifier.width(8.dp))
+        }
+        Column(modifier = GlanceModifier.defaultWeight()) {
+            if (effective.shows(HabiterWidgetElement.HABIT_NAME) ||
+                !effective.shows(HabiterWidgetElement.HABIT_ICON)
+            ) {
+                Text(habit.name, maxLines = 1, style = titleStyle(colors, effective, 15))
+            }
+            if (effective.shows(HabiterWidgetElement.SCHEDULE_LABEL)) {
+                Text(habit.scheduleLabel, maxLines = 1, style = mutedStyle(colors, effective, 11))
+            }
+        }
+        if (!habit.completed &&
+            effective.completionSettings.buttonStyle != HabiterWidgetCompletionButtonStyle.WHOLE_ROW
+        ) {
+            CompletionControl(context, state, habit, true, effective, colors)
+        }
     }
 }
 
+private fun GlanceModifier.withHabitRowAction(
+    context: Context,
+    state: HabiterWidgetState,
+    habit: HabiterWidgetHabit,
+    effective: EffectiveHabiterWidgetConfiguration,
+): GlanceModifier {
+    val mapping = if (
+        effective.completionSettings.buttonStyle == HabiterWidgetCompletionButtonStyle.WHOLE_ROW &&
+        !habit.completed
+    ) {
+        HabiterWidgetHabitRowAction.COMPLETE
+    } else {
+        effective.interactions.habitRow
+    }
+    val action = when (mapping) {
+        HabiterWidgetHabitRowAction.OPEN_HABIT -> launchHabiter(context, habit.id)
+        HabiterWidgetHabitRowAction.COMPLETE -> if (habit.completed) null else completionAction(state, habit)
+        HabiterWidgetHabitRowAction.NONE -> null
+    }
+    return if (action == null) this else clickable(onClick = action)
+}
+
 @Composable
-private fun CompleteControl(state: HabiterWidgetState, habit: HabiterWidgetHabit, compact: Boolean) {
-    val action = completionAction(state, habit)
+private fun CompletionControl(
+    context: Context,
+    state: HabiterWidgetState,
+    habit: HabiterWidgetHabit,
+    compact: Boolean,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+    fill: Boolean = false,
+) {
+    if (!effective.shows(HabiterWidgetElement.COMPLETION_BUTTON)) return
+    val style = when (effective.completionSettings.buttonStyle) {
+        HabiterWidgetCompletionButtonStyle.AUTOMATIC -> if (compact) {
+            HabiterWidgetCompletionButtonStyle.CHECK_ONLY
+        } else {
+            HabiterWidgetCompletionButtonStyle.TEXT_ONLY
+        }
+        HabiterWidgetCompletionButtonStyle.WHOLE_ROW -> return
+        else -> effective.completionSettings.buttonStyle
+    }
+    val label = when (style) {
+        HabiterWidgetCompletionButtonStyle.CHECK_ONLY -> "✓"
+        HabiterWidgetCompletionButtonStyle.TEXT_ONLY -> completeLabel(state)
+        HabiterWidgetCompletionButtonStyle.CHECK_AND_TEXT -> "✓ ${completeLabel(state)}"
+        else -> "✓"
+    }
+    val action = if (effective.interactions.completionControl == HabiterWidgetCompletionAction.OPEN_HABIT) {
+        launchHabiter(context, habit.id)
+    } else {
+        completionAction(state, habit)
+    }
+    val base = GlanceModifier
+        .background(colors.primary)
+        .cornerRadius((effective.geometry.buttonRadius ?: 14.0).toInt().dp)
+        .clickable(onClick = action)
+        .semantics {
+            contentDescription = if (state.isGerman) "${habit.name} erledigen" else "Complete ${habit.name}"
+        }
+        .padding(horizontal = if (compact) 12.dp else 14.dp, vertical = 8.dp)
     Box(
-        modifier = GlanceModifier
-            .background(HabiterWidgetTheme.primary)
-            .cornerRadius(14.dp)
-            .clickable(onClick = action)
-            .semantics { contentDescription = if (state.isGerman) "${habit.name} erledigen" else "Complete ${habit.name}" }
-            .padding(horizontal = if (compact) 12.dp else 14.dp, vertical = 8.dp),
+        modifier = if (fill) base.fillMaxWidth().height(48.dp) else base.size(48.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(if (compact) "✓" else completeLabel(state), style = TextStyle(color = HabiterWidgetTheme.surface, fontSize = 13.sp, fontWeight = FontWeight.Bold))
+        Text(
+            label,
+            maxLines = 1,
+            style = TextStyle(
+                color = colors.onPrimary,
+                fontSize = textSize(effective, if (compact) 13 else 12).sp,
+                fontWeight = FontWeight.Bold,
+            ),
+        )
     }
 }
 
@@ -390,107 +518,400 @@ private fun completionAction(state: HabiterWidgetState, habit: HabiterWidgetHabi
 }
 
 @Composable
-private fun ProgressSegments(state: HabiterWidgetState) {
+private fun ProgressSegments(
+    state: HabiterWidgetState,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+) {
+    if (!effective.shows(HabiterWidgetElement.PROGRESS_SEGMENTS)) return
+    val maximum = effective.progressSettings.maximumSegments ?: 8
+    val count = state.scheduledCount.coerceIn(1, maximum)
+    val completed = if (state.scheduledCount <= maximum) {
+        state.completedCount
+    } else {
+        ((state.completedCount.toDouble() / state.scheduledCount) * count).toInt()
+    }
+    val height = (effective.progressSettings.segmentHeight ?: 5.0).toInt()
+    val gap = (effective.progressSettings.segmentGap ?: 4.0).toInt()
     Row(modifier = GlanceModifier.fillMaxWidth()) {
-        repeat(state.scheduledCount.coerceIn(1, 8)) { index ->
+        repeat(count) { index ->
+            val color = if (index < completed) {
+                when (effective.progressSettings.completedStyle) {
+                    HabiterWidgetProgressCompletedStyle.SOLID -> colors.success
+                    HabiterWidgetProgressCompletedStyle.MUTED -> colors.primary
+                    HabiterWidgetProgressCompletedStyle.HIDDEN -> colors.surface
+                }
+            } else {
+                when (effective.progressSettings.remainingStyle) {
+                    HabiterWidgetProgressRemainingStyle.TRACK -> colors.surfaceAccent
+                    HabiterWidgetProgressRemainingStyle.OUTLINE -> colors.onSurfaceMuted
+                    HabiterWidgetProgressRemainingStyle.HIDDEN -> colors.surface
+                }
+            }
             Box(
                 modifier = GlanceModifier
                     .defaultWeight()
-                    .height(5.dp)
-                    .background(if (index < state.completedCount) HabiterWidgetTheme.success else HabiterWidgetTheme.surfaceAccent)
-                    .cornerRadius(3.dp),
+                    .height(height.dp)
+                    .background(color)
+                    .cornerRadius((height / 2).coerceAtLeast(1).dp),
             ) {}
-            if (index < state.scheduledCount - 1) Spacer(GlanceModifier.width(4.dp))
+            if (index < count - 1) Spacer(GlanceModifier.width(gap.dp))
         }
     }
 }
 
 @Composable
-private fun CompletedState(state: HabiterWidgetState, layout: HabiterWidgetLayout) {
+private fun JustCompletedState(
+    context: Context,
+    state: HabiterWidgetState,
+    layout: HabiterWidgetLayout,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+) {
+    val completion = state.lastCompletion ?: return
+    if (effective.stateStyles.justCompleted == HabiterWidgetJustCompletedStyle.CHECK_ONLY ||
+        effective.completionSettings.feedback == HabiterWidgetCompletionFeedback.MINIMAL
+    ) {
+        Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("✓", style = TextStyle(color = colors.success, fontSize = textSize(effective, 32).sp))
+        }
+        return
+    }
     val completionLayout = HabiterWidgetCompletionLayout.forLayout(layout)
-    val message = HabiterWidgetCompletionCopy.settledMessage(state.isGerman)
-    val modifier = GlanceModifier
-        .fillMaxSize()
-        .padding(
-            horizontal = completionLayout.horizontalPaddingDp.dp,
-            vertical = completionLayout.verticalPaddingDp.dp,
-        )
-
-    when (completionLayout.settledArrangement) {
-        HabiterWidgetCompletionArrangement.ICON_ONLY -> Box(
-            modifier = modifier,
-            contentAlignment = Alignment.Center,
-        ) {
-            SettledCompletionIcon(completionLayout)
-        }
-
-        HabiterWidgetCompletionArrangement.INLINE -> Row(
-            modifier = modifier,
-            verticalAlignment = Alignment.Vertical.CenterVertically,
-        ) {
-            SettledCompletionIcon(completionLayout)
-            Spacer(GlanceModifier.width(10.dp))
-            Text(
-                message,
-                modifier = GlanceModifier.defaultWeight(),
-                maxLines = completionLayout.settledMessageMaxLines,
-                style = titleStyle(completionLayout.settledMessageSizeSp),
-            )
-        }
-
-        HabiterWidgetCompletionArrangement.STACKED -> Column(
-            modifier = modifier,
+    val action = actionRunCallback<HabiterWidgetUndoActionCallback>(
+        actionParametersOf(
+            HabiterWidgetAction.habitIdKey to completion.habitId,
+            HabiterWidgetAction.localDateKey to state.localDate,
+            HabiterWidgetAction.sourceActionIdKey to completion.actionId,
+        ),
+    )
+    val showStatus = effective.stateStyles.justCompleted == HabiterWidgetJustCompletedStyle.FULL &&
+        effective.completionSettings.feedback != HabiterWidgetCompletionFeedback.MINIMAL
+    val stacked = completionLayout.transientArrangement == HabiterWidgetCompletionArrangement.STACKED
+    if (stacked) {
+        Column(
+            modifier = GlanceModifier.fillMaxSize().configuredPadding(
+                effective,
+                completionLayout.horizontalPaddingDp,
+                completionLayout.verticalPaddingDp,
+            ),
             verticalAlignment = Alignment.Vertical.CenterVertically,
             horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
         ) {
-            SettledCompletionIcon(completionLayout)
-            Spacer(
-                GlanceModifier.height(
-                    if (layout == HabiterWidgetLayout.COMPACT_SQUARE) 4.dp else 8.dp,
-                ),
-            )
-            Text(
-                message,
-                maxLines = completionLayout.settledMessageMaxLines,
-                style = titleStyle(completionLayout.settledMessageSizeSp),
-            )
+            CompletionSummary(state, completion, effective, colors, showStatus)
+            if (showsUndo(effective)) {
+                Spacer(GlanceModifier.height(6.dp))
+                CompletionUndoControl(state, completion, effective, colors, action, true)
+            }
+        }
+    } else {
+        Row(
+            modifier = GlanceModifier.fillMaxSize().configuredPadding(
+                effective,
+                completionLayout.horizontalPaddingDp,
+                completionLayout.verticalPaddingDp,
+            ),
+            verticalAlignment = Alignment.Vertical.CenterVertically,
+        ) {
+            CompletionSummary(state, completion, effective, colors, showStatus, GlanceModifier.defaultWeight())
+            if (showsUndo(effective)) {
+                Spacer(GlanceModifier.width(6.dp))
+                CompletionUndoControl(state, completion, effective, colors, action, completionLayout.showFullUndoLabel)
+            }
         }
     }
 }
 
 @Composable
-private fun SettledCompletionIcon(layout: HabiterWidgetCompletionLayout) {
-    Text(
-        "✓",
-        style = TextStyle(
-            color = HabiterWidgetTheme.success,
-            fontSize = layout.settledIconSizeSp.sp,
-            fontWeight = FontWeight.Bold,
-        ),
-    )
-}
-
-@Composable
-private fun EmptyState(layout: HabiterWidgetLayout, isGerman: Boolean, english: String, german: String) {
-    Column(
-        modifier = GlanceModifier.fillMaxSize().padding(if (layout == HabiterWidgetLayout.COMPACT) 12.dp else 20.dp),
-        verticalAlignment = Alignment.Vertical.CenterVertically,
-        horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
-    ) {
-        Text(if (isGerman) german else english, maxLines = if (layout == HabiterWidgetLayout.COMPACT) 1 else 3, style = titleStyle(if (layout == HabiterWidgetLayout.COMPACT) 14 else 17))
+private fun CompletionSummary(
+    state: HabiterWidgetState,
+    completion: HabiterWidgetCompletion,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+    showStatus: Boolean,
+    modifier: GlanceModifier = GlanceModifier,
+) {
+    Row(modifier = modifier, verticalAlignment = Alignment.Vertical.CenterVertically) {
+        if (effective.shows(HabiterWidgetElement.COMPLETION_CHECKMARK)) {
+            Text("✓", style = TextStyle(color = colors.success, fontSize = textSize(effective, 24).sp))
+            Spacer(GlanceModifier.width(8.dp))
+        }
+        Column(modifier = GlanceModifier.defaultWeight()) {
+            Text(completion.habitName, maxLines = 1, style = titleStyle(colors, effective, 15))
+            if (showStatus) {
+                Text(
+                    HabiterWidgetCompletionCopy.status(state.isGerman),
+                    maxLines = 1,
+                    style = mutedStyle(colors, effective, 12),
+                )
+            }
+        }
     }
 }
 
+@Composable
+private fun CompletionUndoControl(
+    state: HabiterWidgetState,
+    completion: HabiterWidgetCompletion,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+    action: Action,
+    full: Boolean,
+) {
+    Box(
+        modifier = GlanceModifier
+            .background(colors.surfaceAccent)
+            .cornerRadius((effective.geometry.buttonRadius ?: 14.0).toInt().dp)
+            .clickable(onClick = action)
+            .semantics {
+                contentDescription = HabiterWidgetCompletionCopy.undoDescription(
+                    habitName = completion.habitName,
+                    isGerman = state.isGerman,
+                )
+            }
+            .size(48.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            HabiterWidgetCompletionCopy.undoLabel(state.isGerman, full),
+            maxLines = 1,
+            style = titleStyle(colors, effective, 12),
+        )
+    }
+}
+
+private fun showsUndo(effective: EffectiveHabiterWidgetConfiguration): Boolean =
+    effective.completionSettings.showUndo && effective.shows(HabiterWidgetElement.UNDO_BUTTON)
+
+@Composable
+private fun CompletedState(
+    state: HabiterWidgetState,
+    layout: HabiterWidgetLayout,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+) {
+    val style = effective.stateStyles.allComplete
+    val showMessage = effective.shows(HabiterWidgetElement.DONE_STATE_TEXT) &&
+        style != HabiterWidgetAllCompleteStyle.ICON_ONLY &&
+        style != HabiterWidgetAllCompleteStyle.MINIMAL
+    val horizontal = layout == HabiterWidgetLayout.COMPACT || layout == HabiterWidgetLayout.WIDE
+    if (horizontal) {
+        Row(
+            modifier = GlanceModifier.fillMaxSize().configuredPadding(effective, 14, 8),
+            verticalAlignment = Alignment.Vertical.CenterVertically,
+        ) {
+            Text("✓", style = TextStyle(color = colors.success, fontSize = textSize(effective, 28).sp))
+            if (showMessage) {
+                Spacer(GlanceModifier.width(10.dp))
+                Text(
+                    HabiterWidgetCompletionCopy.settledMessage(state.isGerman),
+                    modifier = GlanceModifier.defaultWeight(),
+                    maxLines = 1,
+                    style = titleStyle(colors, effective, 15),
+                )
+            }
+        }
+    } else {
+        Column(
+            modifier = GlanceModifier.fillMaxSize().configuredPadding(effective, 18, 14),
+            verticalAlignment = Alignment.Vertical.CenterVertically,
+            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+        ) {
+            Text("✓", style = TextStyle(color = colors.success, fontSize = textSize(effective, 32).sp))
+            if (showMessage) {
+                Spacer(GlanceModifier.height(8.dp))
+                Text(
+                    HabiterWidgetCompletionCopy.settledMessage(state.isGerman),
+                    maxLines = 2,
+                    style = titleStyle(colors, effective, 16),
+                )
+            }
+        }
+    }
+}
+
+private enum class EmptyKind { MISSING, STALE, NO_HABITS, FREE_TODAY }
+
+@Composable
+private fun EmptyState(
+    layout: HabiterWidgetLayout,
+    effective: EffectiveHabiterWidgetConfiguration,
+    colors: HabiterWidgetColors,
+    isGerman: Boolean,
+    kind: EmptyKind,
+) {
+    val (icon, english, german) = when (kind) {
+        EmptyKind.MISSING -> Triple("↻", "Open Habiter to get started.", "Habiter öffnen, um zu starten.")
+        EmptyKind.STALE -> Triple("↻", "Open Habiter to sync.", "Öffne Habiter zum Synchronisieren.")
+        EmptyKind.NO_HABITS -> Triple("＋", "Your first habit is waiting.", "Dein erstes Habit wartet.")
+        EmptyKind.FREE_TODAY -> Triple("🍃", "Today is free.", "Heute ist frei.")
+    }
+    val compactStyle = when (kind) {
+        EmptyKind.MISSING,
+        EmptyKind.STALE,
+        -> effective.stateStyles.missingStale == HabiterWidgetMissingStaleStyle.COMPACT
+        EmptyKind.NO_HABITS -> effective.stateStyles.noHabits == HabiterWidgetNoHabitsStyle.COMPACT
+        EmptyKind.FREE_TODAY -> effective.stateStyles.freeToday == HabiterWidgetFreeTodayStyle.MINIMAL
+    }
+    val iconOnly = kind == EmptyKind.FREE_TODAY &&
+        effective.stateStyles.freeToday == HabiterWidgetFreeTodayStyle.ICON_ONLY
+    val textOnly = kind == EmptyKind.FREE_TODAY &&
+        effective.stateStyles.freeToday == HabiterWidgetFreeTodayStyle.TEXT_ONLY
+    val showText = effective.shows(HabiterWidgetElement.EMPTY_STATE_TEXT) && !iconOnly && !compactStyle
+    Column(
+        modifier = GlanceModifier.fillMaxSize().configuredPadding(
+            effective,
+            if (layout == HabiterWidgetLayout.COMPACT) 12 else 20,
+            if (layout == HabiterWidgetLayout.COMPACT) 8 else 16,
+        ),
+        verticalAlignment = Alignment.Vertical.CenterVertically,
+        horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+    ) {
+        if (!textOnly) Text(icon, style = TextStyle(color = colors.primary, fontSize = textSize(effective, 22).sp))
+        if (showText) {
+            Spacer(GlanceModifier.height(5.dp))
+            Text(
+                if (isGerman) german else english,
+                maxLines = if (layout == HabiterWidgetLayout.COMPACT) 1 else 3,
+                style = titleStyle(colors, effective, if (layout == HabiterWidgetLayout.COMPACT) 13 else 16),
+            )
+        }
+    }
+}
+
+private fun habitText(
+    habit: HabiterWidgetHabit,
+    effective: EffectiveHabiterWidgetConfiguration,
+): String {
+    val showIcon = effective.shows(HabiterWidgetElement.HABIT_ICON)
+    val showName = effective.shows(HabiterWidgetElement.HABIT_NAME)
+    return when {
+        showIcon && showName -> "${habit.icon} ${habit.name}"
+        showIcon -> habit.icon
+        else -> habit.name
+    }
+}
+
+private fun showsSegments(
+    effective: EffectiveHabiterWidgetConfiguration,
+    default: Boolean,
+): Boolean = effective.shows(HabiterWidgetElement.PROGRESS_SEGMENTS) && when (effective.progressMode) {
+    HabiterWidgetProgressMode.AUTOMATIC -> default
+    HabiterWidgetProgressMode.SEGMENTS,
+    HabiterWidgetProgressMode.BOTH,
+    -> true
+    HabiterWidgetProgressMode.HIDDEN,
+    HabiterWidgetProgressMode.COUNTER,
+    -> false
+}
+
+private fun showsCounter(
+    effective: EffectiveHabiterWidgetConfiguration,
+    default: Boolean,
+): Boolean = effective.shows(HabiterWidgetElement.COUNTER) && when (effective.progressMode) {
+    HabiterWidgetProgressMode.AUTOMATIC -> default
+    HabiterWidgetProgressMode.COUNTER,
+    HabiterWidgetProgressMode.BOTH,
+    -> true
+    HabiterWidgetProgressMode.HIDDEN,
+    HabiterWidgetProgressMode.SEGMENTS,
+    -> false
+}
+
+private fun GlanceModifier.configuredPadding(
+    effective: EffectiveHabiterWidgetConfiguration,
+    fallbackHorizontal: Int,
+    fallbackVertical: Int,
+): GlanceModifier = padding(
+    horizontal = (
+        effective.geometry.horizontalPadding ?: effective.outerPadding ?: fallbackHorizontal.toDouble()
+    ).toInt().dp,
+    vertical = (
+        effective.geometry.verticalPadding ?: effective.outerPadding ?: fallbackVertical.toDouble()
+    ).toInt().dp,
+)
+
+private fun densityValue(
+    effective: EffectiveHabiterWidgetConfiguration,
+    compact: Int,
+    comfortable: Int,
+): Double = if (effective.density == HabiterWidgetDensity.COMPACT) {
+    compact.toDouble()
+} else {
+    comfortable.toDouble()
+}
+
+private fun rowGap(effective: EffectiveHabiterWidgetConfiguration, fallback: Int): Int =
+    (effective.geometry.rowGap ?: densityValue(effective, (fallback - 2).coerceAtLeast(0), fallback)).toInt()
+
+private fun sectionGap(effective: EffectiveHabiterWidgetConfiguration, fallback: Int): Int =
+    (effective.geometry.sectionGap ?: densityValue(effective, (fallback - 2).coerceAtLeast(0), fallback)).toInt()
+
+private fun textSize(
+    effective: EffectiveHabiterWidgetConfiguration,
+    fallback: Int,
+    explicit: Double? = null,
+): Int = ((explicit ?: fallback.toDouble()) * effective.textScale).toInt().coerceIn(9, 30)
+
+private fun fontWeight(effective: EffectiveHabiterWidgetConfiguration): FontWeight =
+    when (effective.typography.fontWeight) {
+        HabiterWidgetFontWeight.REGULAR -> FontWeight.Normal
+        HabiterWidgetFontWeight.BOLD -> FontWeight.Bold
+        HabiterWidgetFontWeight.SYSTEM,
+        HabiterWidgetFontWeight.MEDIUM,
+        -> FontWeight.Medium
+    }
+
+private fun titleStyle(
+    colors: HabiterWidgetColors,
+    effective: EffectiveHabiterWidgetConfiguration,
+    fallback: Int,
+): TextStyle = TextStyle(
+    color = colors.onSurface,
+    fontSize = textSize(effective, fallback, effective.typography.habitTitleSize).sp,
+    fontWeight = fontWeight(effective),
+)
+
+private fun mutedStyle(
+    colors: HabiterWidgetColors,
+    effective: EffectiveHabiterWidgetConfiguration,
+    fallback: Int,
+): TextStyle = TextStyle(
+    color = colors.onSurfaceMuted,
+    fontSize = textSize(effective, fallback, effective.typography.secondaryTextSize).sp,
+)
+
+private fun counterStyle(
+    colors: HabiterWidgetColors,
+    effective: EffectiveHabiterWidgetConfiguration,
+    fallback: Int,
+): TextStyle = TextStyle(
+    color = colors.onSurface,
+    fontSize = textSize(effective, fallback, effective.typography.counterSize).sp,
+    fontWeight = FontWeight.Bold,
+)
+
 private fun progressLabel(state: HabiterWidgetState): String =
-    if (state.locale.startsWith("de")) "Heute ${state.completedCount}/${state.scheduledCount}" else "Today ${state.completedCount}/${state.scheduledCount}"
+    if (state.isGerman) {
+        "Heute ${state.completedCount}/${state.scheduledCount}"
+    } else {
+        "Today ${state.completedCount}/${state.scheduledCount}"
+    }
 
-private fun todayLabel(state: HabiterWidgetState): String = if (state.locale.startsWith("de")) "Heute" else "Today"
+private fun todayLabel(state: HabiterWidgetState): String = if (state.isGerman) "Heute" else "Today"
 
-private fun completeLabel(state: HabiterWidgetState): String = if (state.locale.startsWith("de")) "Erledigen" else "Complete"
+private fun completeLabel(state: HabiterWidgetState): String = if (state.isGerman) "Erledigen" else "Complete"
 
 private val HabiterWidgetState.isGerman: Boolean
     get() = locale.startsWith("de", ignoreCase = true)
 
-private fun titleStyle(size: Int) = TextStyle(color = HabiterWidgetTheme.onSurface, fontSize = size.sp, fontWeight = FontWeight.Medium)
-
-private fun mutedStyle(size: Int) = TextStyle(color = HabiterWidgetTheme.onSurfaceMuted, fontSize = size.sp)
+private val HabiterWidgetContentState.stateOrNull: HabiterWidgetState?
+    get() = when (this) {
+        HabiterWidgetContentState.Missing -> null
+        is HabiterWidgetContentState.Stale -> state
+        is HabiterWidgetContentState.NoHabits -> state
+        is HabiterWidgetContentState.FreeToday -> state
+        is HabiterWidgetContentState.AllComplete -> state
+        is HabiterWidgetContentState.JustCompleted -> state
+        is HabiterWidgetContentState.Active -> state
+    }

@@ -70,8 +70,11 @@ Permission status and permission prompts use the notification plugin. This chann
 | `requestPin` | none | `bool` indicating whether Android accepted the request. |
 | `pinResult` | none | `idle`, `requested`, or `pinned`. |
 | `hasInstalledWidgets` | none | `bool` |
+| `listWidgetInstances` | none | List of `{widgetId, widthDp, heightDp, breakpoint, configuration}` maps for installed instances. |
+| `saveWidgetConfiguration` | `{widgetId: int, configuration: String}` | `null` after atomically persisting the matching versioned JSON configuration and requesting an update for only that widget ID. |
+| `resetWidgetConfiguration` | `{widgetId: int}` | `null` after removing only that instance's configuration and requesting its legacy-default render. |
 
-The result tracks platform callback state, not a guarantee that a widget remains installed forever. Widget rendering and actions use the `home_widget` bridge and the sanitized `habiter_widget_snapshot`, not this method channel.
+The pin result tracks platform callback state, not a guarantee that a widget remains installed forever. Configuration is keyed by Android `appWidgetId`; deleting an instance removes only its configuration. Missing, invalid, or unsupported configuration schemas fall back to legacy rendering defaults. Widget content and actions continue to use the `home_widget` bridge and the sanitized shared `habiter_widget_snapshot`; configuration is not a second habit-state source of truth.
 
 ## Android updates
 

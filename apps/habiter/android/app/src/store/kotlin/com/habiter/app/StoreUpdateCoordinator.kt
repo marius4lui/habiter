@@ -79,6 +79,18 @@ internal class StoreUpdateCoordinator(private val activity: MainActivity) {
             .addOnFailureListener { callback("unavailable") }
     }
 
+    fun resumeInterruptedImmediateUpdate() {
+        manager.appUpdateInfo.addOnSuccessListener { info ->
+            if (info.updateAvailability() != UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                return@addOnSuccessListener
+            }
+            val options = AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
+            if (info.isUpdateTypeAllowed(options)) {
+                manager.startUpdateFlow(info, activity, options)
+            }
+        }
+    }
+
     fun dispose() = manager.unregisterListener(listener)
 
     private fun statusMap(status: Int): Map<String, Any?> = mapOf(

@@ -134,6 +134,11 @@ class MainActivity: FlutterActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateManager?.resumeStoreUpdate()
+    }
+
     override fun onDestroy() {
         updateManager?.dispose()
         updateManager = null

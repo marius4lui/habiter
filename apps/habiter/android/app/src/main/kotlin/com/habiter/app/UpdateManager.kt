@@ -37,6 +37,8 @@ internal class UpdateManager(private val activity: MainActivity) {
     private val preferences = activity.getSharedPreferences("habiter_updates", Context.MODE_PRIVATE)
     private val storeUpdates = StoreUpdateCoordinator(activity)
 
+    fun resumeStoreUpdate() = storeUpdates.resumeInterruptedImmediateUpdate()
+
     fun dispose() = storeUpdates.dispose()
 
     fun handle(call: MethodCall, result: MethodChannel.Result) {

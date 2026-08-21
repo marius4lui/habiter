@@ -14,5 +14,7 @@ internal class StoreUpdateCoordinator(private val activity: MainActivity) {
 
     fun complete(callback: (String) -> Unit) = callback("unavailable")
 
+    fun resumeInterruptedImmediateUpdate() = Unit
+
     fun dispose() = Unit
 }

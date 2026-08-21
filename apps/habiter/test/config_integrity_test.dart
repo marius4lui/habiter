@@ -77,6 +77,9 @@ void main() {
       final directCoordinator = File(
         'android/app/src/direct/kotlin/com/habiter/app/StoreUpdateCoordinator.kt',
       ).readAsStringSync();
+      final activity = File(
+        'android/app/src/main/kotlin/com/habiter/app/MainActivity.kt',
+      ).readAsStringSync();
 
       expect(
         buildFile,
@@ -89,6 +92,11 @@ void main() {
       expect(storeCoordinator, contains('AppUpdateManagerFactory.create'));
       expect(storeCoordinator, contains('AppUpdateOptions.newBuilder'));
       expect(storeCoordinator, contains('manager.completeUpdate()'));
+      expect(
+        storeCoordinator,
+        contains('DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS'),
+      );
+      expect(activity, contains('updateManager?.resumeStoreUpdate()'));
       expect(directCoordinator, isNot(contains('com.google.android.play')));
     });
 

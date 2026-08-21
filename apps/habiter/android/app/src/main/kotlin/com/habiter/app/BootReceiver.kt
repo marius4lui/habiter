@@ -16,7 +16,7 @@ class BootReceiver : BroadcastReceiver() {
             
             if (isEnabled) {
                 // Start the monitoring service
-                val serviceIntent = Intent(context, AppMonitorService::class.java)
+                val serviceIntent = Intent(context, HabiterRuntimeService::class.java)
                 try {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         context.startForegroundService(serviceIntent)

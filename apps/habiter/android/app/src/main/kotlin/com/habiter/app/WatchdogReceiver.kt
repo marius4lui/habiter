@@ -10,9 +10,8 @@ import android.os.SystemClock
 import android.util.Log
 
 /**
- * Watchdog receiver that periodically checks if AppMonitorService is running
- * and restarts it if necessary. This helps combat aggressive battery optimization
- * on devices from Xiaomi, Huawei, Samsung, etc.
+ * Legacy watchdog receiver retained only while the targeted runtime recovery
+ * migration is introduced.
  */
 class WatchdogReceiver : BroadcastReceiver() {
     private val tag = "HabiterAppLock"
@@ -65,7 +64,7 @@ class WatchdogReceiver : BroadcastReceiver() {
         
         if (isEnabled) {
             // Restart service if app lock is enabled
-            val serviceIntent = Intent(context, AppMonitorService::class.java)
+            val serviceIntent = Intent(context, HabiterRuntimeService::class.java)
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     context.startForegroundService(serviceIntent)

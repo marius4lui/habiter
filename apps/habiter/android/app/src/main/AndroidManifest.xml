@@ -58,15 +58,15 @@
             android:launchMode="singleTask"
             android:taskAffinity="com.habiter.app.blocking" />
 
-        <!-- App Monitoring Foreground Service -->
+        <!-- Shared local reminder and App Block foreground runtime. -->
         <service
-            android:name=".AppMonitorService"
+            android:name=".HabiterRuntimeService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="App lock monitoring for habit completion" />
+                android:value="Local adaptive reminders and optional App Block monitoring" />
         </service>
 
         <!-- Boot Receiver to restart service -->

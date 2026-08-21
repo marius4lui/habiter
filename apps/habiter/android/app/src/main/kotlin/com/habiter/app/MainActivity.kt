@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream
 import java.util.TimeZone
 import android.util.Log
 import com.habiter.app.widget.HabiterWidgetPinPlugin
+import com.habiter.app.runtime.RuntimeStateStore
 
 class MainActivity: FlutterActivity() {
     private val TAG = "HabiterAppLock"
@@ -287,7 +288,13 @@ class MainActivity: FlutterActivity() {
             .apply()
         
         // Start the service
-        val intent = Intent(this, AppMonitorService::class.java)
+        RuntimeStateStore(this).setAppBlockEnabled(true)
+        val intent = Intent(this, HabiterRuntimeService::class.java).apply {
+            putExtra(
+                HabiterRuntimeService.EXTRA_START_REASON,
+                HabiterRuntimeService.REASON_APP_BLOCK,
+            )
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
         } else {
@@ -305,8 +312,22 @@ class MainActivity: FlutterActivity() {
         prefs.edit().putBoolean("is_enabled", false).apply()
         BlockingOverlay.dismiss()
         
-        val intent = Intent(this, AppMonitorService::class.java)
-        stopService(intent)
+        val state = RuntimeStateStore(this).setAppBlockEnabled(false)
+        val intent = Intent(this, HabiterRuntimeService::class.java).apply {
+            putExtra(
+                HabiterRuntimeService.EXTRA_START_REASON,
+                HabiterRuntimeService.REASON_APP_BLOCK,
+            )
+        }
+        if (state.shouldRun) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+        } else {
+            stopService(intent)
+        }
         
         // Cancel watchdog
         WatchdogReceiver.cancel(this)

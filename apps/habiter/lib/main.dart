@@ -18,6 +18,8 @@ import 'features/home/application/habit_hub_model.dart';
 import 'features/onboarding/application/onboarding_controller.dart';
 import 'features/onboarding/application/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_flow.dart';
+import 'features/reminders/application/adaptive_reminder_runtime.dart';
+import 'features/runtime/infrastructure/method_channel_background_runtime_gateway.dart';
 import 'features/updates/application/update_controller.dart';
 import 'features/updates/presentation/update_center_screen.dart';
 import 'features/updates/presentation/update_experience_gate.dart';
@@ -49,6 +51,9 @@ Future<void> main() async {
   }
   runApp(_HabiterLauncher(AppBootstrap(AppDependencies.production())));
 }
+
+@pragma('vm:entry-point')
+Future<void> habiterReminderRuntimeMain() => startHabiterReminderRuntime();
 
 class _HabiterLauncher extends StatefulWidget {
   const _HabiterLauncher(this.bootstrap);
@@ -161,6 +166,8 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
             clock: dependencies.clock,
             ids: dependencies.ids,
             actionStore: dependencies.store,
+            backgroundRuntimeGateway:
+                const MethodChannelBackgroundRuntimeGateway(),
             synchronizeWidget: () => widgetSync.synchronize(
               locale: WidgetsBinding
                   .instance

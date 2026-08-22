@@ -15,6 +15,7 @@ import 'steps/habit_ready_step.dart';
 import 'steps/intent_step.dart';
 import 'steps/reminder_step.dart';
 import 'steps/reminder_education_step.dart';
+import 'steps/background_runtime_step.dart';
 import 'steps/rhythm_explainer_step.dart';
 import 'steps/rhythm_step.dart';
 import 'steps/welcome_step.dart';
@@ -40,15 +41,17 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     );
     final pages = <Page<void>>[
       for (final step in OnboardingProgress.through(currentStep))
-        _OnboardingPage(
-          key: ValueKey<OnboardingStep>(step),
-          name: '/onboarding/${step.name}',
-          duration: duration,
-          child: KeyedSubtree(
-            key: ValueKey<String>('onboarding-page-${step.name}'),
-            child: _step(context, controller, step),
+        if (step != OnboardingStep.backgroundRuntime ||
+            controller.state.backgroundSetupIncluded)
+          _OnboardingPage(
+            key: ValueKey<OnboardingStep>(step),
+            name: '/onboarding/${step.name}',
+            duration: duration,
+            child: KeyedSubtree(
+              key: ValueKey<String>('onboarding-page-${step.name}'),
+              child: _step(context, controller, step),
+            ),
           ),
-        ),
     ];
 
     return NavigatorPopHandler<void>(
@@ -96,6 +99,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     if (step == OnboardingStep.reminder &&
         controller.state.habitDraft != null) {
       return ReminderStep(controller: controller);
+    }
+    if (step == OnboardingStep.backgroundRuntime) {
+      return BackgroundRuntimeStep(controller: controller);
     }
     if (step == OnboardingStep.habitReady &&
         controller.state.habitDraft != null) {

@@ -11,6 +11,7 @@ enum OnboardingStep {
   rhythmExplainer,
   reminderModel,
   reminder,
+  backgroundRuntime,
   habitReady,
   widgetIntro,
   widgetPin,
@@ -26,11 +27,12 @@ abstract final class OnboardingProgress {
     OnboardingStep.rhythmExplainer,
     OnboardingStep.reminderModel,
     OnboardingStep.reminder,
+    OnboardingStep.backgroundRuntime,
     OnboardingStep.widgetIntro,
     OnboardingStep.widgetPin,
   ];
 
-  static const total = 9;
+  static const total = 10;
 
   static int indexOf(OnboardingStep step) {
     final normalized = step == OnboardingStep.habitReady
@@ -165,10 +167,11 @@ final class OnboardingState {
     this.widgetPromotionState = WidgetPromotionState.pending,
     this.widgetPinned = false,
     this.widgetPinAttempted = false,
+    this.backgroundSetupIncluded = false,
     this.completedAt,
   });
 
-  static const currentVersion = 3;
+  static const currentVersion = 4;
 
   factory OnboardingState.fromMap(Map<String, Object?> map) {
     final draft = map['habitDraft'];
@@ -195,6 +198,7 @@ final class OnboardingState {
       ),
       widgetPinned: map['widgetPinned'] as bool? ?? false,
       widgetPinAttempted: map['widgetPinAttempted'] as bool? ?? false,
+      backgroundSetupIncluded: map['backgroundSetupIncluded'] as bool? ?? false,
       completedAt: map['completedAt'] == null
           ? null
           : DateTime.parse(map['completedAt']! as String),
@@ -209,6 +213,7 @@ final class OnboardingState {
   final WidgetPromotionState widgetPromotionState;
   final bool widgetPinned;
   final bool widgetPinAttempted;
+  final bool backgroundSetupIncluded;
   final DateTime? completedAt;
 
   bool get isComplete => currentStep == OnboardingStep.completed;
@@ -222,6 +227,7 @@ final class OnboardingState {
     WidgetPromotionState? widgetPromotionState,
     bool? widgetPinned,
     bool? widgetPinAttempted,
+    bool? backgroundSetupIncluded,
     DateTime? completedAt,
   }) => OnboardingState(
     onboardingVersion: onboardingVersion ?? this.onboardingVersion,
@@ -232,6 +238,8 @@ final class OnboardingState {
     widgetPromotionState: widgetPromotionState ?? this.widgetPromotionState,
     widgetPinned: widgetPinned ?? this.widgetPinned,
     widgetPinAttempted: widgetPinAttempted ?? this.widgetPinAttempted,
+    backgroundSetupIncluded:
+        backgroundSetupIncluded ?? this.backgroundSetupIncluded,
     completedAt: completedAt ?? this.completedAt,
   );
 
@@ -244,6 +252,7 @@ final class OnboardingState {
     'widgetPromotionState': widgetPromotionState.name,
     'widgetPinned': widgetPinned,
     'widgetPinAttempted': widgetPinAttempted,
+    'backgroundSetupIncluded': backgroundSetupIncluded,
     'completedAt': completedAt?.toUtc().toIso8601String(),
   };
 

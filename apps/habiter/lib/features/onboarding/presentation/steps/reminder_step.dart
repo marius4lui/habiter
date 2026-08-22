@@ -5,6 +5,7 @@ import '../../../../core/design_system/haptics.dart';
 import '../../../../core/design_system/tokens.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../providers/habit_provider.dart';
+import '../../../runtime/infrastructure/method_channel_background_runtime_gateway.dart';
 import '../../application/onboarding_controller.dart';
 import '../../application/onboarding_state.dart';
 import '../components/habit_illustration.dart';
@@ -146,7 +147,11 @@ class _ReminderStepState extends State<ReminderStep> {
       await provider.markReminderIntroductionSeen();
     }
     await haptics.success();
-    await widget.controller.markHabitReady();
+    await widget.controller.markHabitReady(
+      backgroundSetupRequired:
+          draft.reminderEnabled &&
+          const MethodChannelBackgroundRuntimeGateway().isSupported,
+    );
   }
 }
 

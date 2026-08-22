@@ -7,15 +7,27 @@ import '../features/app_lock/domain/app_lock_gateway.dart';
 import '../features/app_lock/domain/app_block_rule.dart';
 import '../features/app_lock/application/app_block_gate_projector.dart';
 import '../features/app_lock/infrastructure/method_channel_app_lock_gateway.dart';
+import '../features/runtime/application/background_runtime_reconciler.dart';
+import '../features/runtime/domain/background_runtime_gateway.dart';
+import '../features/runtime/infrastructure/method_channel_background_runtime_gateway.dart';
 import '../services/storage_service.dart';
 
 /// Provider for managing app lock state and logic
 class AppLockProvider extends ChangeNotifier {
-  AppLockProvider({AppLockGateway? gateway, Clock clock = const SystemClock()})
-    : _gateway = gateway ?? const MethodChannelAppLockGateway(),
-      _clock = clock;
+  AppLockProvider({
+    AppLockGateway? gateway,
+    BackgroundRuntimeGateway? runtimeGateway,
+    Clock clock = const SystemClock(),
+  }) : _gateway = gateway ?? const MethodChannelAppLockGateway(),
+       _runtimeGateway =
+           runtimeGateway ??
+           MethodChannelBackgroundRuntimeGateway(
+             supported: gateway == null ? null : false,
+           ),
+       _clock = clock;
 
   final AppLockGateway _gateway;
+  final BackgroundRuntimeGateway _runtimeGateway;
   final Clock _clock;
   final AppBlockGateProjector _projector = const AppBlockGateProjector();
 
@@ -96,13 +108,28 @@ class AppLockProvider extends ChangeNotifier {
   }
 
   Future<void> checkBatteryOptimization() async {
+    if (_runtimeGateway.isSupported) {
+      final result = await _runtimeGateway.snapshot();
+      if (result case BackgroundRuntimeSuccess<BackgroundRuntimeSnapshot>(
+        :final value,
+      )) {
+        _batteryOptimized = value.batteryOptimized;
+      }
+      return;
+    }
     final result = await _gateway.isBatteryOptimized();
     if (result case AppLockSuccess<bool>(:final value)) {
       _batteryOptimized = value;
     }
   }
 
-  Future<void> openBatterySettings() => _gateway.openBatterySettings();
+  Future<void> openBatterySettings() async {
+    if (_runtimeGateway.isSupported) {
+      await _runtimeGateway.openBatterySettings();
+    } else {
+      await _gateway.openBatterySettings();
+    }
+  }
 
   /// Load list of installed non-system apps
   Future<void> loadInstalledApps() async {
@@ -259,9 +286,16 @@ class AppLockProvider extends ChangeNotifier {
         await StorageService.saveAppLockConfig(_config);
         await _gateway.stop();
         _error = 'App Lock stopped because required access is unavailable.';
+      } else {
+        await BackgroundRuntimeReconciler(
+          _runtimeGateway,
+        ).setAppBlockEnabled(true);
       }
     } else {
       await _gateway.stop();
+      await BackgroundRuntimeReconciler(
+        _runtimeGateway,
+      ).setAppBlockEnabled(false);
     }
   }
 

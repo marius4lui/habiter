@@ -950,6 +950,84 @@ abstract class AppLocalizations {
   /// **'Berechtigung und ausstehende Erinnerungen sicher prüfen'**
   String get reminderDiagnosticsDescription;
 
+  /// No description provided for @backgroundRuntimeDiagnostics.
+  ///
+  /// In de, this message translates to:
+  /// **'Hintergrundlaufzeit'**
+  String get backgroundRuntimeDiagnostics;
+
+  /// No description provided for @runtimeAdaptiveReminders.
+  ///
+  /// In de, this message translates to:
+  /// **'Adaptive Erinnerungen'**
+  String get runtimeAdaptiveReminders;
+
+  /// No description provided for @runtimeAppBlock.
+  ///
+  /// In de, this message translates to:
+  /// **'App Block'**
+  String get runtimeAppBlock;
+
+  /// No description provided for @runtimeStatusOn.
+  ///
+  /// In de, this message translates to:
+  /// **'An'**
+  String get runtimeStatusOn;
+
+  /// No description provided for @runtimeStatusOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus'**
+  String get runtimeStatusOff;
+
+  /// No description provided for @runtimeStarted.
+  ///
+  /// In de, this message translates to:
+  /// **'Gestartet'**
+  String get runtimeStarted;
+
+  /// No description provided for @runtimeHeartbeat.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzter Herzschlag'**
+  String get runtimeHeartbeat;
+
+  /// No description provided for @runtimeReminderEvaluation.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Erinnerungsauswertung'**
+  String get runtimeReminderEvaluation;
+
+  /// No description provided for @runtimeNextEvaluation.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächste Erinnerungsauswertung'**
+  String get runtimeNextEvaluation;
+
+  /// No description provided for @runtimeNotificationDispatch.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Benachrichtigungszustellung'**
+  String get runtimeNotificationDispatch;
+
+  /// No description provided for @runtimeStartReason.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzter Startgrund'**
+  String get runtimeStartReason;
+
+  /// No description provided for @runtimeNotRecorded.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nicht erfasst'**
+  String get runtimeNotRecorded;
+
+  /// No description provided for @runtimeUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Diagnosedaten der Hintergrundlaufzeit sind auf diesem Gerät nicht verfügbar'**
+  String get runtimeUnavailable;
+
   /// No description provided for @reminderPermissionGranted.
   ///
   /// In de, this message translates to:
@@ -2359,6 +2437,90 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Die Wachzeit ist zunächst 08:00–22:00 Uhr. Du kannst jederzeit pausieren, jeden Plan ändern oder alle Lerndaten löschen.'**
   String get onboardingSmartControlBody;
+
+  /// No description provided for @onboardingBackgroundTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Habiter im Hintergrund\naktiv halten.'**
+  String get onboardingBackgroundTitle;
+
+  /// No description provided for @onboardingBackgroundBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Erinnerungen werden lokal entschieden. Deshalb muss Android Habiters Vordergrunddienst aktiv halten. Solange er läuft, zeigt Android eine dauerhafte Benachrichtigung.'**
+  String get onboardingBackgroundBody;
+
+  /// No description provided for @onboardingBackgroundNotifications.
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungen'**
+  String get onboardingBackgroundNotifications;
+
+  /// No description provided for @onboardingBackgroundNotificationsReady.
+  ///
+  /// In de, this message translates to:
+  /// **'Erlaubt'**
+  String get onboardingBackgroundNotificationsReady;
+
+  /// No description provided for @onboardingBackgroundNotificationsNeeded.
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigung nötig'**
+  String get onboardingBackgroundNotificationsNeeded;
+
+  /// No description provided for @onboardingBackgroundRuntime.
+  ///
+  /// In de, this message translates to:
+  /// **'Hintergrunddienst'**
+  String get onboardingBackgroundRuntime;
+
+  /// No description provided for @onboardingBackgroundRuntimeReady.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiv'**
+  String get onboardingBackgroundRuntimeReady;
+
+  /// No description provided for @onboardingBackgroundRuntimePending.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird lokal gestartet'**
+  String get onboardingBackgroundRuntimePending;
+
+  /// No description provided for @onboardingBackgroundBattery.
+  ///
+  /// In de, this message translates to:
+  /// **'Akkuzugriff'**
+  String get onboardingBackgroundBattery;
+
+  /// No description provided for @onboardingBackgroundBatteryReady.
+  ///
+  /// In de, this message translates to:
+  /// **'Uneingeschränkt'**
+  String get onboardingBackgroundBatteryReady;
+
+  /// No description provided for @onboardingBackgroundBatteryReview.
+  ///
+  /// In de, this message translates to:
+  /// **'Android-Einstellungen prüfen'**
+  String get onboardingBackgroundBatteryReview;
+
+  /// No description provided for @onboardingBackgroundOpenSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Akku-Einstellungen öffnen'**
+  String get onboardingBackgroundOpenSettings;
+
+  /// No description provided for @onboardingBackgroundContinue.
+  ///
+  /// In de, this message translates to:
+  /// **'Erinnerungen aktiv halten'**
+  String get onboardingBackgroundContinue;
+
+  /// No description provided for @onboardingBackgroundUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Hintergrundstatus ist auf diesem Gerät nicht verfügbar. Deine Erinnerungseinstellungen bleiben gespeichert.'**
+  String get onboardingBackgroundUnavailable;
 
   /// No description provided for @onboardingHabitReadyTitle.
   ///

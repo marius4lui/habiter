@@ -481,6 +481,47 @@ class AppLocalizationsDe extends AppLocalizations {
       'Berechtigung und ausstehende Erinnerungen sicher prüfen';
 
   @override
+  String get backgroundRuntimeDiagnostics => 'Hintergrundlaufzeit';
+
+  @override
+  String get runtimeAdaptiveReminders => 'Adaptive Erinnerungen';
+
+  @override
+  String get runtimeAppBlock => 'App Block';
+
+  @override
+  String get runtimeStatusOn => 'An';
+
+  @override
+  String get runtimeStatusOff => 'Aus';
+
+  @override
+  String get runtimeStarted => 'Gestartet';
+
+  @override
+  String get runtimeHeartbeat => 'Letzter Herzschlag';
+
+  @override
+  String get runtimeReminderEvaluation => 'Letzte Erinnerungsauswertung';
+
+  @override
+  String get runtimeNextEvaluation => 'Nächste Erinnerungsauswertung';
+
+  @override
+  String get runtimeNotificationDispatch =>
+      'Letzte Benachrichtigungszustellung';
+
+  @override
+  String get runtimeStartReason => 'Letzter Startgrund';
+
+  @override
+  String get runtimeNotRecorded => 'Noch nicht erfasst';
+
+  @override
+  String get runtimeUnavailable =>
+      'Diagnosedaten der Hintergrundlaufzeit sind auf diesem Gerät nicht verfügbar';
+
+  @override
   String get reminderPermissionGranted => 'Benachrichtigungen sind erlaubt';
 
   @override
@@ -1289,6 +1330,52 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get onboardingSmartControlBody =>
       'Die Wachzeit ist zunächst 08:00–22:00 Uhr. Du kannst jederzeit pausieren, jeden Plan ändern oder alle Lerndaten löschen.';
+
+  @override
+  String get onboardingBackgroundTitle =>
+      'Habiter im Hintergrund\naktiv halten.';
+
+  @override
+  String get onboardingBackgroundBody =>
+      'Erinnerungen werden lokal entschieden. Deshalb muss Android Habiters Vordergrunddienst aktiv halten. Solange er läuft, zeigt Android eine dauerhafte Benachrichtigung.';
+
+  @override
+  String get onboardingBackgroundNotifications => 'Benachrichtigungen';
+
+  @override
+  String get onboardingBackgroundNotificationsReady => 'Erlaubt';
+
+  @override
+  String get onboardingBackgroundNotificationsNeeded => 'Berechtigung nötig';
+
+  @override
+  String get onboardingBackgroundRuntime => 'Hintergrunddienst';
+
+  @override
+  String get onboardingBackgroundRuntimeReady => 'Aktiv';
+
+  @override
+  String get onboardingBackgroundRuntimePending => 'Wird lokal gestartet';
+
+  @override
+  String get onboardingBackgroundBattery => 'Akkuzugriff';
+
+  @override
+  String get onboardingBackgroundBatteryReady => 'Uneingeschränkt';
+
+  @override
+  String get onboardingBackgroundBatteryReview =>
+      'Android-Einstellungen prüfen';
+
+  @override
+  String get onboardingBackgroundOpenSettings => 'Akku-Einstellungen öffnen';
+
+  @override
+  String get onboardingBackgroundContinue => 'Erinnerungen aktiv halten';
+
+  @override
+  String get onboardingBackgroundUnavailable =>
+      'Der Hintergrundstatus ist auf diesem Gerät nicht verfügbar. Deine Erinnerungseinstellungen bleiben gespeichert.';
 
   @override
   String get onboardingHabitReadyTitle => 'Dein erstes\nHabit steht.';

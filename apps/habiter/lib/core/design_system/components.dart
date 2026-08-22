@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'layout.dart';
 import 'tokens.dart';
 
 /// Keeps phone layouts comfortably readable and prevents tablet layouts from
@@ -9,21 +10,91 @@ class HabiterContent extends StatelessWidget {
     super.key,
     required this.child,
     this.maxWidth = HabiterSize.contentMax,
-    this.padding = const EdgeInsets.fromLTRB(20, 12, 20, 112),
+    this.padding,
+    this.topPadding = 12,
+    this.bottomPadding = 112,
   });
 
   final Widget child;
   final double maxWidth;
-  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry? padding;
+  final double topPadding;
+  final double bottomPadding;
 
   @override
-  Widget build(BuildContext context) => Align(
-    alignment: Alignment.topCenter,
-    child: ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: maxWidth),
-      child: Padding(padding: padding, child: child),
-    ),
+  Widget build(BuildContext context) => HabiterLayoutBuilder(
+    builder: (context, layout) {
+      final horizontal = layout.horizontalPagePadding;
+      return Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: Padding(
+            padding:
+                padding ??
+                EdgeInsets.fromLTRB(
+                  horizontal,
+                  topPadding,
+                  horizontal,
+                  bottomPadding,
+                ),
+            child: child,
+          ),
+        ),
+      );
+    },
   );
+}
+
+/// A non-scrolling grid that preserves a minimum useful width for every card.
+/// It is intended for responsive sections embedded in a page's scroll view.
+class HabiterAdaptiveGrid extends StatelessWidget {
+  const HabiterAdaptiveGrid({
+    super.key,
+    required this.children,
+    this.minimumColumnWidth = 260,
+    this.spacing = HabiterSpace.md,
+    this.runSpacing = HabiterSpace.md,
+    this.maxColumns,
+  });
+
+  final List<Widget> children;
+  final double minimumColumnWidth;
+  final double spacing;
+  final double runSpacing;
+  final int? maxColumns;
+
+  @override
+  Widget build(BuildContext context) {
+    if (children.isEmpty) return const SizedBox.shrink();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final viewport = MediaQuery.sizeOf(context);
+        final availableWidth = constraints.hasBoundedWidth
+            ? constraints.maxWidth
+            : viewport.width;
+        final layout = HabiterLayout.fromSize(
+          Size(availableWidth, viewport.height),
+        );
+        final columns = layout.columnCount(
+          availableWidth: availableWidth,
+          minimumColumnWidth: minimumColumnWidth,
+          spacing: spacing,
+          maxColumns: maxColumns,
+        );
+        final childWidth =
+            (availableWidth - (spacing * (columns - 1))) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: runSpacing,
+          children: [
+            for (final child in children)
+              SizedBox(width: childWidth, child: child),
+          ],
+        );
+      },
+    );
+  }
 }
 
 class HabiterSectionHeader extends StatelessWidget {

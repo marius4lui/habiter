@@ -47,6 +47,22 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final size in const <Size>[Size(320, 480), Size(480, 320)]) {
+    testWidgets(
+      'editorial scaffold keeps actions reachable at ${size.width.toInt()}x${size.height.toInt()} and 200 percent text',
+      (tester) async {
+        await tester.binding.setSurfaceSize(size);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        await tester.pumpWidget(_app(textScale: 2));
+
+        expect(find.text('Grow with intention'), findsOneWidget);
+        expect(find.text('Continue'), findsOneWidget);
+        expect(find.text('Later'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('editorial scaffold uses theme colors in high contrast', (
     tester,
   ) async {

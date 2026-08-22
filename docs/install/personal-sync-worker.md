@@ -2,7 +2,7 @@
 
 Habiter Personal Sync has a source-available **Beta** target for Cloudflare Workers and D1. It runs the same authentication, HTTP, convergence, and storage contracts as the Docker target while using one Worker, one D1 database, Worker secrets, and no paid or external storage service.
 
-This is an operator-managed Beta: the repository supplies local development, migrations, setup, checks, export/import, Time Travel, and deployment dry runs. No production deployment is performed by the project or by this child issue.
+This is an operator-managed Beta: the repository supplies local development, migrations, setup, checks, export/import, Time Travel, and deployment dry runs. Repository validation performs no production deployment.
 
 ## Current Free-plan envelope
 
@@ -27,7 +27,7 @@ The representative adapter test creates one habit, performs 100 edits, and pulls
 
 The Worker writes one sanitized `d1_usage` event per request with statement, row-read, and row-write counts. Monitor those logs plus the D1 dashboard/analytics, Worker CPU, request counts, exceptions, and database size. Cloudflare stops D1 queries after Free daily row limits are exhausted; the service then fails closed rather than serving stale or unauthenticated data.
 
-## Prepare the source
+## Prerequisites and source preparation
 
 Work from a trusted checkout:
 

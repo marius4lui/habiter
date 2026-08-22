@@ -184,6 +184,10 @@ A concise view of the released baseline and upcoming product milestones.
 
 - Make every placed Habiter widget configurable with clear basic controls and advanced customization.
 
+**v1.12.0 — Personal Sync Beta (Beta)**
+
+- Introduce optional self-hosted Personal Sync while preserving local-first use without an account.
+
 See the detailed [`ROADMAP.md`](ROADMAP.md) for targets, issues, scope, dependencies, and versioning rules.
 <!-- roadmap:end -->
 

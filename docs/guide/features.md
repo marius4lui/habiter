@@ -32,10 +32,13 @@ See [Reminders](/guide/reminders) for modes, calibration, permissions, local lea
 
 - No account is required for core tracking.
 - Versioned JSON export/import includes preview, collision handling, and recovery backup.
+- Optional Personal Sync connects devices to a Docker/SQLite or Worker/D1 instance that you operate; Habiter provides no hosted fallback.
 - Classly-compatible OAuth and remote AI remain disabled until configured.
 - Sensitive integration credentials use platform-secure storage where available.
 
 See [Data and privacy](/guide/data-and-privacy) for storage categories, export/import behavior, optional network boundaries, credentials, and deletion scope.
+
+See [Personal Sync Beta](/guide/personal-sync) for ownership, synchronized fields, connection, reconciliation, device sessions, limitations, and operator responsibilities.
 
 ## Platform-specific features
 

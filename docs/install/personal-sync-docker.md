@@ -2,7 +2,7 @@
 
 Habiter Personal Sync is available as a **Beta** self-hosting stack for Docker Compose. One application container serves the versioned HTTP API and stores the single-account database in embedded SQLite. It requires no external database, cache, identity provider, analytics service, or other runtime dependency.
 
-Beta means the data and authentication contracts are tested, but operators should expect manual updates and keep verified backups before every change. This child does not publish an image or deploy a service.
+Beta means the data and authentication contracts are tested, but operators should expect manual updates and keep verified backups before every change. Repository validation builds and exercises the image locally; it does not publish or deploy the service.
 
 ## Prerequisites and boundaries
 

@@ -52,12 +52,23 @@ test("the published v1.5 release carries the complete update experience contract
   );
 });
 
+test("the v1.12 draft frames Personal Sync as an optional self-hosted Beta", async () => {
+  const manifest = await readJson(manifestPath);
+  const release = manifest.releases.find((item) => item.version === "1.12.0");
+  assert.equal(release?.channel, "beta");
+  assert.equal(release?.status, "draft");
+  assert.equal(release?.publishedAt, null);
+  const notes = JSON.stringify(release?.notes);
+  assert.match(notes, /Optional self-hosted Personal Sync Beta/);
+  assert.match(notes, /no Habiter-hosted fallback/);
+});
+
 test("release notes are deterministic", async () => {
   const manifest = await readJson(manifestPath);
-  const notes = renderNotes(manifest.releases[0]);
+  const notes = renderNotes(manifest.releases.find((item) => item.version === "1.7.3"));
   assert.doesNotMatch(notes, /^# Habiter/m);
   assert.match(notes, /^## (Added|Changed|Fixed|Security)/m);
-  assert.equal(notes, renderNotes(manifest.releases[0]));
+  assert.equal(notes, renderNotes(manifest.releases.find((item) => item.version === "1.7.3")));
   assert.match(notes, /Desktop signing/);
 });
 

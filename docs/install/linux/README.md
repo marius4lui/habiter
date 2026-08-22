@@ -42,6 +42,12 @@ Code families identify argument errors (`00x`), platform detection (`01x`), reso
 
 Use `--help` for the complete option list. `--system` is explicit and may require permissions for `/opt` and `/usr/local`; it never elevates privileges itself.
 
+## Update
+
+The Update Center can replace only the maintained user-scoped `Habiter.AppImage` identified by `APPIMAGE` and a matching schema-1 ownership manifest. Habiter downloads the one primary AppImage into its bounded per-user cache, supports safe HTTP Range resume, and checks exact size plus SHA-256. A detached shell helper rechecks the payload after Habiter exits, stages it beside the exact owned AppImage, preserves executable permissions, relaunches, and restores the adjacent backup if the new process exits during startup.
+
+System-scoped installs, supplemental tar bundles, unknown/custom bundles, Flatpak/Snap/distro packages, and installations without exact ownership evidence are never overwritten. The Update Center opens the verified external route so the original package manager or administrator remains authoritative. The helper never calls `sudo`, kills the running process, rewrites a desktop entry it does not own, or scans for similarly named files. Direct transfers remain visible, cancelable, and retryable.
+
 ## Uninstall safely
 
 Download and review the destructive workflow before executing it:

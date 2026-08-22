@@ -28,6 +28,50 @@ class ReminderDiagnosticsPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
+            context.l10n.backgroundRuntimeDiagnostics,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          if (snapshot.runtime case final runtime?) ...[
+            _DiagnosticRow(
+              label: context.l10n.runtimeAdaptiveReminders,
+              value: runtime.features.remindersEnabled
+                  ? context.l10n.runtimeStatusOn
+                  : context.l10n.runtimeStatusOff,
+            ),
+            _DiagnosticRow(
+              label: context.l10n.runtimeAppBlock,
+              value: runtime.features.appBlockEnabled
+                  ? context.l10n.runtimeStatusOn
+                  : context.l10n.runtimeStatusOff,
+            ),
+            _DiagnosticRow(
+              label: context.l10n.runtimeStarted,
+              value: _format(context, runtime.runtimeStartedAt),
+            ),
+            _DiagnosticRow(
+              label: context.l10n.runtimeHeartbeat,
+              value: _format(context, runtime.lastHeartbeatAt),
+            ),
+            _DiagnosticRow(
+              label: context.l10n.runtimeReminderEvaluation,
+              value: _format(context, runtime.lastReminderEvaluationAt),
+            ),
+            _DiagnosticRow(
+              label: context.l10n.runtimeNextEvaluation,
+              value: _format(context, runtime.nextReminderEvaluationAt),
+            ),
+            _DiagnosticRow(
+              label: context.l10n.runtimeNotificationDispatch,
+              value: _format(context, runtime.lastNotificationDispatchAt),
+            ),
+            _DiagnosticRow(
+              label: context.l10n.runtimeStartReason,
+              value: runtime.lastStartReason ?? context.l10n.runtimeNotRecorded,
+            ),
+          ] else
+            Text(snapshot.runtimeMessage ?? context.l10n.runtimeUnavailable),
+          const SizedBox(height: 12),
+          Text(
             context.l10n.pendingReminders(snapshot.pending.length),
             style: Theme.of(context).textTheme.titleSmall,
           ),
@@ -71,4 +115,20 @@ class ReminderDiagnosticsPanel extends StatelessWidget {
       ),
     );
   }
+
+  String _format(BuildContext context, DateTime? value) =>
+      value?.toLocal().toIso8601String() ?? context.l10n.runtimeNotRecorded;
+}
+
+class _DiagnosticRow extends StatelessWidget {
+  const _DiagnosticRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 4),
+    child: Text('$label: $value'),
+  );
 }

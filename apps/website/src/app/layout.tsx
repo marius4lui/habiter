@@ -5,10 +5,28 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://habiter.dev"),
-  title: "Habiter — Gewohnheiten, die bleiben.",
+  title: {
+    default: "Habiter — Gewohnheiten, die bleiben.",
+    template: "%s · Habiter",
+  },
   description:
-    "Habiter – Gewohnheiten, die bleiben. Ein Habit Tracker für Fokus, Routinen und langfristige Veränderung.",
+    "Habiter macht gute Gewohnheiten leichter: mit einem ruhigen Tagesfokus, ehrlichen Insights und Schutz vor Ablenkung.",
   alternates: { canonical: "/" },
+  keywords: ["Habit Tracker", "Gewohnheiten", "Routinen", "Fokus", "App Lock", "Habiter"],
+  openGraph: {
+    type: "website",
+    locale: "de_DE",
+    siteName: "Habiter",
+    title: "Habiter — Gewohnheiten, die bleiben.",
+    description:
+      "Ein ruhiger Habit Tracker für echte Wiederholung, Fokus und eine freundliche Rückkehr.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Habiter — Gewohnheiten, die bleiben.",
+    description:
+      "Ein ruhiger Habit Tracker für echte Wiederholung, Fokus und eine freundliche Rückkehr.",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -23,14 +41,14 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#090a09" },
-    { media: "(prefers-color-scheme: light)", color: "#f1f1e9" },
+    { media: "(prefers-color-scheme: dark)", color: "#151a18" },
+    { media: "(prefers-color-scheme: light)", color: "#faf9f5" },
   ],
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="de" suppressHydrationWarning>
+    <html lang="de" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -38,7 +56,12 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <a className="skip-link" href="#content">
+          Zum Inhalt springen
+        </a>
+        {children}
+      </body>
     </html>
   );
 }

@@ -23,9 +23,6 @@ abstract final class HabiterRadius {
 abstract final class HabiterSize {
   static const contentMax = 720.0;
   static const wideContentMax = 1120.0;
-  static const compactBreakpoint = 600.0;
-  static const expandedBreakpoint = 840.0;
-  static const desktopBreakpoint = 1024.0;
 }
 
 abstract final class HabiterState {

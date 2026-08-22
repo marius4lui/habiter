@@ -26,8 +26,8 @@ These channels are internal to the Habiter application. They are not a public pl
 | `requestUsageStatsPermission` | none | `null` after opening system settings. |
 | `hasOverlayPermission` | none | `bool` |
 | `requestOverlayPermission` | none | `null` after opening system settings. |
-| `isBatteryOptimized` | none | `bool`; `true` means Android still applies battery optimization. |
-| `requestBatteryOptimizationExemption` | none | `null` after opening system-wide battery settings. |
+| `isBatteryOptimized` | none | Compatibility alias for the shared runtime battery status. |
+| `requestBatteryOptimizationExemption` | none | Compatibility alias that opens system-wide battery settings. |
 | `startMonitoring` | `{lockedPackages: List<String>}` | `bool` indicating whether monitoring started. |
 | `stopMonitoring` | none | `null` |
 | `updateLockedApps` | `{lockedPackages: List<String>}` | `null` |
@@ -36,6 +36,26 @@ These channels are internal to the Habiter application. They are not a public pl
 | `habitsIncomplete` | none | `null` |
 
 The Dart adapter exposes safe failure categories for unsupported platform, native failure, and malformed response. Permission loss or a failed service start must leave App Lock disabled and fail open.
+
+Battery status and settings are owned by the shared background-runtime contract below. The App Lock methods remain compatibility aliases for older Dart callers and must not become a second source of feature state.
+
+## Android background runtime
+
+- Channel: `com.habiter.app/runtime`
+- Platforms: Android only
+- Dart boundary: `BackgroundRuntimeGateway`
+
+| Method | Arguments | Success result |
+| --- | --- | --- |
+| `getSnapshot` | none | `{remindersEnabled, appBlockEnabled, notificationsGranted, batteryOptimized}` |
+| `reconcile` | `{remindersEnabled: bool, appBlockEnabled: bool, reason: String}` | `null` after persisting both feature flags and reconciling the foreground service. |
+| `invalidateReminders` | none | `null` after requesting an immediate adaptive-reminder evaluation. |
+| `openBatterySettings` | none | `null` after opening system-wide battery settings. |
+| `getDiagnostics` | none | Feature flags plus nullable UTC-epoch-millisecond `runtimeStartedAt`, `lastHeartbeatAt`, `lastReminderEvaluationAt`, `nextReminderEvaluationAt`, `lastNotificationDispatchAt`, and nullable `lastStartReason`. |
+
+The two feature flags are one atomic state snapshot. A caller that changes one feature must first read the snapshot and preserve the other flag. The service runs while either feature is enabled and stops only when both are disabled. Diagnostics and feature state are persisted without habit names, notification payloads, or learning signals.
+
+Adaptive reminders use a persistent headless Flutter engine over `com.habiter.app/runtime_engine`. Native invokes `evaluate` with `{reason: String}`; Dart returns `{nextEvaluationAt: int?, dispatched: bool}`. Dart invokes `ready` with no arguments after registering the handler; native returns `null`. This private engine channel is registered with the notification, shared-preferences, and time-zone plugins before evaluation.
 
 ## Device time zone
 
@@ -70,13 +90,18 @@ Permission status and permission prompts use the notification plugin. This chann
 | `requestPin` | none | `bool` indicating whether Android accepted the request. |
 | `pinResult` | none | `idle`, `requested`, or `pinned`. |
 | `hasInstalledWidgets` | none | `bool` |
+| `pendingWidgetConfiguration` | none | The Android `appWidgetId` awaiting launcher configuration, or `null`. |
+| `listWidgetInstances` | none | List of `{widgetId, widthDp, heightDp, breakpoint, configuration}` maps for installed instances. |
+| `saveWidgetConfiguration` | `{widgetId: int, configuration: String}` | `null` after atomically persisting the matching versioned JSON configuration and requesting an update for only that widget ID. |
+| `resetWidgetConfiguration` | `{widgetId: int}` | `null` after removing only that instance's configuration and requesting its legacy-default render. |
+| `cancelWidgetConfiguration` | none | `null` after cancelling the pending launcher configuration result. |
 
-The result tracks platform callback state, not a guarantee that a widget remains installed forever. Widget rendering and actions use the `home_widget` bridge and the sanitized `habiter_widget_snapshot`, not this method channel.
+The pin result tracks platform callback state, not a guarantee that a widget remains installed forever. Configuration is keyed by Android `appWidgetId`; deleting an instance removes only its configuration. The launcher configuration activity returns success only after the matching pending instance is saved, and returns cancellation when the user leaves without saving. Missing, invalid, or unsupported configuration schemas fall back to legacy rendering defaults. Widget content and actions continue to use the `home_widget` bridge and the sanitized shared `habiter_widget_snapshot`; configuration is not a second habit-state source of truth.
 
 ## Android updates
 
 - Channel: `com.habiter.app/updates`
-- Platforms: Android for native methods; desktop uses external URLs and an HTTP manifest transport
+- Platforms: Android. Desktop update transport and installation use the Dart IO boundary documented below.
 
 | Method | Required arguments | Success result |
 | --- | --- | --- |
@@ -90,16 +115,33 @@ The result tracks platform callback state, not a guarantee that a widget remains
 | `clearDownloads` | none | `null` |
 | `installUpdate` | `{downloadId, buildNumber}` | `launched`, `permissionRequired`, or `unavailable`. |
 | `openInstallerPermission` | none | `null` after opening Android settings. |
+| `startStoreUpdate` | `{immediate: bool}` | `launched`, `canceled`, `externalOpened`, or `unavailable`. |
+| `getStoreUpdateStatus` | none | `{phase, downloadedBytes, totalBytes, failureCode?}` for the active Google Play update. |
+| `completeStoreUpdate` | none | `launched` or `unavailable`; completes a downloaded flexible Play update. |
 | `openStore` | none | `bool` |
 | `storedDownloadBytes` | none | Non-negative byte count. |
 | `cleanupAfterUpgrade` | `{currentBuild}` | `null` |
 | `consumePendingOpen` | none | `bool` |
 
-`fetchManifest` accepts HTTPS only, does not follow redirects, applies bounded timeouts, caps response bytes, and supports `If-None-Match`. Direct-download methods reject store distributions, unsafe URLs and file names, stale builds, invalid hashes, insufficient storage, mismatched sizes, and mismatched signing certificates.
+`fetchManifest` accepts HTTPS only, does not follow redirects, applies bounded timeouts, caps response bytes, and supports `If-None-Match`. Direct-download methods reject store distributions, unsafe URLs and file names, stale builds, invalid hashes, insufficient storage, mismatched sizes, and mismatched signing certificates. The Store flavor alone links Google Play's app-update library; the direct flavor contains a fail-closed coordinator with no Play dependency. Flexible Play progress and completion are serialized through the same download-status domain model, so Dart can reconcile an active Store update after process recreation.
 
 The native side can invoke `openUpdateCenter` on the same channel when a notification intent is delivered to a running Flutter engine. At cold start, Dart calls `consumePendingOpen` to consume the equivalent intent flag exactly once.
 
 Native update failures use stable machine-readable codes such as `unsafe_manifest_url`, `manifest_too_large`, `manifest_network_error`, `unsafe_url`, `unsafe_file_name`, `invalid_hash`, `stale_apk`, `insufficient_storage`, and `update_platform_error`. UI copy must map these to safe localized messages rather than exposing exception details.
+
+## Desktop updates
+
+Desktop platforms do not expose a Flutter method channel for updating. `DesktopUpdateClient` owns an opaque per-user cache record, partial payload, final payload, and stable error marker. It accepts HTTPS only, rejects redirects, bounds bytes by the signed size, resumes with HTTP Range where possible, and promotes a payload only after size and SHA-256 verification. The gateway persists only the opaque download ID and expected build.
+
+`DesktopUpdateInstaller` detects only maintained installations carrying schema-1 ownership evidence for the exact executable and canonical user-scoped root. System-scoped, unowned, package-manager, and unsupported-format installations return `false` and use the visible external route. The implementation contracts are:
+
+| Platform | Direct handoff contract |
+| --- | --- |
+| Linux | Exact running `Habiter.AppImage`, adjacent staging/backup, checksum revalidation, process wait, relaunch, and rollback on early exit. |
+| Windows | Signed primary ZIP only; bounded target, traversal/reparse rejection, SHA-256, valid Authenticode on current and next executable, identical publisher certificate, adjacent directory swap, relaunch, and rollback. |
+| macOS | Signed primary ZIP only; user-owned bundle with adjacent ownership manifest, archive-layout guard, SHA-256, exact bundle ID, strict code-sign validation, Gatekeeper assessment, identical signing team, adjacent bundle swap, relaunch, and rollback. The app bundle is never modified after signing. |
+
+Helper launch means the current process exits voluntarily; no helper kills it or requests elevation. A helper writes only the stable `install_failed` marker on failure. Dart maps that category to localized recovery copy and retains the current release when rollback succeeds.
 
 ## Changing a channel
 

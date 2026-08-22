@@ -477,6 +477,46 @@ class AppLocalizationsEn extends AppLocalizations {
       'Review permissions and pending reminders safely';
 
   @override
+  String get backgroundRuntimeDiagnostics => 'Background runtime';
+
+  @override
+  String get runtimeAdaptiveReminders => 'Adaptive reminders';
+
+  @override
+  String get runtimeAppBlock => 'App Block';
+
+  @override
+  String get runtimeStatusOn => 'On';
+
+  @override
+  String get runtimeStatusOff => 'Off';
+
+  @override
+  String get runtimeStarted => 'Started';
+
+  @override
+  String get runtimeHeartbeat => 'Last heartbeat';
+
+  @override
+  String get runtimeReminderEvaluation => 'Last reminder evaluation';
+
+  @override
+  String get runtimeNextEvaluation => 'Next reminder evaluation';
+
+  @override
+  String get runtimeNotificationDispatch => 'Last notification dispatch';
+
+  @override
+  String get runtimeStartReason => 'Last start reason';
+
+  @override
+  String get runtimeNotRecorded => 'Not recorded yet';
+
+  @override
+  String get runtimeUnavailable =>
+      'Background runtime diagnostics are unavailable on this device';
+
+  @override
   String get reminderPermissionGranted => 'Notification permission is granted';
 
   @override
@@ -629,6 +669,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduleRequired => 'Choose at least one day.';
+
+  @override
+  String get scheduleUnavailable => 'Schedule unavailable';
 
   @override
   String get reminderTimeRequired =>
@@ -1275,6 +1318,51 @@ class AppLocalizationsEn extends AppLocalizations {
       'Active hours default to 08:00–22:00. You can pause, change every plan, or delete all learning data anytime.';
 
   @override
+  String get onboardingBackgroundTitle =>
+      'Keep Habiter active\nin the background.';
+
+  @override
+  String get onboardingBackgroundBody =>
+      'Reminders are decided locally, so Android needs to keep Habiter\'s foreground runtime active. Android will show an ongoing notification while it runs.';
+
+  @override
+  String get onboardingBackgroundNotifications => 'Notifications';
+
+  @override
+  String get onboardingBackgroundNotificationsReady => 'Allowed';
+
+  @override
+  String get onboardingBackgroundNotificationsNeeded => 'Permission needed';
+
+  @override
+  String get onboardingBackgroundRuntime => 'Background runtime';
+
+  @override
+  String get onboardingBackgroundRuntimeReady => 'Active';
+
+  @override
+  String get onboardingBackgroundRuntimePending => 'Starting locally';
+
+  @override
+  String get onboardingBackgroundBattery => 'Battery access';
+
+  @override
+  String get onboardingBackgroundBatteryReady => 'Unrestricted';
+
+  @override
+  String get onboardingBackgroundBatteryReview => 'Review Android settings';
+
+  @override
+  String get onboardingBackgroundOpenSettings => 'Open battery settings';
+
+  @override
+  String get onboardingBackgroundContinue => 'Keep reminders active';
+
+  @override
+  String get onboardingBackgroundUnavailable =>
+      'Background status is unavailable on this device. Your reminder settings are still saved.';
+
+  @override
   String get onboardingHabitReadyTitle => 'Your first\nhabit is ready.';
 
   @override
@@ -1433,13 +1521,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateStatusReady => 'Ready to install';
 
   @override
-  String get updateStatusInstalling => 'Android installer opened';
+  String get updateStatusRestartRequired => 'Downloaded · restart required';
+
+  @override
+  String get updateStatusInstalling => 'Secure update handoff started';
 
   @override
   String get updateStatusMandatory => 'This update is now required';
 
   @override
   String get updateStatusError => 'Update check unavailable';
+
+  @override
+  String get updateErrorOffline => 'Offline · reconnect to check securely';
+
+  @override
+  String get updateErrorIntegrity => 'The download failed its security check';
+
+  @override
+  String get updateErrorStorage => 'Not enough safe storage for this update';
+
+  @override
+  String get updateErrorExternal =>
+      'The platform update service is unavailable';
 
   @override
   String get updateAvailableBadge => 'Update available';
@@ -1501,7 +1605,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateDownload => 'Download update';
 
   @override
+  String get updateCancelDownload => 'Cancel download';
+
+  @override
   String get updateInstall => 'Install';
+
+  @override
+  String get updateRestart => 'Install and restart';
 
   @override
   String get updateOpenDownload => 'Open download';
@@ -1599,4 +1709,559 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get updateUnsupported =>
       'Updates are not available on this platform yet.';
+
+  @override
+  String get widgetInstancesTitle => 'Widgets';
+
+  @override
+  String get widgetInstancesBody =>
+      'Each home-screen widget keeps its own content, layout, colors and actions.';
+
+  @override
+  String get widgetInstancesEmpty =>
+      'No Habiter widgets are currently placed on your home screen.';
+
+  @override
+  String get widgetInstancesLoadFailed =>
+      'Your widget instances could not be loaded.';
+
+  @override
+  String get widgetAddAnother => 'Add widget';
+
+  @override
+  String widgetDefaultName(int id) {
+    return 'Widget $id';
+  }
+
+  @override
+  String get widgetBreakpointCompact => 'Compact';
+
+  @override
+  String get widgetBreakpointCompactSquare => 'Compact Square';
+
+  @override
+  String get widgetBreakpointWide => 'Wide';
+
+  @override
+  String get widgetBreakpointMediumHero => 'Medium Hero';
+
+  @override
+  String get widgetBreakpointLarge => 'Large';
+
+  @override
+  String get widgetBreakpointExtraLarge => 'Extra Large';
+
+  @override
+  String get widgetBasicTitle => 'Widget settings';
+
+  @override
+  String get widgetBasicBody =>
+      'Simple by default. These settings only affect this widget instance.';
+
+  @override
+  String get widgetSectionIdentity => 'This widget';
+
+  @override
+  String get widgetSectionContent => 'Content';
+
+  @override
+  String get widgetSectionMode => 'Widget mode';
+
+  @override
+  String get widgetSectionAppearance => 'Appearance';
+
+  @override
+  String get widgetSectionBehavior => 'Behavior';
+
+  @override
+  String get widgetDisplayName => 'Name (optional)';
+
+  @override
+  String get widgetDisplayNameHint => 'Morning, Training, Dashboard…';
+
+  @override
+  String get widgetHabitSelection => 'Habits to show';
+
+  @override
+  String get widgetHabitsAllToday => 'All today\'s habits';
+
+  @override
+  String get widgetHabitsOpenOnly => 'Open habits only';
+
+  @override
+  String get widgetHabitsSelected => 'Selected habits';
+
+  @override
+  String get widgetNoSelectableHabits =>
+      'There are no active habits to select.';
+
+  @override
+  String get widgetSort => 'Sort order';
+
+  @override
+  String get widgetSortHabiter => 'As in Habiter';
+
+  @override
+  String get widgetSortOpenFirst => 'Open habits first';
+
+  @override
+  String get widgetSortCustom => 'Custom order';
+
+  @override
+  String get widgetSortCustomBody =>
+      'Drag habits into the order this widget should use.';
+
+  @override
+  String get widgetMode => 'Mode';
+
+  @override
+  String get widgetModeAuto => 'Auto';
+
+  @override
+  String get widgetModeFocus => 'Focus';
+
+  @override
+  String get widgetModeList => 'List';
+
+  @override
+  String get widgetModeMinimal => 'Minimal';
+
+  @override
+  String get widgetTheme => 'Theme';
+
+  @override
+  String get widgetAccent => 'Accent';
+
+  @override
+  String get widgetAccentHabiter => 'Habiter';
+
+  @override
+  String get widgetAccentDynamic => 'Android Dynamic Color';
+
+  @override
+  String get widgetAccentCustom => 'Custom';
+
+  @override
+  String get widgetShowProgress => 'Show progress';
+
+  @override
+  String get widgetShowSchedule => 'Show schedule label';
+
+  @override
+  String get widgetShowCompleted => 'Show completed habits';
+
+  @override
+  String get widgetDensity => 'Density';
+
+  @override
+  String get widgetDensityCompact => 'Compact';
+
+  @override
+  String get widgetDensityComfortable => 'Comfortable';
+
+  @override
+  String get widgetBackgroundTap => 'Tap widget background';
+
+  @override
+  String get widgetBackgroundToday => 'Open Today';
+
+  @override
+  String get widgetBackgroundNext => 'Open next habit';
+
+  @override
+  String get widgetBackgroundApp => 'Open Habiter';
+
+  @override
+  String get widgetOneTapCompletion => 'One-tap completion';
+
+  @override
+  String get widgetOneTapCompletionBody =>
+      'When off, the completion control opens the habit instead.';
+
+  @override
+  String get widgetShowUndo => 'Show Undo after completion';
+
+  @override
+  String get widgetCompletionFeedback => 'Show completion feedback';
+
+  @override
+  String get widgetSaveFailed => 'This widget\'s settings could not be saved.';
+
+  @override
+  String get widgetAdvancedTitle => 'Advanced';
+
+  @override
+  String get widgetAdvancedBody =>
+      'Cracked customization · collapsed by default';
+
+  @override
+  String get widgetAdvancedBreakpoints => 'Per-breakpoint overrides';
+
+  @override
+  String get widgetAdvancedVisibleElements => 'Visible elements';
+
+  @override
+  String get widgetAdvancedHabitList => 'Habit list';
+
+  @override
+  String get widgetAdvancedProgress => 'Progress';
+
+  @override
+  String get widgetAdvancedCompletion => 'Completion controls';
+
+  @override
+  String get widgetAdvancedThemeTokens => 'Theme tokens';
+
+  @override
+  String get widgetAdvancedGeometry => 'Geometry';
+
+  @override
+  String get widgetAdvancedTypography => 'Typography';
+
+  @override
+  String get widgetAdvancedStates => 'State-specific UI';
+
+  @override
+  String get widgetAdvancedInteractions => 'Interaction mapping';
+
+  @override
+  String get widgetUseGlobalSettings => 'Use global settings';
+
+  @override
+  String get widgetOverrideThisSize => 'Override this size';
+
+  @override
+  String get widgetMaximumHabits => 'Maximum visible habits';
+
+  @override
+  String get widgetCompletedPlacement => 'Completed habit placement';
+
+  @override
+  String get widgetCompletedAsHabiter => 'As in Habiter';
+
+  @override
+  String get widgetCompletedAtEnd => 'Move to end';
+
+  @override
+  String get widgetOverflow => 'When space runs out';
+
+  @override
+  String get widgetOverflowTruncate => 'Truncate list';
+
+  @override
+  String get widgetOverflowOpenOnly => 'Show open habits only';
+
+  @override
+  String get widgetOverflowFocus => 'Switch to Focus';
+
+  @override
+  String get widgetPinnedHabits => 'Pinned habits';
+
+  @override
+  String get widgetProgressMode => 'Progress display';
+
+  @override
+  String get widgetProgressAutomatic => 'Automatic';
+
+  @override
+  String get widgetProgressHidden => 'Hidden';
+
+  @override
+  String get widgetProgressSegments => 'Segments';
+
+  @override
+  String get widgetProgressCounter => 'Counter';
+
+  @override
+  String get widgetProgressBoth => 'Segments + counter';
+
+  @override
+  String get widgetSegmentHeight => 'Segment height';
+
+  @override
+  String get widgetSegmentGap => 'Segment gap';
+
+  @override
+  String get widgetMaximumSegments => 'Maximum segments';
+
+  @override
+  String get widgetCompletedSegments => 'Completed segments';
+
+  @override
+  String get widgetRemainingSegments => 'Remaining segments';
+
+  @override
+  String get widgetCompletionButtonStyle => 'Button style';
+
+  @override
+  String get widgetFocusNextHabit => 'Focus next open habit after completion';
+
+  @override
+  String get widgetCompletionFeedbackLevel => 'Feedback detail';
+
+  @override
+  String get widgetFeedbackMinimal => 'Minimal';
+
+  @override
+  String get widgetFeedbackNormal => 'Normal';
+
+  @override
+  String get widgetFeedbackDetailed => 'Detailed';
+
+  @override
+  String get widgetThemeTokenMode => 'Theme token mode';
+
+  @override
+  String get widgetColorSurface => 'Surface';
+
+  @override
+  String get widgetColorSurfaceAccent => 'Surface accent';
+
+  @override
+  String get widgetColorPrimary => 'Primary';
+
+  @override
+  String get widgetColorText => 'Text';
+
+  @override
+  String get widgetColorMutedText => 'Muted text';
+
+  @override
+  String get widgetColorSuccess => 'Success';
+
+  @override
+  String get widgetResetToken => 'Reset this token';
+
+  @override
+  String get widgetChooseColor => 'Choose color';
+
+  @override
+  String get widgetSurfaceTransparency => 'Surface transparency';
+
+  @override
+  String get widgetCornerRadius => 'Widget corner radius';
+
+  @override
+  String get widgetHabitRowRadius => 'Habit row radius';
+
+  @override
+  String get widgetButtonRadius => 'Button radius';
+
+  @override
+  String get widgetOuterPadding => 'Outer padding';
+
+  @override
+  String get widgetHorizontalPadding => 'Horizontal padding';
+
+  @override
+  String get widgetVerticalPadding => 'Vertical padding';
+
+  @override
+  String get widgetRowGap => 'Row gap';
+
+  @override
+  String get widgetSectionGap => 'Section gap';
+
+  @override
+  String get widgetTextScale => 'Text scale';
+
+  @override
+  String get widgetHabitTitleSize => 'Habit title size';
+
+  @override
+  String get widgetSecondaryTextSize => 'Secondary text size';
+
+  @override
+  String get widgetCounterSize => 'Counter size';
+
+  @override
+  String get widgetFontWeight => 'Font weight';
+
+  @override
+  String get widgetFontSystem => 'System';
+
+  @override
+  String get widgetFontRegular => 'Regular';
+
+  @override
+  String get widgetFontMedium => 'Medium';
+
+  @override
+  String get widgetFontBold => 'Bold';
+
+  @override
+  String get widgetStateJustCompleted => 'Just completed';
+
+  @override
+  String get widgetStateAllComplete => 'All complete';
+
+  @override
+  String get widgetStateFreeToday => 'Free today';
+
+  @override
+  String get widgetStateNoHabits => 'No habits';
+
+  @override
+  String get widgetStateMissingStale => 'Missing / stale';
+
+  @override
+  String get widgetInteractionBackground => 'Widget background';
+
+  @override
+  String get widgetInteractionHabitRow => 'Habit row';
+
+  @override
+  String get widgetInteractionCompletion => 'Completion control';
+
+  @override
+  String get widgetActionOpenHabit => 'Open habit';
+
+  @override
+  String get widgetActionComplete => 'Complete';
+
+  @override
+  String get widgetActionNone => 'No action';
+
+  @override
+  String get widgetElementHabitIcon => 'Habit icon';
+
+  @override
+  String get widgetElementHabitName => 'Habit name';
+
+  @override
+  String get widgetElementSchedule => 'Schedule label';
+
+  @override
+  String get widgetElementSegments => 'Progress segments';
+
+  @override
+  String get widgetElementCounter => 'x / y counter';
+
+  @override
+  String get widgetElementTodayHeader => 'Today header';
+
+  @override
+  String get widgetElementCompletionButton => 'Completion button';
+
+  @override
+  String get widgetElementCompletedHabits => 'Completed habits';
+
+  @override
+  String get widgetElementCheckmark => 'Completion checkmark';
+
+  @override
+  String get widgetElementUndo => 'Undo button';
+
+  @override
+  String get widgetElementEmptyText => 'Empty-state text';
+
+  @override
+  String get widgetElementDoneText => 'Done-state text';
+
+  @override
+  String get widgetStyleAutomatic => 'Automatic';
+
+  @override
+  String get widgetStyleSolid => 'Solid';
+
+  @override
+  String get widgetStyleMuted => 'Muted';
+
+  @override
+  String get widgetStyleTrack => 'Track';
+
+  @override
+  String get widgetStyleOutline => 'Outline';
+
+  @override
+  String get widgetStyleCheckOnly => 'Check only';
+
+  @override
+  String get widgetStyleTextOnly => 'Text only';
+
+  @override
+  String get widgetStyleCheckAndText => 'Check + text';
+
+  @override
+  String get widgetStyleWholeRow => 'Whole habit row';
+
+  @override
+  String get widgetStyleFull => 'Full feedback';
+
+  @override
+  String get widgetStyleCompact => 'Compact';
+
+  @override
+  String get widgetStyleNextHabit => 'Show next habit';
+
+  @override
+  String get widgetStyleCard => 'Done card';
+
+  @override
+  String get widgetStyleMessage => 'Done message';
+
+  @override
+  String get widgetStyleIconOnly => 'Icon only';
+
+  @override
+  String get widgetStyleTextAndIcon => 'Text + icon';
+
+  @override
+  String get widgetStyleDefault => 'Default state';
+
+  @override
+  String get widgetStyleSyncMessage => 'Sync message';
+
+  @override
+  String get widgetLivePreview => 'Live preview';
+
+  @override
+  String widgetLivePreviewSemantics(String size) {
+    return 'Live widget preview at $size size';
+  }
+
+  @override
+  String get widgetPreviewEmpty => 'No matching habits for this widget.';
+
+  @override
+  String get widgetScheduleCustom => 'Specific days';
+
+  @override
+  String get widgetPresets => 'Presets and reuse';
+
+  @override
+  String get widgetPreset => 'Preset';
+
+  @override
+  String get widgetPresetDefault => 'Default';
+
+  @override
+  String get widgetPresetMinimal => 'Minimal';
+
+  @override
+  String get widgetPresetFocus => 'Focus';
+
+  @override
+  String get widgetPresetDenseList => 'Dense List';
+
+  @override
+  String get widgetPresetDashboard => 'Dashboard';
+
+  @override
+  String get widgetResetDefault => 'Reset to Default';
+
+  @override
+  String get widgetCopySettings => 'Copy settings from widget';
+
+  @override
+  String get widgetDuplicateConfiguration => 'Duplicate configuration';
+
+  @override
+  String get widgetCopyFrom => 'Copy settings from…';
+
+  @override
+  String get widgetDuplicateTo => 'Duplicate configuration to…';
+
+  @override
+  String get widgetDuplicated => 'The configuration was duplicated.';
 }

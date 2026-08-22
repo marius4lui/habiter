@@ -16,6 +16,7 @@ SELECTED_SCOPE=
 SELECTED_VERSION=unknown
 SELECTED_LEGACY=0
 SELECTED_INTEGRATIONS=
+SELECTED_MANIFEST=
 MISSING_INTEGRATIONS=
 STAGED_COUNT=0
 STAGED_ORIGINAL_1= STAGED_QUARANTINE_1=
@@ -182,7 +183,7 @@ classify_integration() {
 }
 
 verify_manifest_candidate() {
-  root=$1 scope=$2 manifest=$root/$MANIFEST_NAME
+  root=$1 scope=$2 manifest=$3
   [ ! -L "$manifest" ] || fail HAB-UNIX-030 "ownership manifest is a symbolic link: $manifest" 'Refusing redirected ownership evidence.' 30
   assert_regular_target "$manifest" 'ownership manifest'
   [ "$(wc -l < "$manifest" | tr -d ' ')" = 13 ] || fail HAB-UNIX-030 'ownership manifest shape is invalid' 'Reinstall Habiter before uninstalling.' 30
@@ -252,7 +253,18 @@ inspect_candidate() {
   CANDIDATE_COUNT=$((CANDIDATE_COUNT + 1))
   [ "$CANDIDATE_COUNT" -eq 1 ] || fail HAB-UNIX-061 "multiple Habiter installations were found: $SELECTED_ROOT and $root" 'Run again with --install-dir and one exact candidate.' 60
   SELECTED_ROOT=$root SELECTED_SCOPE=$scope
-  if [ -e "$root/$MANIFEST_NAME" ] || [ -L "$root/$MANIFEST_NAME" ]; then verify_manifest_candidate "$root" "$scope"; else verify_legacy_candidate "$root" "$scope"; fi
+  internal_manifest=$root/$MANIFEST_NAME
+  external_manifest=$root.habiter-install.json
+  SELECTED_MANIFEST=
+  if [ "$OS" = macos ] && { [ -e "$external_manifest" ] || [ -L "$external_manifest" ]; }; then
+    if [ -e "$internal_manifest" ] || [ -L "$internal_manifest" ]; then fail HAB-UNIX-062 'multiple ownership manifests were found for one macOS bundle' 'Reinstall Habiter before uninstalling.' 60; fi
+    verify_manifest_candidate "$root" "$scope" "$external_manifest"
+    SELECTED_MANIFEST=$external_manifest
+  elif [ -e "$internal_manifest" ] || [ -L "$internal_manifest" ]; then
+    verify_manifest_candidate "$root" "$scope" "$internal_manifest"
+  else
+    verify_legacy_candidate "$root" "$scope"
+  fi
   say "      Candidate: $root"
   say "      Scope: $scope"
   say "      Version: $SELECTED_VERSION"
@@ -274,6 +286,7 @@ print_plan() {
   PHASE=removal-plan
   say '[4/7] Removal plan'
   say "      Application: $SELECTED_ROOT"
+  [ -z "$SELECTED_MANIFEST" ] || say "      Ownership evidence: $SELECTED_MANIFEST"
   if [ -n "$SELECTED_INTEGRATIONS" ]; then
     old_ifs=$IFS; IFS='
 '
@@ -388,6 +401,7 @@ remove_selected() {
 '
   for path in $SELECTED_INTEGRATIONS; do [ -z "$path" ] || stage_path "$path"; done
   IFS=$old_ifs
+  [ -z "$SELECTED_MANIFEST" ] || stage_path "$SELECTED_MANIFEST"
   stage_path "$SELECTED_ROOT"
   PHASE=finalize-removal
   [ "$STAGED_COUNT" -lt 1 ] || finalize_one "$STAGED_QUARANTINE_1" "$STAGED_ORIGINAL_1"

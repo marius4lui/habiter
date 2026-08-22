@@ -21,8 +21,11 @@ replace the persistence, reminder, or App Lock contracts.
 
 The canonical tokens live in `apps/habiter/lib/core/design_system/`:
 
-- `tokens.dart` defines the spacing, radius, target-size, content-width, and
-  breakpoint scales.
+- `tokens.dart` defines the spacing, radius, target-size, and content-width
+  scales.
+- `layout.dart` owns the semantic Compact, Medium, Expanded, and Large layout
+  classes. The full contract and reference-size matrix are documented in the
+  [responsive layout guide](/dev/responsive-layout).
 - `habiter_palette.dart` defines light, dark, and high-contrast semantic color
   roles.
 - `habiter_theme.dart` maps those roles to Material 3 components. It uses the
@@ -40,10 +43,9 @@ localizations are refreshed with `flutter gen-l10n`.
 
 ### Today
 
-Today uses this order: greeting and date, compact progress, next-habit hero,
-remaining habit rows, collapsed completed habits, and collapsed inactive habit
-management. At 840 dp and above, active work and lifecycle/history controls use
-two columns; phone layouts remain a single reading column.
+Today prioritizes the newest active habit and a navigation wheel. It stacks the
+two regions until the locally available content area is Expanded, then promotes
+them to proportional primary and secondary panes without resetting wheel state.
 
 ### Habit editor
 
@@ -87,8 +89,9 @@ flutter build apk --debug
 flutter build web --release
 ```
 
-The mobile UI suite covers 320, 360, 390, and 412 dp phone widths, 200% text,
-light and dark themes, one-tap completion/undo, App Lock's friendly picker, and
-golden contracts for Settings and the guided editor. Native App Lock permission,
-overlay, OEM battery, and launcher-icon behavior still require the real-device
-matrix documented in the [App Lock engineering notes](/app-lock).
+The UI suite covers the canonical smart-display, phone, tablet, and desktop
+sizes in the [responsive layout guide](/dev/responsive-layout), plus intermediate
+phone widths, 200% text, light and dark themes, one-tap completion/undo, App
+Lock's friendly picker, and golden contracts. Native App Lock permission,
+overlay, OEM battery, launcher-icon behavior, and physical display behavior
+still require their matching real-device matrices.

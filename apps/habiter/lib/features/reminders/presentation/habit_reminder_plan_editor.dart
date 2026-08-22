@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/design_system/adaptive_presentation.dart';
 import '../../../core/design_system/tokens.dart';
 import '../../../models/habit.dart';
 import '../domain/local_time.dart';
@@ -33,10 +34,8 @@ class HabitReminderPlanEditor extends StatefulWidget {
           now: now,
           enabled: habit.notificationEnabled,
         );
-    return showModalBottomSheet<void>(
+    return showHabiterAdaptivePane<void>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
       builder: (_) => HabitReminderPlanEditor(
         habit: habit,
         policy: effective,

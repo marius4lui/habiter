@@ -33,7 +33,7 @@
   width: 100%;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 639px) {
   .vp-doc table {
     display: block;
     max-width: 100%;

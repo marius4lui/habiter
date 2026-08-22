@@ -223,9 +223,9 @@
     {
       "version": "1.8.0",
       "title": "Persistent Habiter Runtime",
-      "status": "planned",
-      "channel": "stable",
-      "target": "After v1.7.0",
+      "status": "released",
+      "channel": "beta",
+      "statusText": "Released to the beta channel as the shared Android runtime baseline.",
       "issues": [10],
       "summary": ["Introduce a shared background runtime for adaptive reminders and future focus features."],
       "scope": [
@@ -245,9 +245,9 @@
     {
       "version": "1.9.0",
       "title": "App Block 2.0",
-      "status": "planned",
-      "channel": "stable",
-      "target": "After v1.8.0",
+      "status": "released",
+      "channel": "beta",
+      "statusText": "Released to the beta channel with optional App Block onboarding and per-app rules.",
       "issues": [12],
       "summary": ["Add local distraction discovery and habit-based app blocking."],
       "scope": [
@@ -265,9 +265,9 @@
     {
       "version": "1.10.0",
       "title": "Responsive app shell",
-      "status": "planned",
-      "channel": "stable",
-      "target": "After v1.9.0",
+      "status": "released",
+      "channel": "beta",
+      "statusText": "Released to the beta channel with adaptive compact, tablet and desktop layouts.",
       "issues": [26],
       "summary": ["Optimize Habiter for desktop, tablets and compact touch displays through one responsive layout system."],
       "scope": [
@@ -280,9 +280,9 @@
     {
       "version": "1.11.0",
       "title": "Pro-Widget Settings",
-      "status": "planned",
-      "channel": "stable",
-      "target": "After v1.10.0",
+      "status": "released",
+      "channel": "beta",
+      "statusText": "Released to the beta channel with independent Basic and Advanced settings for each placed widget.",
       "issues": [20],
       "summary": ["Make every placed Habiter widget configurable with clear basic controls and advanced customization."],
       "scope": [
@@ -290,6 +290,35 @@
         "Deliver focused basic display and interaction settings.",
         "Add optional advanced customization without compromising the default experience."
       ]
+    },
+    {
+      "version": "1.12.0",
+      "title": "Personal Sync",
+      "status": "planned",
+      "channel": "beta",
+      "target": "After v1.11.0",
+      "issues": [52, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70],
+      "summary": [
+        "Deliver optional, local-first Personal Sync for securely connecting Habiter across a user's devices.",
+        "Offer self-hosted SQLite/Docker and Cloudflare D1 Beta backends without making sync mandatory."
+      ],
+      "scope": [
+        "Define a versioned allow-listed sync contract, deterministic convergence rules, tombstones and durable cursors.",
+        "Provide SQLite and Cloudflare D1 storage, single-user authentication, PKCE browser login and secure mobile handoff.",
+        "Ship Docker Compose and Worker/D1 Beta operator paths with backup, restore, rollback and lifecycle guidance.",
+        "Add a local-first synchronization engine, initial reconciliation and explicit action-required recovery UX.",
+        "Prove cross-platform parity and two-device convergence with an auditable E2E evidence matrix and rollout documentation."
+      ],
+      "dependencies": [
+        "#57 through #69 must merge in their documented dependency order.",
+        "#70 owns the public Beta framing and rollout readiness after the implementation chain."
+      ],
+      "testing": [
+        "Contract, adapter, migration, authentication, API and durable queue tests across SQLite and D1.",
+        "Two-device offline, retry, revocation, reconciliation and recovery scenarios on every supported client platform.",
+        "Manual Beta verification of self-hosted and Cloudflare operator flows, backup/restore and platform handoff behavior."
+      ],
+      "goal": "Make multi-device sync optional, secure, recoverable and transparent before considering a stable channel."
     }
   ],
   "versioning": {

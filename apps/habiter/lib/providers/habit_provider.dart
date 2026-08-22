@@ -25,6 +25,9 @@ import '../features/reminders/domain/reminder_preferences.dart';
 import '../features/reminders/domain/reminder_signal.dart';
 import '../features/today/application/today_controller.dart';
 import '../features/today/application/completion_use_case.dart';
+import '../features/runtime/infrastructure/method_channel_background_runtime_gateway.dart';
+import '../features/runtime/application/background_runtime_reconciler.dart';
+import '../features/runtime/domain/background_runtime_gateway.dart';
 import '../models/habit.dart';
 import '../services/ai_manager.dart';
 import '../services/classly_client.dart';
@@ -40,6 +43,7 @@ class HabitProvider extends ChangeNotifier {
     KeyValueStore? actionStore,
     NotificationGateway? notificationGateway,
     ReminderCoordinator? reminderCoordinator,
+    BackgroundRuntimeGateway? backgroundRuntimeGateway,
     Future<bool> Function()? requestReminderPermission,
     Future<void> Function()? synchronizeWidget,
     Future<void> Function({
@@ -72,6 +76,10 @@ class HabitProvider extends ChangeNotifier {
     _analyticsController = AnalyticsController(clock);
     _lifecycleReminders = lifecycleReminders ?? const _NoopLifecycleReminders();
     final reminderStore = actionStore ?? fallbackStore;
+    final backgroundRuntime =
+        backgroundRuntimeGateway ??
+        const MethodChannelBackgroundRuntimeGateway(supported: false);
+    final runtimeReconciler = BackgroundRuntimeReconciler(backgroundRuntime);
     _reminders =
         reminderCoordinator ??
         ReminderCoordinator(
@@ -80,6 +88,13 @@ class HabitProvider extends ChangeNotifier {
           clock: clock,
           ids: ids,
           complete: _todayController.complete,
+          runtimeOwnsSmartDelivery: backgroundRuntime.isSupported,
+          invalidateAdaptiveRuntime: () async {
+            await backgroundRuntime.invalidateReminders();
+          },
+          reconcileReminderRuntime: (enabled) async {
+            await runtimeReconciler.setRemindersEnabled(enabled);
+          },
         );
     NotificationService.instance.setActionCallback((_, _) async {
       await reconcileReminders(processActions: true);

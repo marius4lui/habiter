@@ -14,11 +14,11 @@ App Lock is unavailable on iOS, desktop, and web. Android manufacturer behavior 
    - **Display over other apps** shows the blocking screen.
 3. Select installed launcher apps to restrict.
 4. Choose whether all habits scheduled today or only selected habits are required.
-5. Enable App Lock and confirm the persistent foreground-service notification.
+5. Enable App Lock and confirm Habiter's neutral persistent background notification.
 
 ## How it works
 
-When a selected app opens before the requirement is complete, Habiter presents its lock screen. Completing the configured habits unlocks those apps for the current day.
+When a selected app opens before the requirement is complete, Habiter presents its lock screen. Completing the configured habits unlocks those apps for the current day. App Lock and adaptive reminders share one Android background runtime but remain independent: turning either feature off does not stop the other.
 
 ## Safety and recovery
 

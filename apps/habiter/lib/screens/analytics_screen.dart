@@ -71,6 +71,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   )
                 else ...[
                   _HabitSelector(
+                    key: const Key('analytics-habit-selector'),
                     habits: habits,
                     selected: selected,
                     onChanged: (habitId) =>
@@ -202,6 +203,7 @@ class _OverviewItem extends StatelessWidget {
 
 class _HabitSelector extends StatelessWidget {
   const _HabitSelector({
+    super.key,
     required this.habits,
     required this.selected,
     required this.onChanged,
@@ -272,26 +274,38 @@ class _RhythmPanel extends StatelessWidget {
     );
     final enoughHistory = metrics.scheduled >= 3;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    final insights = !enoughHistory
+        ? <Widget>[_InsufficientHistory()]
+        : <Widget>[
+            _ConsistencyCard(
+              metrics: recent,
+              prior: priorHalf,
+              recent: recentHalf,
+            ),
+            if (metrics.weeks.length >= 3) ...[
+              const SizedBox(height: HabiterSpace.xl),
+              HabiterSectionHeader(title: context.l10n.historyTitle),
+              const SizedBox(height: HabiterSpace.sm2),
+              _HistoryBars(habit: habit, metrics: metrics),
+            ],
+          ];
+
+    return HabiterAdaptiveGrid(
+      key: const Key('analytics-insights-grid'),
+      minimumColumnWidth: 360,
+      maxColumns: 2,
       children: [
-        _WeekCard(habit: habit, entries: entries, today: today),
-        const SizedBox(height: HabiterSpace.md),
-        if (!enoughHistory)
-          _InsufficientHistory()
-        else ...[
-          _ConsistencyCard(
-            metrics: recent,
-            prior: priorHalf,
-            recent: recentHalf,
+        KeyedSubtree(
+          key: const Key('analytics-week-column'),
+          child: _WeekCard(habit: habit, entries: entries, today: today),
+        ),
+        KeyedSubtree(
+          key: const Key('analytics-detail-column'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: insights,
           ),
-          if (metrics.weeks.length >= 3) ...[
-            const SizedBox(height: HabiterSpace.xl),
-            HabiterSectionHeader(title: context.l10n.historyTitle),
-            const SizedBox(height: HabiterSpace.sm2),
-            _HistoryBars(habit: habit, metrics: metrics),
-          ],
-        ],
+        ),
       ],
     );
   }

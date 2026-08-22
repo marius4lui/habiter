@@ -47,6 +47,7 @@ Versions and build numbers are unique. A published release cannot omit its publi
 {
   "platform": "android",
   "architecture": "universal",
+  "format": "apk",
   "fileName": "habiter-1.5.1-android-universal.apk",
   "signed": true,
   "distribution": "direct",
@@ -60,6 +61,8 @@ Versions and build numbers are unique. A published release cannot omit its publi
 | --- | :---: | :---: | --- |
 | `platform` | required | required | `android`, `windows`, `linux`, `macos`, `ios`, or `web`. |
 | `architecture` | required | required | Non-empty architecture identifier. |
+| `format` | required for update artifacts | required | `apk`, `aab`, `zip`, `tar.gz`, `appimage`, `appbundle`, or `web`; it must agree with the platform and distribution. |
+| `primary` | required when a platform publishes multiple desktop formats | required when used | Marks the one install/update artifact for that platform and architecture. Supplemental bundles are `false`. |
 | `fileName` | required | required | Safe basename containing letters, digits, dots, underscores, or hyphens. |
 | `signed` | required | required | Whether platform code signing is verified. Android must be `true`. |
 | `distribution` | Android required | Android required | `direct` or `play`; forbidden for non-Android artifacts. |
@@ -68,6 +71,10 @@ Versions and build numbers are unique. A published release cannot omit its publi
 | `size` | optional | required | Positive byte count. |
 
 Artifact identity is unique within a release by platform, architecture, and file name. Publication enriches declared artifacts from actual files; it must not change platform, architecture, signing, or distribution metadata.
+
+Update clients select deterministically from the verified object. Android requires exactly one supported artifact for the active distribution (`apk` for direct and `aab`/Play metadata for Store) and matching ABI or `universal`. Desktop requires exactly one `primary: true` artifact with the supported format (`appimage` on Linux and `zip` on Windows/macOS) and matching architecture; macOS `universal` can satisfy `arm64` or `x64`. Zero matches, multiple matches, unknown formats, unsafe names, or conflicting primary entries produce no candidate. Array order is never a tiebreaker.
+
+The `signed` flag is a claim established by the release pipeline, not a request for the client to trust an artifact. Android artifacts must be signed. Windows and macOS self-replacement remains disabled unless the chosen artifact is marked signed, and the platform helper still verifies the installed and downloaded publisher identity independently before replacement. SHA-256 and size remain mandatory for every published downloadable artifact regardless of signing status.
 
 ## Localized presentation and media
 
@@ -111,7 +118,7 @@ Clients must:
 4. verify the signature over the untouched payload bytes;
 5. parse JSON only after verification;
 6. validate the supported manifest schema and reject unpublished entries;
-7. select artifacts from the verified object;
+7. select exactly one compatible artifact without using array order;
 8. verify downloaded artifact size, SHA-256, and platform signature as applicable.
 
 Do not decode and reserialize the payload before signature verification. JSON whitespace or key-order changes produce different signed bytes.

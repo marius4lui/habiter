@@ -4,11 +4,13 @@ App Lock is an optional Android-only feature. It requires explicit Usage Access
 and overlay permission, a selected app, and a visible foreground-service
 notification. Missing or revoked access disables monitoring and fails open.
 
-The service checks usage events on a dedicated background thread at no less than
-750 ms while the screen is on. It stops callbacks while the screen is off,
-avoids duplicate monitor loops, and disables the stored native flag if boot or
-watchdog recovery cannot restart safely. Battery guidance opens the system-wide
-optimization settings; Habiter does not request a direct exemption.
+The shared Habiter runtime checks usage events on a dedicated background thread
+at no less than 750 ms while the screen is on. It stops App Block callbacks
+while the screen is off, avoids duplicate monitor loops, and disables the stored
+App Block flag if boot recovery cannot restart safely. Adaptive reminders may
+keep the same neutral foreground runtime active after App Block is disabled.
+Battery guidance opens the system-wide optimization settings; Habiter does not
+request a direct exemption.
 
 The blocking UI is derived from the current runtime state. It exists only while
 App Lock is enabled, both permissions are available, relevant habits remain
@@ -52,6 +54,8 @@ fail open.
   completion, disablement, permission revocation, and service shutdown.
 - Gesture navigation, rotation, landscape, and 200 percent font scaling.
 
+The runtime reconstructs enabled features after reboot or package replacement
+and uses targeted one-shot reminder recovery rather than a repeating watchdog.
 No claim is made that every OEM will preserve the service indefinitely.
 
 The serialized Flutter/native boundary is documented under [Platform-channel contracts](/dev/platform-contracts#app-lock).

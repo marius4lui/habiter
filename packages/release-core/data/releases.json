@@ -2,6 +2,456 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.11.0",
+      "buildNumber": 11100,
+      "channel": "beta",
+      "status": "published",
+      "publishedAt": "2026-08-22T13:50:50+02:00",
+      "minimumSupportedVersion": "1.5.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Jedes platzierte Habiter-Widget kann jetzt unabhängig mit klaren Basis-Einstellungen angepasst werden.",
+          "Eine optionale erweiterte Konfiguration bietet zusätzliche Darstellungsmöglichkeiten mit Live-Vorschau."
+        ],
+        "changed": [
+          "Die Widget-Verwaltung öffnet gezielt die gewählte Instanz und bewahrt deren Konfiguration beim Kopieren und Duplizieren.",
+          "Android-Widget-Aktionen verwenden eine versionierte, pro Instanz getrennte Konfiguration."
+        ],
+        "fixed": [
+          "Änderungen an einem Widget überschreiben nicht mehr die Darstellung anderer platzierter Widgets."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.11.0-android-universal.apk",
+          "signed": true,
+          "distribution": "direct",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.11.0/habiter-1.11.0-android-universal.apk",
+          "sha256": "f31d24a86b84d287def4050f6223bc199e147a274b5cddcb640fd4007dab25d5",
+          "size": 65950828
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.11.0-android-playstore.aab",
+          "signed": true,
+          "distribution": "play",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.11.0/habiter-1.11.0-android-playstore.aab",
+          "sha256": "fa64af51c383633c5297f9227cc54dfe8d227f0d6b61bbc0396b30c9f49fd876",
+          "size": 64151066
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.11.0-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.11.0/habiter-1.11.0-linux-x64.tar.gz",
+          "sha256": "903926ff6ff8d7f20cadc393658187e7db3f8ece4692b8f9afded7ed3c403ec3",
+          "size": 12259454
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.11.0-x86_64.AppImage",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.11.0/Habiter-1.11.0-x86_64.AppImage",
+          "sha256": "fa7c3aa96df726718cfc07c5b229c470dfa307297c12a224200ffa5da4a2d01d",
+          "size": 12102136
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.11.0-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.11.0/habiter-1.11.0-windows-x64.zip",
+          "sha256": "bc3817f45d9de8cc3ef78e5ea8f1c1dcd7c2eb905ca4fd3cf1a0130d46820074",
+          "size": 14984164
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.11.0-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.11.0/habiter-1.11.0-macos-universal.zip",
+          "sha256": "87b6e5eaedea404e8b3691e8102c22971b2653b39b0c6f122da3213b7eaab1c2",
+          "size": 21748731
+        }
+      ]
+    },
+    {
+      "version": "1.10.0",
+      "buildNumber": 11000,
+      "channel": "beta",
+      "status": "published",
+      "publishedAt": "2026-08-22T13:05:02+02:00",
+      "minimumSupportedVersion": "1.5.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Habiter passt Navigation, Arbeitsbereiche und Dialoge jetzt konsistent an kompakte Telefone, Tablets und breite Desktop-Fenster an.",
+          "Einstellungen, Habit-Flows und Onboarding behalten bei großen Schriftgrößen und Größenwechseln ihre zentralen Aktionen sichtbar."
+        ],
+        "changed": [
+          "Gemeinsame adaptive Layout-Primitiven definieren feste Breakpoints und wiederverwendbare Präsentationsregeln für die gesamte App.",
+          "Die Desktop-Navigation nutzt den verfügbaren Platz gezielter, ohne den mobilen Fokus der primären Bereiche zu verlieren."
+        ],
+        "fixed": [
+          "Lange Habit-Namen und kurze Viewports führen in zentralen Flows nicht mehr zu abgeschnittenen oder unbedienbaren Inhalten."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.10.0-android-universal.apk",
+          "signed": true,
+          "distribution": "direct",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.10.0/habiter-1.10.0-android-universal.apk",
+          "sha256": "e75d523b072398a033514b5c96fe5507f9ea4140e76de92b67dcd3ee8231120b",
+          "size": 64868784
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.10.0-android-playstore.aab",
+          "signed": true,
+          "distribution": "play",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.10.0/habiter-1.10.0-android-playstore.aab",
+          "sha256": "5971722c5bf4da5bfa84eabe56b147500b1ae26009b3477bbee655a955513ce9",
+          "size": 63232381
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.10.0-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.10.0/habiter-1.10.0-linux-x64.tar.gz",
+          "sha256": "df0b9e8eff4f98be65e9cded47f1684c178033ad76195cb9977d088311033c30",
+          "size": 12098991
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.10.0-x86_64.AppImage",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.10.0/Habiter-1.10.0-x86_64.AppImage",
+          "sha256": "04504b2cd3c8e30f7e7c4595bb524b85192df6159cd363ecd561568c34e2c3cb",
+          "size": 11958776
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.10.0-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.10.0/habiter-1.10.0-windows-x64.zip",
+          "sha256": "8df573395af34b7fd749d627a33bf1f0c9fc484678452238b14e7a9611125353",
+          "size": 14824772
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.10.0-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.10.0/habiter-1.10.0-macos-universal.zip",
+          "sha256": "9b78d47735fc752782eee4a225be0c75dcb39bf4ebbce191c3cdc8b78880380e",
+          "size": 21430501
+        }
+      ]
+    },
+    {
+      "version": "1.9.0",
+      "buildNumber": 10900,
+      "channel": "beta",
+      "status": "published",
+      "publishedAt": "2026-08-22T11:57:23+02:00",
+      "minimumSupportedVersion": "1.5.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "App Block führt optional durch die Einrichtung und hilft, lokal erkannte Ablenkungen bewusst Habit-Zielen zuzuordnen.",
+          "Für ausgewählte Apps können eigene allgemeine Fokusregeln oder konkrete Habit-Bindungen eingerichtet werden."
+        ],
+        "changed": [
+          "App-Block-Regeln berücksichtigen jetzt tägliche, feste Wochentage und flexible Wochenziele über die gemeinsame Habit-Logik.",
+          "Bestehende globale App-Lock-Einstellungen werden sicher in versionierte Regeln pro App überführt."
+        ],
+        "fixed": [
+          "App Block bleibt bei fehlenden Berechtigungen oder nicht verfügbaren Hintergrunddaten bewusst deaktiviert, statt Apps unbeabsichtigt zu sperren."
+        ],
+        "security": [
+          "Die Analyse von App-Nutzung und Ablenkungskandidaten erfolgt ausschließlich lokal auf dem Gerät."
+        ]
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.9.0-android-universal.apk",
+          "signed": true,
+          "distribution": "direct",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.9.0/habiter-1.9.0-android-universal.apk",
+          "sha256": "3671e48e03052d88f1da1c888f88d7b3a03ff3a0b690d0ca19b3274a29a4410e",
+          "size": 64852404
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.9.0-android-playstore.aab",
+          "signed": true,
+          "distribution": "play",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.9.0/habiter-1.9.0-android-playstore.aab",
+          "sha256": "87b266d3ecd70ff21e94691c55b299a7fa4ad65da46404d0faa8dc376839edc3",
+          "size": 63193388
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.9.0-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.9.0/habiter-1.9.0-linux-x64.tar.gz",
+          "sha256": "24cb089836903e56e75108c486a0ad7a8d7de4085ce06d7bf24ef03fa1dbce92",
+          "size": 12091303
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.9.0-x86_64.AppImage",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.9.0/Habiter-1.9.0-x86_64.AppImage",
+          "sha256": "6c7f649495c249d29240991b1aa8f2181ab08bd2b2fdd435962e663806d395b3",
+          "size": 11954680
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.9.0-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.9.0/habiter-1.9.0-windows-x64.zip",
+          "sha256": "e0bf3b40b32079037e7239f2c8ef92814a00e0aba5598400e7dbb43e54a50a4e",
+          "size": 14813954
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.9.0-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.9.0/habiter-1.9.0-macos-universal.zip",
+          "sha256": "a71040929db239cda88993dbc5a3838f72f27ce088b36864749409e3532dc5d2",
+          "size": 21412190
+        }
+      ]
+    },
+    {
+      "version": "1.8.0",
+      "buildNumber": 10800,
+      "channel": "beta",
+      "status": "published",
+      "publishedAt": "2026-08-22T10:16:20+02:00",
+      "minimumSupportedVersion": "1.5.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Habiter nutzt jetzt eine gemeinsame Hintergrund-Runtime für adaptive Erinnerungen und App Block."
+        ],
+        "changed": [
+          "Adaptive Erinnerungen werden kurz vor der Zustellung mit dem aktuellen lokalen Habit-Status neu bewertet.",
+          "Die Einrichtung für Hintergrundbetrieb und Akku-Optimierung steht nun beiden Funktionen gemeinsam zur Verfügung."
+        ],
+        "fixed": [
+          "Das Deaktivieren von App Block beendet den Hintergrundbetrieb nicht mehr, wenn Erinnerungen ihn noch benötigen."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.8.0-android-universal.apk",
+          "signed": true,
+          "distribution": "direct",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.8.0/habiter-1.8.0-android-universal.apk",
+          "sha256": "cfecf59ad50943ea8664b4a460c6bc62665f39cd022f8524cd9451e4990d9dfe",
+          "size": 64852404
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.8.0-android-playstore.aab",
+          "signed": true,
+          "distribution": "play",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.8.0/habiter-1.8.0-android-playstore.aab",
+          "sha256": "23aa2c8bc204b713bc0f7a66ebcc5439a477369ff3a251d63039cde243f16241",
+          "size": 63193378
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.8.0-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.8.0/habiter-1.8.0-linux-x64.tar.gz",
+          "sha256": "1af701f9efae2ba8337f5e69b6646e19ee23735e4df28e8e882b7d0f52e828d2",
+          "size": 12091285
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.8.0-x86_64.AppImage",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.8.0/Habiter-1.8.0-x86_64.AppImage",
+          "sha256": "8a6577a243b30f717c20dcd2d01b3c8c0b8b371dcd70f77c3c102f28c74999a1",
+          "size": 11954680
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.8.0-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.8.0/habiter-1.8.0-windows-x64.zip",
+          "sha256": "b9b94ecec5553d9afad7f61caf0a63f619c1e811366d5a0c7fd8fcad928a3042",
+          "size": 14813954
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.8.0-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.8.0/habiter-1.8.0-macos-universal.zip",
+          "sha256": "30320a6d33653f8f200013c964039b5f73f1b991c61491b8ce981d34ff004c37",
+          "size": 21412186
+        }
+      ]
+    },
+    {
+      "version": "1.7.4",
+      "buildNumber": 10704,
+      "channel": "stable",
+      "status": "published",
+      "publishedAt": "2026-08-22T09:29:16+02:00",
+      "minimumSupportedVersion": "1.5.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [],
+        "changed": [],
+        "fixed": [
+          "Habit-Zeitpläne werden in der Startansicht und den Habit-Details wieder als lesbare, lokalisierte Texte angezeigt."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.7.4-android-universal.apk",
+          "signed": true,
+          "distribution": "direct",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.4/habiter-1.7.4-android-universal.apk",
+          "sha256": "744817667a2cdff627f1244d9254b49d0ff58e0cb666f193607021208a47dc0d",
+          "size": 64721036
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.7.4-android-playstore.aab",
+          "signed": true,
+          "distribution": "play",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.4/habiter-1.7.4-android-playstore.aab",
+          "sha256": "1eae09174cade0340f0e9ac88a031625554bf1269845ccc83ea4af77cd887d6e",
+          "size": 63046662
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.7.4-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.4/habiter-1.7.4-linux-x64.tar.gz",
+          "sha256": "1b3beae566982aec373d7c737957b310c0636595ac00eeb851ec3cea7b8e8133",
+          "size": 11918755
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.7.4-x86_64.AppImage",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.4/Habiter-1.7.4-x86_64.AppImage",
+          "sha256": "59af0c448a1dd49e703bbc2bad64e2137d8dd0c85ffc4c080e3372c15f222f44",
+          "size": 11815416
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.7.4-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.4/habiter-1.7.4-windows-x64.zip",
+          "sha256": "a6b660419056a3278a2d8a200b0ad8582931c0c8d81dba568dd192957ce1a74f",
+          "size": 14636225
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.7.4-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.7.4/habiter-1.7.4-macos-universal.zip",
+          "sha256": "7b1e002353ce36ac8ef1532e0ad36d385de4fe79ae95b7c7c5b966177c77c28d",
+          "size": 21058281
+        }
+      ]
+    },
+    {
       "version": "1.7.3",
       "buildNumber": 10703,
       "channel": "stable",

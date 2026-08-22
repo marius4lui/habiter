@@ -10,6 +10,7 @@ void main() {
     expect(source, contains("Key('advanced-integrations')"));
     expect(source, contains('context.l10n.advancedIntegrationsBody'));
     expect(source, contains('context.l10n.privacyAndData'));
+    expect(source, contains("Key('reminder-diagnostics-entry')"));
     expect(source, isNot(contains('connectWithCredentials')));
   });
 }

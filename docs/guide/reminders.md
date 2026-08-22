@@ -23,7 +23,7 @@ Open **Rhythm** to review reminder-wide settings. Habiter applies these constrai
 - completed, paused, archived, and deleted state;
 - the device's current time zone.
 
-When several reminders compete for the same time, the planner ranks candidates and keeps only those that satisfy every guardrail. Pending notifications are reconciled after schedule edits, lifecycle changes, completion, app resume, and time-zone changes.
+When several reminders compete for the same time, the planner ranks candidates and keeps only those that satisfy every guardrail. Pending notifications are reconciled after schedule edits, lifecycle changes, completion, app resume, and time-zone changes. On Android, Smart timing is re-evaluated from current local state immediately before delivery instead of filling the operating system with a long-range Smart schedule.
 
 ## Smart timing and calibration
 
@@ -39,7 +39,7 @@ The Rhythm screen explains whether a suggested window comes from learned, person
 
 ## Permissions and delivery
 
-Android and iOS require notification permission. Habiter asks through an explicit user action and does not repeatedly prompt after denial. You can reopen the operating-system notification settings from the app.
+Android and iOS require notification permission. Habiter asks through an explicit user action and does not repeatedly prompt after denial. You can reopen the operating-system notification settings from the app. Android onboarding also shows a shared background-runtime step after reminder setup, where notification and battery status can be reviewed. Battery guidance opens system-wide settings and refreshes when you return.
 
 Habiter uses inexact scheduling by default and does not require Android's exact-alarm permission. Delivery time is best effort: battery policy, focus modes, device restarts, and manufacturer scheduling can delay or suppress a notification.
 
@@ -51,7 +51,7 @@ The planned time is the target, not a promise of exact delivery. Use the device'
 
 Supported reminders can expose completion, snooze, and feasibility actions. Incoming actions are written to a durable local inbox before processing, so retries from foreground, background, or terminated states remain idempotent.
 
-Habiter assigns stable notification IDs and removes obsolete pending notifications during reconciliation. Diagnostics show safe identifiers and known delivery times without displaying habit descriptions, action payloads, credentials, or learning signals.
+Habiter assigns stable notification IDs and removes obsolete pending notifications during reconciliation. **Settings → Notifications → Reminder diagnostics** shows safe identifiers, known delivery times, active background features, and the last runtime start, heartbeat, evaluation, next evaluation, and notification dispatch. It does not display action payloads, credentials, or learning signals.
 
 ## Troubleshooting
 
@@ -61,7 +61,7 @@ If a reminder does not arrive:
 2. Check active hours, quiet periods, the daily limit, and the habit's schedule.
 3. Confirm the habit is active and incomplete for the relevant date.
 4. Open Habiter after changing time zone, date, or notification settings so reconciliation can run.
-5. Review reminder diagnostics for permission and pending-schedule status.
-6. Check operating-system battery or focus restrictions.
+5. Review reminder diagnostics for permission, pending-schedule, and runtime status.
+6. Check operating-system battery or focus restrictions; on Android, review the background-runtime setup status.
 
 Resetting reminder learning clears adaptive profiles and calibration state without deleting habits or completion history. For engineering verification, see the [Reminder QA matrix](/reminder-qa).

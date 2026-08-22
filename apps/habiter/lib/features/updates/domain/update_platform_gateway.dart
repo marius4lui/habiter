@@ -3,6 +3,7 @@ import 'update_models.dart';
 final class UpdateRuntimeInfo {
   const UpdateRuntimeInfo({
     required this.platform,
+    this.architecture = 'universal',
     required this.version,
     required this.buildNumber,
     required this.supportsUpdates,
@@ -12,6 +13,7 @@ final class UpdateRuntimeInfo {
   });
 
   final String platform;
+  final String architecture;
   final String version;
   final int buildNumber;
   final bool supportsUpdates;
@@ -60,6 +62,7 @@ enum UpdateInstallResult {
   launched,
   permissionRequired,
   externalOpened,
+  canceled,
   unavailable,
 }
 

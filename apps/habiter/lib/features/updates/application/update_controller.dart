@@ -57,8 +57,8 @@ final class UpdateController extends ChangeNotifier {
     UpdatePhase.checking,
     UpdatePhase.downloading,
     UpdatePhase.verifying,
-    UpdatePhase.ready,
     UpdatePhase.installing,
+    UpdatePhase.unsupported,
   }.contains(_state.phase);
   bool get mandatoryEnforced => _mandatoryEnforced;
   bool get hasExpiredMandatoryCandidate =>
@@ -68,6 +68,18 @@ final class UpdateController extends ChangeNotifier {
       !_local.presentedBuilds.contains(_state.candidate!.release.buildNumber);
   bool get shouldShowUpgradeStory => _upgradeReleases.isNotEmpty;
   int get cachedMetadataBytes => _local.metadataBytes;
+  bool get candidateUsesExternalInstaller {
+    final runtime = _runtime;
+    final candidate = _state.candidate;
+    return runtime != null &&
+        candidate != null &&
+        !_canInstallDirectly(runtime, candidate);
+  }
+
+  bool get canCancelDownload =>
+      _state.phase == UpdatePhase.downloading &&
+      !(_runtime?.platform == 'android' &&
+          _runtime?.androidDistribution == AndroidDistribution.play);
 
   Future<void> initialize() async {
     if (_initialized) return;
@@ -79,6 +91,12 @@ final class UpdateController extends ChangeNotifier {
         phase: UpdatePhase.error,
         errorCode: 'runtime_info_failed',
       );
+      _initialized = true;
+      notifyListeners();
+      return;
+    }
+    if (_runtime?.supportsUpdates != true) {
+      _state = const UpdateState(phase: UpdatePhase.unsupported);
       _initialized = true;
       notifyListeners();
       return;
@@ -134,9 +152,40 @@ final class UpdateController extends ChangeNotifier {
   }
 
   Future<void> _reconcileDownload() async {
-    final id = _local.downloadId;
-    final build = _local.downloadBuild;
+    var id = _local.downloadId;
+    var build = _local.downloadBuild;
     final manifest = _manifest;
+    if ((id == null || build == null) &&
+        manifest != null &&
+        _runtime?.platform == 'android' &&
+        _runtime?.androidDistribution == AndroidDistribution.play) {
+      final candidate = _selector.select(
+        manifest: manifest,
+        track: track,
+        currentBuild: _runtime!.buildNumber,
+        platform: 'android',
+        architecture: _runtime!.architecture,
+        androidDistribution: AndroidDistribution.play,
+      );
+      if (candidate != null) {
+        try {
+          final status = await _platform.downloadStatus(_playDownloadId);
+          if (const {
+            UpdateDownloadPhase.queued,
+            UpdateDownloadPhase.running,
+            UpdateDownloadPhase.paused,
+            UpdateDownloadPhase.complete,
+          }.contains(status.phase)) {
+            id = _playDownloadId;
+            build = candidate.release.buildNumber;
+            _local = _local.copyWith(downloadId: id, downloadBuild: build);
+            await _repository.save(_local);
+          }
+        } on Object {
+          // A Store status lookup must not make startup fail.
+        }
+      }
+    }
     if (id == null || build == null || manifest == null) return;
     final candidate = _candidateForBuild(manifest, build);
     if (candidate == null) {
@@ -190,6 +239,8 @@ final class UpdateController extends ChangeNotifier {
       return;
     }
     _checking = true;
+    final previousPhase = _state.phase;
+    final previousCandidate = _state.candidate;
     _transition(UpdatePhase.checking);
     try {
       final network = await _platform.networkStatus();
@@ -220,10 +271,18 @@ final class UpdateController extends ChangeNotifier {
         lastCheckedAt: checkedAt,
       );
       await _repository.save(_local);
-      _applyCandidate(verifiedOnline: true);
+      final retainedPhase = await _reconcileRefreshedCandidate(
+        previousPhase: previousPhase,
+        previousCandidate: previousCandidate,
+      );
+      _applyCandidate(verifiedOnline: true, retainedPhase: retainedPhase);
       final candidate = _state.candidate;
       if (candidate != null &&
-          _runtime?.supportsDirectInstall == true &&
+          const {
+            UpdatePhase.available,
+            UpdatePhase.mandatory,
+          }.contains(_state.phase) &&
+          _canInstallDirectly(_runtime!, candidate) &&
           _policy.shouldAutoDownload(
             profile: profile,
             isOnline: true,
@@ -247,7 +306,10 @@ final class UpdateController extends ChangeNotifier {
     }
   }
 
-  void _applyCandidate({required bool verifiedOnline}) {
+  void _applyCandidate({
+    required bool verifiedOnline,
+    UpdatePhase? retainedPhase,
+  }) {
     final manifest = _manifest;
     final runtime = _runtime;
     if (manifest == null || runtime == null || !runtime.supportsUpdates) {
@@ -263,6 +325,7 @@ final class UpdateController extends ChangeNotifier {
       track: track,
       currentBuild: runtime.buildNumber,
       platform: runtime.platform,
+      architecture: runtime.architecture,
       androidDistribution: runtime.androidDistribution,
     );
     if (candidate == null) {
@@ -274,17 +337,68 @@ final class UpdateController extends ChangeNotifier {
     } else {
       final mandatory =
           verifiedOnline && candidate.release.isMandatoryAt(_clock.now());
-      if (mandatory) _mandatoryEnforced = true;
+      _mandatoryEnforced = mandatory;
       _state = UpdateState(
-        phase: _mandatoryEnforced
-            ? UpdatePhase.mandatory
-            : UpdatePhase.available,
+        phase:
+            retainedPhase ??
+            (_mandatoryEnforced
+                ? UpdatePhase.mandatory
+                : UpdatePhase.available),
         candidate: candidate,
+        progress: retainedPhase == null ? 0 : 1,
         lastCheckedAt: _local.lastCheckedAt,
       );
     }
     notifyListeners();
   }
+
+  Future<UpdatePhase?> _reconcileRefreshedCandidate({
+    required UpdatePhase previousPhase,
+    required UpdateCandidate? previousCandidate,
+  }) async {
+    if (_local.downloadId == null || _local.downloadBuild == null) return null;
+    final selected = _selectedCandidate();
+    final canRetain =
+        selected != null &&
+        selected.release.buildNumber == _local.downloadBuild &&
+        previousCandidate != null &&
+        _sameArtifact(selected.artifact, previousCandidate.artifact);
+    if (!canRetain) {
+      await _clearDownload(removeNative: true);
+      return null;
+    }
+    return const {
+          UpdatePhase.ready,
+          UpdatePhase.restartRequired,
+        }.contains(previousPhase)
+        ? previousPhase
+        : null;
+  }
+
+  UpdateCandidate? _selectedCandidate() {
+    final manifest = _manifest;
+    final runtime = _runtime;
+    if (manifest == null || runtime == null) return null;
+    return _selector.select(
+      manifest: manifest,
+      track: track,
+      currentBuild: runtime.buildNumber,
+      platform: runtime.platform,
+      architecture: runtime.architecture,
+      androidDistribution: runtime.androidDistribution,
+    );
+  }
+
+  static bool _sameArtifact(UpdateArtifact left, UpdateArtifact right) =>
+      left.platform == right.platform &&
+      left.architecture == right.architecture &&
+      left.format == right.format &&
+      left.fileName == right.fileName &&
+      left.signed == right.signed &&
+      left.distribution == right.distribution &&
+      left.url == right.url &&
+      left.sha256 == right.sha256 &&
+      left.size == right.size;
 
   UpdateCandidate? _candidateForBuild(UpdateManifest manifest, int build) {
     final runtime = _runtime!;
@@ -292,14 +406,12 @@ final class UpdateController extends ChangeNotifier {
         .where((item) => item.buildNumber == build)
         .firstOrNull;
     if (release == null) return null;
-    final artifact = release.artifacts
-        .where(
-          (item) =>
-              item.platform == runtime.platform &&
-              (runtime.platform != 'android' ||
-                  item.distribution == runtime.androidDistribution),
-        )
-        .firstOrNull;
+    final artifact = _selector.artifactFor(
+      release: release,
+      platform: runtime.platform,
+      architecture: runtime.architecture,
+      androidDistribution: runtime.androidDistribution,
+    );
     return artifact == null
         ? null
         : UpdateCandidate(release: release, artifact: artifact);
@@ -342,8 +454,33 @@ final class UpdateController extends ChangeNotifier {
     final candidate = _state.candidate;
     final runtime = _runtime;
     if (candidate == null || runtime == null) return;
-    if (!runtime.supportsDirectInstall) {
-      await _platform.openExternal(candidate);
+    if (!_canInstallDirectly(runtime, candidate)) {
+      _transition(UpdatePhase.downloading, candidate: candidate, progress: 0);
+      try {
+        final result = await _platform.openExternal(candidate);
+        if (result == UpdateInstallResult.launched &&
+            runtime.platform == 'android' &&
+            runtime.androidDistribution == AndroidDistribution.play) {
+          _local = _local.copyWith(
+            downloadId: _playDownloadId,
+            downloadBuild: candidate.release.buildNumber,
+          );
+          await _repository.save(_local);
+          _startDownloadPolling();
+        } else if (result == UpdateInstallResult.unavailable) {
+          _transition(
+            UpdatePhase.error,
+            errorCode: 'external_update_unavailable',
+          );
+        } else {
+          _returnToCandidateState();
+        }
+      } on Object {
+        _transition(
+          UpdatePhase.error,
+          errorCode: 'external_update_unavailable',
+        );
+      }
       return;
     }
     try {
@@ -415,7 +552,13 @@ final class UpdateController extends ChangeNotifier {
       return;
     }
     if (result.isValid) {
-      _transition(UpdatePhase.ready, progress: 1);
+      final restart =
+          _runtime?.platform == 'android' &&
+          _runtime?.androidDistribution == AndroidDistribution.play;
+      _transition(
+        restart ? UpdatePhase.restartRequired : UpdatePhase.ready,
+        progress: 1,
+      );
     } else {
       await _clearDownload(removeNative: true);
       _transition(
@@ -433,7 +576,11 @@ final class UpdateController extends ChangeNotifier {
     try {
       final result = await _platform.install(id, candidate);
       if (result != UpdateInstallResult.launched) {
-        _transition(UpdatePhase.ready);
+        _transition(
+          id == _playDownloadId
+              ? UpdatePhase.restartRequired
+              : UpdatePhase.ready,
+        );
       }
       return result;
     } on Object {
@@ -469,6 +616,12 @@ final class UpdateController extends ChangeNotifier {
       lastCheckedAt: _local.lastCheckedAt,
     );
     notifyListeners();
+  }
+
+  Future<void> cancelDownload() async {
+    if (_state.phase != UpdatePhase.downloading) return;
+    await _clearDownload(removeNative: true);
+    _returnToCandidateState();
   }
 
   Future<void> clearManifestCache() async {
@@ -557,11 +710,27 @@ final class UpdateController extends ChangeNotifier {
   Future<void> handleForegroundTick() =>
       check(UpdateCheckTrigger.foregroundTimer);
 
+  bool _canInstallDirectly(
+    UpdateRuntimeInfo runtime,
+    UpdateCandidate candidate,
+  ) =>
+      runtime.supportsDirectInstall &&
+      (!const {'windows', 'macos'}.contains(runtime.platform) ||
+          candidate.artifact.signed);
+
+  void _returnToCandidateState() {
+    _transition(
+      _mandatoryEnforced ? UpdatePhase.mandatory : UpdatePhase.available,
+    );
+  }
+
   @override
   void dispose() {
     _downloadPoller?.cancel();
     super.dispose();
   }
+
+  static const String _playDownloadId = 'play';
 }
 
 extension<T> on Iterable<T> {

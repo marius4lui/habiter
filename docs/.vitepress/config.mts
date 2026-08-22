@@ -40,6 +40,7 @@ export default defineConfig({
             { text: 'openSUSE', link: '/install/linux/opensuse' },
             { text: 'Generic Linux', link: '/install/linux/generic' },
             { text: 'Personal Sync Docker Beta', link: '/install/personal-sync-docker' },
+            { text: 'Personal Sync Worker Beta', link: '/install/personal-sync-worker' },
             { text: 'Windows', link: '/install/windows' },
             { text: 'macOS', link: '/install/macos' }
           ]

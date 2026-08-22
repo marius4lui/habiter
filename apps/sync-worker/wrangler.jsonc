@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "habiter-personal-sync-beta",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-15",
+  "observability": { "enabled": true },
+  "limits": { "cpu_ms": 10 },
+  "vars": {
+    "BASE_URL": "https://sync.example.invalid",
+    "REDIRECT_URIS": "https://app.example.invalid/auth/callback",
+    "CORS_ORIGINS": "",
+    "INSTANCE_NAME": "Habiter Personal Sync Worker Beta",
+    "AUDIENCE": "habiter-mobile"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "habiter-personal-sync-beta",
+      "database_id": "00000000-0000-0000-0000-000000000064",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

@@ -20,6 +20,37 @@ importers:
         specifier: 4.123.0
         version: 4.123.0
 
+  apps/sync-worker:
+    dependencies:
+      '@habiter/sync-auth':
+        specifier: workspace:*
+        version: link:../../packages/sync-auth
+      '@habiter/sync-d1':
+        specifier: workspace:*
+        version: link:../../packages/sync-d1
+      '@habiter/sync-http':
+        specifier: workspace:*
+        version: link:../../packages/sync-http
+    devDependencies:
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.13.3
+      esbuild:
+        specifier: ^0.28.1
+        version: 0.28.1
+      miniflare:
+        specifier: 3.20250718.3
+        version: 3.20250718.3
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@24.13.3)(jsdom@26.1.0(supports-color@10.2.2))(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1))
+      wrangler:
+        specifier: 4.123.0
+        version: 4.123.0
+
   apps/website:
     dependencies:
       next:

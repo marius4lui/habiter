@@ -5,18 +5,87 @@
       "version": "1.12.2",
       "buildNumber": 11202,
       "channel": "beta",
-      "status": "draft",
-      "publishedAt": null,
+      "status": "published",
+      "publishedAt": "2026-08-22T16:30:40+02:00",
       "minimumSupportedVersion": "1.5.0",
       "mandatoryAfter": null,
-      "notes": {"added": ["Personal Sync Beta verbindet eigene Habiter-Sync-Instanzen mit sicherer Browser-Anmeldung und lokaler Wiederherstellung."], "changed": ["Synchronisierung arbeitet lokal zuerst, hält Änderungen offline vor und führt anfängliche Datenbestände nachvollziehbar zusammen."], "fixed": [], "security": []},
+      "notes": {
+        "added": [
+          "Personal Sync Beta verbindet eigene Habiter-Sync-Instanzen mit sicherer Browser-Anmeldung und lokaler Wiederherstellung."
+        ],
+        "changed": [
+          "Synchronisierung arbeitet lokal zuerst, hält Änderungen offline vor und führt anfängliche Datenbestände nachvollziehbar zusammen."
+        ],
+        "fixed": [],
+        "security": []
+      },
       "artifacts": [
-        {"platform":"android","architecture":"universal","format":"apk","fileName":"habiter-1.12.2-android-universal.apk","signed":true,"distribution":"direct"},
-        {"platform":"android","architecture":"universal","format":"aab","fileName":"habiter-1.12.2-android-playstore.aab","signed":true,"distribution":"play"},
-        {"platform":"linux","architecture":"x64","format":"tar.gz","primary":false,"fileName":"habiter-1.12.2-linux-x64.tar.gz","signed":false},
-        {"platform":"linux","architecture":"x64","format":"appimage","primary":true,"fileName":"Habiter-1.12.2-x86_64.AppImage","signed":false},
-        {"platform":"windows","architecture":"x64","format":"zip","primary":true,"fileName":"habiter-1.12.2-windows-x64.zip","signed":false},
-        {"platform":"macos","architecture":"universal","format":"zip","primary":true,"fileName":"habiter-1.12.2-macos-universal.zip","signed":false}
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.12.2-android-universal.apk",
+          "signed": true,
+          "distribution": "direct",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.12.2/habiter-1.12.2-android-universal.apk",
+          "sha256": "02622df33cbd0ab61208a84978e15b6d89147b4c6cb286e7a1b07bcf58579529",
+          "size": 66672756
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.12.2-android-playstore.aab",
+          "signed": true,
+          "distribution": "play",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.12.2/habiter-1.12.2-android-playstore.aab",
+          "sha256": "dc8bdad5fc417b2162ce88974589448053ca9c001f2a78d73effd91cb70de474",
+          "size": 64830997
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.12.2-linux-x64.tar.gz",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.12.2/habiter-1.12.2-linux-x64.tar.gz",
+          "sha256": "95d077e32e02821e64eb1ae6c0d1cb9b1a9a542347650f123e86a5aeeea4339f",
+          "size": 12363609
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.12.2-x86_64.AppImage",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.12.2/Habiter-1.12.2-x86_64.AppImage",
+          "sha256": "d23f8535d50700c7094cbf79e30fcddc573361358fb9e8cc9e5f3af55b3600c6",
+          "size": 12188152
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.12.2-windows-x64.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.12.2/habiter-1.12.2-windows-x64.zip",
+          "sha256": "05d48bc88cae709fcce041570ac24fdeeec4e22d2361167589b6bc789d5f86f7",
+          "size": 15089440
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.12.2-macos-universal.zip",
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.12.2/habiter-1.12.2-macos-universal.zip",
+          "sha256": "0b4d715705d5df6b13911fb23748a208f3ee18ee4be3ea7662b9f27e7196f15f",
+          "size": 21929172
+        }
       ]
     },
     {

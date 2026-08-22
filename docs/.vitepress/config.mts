@@ -92,6 +92,7 @@ export default defineConfig({
             { text: 'Personal Sync D1 Storage', link: '/dev/personal-sync-d1' },
             { text: 'Personal Sync Authentication', link: '/dev/personal-sync-auth' },
             { text: 'Mobile Sync Handoff', link: '/dev/mobile-sync-handoff' },
+            { text: 'Personal Sync E2E Evidence', link: '/dev/personal-sync-e2e' },
             { text: 'Platform Channels', link: '/dev/platform-contracts' },
             { text: 'Testing and Quality', link: '/dev/testing' },
             { text: 'Android Widget QA', link: '/dev/widget-qa' },

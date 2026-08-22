@@ -18,6 +18,7 @@
     "sync:d1:check": "pnpm --filter @habiter/sync-d1 check",
     "sync:docker:check": "node scripts/sync/validate-docker.mjs",
     "sync:sqlite:check": "pnpm --filter @habiter/sync-sqlite check",
+    "sync:e2e:check": "node scripts/sync/validate-e2e-evidence.mjs",
     "website:dev": "pnpm --filter @habiter/website dev",
     "website:build": "pnpm --filter @habiter/website build",
     "website:typecheck": "pnpm --filter @habiter/website typecheck",

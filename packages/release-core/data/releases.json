@@ -2,6 +2,79 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.10.0",
+      "buildNumber": 11000,
+      "channel": "beta",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.5.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Habiter passt Navigation, Arbeitsbereiche und Dialoge jetzt konsistent an kompakte Telefone, Tablets und breite Desktop-Fenster an.",
+          "Einstellungen, Habit-Flows und Onboarding behalten bei großen Schriftgrößen und Größenwechseln ihre zentralen Aktionen sichtbar."
+        ],
+        "changed": [
+          "Gemeinsame adaptive Layout-Primitiven definieren feste Breakpoints und wiederverwendbare Präsentationsregeln für die gesamte App.",
+          "Die Desktop-Navigation nutzt den verfügbaren Platz gezielter, ohne den mobilen Fokus der primären Bereiche zu verlieren."
+        ],
+        "fixed": [
+          "Lange Habit-Namen und kurze Viewports führen in zentralen Flows nicht mehr zu abgeschnittenen oder unbedienbaren Inhalten."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.10.0-android-universal.apk",
+          "signed": true,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.10.0-android-playstore.aab",
+          "signed": true,
+          "distribution": "play"
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.10.0-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.10.0-x86_64.AppImage",
+          "signed": false
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.10.0-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.10.0-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.9.0",
       "buildNumber": 10900,
       "channel": "beta",

@@ -166,23 +166,28 @@ A concise view of the released baseline and upcoming product milestones.
 
 - Give every onboarding step a distinct editorial layout and clearer visual hierarchy.
 
-### Upcoming
-
-**v1.8.0 — Persistent Habiter Runtime (Stable)**
+**v1.8.0 — Persistent Habiter Runtime (Beta)**
 
 - Introduce a shared background runtime for adaptive reminders and future focus features.
 
-**v1.9.0 — App Block 2.0 (Stable)**
+**v1.9.0 — App Block 2.0 (Beta)**
 
 - Add local distraction discovery and habit-based app blocking.
 
-**v1.10.0 — Responsive app shell (Stable)**
+**v1.10.0 — Responsive app shell (Beta)**
 
 - Optimize Habiter for desktop, tablets and compact touch displays through one responsive layout system.
+
+### Upcoming
 
 **v1.11.0 — Pro-Widget Settings (Stable)**
 
 - Make every placed Habiter widget configurable with clear basic controls and advanced customization.
+
+**v1.12.0 — Personal Sync (Beta)**
+
+- Deliver optional, local-first Personal Sync for securely connecting Habiter across a user's devices.
+- Offer self-hosted SQLite/Docker and Cloudflare D1 Beta backends without making sync mandatory.
 
 See the detailed [`ROADMAP.md`](ROADMAP.md) for targets, issues, scope, dependencies, and versioning rules.
 <!-- roadmap:end -->

@@ -39,6 +39,7 @@ export default defineConfig({
             { text: 'Arch Linux', link: '/install/linux/arch' },
             { text: 'openSUSE', link: '/install/linux/opensuse' },
             { text: 'Generic Linux', link: '/install/linux/generic' },
+            { text: 'Personal Sync Docker Beta', link: '/install/personal-sync-docker' },
             { text: 'Windows', link: '/install/windows' },
             { text: 'macOS', link: '/install/macos' }
           ]

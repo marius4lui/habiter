@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../domain/personal_sync_operation.dart';
+import '../domain/personal_sync_replica.dart';
 
 final class PersonalSyncRemoteException implements Exception {
   const PersonalSyncRemoteException(this.code);
@@ -55,6 +56,13 @@ final class PersonalSyncPullPage {
   final String recoveryReason;
 }
 
+final class PersonalSyncSnapshot {
+  const PersonalSyncSnapshot({required this.cursor, required this.entities});
+
+  final PersonalSyncServerCursor cursor;
+  final List<PersonalSyncEntityState> entities;
+}
+
 abstract interface class PersonalSyncRemote {
   Future<PersonalSyncInstanceInfo> instanceInfo();
   Future<PersonalSyncTokenPair> redeem({
@@ -72,6 +80,7 @@ abstract interface class PersonalSyncRemote {
     required int limit,
     required String accessToken,
   });
+  Future<PersonalSyncSnapshot> snapshot(String accessToken);
   void close();
 }
 
@@ -251,6 +260,43 @@ final class HttpPersonalSyncRemote implements PersonalSyncRemote {
       requiresSnapshot: requiresSnapshot,
       recoveryReason: recoveryReason,
     );
+  }
+
+  @override
+  Future<PersonalSyncSnapshot> snapshot(String accessToken) async {
+    final map = await _json('GET', '/v1/snapshot', accessToken: accessToken);
+    final schemaVersion = map['schemaVersion'];
+    final cursorValue = map['cursor'];
+    final entitiesValue = map['entities'];
+    if (map.length != 3 ||
+        schemaVersion != 1 ||
+        cursorValue is! String ||
+        entitiesValue is! List ||
+        entitiesValue.length > 10000 ||
+        entitiesValue.any((entity) => entity is! Map)) {
+      throw const PersonalSyncRemoteException('invalid_response');
+    }
+    try {
+      final entities = entitiesValue
+          .map(
+            (entity) => PersonalSyncEntityState.fromMap(
+              Map<String, Object?>.from(entity as Map),
+            ),
+          )
+          .toList(growable: false);
+      if (entities.map((entity) => entity.entityId.value).toSet().length !=
+          entities.length) {
+        throw const PersonalSyncRemoteException('invalid_response');
+      }
+      return PersonalSyncSnapshot(
+        cursor: PersonalSyncServerCursor.parse(cursorValue),
+        entities: entities,
+      );
+    } on PersonalSyncRemoteException {
+      rethrow;
+    } on Object {
+      throw const PersonalSyncRemoteException('invalid_response');
+    }
   }
 
   PersonalSyncTokenPair _tokenPair(Map<String, Object?> map) {

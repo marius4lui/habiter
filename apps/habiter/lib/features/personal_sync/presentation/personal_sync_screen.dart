@@ -120,6 +120,41 @@ class PersonalSyncScreen extends StatelessWidget {
             ],
           ),
         ),
+        if (engine?.reconciliationPreview case final preview?) ...[
+          const SizedBox(height: HabiterSpace.lg),
+          HabiterSurface(
+            child: Semantics(
+              liveRegion: true,
+              container: true,
+              child: Column(
+                key: const Key('personal-sync-reconciliation'),
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    context.l10n.personalSyncReconciliationTitle,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    context.l10n.personalSyncReconciliationBody(
+                      preview.localEntities,
+                      preview.remoteEntities,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    key: const Key('personal-sync-confirm-reconciliation'),
+                    onPressed: busy
+                        ? null
+                        : engine!.confirmInitialReconciliation,
+                    icon: const Icon(Icons.merge_rounded),
+                    label: Text(context.l10n.personalSyncReconciliationConfirm),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: HabiterSpace.lg),
         HabiterSurface(
           child: ExpansionTile(

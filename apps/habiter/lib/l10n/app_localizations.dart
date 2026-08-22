@@ -3146,6 +3146,24 @@ abstract class AppLocalizations {
   /// **'Aktion für den sicheren Abgleich erforderlich'**
   String get personalSyncStatusAction;
 
+  /// No description provided for @personalSyncReconciliationTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Erste Zusammenführung prüfen'**
+  String get personalSyncReconciliationTitle;
+
+  /// No description provided for @personalSyncReconciliationBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Gerät enthält {localCount} Elemente und der Server {remoteCount}. Keine Seite wird still ersetzt. Habiter erstellt zuerst eine verifizierte lokale Wiederherstellungskopie und führt dann beide Verläufe deterministisch zusammen.'**
+  String personalSyncReconciliationBody(int localCount, int remoteCount);
+
+  /// No description provided for @personalSyncReconciliationConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederherstellungskopie erstellen und zusammenführen'**
+  String get personalSyncReconciliationConfirm;
+
   /// No description provided for @personalSyncPendingOperations.
   ///
   /// In de, this message translates to:

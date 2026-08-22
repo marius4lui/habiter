@@ -384,5 +384,8 @@ final class _Remote implements PersonalSyncRemote {
     required String accessToken,
   }) => throw UnimplementedError();
   @override
+  Future<PersonalSyncSnapshot> snapshot(String accessToken) =>
+      throw UnimplementedError();
+  @override
   void close() {}
 }

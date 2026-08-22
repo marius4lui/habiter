@@ -148,6 +148,8 @@ String personalSyncProblemMessage(
     context.l10n.personalSyncStorageFailed,
   PersonalSyncConnectionProblem.authenticationRequired =>
     context.l10n.personalSyncAuthRequired,
+  PersonalSyncConnectionProblem.actionRequired =>
+    context.l10n.personalSyncStatusAction,
   PersonalSyncConnectionProblem.network =>
     context.l10n.personalSyncNetworkError,
 };

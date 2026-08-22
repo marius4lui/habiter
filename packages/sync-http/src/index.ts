@@ -141,6 +141,11 @@ async function dispatch(
     const cursor = url.searchParams.get("cursor");
     return json(await storage.pull(cursor, limit), 200);
   }
+  if (route === "GET /v1/snapshot") {
+    await bearer(request, auth);
+    noSearch(url);
+    return json(await storage.snapshot(), 200);
+  }
   if (route === "GET /v1/device") {
     const claims = await bearer(request, auth);
     return json({ deviceId: claims.deviceId, accessExpiresAt: claims.expiresAt }, 200);
@@ -247,7 +252,7 @@ function preflight(request: Request, config: NormalizedConfig, requestId: string
   if (origin === null || !config.corsOrigins.has(origin)) throw requestError("cors_denied", "Cross-origin request is not allowed", 403);
   const method = request.headers.get("access-control-request-method");
   if (!new Set(["GET", "POST", "DELETE"]).has(method ?? "")) throw requestError("cors_denied", "Cross-origin request is not allowed", 403);
-  const allowedRoutes = new Set(["/v1/authorize", "/v1/capabilities", "/v1/device", "/v1/health", "/v1/instance-info", "/v1/pull", "/v1/push", "/v1/refresh", "/v1/revoke", "/v1/token"]);
+  const allowedRoutes = new Set(["/v1/authorize", "/v1/capabilities", "/v1/device", "/v1/health", "/v1/instance-info", "/v1/pull", "/v1/push", "/v1/refresh", "/v1/revoke", "/v1/snapshot", "/v1/token"]);
   if (!allowedRoutes.has(new URL(request.url).pathname)) throw requestError("cors_denied", "Cross-origin request is not allowed", 403);
   const requested = (request.headers.get("access-control-request-headers") ?? "").toLowerCase().split(",").map((item) => item.trim()).filter(Boolean);
   if (requested.some((header) => !["authorization", "content-type", "x-habiter-csrf", "x-request-id"].includes(header))) throw requestError("cors_denied", "Cross-origin request is not allowed", 403);

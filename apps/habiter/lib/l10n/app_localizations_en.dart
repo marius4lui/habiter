@@ -1736,6 +1736,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Action is required for safe reconciliation';
 
   @override
+  String get personalSyncReconciliationTitle => 'Review initial reconciliation';
+
+  @override
+  String personalSyncReconciliationBody(int localCount, int remoteCount) {
+    return 'This device contains $localCount items and the server contains $remoteCount. Neither side will be replaced silently. Habiter will create a verified local recovery copy, then merge both histories deterministically.';
+  }
+
+  @override
+  String get personalSyncReconciliationConfirm =>
+      'Create recovery copy and merge';
+
+  @override
   String personalSyncPendingOperations(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

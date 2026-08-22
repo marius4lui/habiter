@@ -624,6 +624,15 @@
   "personalSyncStatusAuth": "Authorization required",
   "personalSyncStatusProtocol": "The server or app needs an update",
   "personalSyncStatusAction": "Action is required for safe reconciliation",
+  "personalSyncReconciliationTitle": "Review initial reconciliation",
+  "personalSyncReconciliationBody": "This device contains {localCount} items and the server contains {remoteCount}. Neither side will be replaced silently. Habiter will create a verified local recovery copy, then merge both histories deterministically.",
+  "@personalSyncReconciliationBody": {
+    "placeholders": {
+      "localCount": {"type": "int"},
+      "remoteCount": {"type": "int"}
+    }
+  },
+  "personalSyncReconciliationConfirm": "Create recovery copy and merge",
   "personalSyncPendingOperations": "{count, plural, =0{No queued changes} =1{1 queued change} other{{count} queued changes}}",
   "@personalSyncPendingOperations": {"placeholders": {"count": {"type": "int"}}}
 }

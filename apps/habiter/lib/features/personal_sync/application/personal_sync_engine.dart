@@ -13,6 +13,7 @@ import '../domain/personal_sync_connection.dart';
 import '../domain/personal_sync_contract.dart';
 import '../domain/personal_sync_engine_state.dart';
 import '../domain/personal_sync_operation.dart';
+import '../domain/personal_sync_recovery_artifact.dart';
 import '../domain/personal_sync_replica.dart';
 import '../infrastructure/personal_sync_api_client.dart';
 import '../infrastructure/syncing_habit_repository.dart';
@@ -25,6 +26,20 @@ enum PersonalSyncEnginePhase {
   authenticationRequired,
   protocolRequired,
   actionRequired,
+}
+
+enum PersonalSyncActionReason { initialMerge, snapshotRecovery }
+
+final class PersonalSyncReconciliationPreview {
+  const PersonalSyncReconciliationPreview({
+    required this.reason,
+    required this.localEntities,
+    required this.remoteEntities,
+  });
+
+  final PersonalSyncActionReason reason;
+  final int localEntities;
+  final int remoteEntities;
 }
 
 typedef PersonalSyncProjectionReconciler = Future<void> Function();
@@ -45,6 +60,7 @@ final class PersonalSyncEngine extends ChangeNotifier
        _random = random ?? Random.secure().nextDouble;
 
   static const storageKey = 'habiter_personal_sync_engine_v1';
+  static const recoveryKey = 'habiter_personal_sync_recovery_v1';
   static const _pushBatchSize = 100;
   static const _pullBatchSize = 100;
   static const _maximumPullPages = 20;
@@ -70,12 +86,25 @@ final class PersonalSyncEngine extends ChangeNotifier
   bool _online = true;
   bool _foreground = true;
   bool _syncing = false;
+  bool _initialMergeConfirmed = false;
   int _failures = 0;
+  PersonalSyncReconciliationPreview? _action;
 
   PersonalSyncEnginePhase get phase => _phase;
   int get pendingOperations => _state.queue.length;
   DateTime? get lastSuccessAt => _lastSuccessAt;
   DateTime? get retryAt => _retryAt;
+  PersonalSyncReconciliationPreview? get reconciliationPreview => _action;
+
+  Future<void> confirmInitialReconciliation() async {
+    if (_action?.reason != PersonalSyncActionReason.initialMerge) return;
+    _initialMergeConfirmed = true;
+    _action = null;
+    _phase = PersonalSyncEnginePhase.idle;
+    notifyListeners();
+    final request = _requestSync;
+    if (request != null) await request();
+  }
 
   void setProjectionReconciler(PersonalSyncProjectionReconciler reconciler) {
     _reconcileProjections = reconciler;
@@ -217,6 +246,12 @@ final class PersonalSyncEngine extends ChangeNotifier
     final remote = _remoteFactory(Uri.parse(connection.instanceOrigin));
     var projectionsChanged = false;
     try {
+      if (_state.replica.cursor == null) {
+        projectionsChanged = await _prepareInitialReconciliation(
+          remote,
+          connection.accessToken,
+        );
+      }
       while (_state.queue.isNotEmpty) {
         final batch = _state.queue.take(_pushBatchSize).toList(growable: false);
         await remote.push(batch, connection.accessToken);
@@ -247,9 +282,15 @@ final class PersonalSyncEngine extends ChangeNotifier
           accessToken: connection.accessToken,
         );
         if (page.requiresSnapshot) {
-          _phase = PersonalSyncEnginePhase.actionRequired;
-          notifyListeners();
-          throw const PersonalSyncRemoteException('action_required');
+          final snapshot = await remote.snapshot(connection.accessToken);
+          projectionsChanged =
+              await _applySnapshot(
+                snapshot,
+                reason: page.recoveryReason,
+                preserveLocal: true,
+              ) ||
+              projectionsChanged;
+          break;
         }
         if (page.operations.isEmpty && _state.replica.cursor == page.cursor) {
           break;
@@ -383,6 +424,111 @@ final class PersonalSyncEngine extends ChangeNotifier
     _retryTimer?.cancel();
     _pollTimer?.cancel();
     _retryAt = null;
+  }
+
+  Future<bool> _prepareInitialReconciliation(
+    PersonalSyncRemote remote,
+    String accessToken,
+  ) async {
+    final repository = _repository!;
+    final local = await repository.load();
+    final snapshot = await remote.snapshot(accessToken);
+    final localCount = local.habits.length + local.entries.length;
+    final remoteCount = snapshot.entities
+        .where((entity) => entity.isMaterialized && !entity.deleted)
+        .length;
+    if (localCount > 0 && remoteCount > 0 && !_initialMergeConfirmed) {
+      _action = PersonalSyncReconciliationPreview(
+        reason: PersonalSyncActionReason.initialMerge,
+        localEntities: localCount,
+        remoteEntities: remoteCount,
+      );
+      _phase = PersonalSyncEnginePhase.actionRequired;
+      notifyListeners();
+      throw const PersonalSyncRemoteException('action_required');
+    }
+    _initialMergeConfirmed = false;
+    _action = null;
+    return _applySnapshot(
+      snapshot,
+      reason: 'initial_reconciliation',
+      preserveLocal: localCount > 0,
+    );
+  }
+
+  Future<bool> _applySnapshot(
+    PersonalSyncSnapshot snapshot, {
+    required String reason,
+    required bool preserveLocal,
+  }) async {
+    final repository = _repository!;
+    late PersonalSyncEngineState committed;
+    var changed = false;
+    await repository.transactWithoutCapture((draft) {
+      final previous = PersonalSyncEngineState.fromStorage(
+        draft.sidecar[storageKey],
+      );
+      final artifact = PersonalSyncRecoveryArtifact.create(
+        createdAt: _clock.now(),
+        reason: reason,
+        draft: draft,
+        engineState: previous,
+      );
+      // Parse the serialized artifact before the transaction can commit. This
+      // proves the backup is complete and its checksum matches its payload.
+      PersonalSyncRecoveryArtifact.fromStorage(artifact.toStorage());
+
+      var replica = PersonalSyncReplica.fromSnapshot(
+        entities: snapshot.entities,
+        cursor: snapshot.cursor,
+      );
+      var sequence = previous.sequence;
+      for (final operation in previous.queue) {
+        replica = replica.apply(operation).replica;
+        sequence = max(sequence, operation.revision.sequence);
+      }
+      var queue = previous.queue.toList(growable: true);
+      if (preserveLocal) {
+        final localDocuments = _documents(draft);
+        for (final key in localDocuments.keys.toList()..sort()) {
+          final local = localDocuments[key]!;
+          final entityId = PersonalSyncEntityId.parse(key);
+          final existing = replica.entities[key];
+          if (_jsonEqual(existing?.document?.payload, local) &&
+              existing?.deleted == false) {
+            continue;
+          }
+          final revision = PersonalSyncRevision(
+            deviceId: _deviceId!,
+            sequence: sequence + 1,
+          );
+          final operation = _EntityChange(
+            entityId: entityId,
+            before: existing?.document?.payload,
+            after: local,
+          ).operation(revision, existing);
+          replica = replica.apply(operation).replica;
+          queue.add(operation);
+          sequence = revision.sequence;
+        }
+      }
+      changed = !_jsonEqual(
+        previous.replica.canonicalEntityState(),
+        replica.canonicalEntityState(),
+      );
+      final next = previous.copyWith(
+        sequence: sequence,
+        queue: queue,
+        replica: replica,
+      );
+      _materialize(replica, draft);
+      draft.sidecar[storageKey] = next.toStorage();
+      draft.sidecar[recoveryKey] = artifact.toStorage();
+      committed = next;
+    });
+    _state = committed;
+    notifyListeners();
+    return changed;
   }
 
   @override

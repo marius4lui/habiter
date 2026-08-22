@@ -624,6 +624,15 @@
   "personalSyncStatusAuth": "Erneute Anmeldung erforderlich",
   "personalSyncStatusProtocol": "Server oder App muss aktualisiert werden",
   "personalSyncStatusAction": "Aktion für den sicheren Abgleich erforderlich",
+  "personalSyncReconciliationTitle": "Erste Zusammenführung prüfen",
+  "personalSyncReconciliationBody": "Dieses Gerät enthält {localCount} Elemente und der Server {remoteCount}. Keine Seite wird still ersetzt. Habiter erstellt zuerst eine verifizierte lokale Wiederherstellungskopie und führt dann beide Verläufe deterministisch zusammen.",
+  "@personalSyncReconciliationBody": {
+    "placeholders": {
+      "localCount": {"type": "int"},
+      "remoteCount": {"type": "int"}
+    }
+  },
+  "personalSyncReconciliationConfirm": "Wiederherstellungskopie erstellen und zusammenführen",
   "personalSyncPendingOperations": "{count, plural, =0{Keine vorgemerkten Änderungen} =1{1 vorgemerkte Änderung} other{{count} vorgemerkte Änderungen}}",
   "@personalSyncPendingOperations": {"placeholders": {"count": {"type": "int"}}}
 }

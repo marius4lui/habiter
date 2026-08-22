@@ -108,7 +108,7 @@ function registerRouteSuite(name: string, factory: () => Promise<Harness>): void
       }
     });
 
-    it("completes auth, push, pull, device, refresh, and revoke routes", async () => {
+    it("completes auth, push, pull, snapshot, device, refresh, and revoke routes", async () => {
       const harness = await factory();
       const pair = await tokens(harness);
       const authorization = { authorization: `Bearer ${pair.accessToken}` };
@@ -117,6 +117,9 @@ function registerRouteSuite(name: string, factory: () => Promise<Harness>): void
       expect(await body<{ receipts: unknown[] }>(pushed)).toMatchObject({ receipts: [{ duplicate: false }] });
       const pulled = await harness.fetch(request("/v1/pull?limit=100", { headers: authorization }));
       expect(await body<{ operations: unknown[] }>(pulled)).toMatchObject({ operations: [{ operationId: "operation/phone-a/1" }] });
+      const snapshot = await harness.fetch(request("/v1/snapshot", { headers: authorization }));
+      expect(snapshot.status).toBe(200);
+      expect(await body<{ schemaVersion: number; entities: unknown[] }>(snapshot)).toMatchObject({ schemaVersion: 1, entities: [{ entityId: "habit/habit-a" }] });
       const device = await harness.fetch(request("/v1/device", { headers: authorization }));
       expect(await body(device)).toMatchObject({ deviceId: "phone-a" });
       const refreshed = await harness.fetch(jsonRequest("/v1/refresh", { grantType: "refresh_token", refreshToken: pair.refreshToken }));

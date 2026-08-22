@@ -72,7 +72,10 @@ final class AppDependencies {
     final repository = SyncingHabitRepository(
       delegate: KeyValueHabitRepository(
         store,
-        transactionalSidecarKeys: const <String>{PersonalSyncEngine.storageKey},
+        transactionalSidecarKeys: const <String>{
+          PersonalSyncEngine.storageKey,
+          PersonalSyncEngine.recoveryKey,
+        },
       ),
       recorder: engine,
     );

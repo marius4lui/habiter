@@ -113,7 +113,7 @@ assert.match(layout, /data-scroll-behavior="smooth"/);
 assert.match(layout, /href="#content"/);
 assert.match(nextConfig, /output: "export"/);
 assert.match(nextConfig, /unoptimized: true/);
-assert.equal(wrangler.name, "habiter");
+assert.equal(wrangler.name, "habiterdev");
 assert.equal(wrangler.assets.directory, "./out");
 
 console.log("Static multi-page Habiter website contract is valid.");

@@ -159,7 +159,7 @@ The current Flutter build reports a future Kotlin Gradle Plugin migration warnin
 
 ## Website deployment on Cloudflare Workers
 
-The website is exported by Next.js as static files and deployed as Cloudflare Worker assets. No OpenNext server bundle is involved. The Cloudflare Workers Build for `habiter` uses:
+The website is exported by Next.js as static files and deployed as Cloudflare Worker assets. No OpenNext server bundle is involved. The production Worker is `habiterdev` and serves `https://habiter.dev`. The checked-in `website-deploy.yml` workflow deploys it from `main`; the equivalent Cloudflare Workers Build settings are:
 
 ```text
 Root directory: apps/website

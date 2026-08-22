@@ -1,5 +1,7 @@
 export type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 
+export * from "./storage";
+
 export type EntityType = "habit" | "entry" | "setting";
 export type OperationKind = "create" | "patch" | "delete" | "restore";
 

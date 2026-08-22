@@ -616,5 +616,14 @@
   "personalSyncAuthRequired": "Die Anmeldung ist abgelaufen. Bitte verbinde dich erneut.",
   "personalSyncNetworkError": "Der Server ist derzeit nicht erreichbar.",
   "personalSyncPending": "Die Anmeldung wartet auf die Rückgabe aus dem Browser.",
-  "personalSyncCancelPending": "Anmeldung abbrechen"
+  "personalSyncCancelPending": "Anmeldung abbrechen",
+  "personalSyncStatusIdle": "Bereit",
+  "personalSyncStatusSyncing": "Synchronisiert …",
+  "personalSyncStatusOffline": "Offline – Änderungen bleiben sicher vorgemerkt",
+  "personalSyncStatusRetrying": "Verbindung unterbrochen – neuer Versuch folgt",
+  "personalSyncStatusAuth": "Erneute Anmeldung erforderlich",
+  "personalSyncStatusProtocol": "Server oder App muss aktualisiert werden",
+  "personalSyncStatusAction": "Aktion für den sicheren Abgleich erforderlich",
+  "personalSyncPendingOperations": "{count, plural, =0{Keine vorgemerkten Änderungen} =1{1 vorgemerkte Änderung} other{{count} vorgemerkte Änderungen}}",
+  "@personalSyncPendingOperations": {"placeholders": {"count": {"type": "int"}}}
 }

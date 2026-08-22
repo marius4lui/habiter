@@ -6,6 +6,12 @@ import '../models/habit.dart';
 /// Central provider for app-wide settings: theme and locale.
 /// Persists settings to SharedPreferences for restart survival.
 class SettingsProvider extends ChangeNotifier {
+  SettingsProvider({
+    Future<void> Function(Map<String, Object?> values)? captureSyncSettings,
+  }) : _captureSyncSettings = captureSyncSettings;
+
+  final Future<void> Function(Map<String, Object?> values)?
+  _captureSyncSettings;
   static const _themeModeKey = 'settings_theme_mode';
   static const _localeKey = 'settings_locale';
 
@@ -46,6 +52,9 @@ class SettingsProvider extends ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_themeModeKey, _themeModeToString(mode));
+    await _captureSyncSettings?.call(<String, Object?>{
+      'appearance.theme': _themeModeToString(mode),
+    });
   }
 
   /// Set locale and persist
@@ -57,6 +66,9 @@ class SettingsProvider extends ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_localeKey, locale.languageCode);
+    await _captureSyncSettings?.call(<String, Object?>{
+      'appearance.language': locale.languageCode,
+    });
   }
 
   /// Convert ThemePreference (from habit.dart) to ThemeMode

@@ -616,5 +616,14 @@
   "personalSyncAuthRequired": "Authorization expired. Please reconnect.",
   "personalSyncNetworkError": "The server is currently unavailable.",
   "personalSyncPending": "Authorization is waiting for the browser callback.",
-  "personalSyncCancelPending": "Cancel authorization"
+  "personalSyncCancelPending": "Cancel authorization",
+  "personalSyncStatusIdle": "Ready",
+  "personalSyncStatusSyncing": "Syncing …",
+  "personalSyncStatusOffline": "Offline — changes remain safely queued",
+  "personalSyncStatusRetrying": "Connection interrupted — retry scheduled",
+  "personalSyncStatusAuth": "Authorization required",
+  "personalSyncStatusProtocol": "The server or app needs an update",
+  "personalSyncStatusAction": "Action is required for safe reconciliation",
+  "personalSyncPendingOperations": "{count, plural, =0{No queued changes} =1{1 queued change} other{{count} queued changes}}",
+  "@personalSyncPendingOperations": {"placeholders": {"count": {"type": "int"}}}
 }

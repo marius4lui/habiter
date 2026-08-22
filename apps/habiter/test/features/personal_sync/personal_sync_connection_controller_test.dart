@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/core/time/clock.dart';
 import 'package:habiter/features/personal_sync/application/personal_sync_connection_controller.dart';
 import 'package:habiter/features/personal_sync/domain/personal_sync_connection.dart';
+import 'package:habiter/features/personal_sync/domain/personal_sync_operation.dart';
 import 'package:habiter/features/personal_sync/infrastructure/personal_sync_api_client.dart';
 import 'package:habiter/features/personal_sync/infrastructure/personal_sync_handoff.dart';
 import 'package:habiter/features/personal_sync/infrastructure/personal_sync_secure_vault.dart';
@@ -371,6 +372,17 @@ final class _Remote implements PersonalSyncRemote {
 
   @override
   Future<void> revokeAll(String accessToken) async {}
+  @override
+  Future<void> push(
+    List<PersonalSyncOperation> operations,
+    String accessToken,
+  ) async {}
+  @override
+  Future<PersonalSyncPullPage> pull({
+    required PersonalSyncServerCursor? cursor,
+    required int limit,
+    required String accessToken,
+  }) => throw UnimplementedError();
   @override
   void close() {}
 }

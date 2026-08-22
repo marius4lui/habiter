@@ -1710,4 +1710,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get personalSyncCancelPending => 'Cancel authorization';
+
+  @override
+  String get personalSyncStatusIdle => 'Ready';
+
+  @override
+  String get personalSyncStatusSyncing => 'Syncing …';
+
+  @override
+  String get personalSyncStatusOffline =>
+      'Offline — changes remain safely queued';
+
+  @override
+  String get personalSyncStatusRetrying =>
+      'Connection interrupted — retry scheduled';
+
+  @override
+  String get personalSyncStatusAuth => 'Authorization required';
+
+  @override
+  String get personalSyncStatusProtocol => 'The server or app needs an update';
+
+  @override
+  String get personalSyncStatusAction =>
+      'Action is required for safe reconciliation';
+
+  @override
+  String personalSyncPendingOperations(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count queued changes',
+      one: '1 queued change',
+      zero: 'No queued changes',
+    );
+    return '$_temp0';
+  }
 }

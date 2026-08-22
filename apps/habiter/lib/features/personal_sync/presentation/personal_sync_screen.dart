@@ -5,6 +5,7 @@ import '../../../core/design_system/components.dart';
 import '../../../core/design_system/tokens.dart';
 import '../../../l10n/l10n.dart';
 import '../application/personal_sync_connection_controller.dart';
+import '../application/personal_sync_engine.dart';
 import '../domain/personal_sync_connection.dart';
 import 'personal_sync_settings_card.dart';
 
@@ -14,6 +15,7 @@ class PersonalSyncScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final connection = context.watch<PersonalSyncConnectionController>();
+    final engine = context.watch<PersonalSyncEngine?>();
     final busy =
         connection.phase == PersonalSyncConnectionPhase.checking ||
         connection.phase == PersonalSyncConnectionPhase.authorizing;
@@ -44,6 +46,19 @@ class PersonalSyncScreen extends StatelessWidget {
                     MaterialLocalizations.of(context).formatFullDate(last),
                   ),
                 ),
+              if (engine != null) ...[
+                const SizedBox(height: 8),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(_engineStatus(context, engine.phase)),
+                ),
+                Text(
+                  context.l10n.personalSyncPendingOperations(
+                    engine.pendingOperations,
+                  ),
+                  key: const Key('personal-sync-pending-count'),
+                ),
+              ],
               if (connection.problem case final problem?) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -148,3 +163,18 @@ class PersonalSyncScreen extends StatelessWidget {
     if (confirmed == true) await action();
   }
 }
+
+String _engineStatus(BuildContext context, PersonalSyncEnginePhase phase) =>
+    switch (phase) {
+      PersonalSyncEnginePhase.idle => context.l10n.personalSyncStatusIdle,
+      PersonalSyncEnginePhase.syncing => context.l10n.personalSyncStatusSyncing,
+      PersonalSyncEnginePhase.offline => context.l10n.personalSyncStatusOffline,
+      PersonalSyncEnginePhase.retrying =>
+        context.l10n.personalSyncStatusRetrying,
+      PersonalSyncEnginePhase.authenticationRequired =>
+        context.l10n.personalSyncStatusAuth,
+      PersonalSyncEnginePhase.protocolRequired =>
+        context.l10n.personalSyncStatusProtocol,
+      PersonalSyncEnginePhase.actionRequired =>
+        context.l10n.personalSyncStatusAction,
+    };

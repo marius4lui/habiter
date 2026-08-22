@@ -4,6 +4,7 @@ packages:
   - packages/release-core
   - packages/sync-auth
   - packages/sync-http
+  - packages/sync-service
   - packages/sync-core
   - packages/sync-d1
   - packages/sync-sqlite

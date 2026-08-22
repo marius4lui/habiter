@@ -52,7 +52,9 @@ jobs:
       - run: pnpm sync:check
       - run: pnpm sync:auth:check
       - run: pnpm sync:http:check
+      - run: pnpm sync:service:check
       - run: pnpm sync:d1:check
+      - run: pnpm sync:docker:check
       - run: pnpm sync:sqlite:check
       - run: pnpm website:check
       - run: pnpm --filter @habiter/release-api types

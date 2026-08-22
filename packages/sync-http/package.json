@@ -1,0 +1,27 @@
+{
+  "name": "@habiter/sync-http",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "build:test-worker": "esbuild test/worker.ts --bundle --format=esm --platform=browser --target=es2022 --outfile=.tmp/worker.mjs",
+    "check": "tsc --noEmit && pnpm build:test-worker && vitest run",
+    "test": "pnpm build:test-worker && vitest run"
+  },
+  "dependencies": {
+    "@habiter/sync-auth": "workspace:*",
+    "@habiter/sync-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@habiter/sync-d1": "workspace:*",
+    "@habiter/sync-sqlite": "workspace:*",
+    "@types/node": "^24.0.0",
+    "@types/jsdom": "^21.1.7",
+    "esbuild": "^0.28.1",
+    "jsdom": "^26.1.0",
+    "miniflare": "3.20250718.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  }
+}

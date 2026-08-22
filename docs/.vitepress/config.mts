@@ -65,7 +65,8 @@ export default defineConfig({
             { text: 'Release API', link: '/api/release-api' },
             { text: 'Manifest and Signatures', link: '/api/release-manifest' },
             { text: 'Classly Compatibility', link: '/api/classly-compatible' },
-            { text: 'Backup JSON Format', link: '/api/backup-format' }
+            { text: 'Backup JSON Format', link: '/api/backup-format' },
+            { text: 'Personal Sync HTTP API', link: '/api/personal-sync-http' }
           ]
         }
       ],

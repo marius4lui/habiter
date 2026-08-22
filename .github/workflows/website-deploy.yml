@@ -1,0 +1,52 @@
+name: Deploy Website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/website/**'
+      - 'scripts/website/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/website-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Production Website
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.1'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm website:check
+      - name: Deploy production website
+        working-directory: apps/website
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm exec wrangler deploy
+      - name: Smoke test production routes
+        env:
+          WEBSITE_BASE_URL: https://habiter.dev
+        run: |
+          for path in / /product /focus /privacy; do
+            curl --fail --silent --show-error --output /dev/null \
+              --retry 8 --retry-all-errors --retry-delay 3 "$WEBSITE_BASE_URL$path"
+          done

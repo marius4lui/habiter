@@ -69,6 +69,37 @@ void main() {
       expect(storeManifest, isNot(contains('FileProvider')));
     });
 
+    test('Store flavor uses Google Play while direct stays dependency-free', () {
+      final buildFile = File('android/app/build.gradle.kts').readAsStringSync();
+      final storeCoordinator = File(
+        'android/app/src/store/kotlin/com/habiter/app/StoreUpdateCoordinator.kt',
+      ).readAsStringSync();
+      final directCoordinator = File(
+        'android/app/src/direct/kotlin/com/habiter/app/StoreUpdateCoordinator.kt',
+      ).readAsStringSync();
+      final activity = File(
+        'android/app/src/main/kotlin/com/habiter/app/MainActivity.kt',
+      ).readAsStringSync();
+
+      expect(
+        buildFile,
+        contains(
+          'add("storeImplementation", '
+          '"com.google.android.play:app-update:2.1.0")',
+        ),
+      );
+      expect(buildFile, isNot(contains('directImplementation')));
+      expect(storeCoordinator, contains('AppUpdateManagerFactory.create'));
+      expect(storeCoordinator, contains('AppUpdateOptions.newBuilder'));
+      expect(storeCoordinator, contains('manager.completeUpdate()'));
+      expect(
+        storeCoordinator,
+        contains('DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS'),
+      );
+      expect(activity, contains('updateManager?.resumeStoreUpdate()'));
+      expect(directCoordinator, isNot(contains('com.google.android.play')));
+    });
+
     test('scheduled notifications declare delivery and action receivers', () {
       final content = File(
         'android/app/src/main/AndroidManifest.xml',

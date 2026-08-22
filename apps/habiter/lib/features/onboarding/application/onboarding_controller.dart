@@ -92,12 +92,18 @@ final class OnboardingController extends ChangeNotifier {
     return id;
   }
 
-  Future<void> markHabitReady() => _replace(
-    _state.copyWith(
-      currentStep: OnboardingStep.widgetIntro,
-      widgetPromotionState: WidgetPromotionState.presented,
-    ),
-  );
+  Future<void> markHabitReady({bool backgroundSetupRequired = false}) =>
+      _replace(
+        _state.copyWith(
+          currentStep: backgroundSetupRequired
+              ? OnboardingStep.backgroundRuntime
+              : OnboardingStep.widgetIntro,
+          backgroundSetupIncluded: backgroundSetupRequired,
+          widgetPromotionState: WidgetPromotionState.presented,
+        ),
+      );
+
+  Future<void> completeBackgroundSetup() => _moveTo(OnboardingStep.widgetIntro);
 
   Future<void> showWidgetIntro() => _replace(
     _state.copyWith(
@@ -132,6 +138,10 @@ final class OnboardingController extends ChangeNotifier {
   );
 
   Future<void> back() {
+    if (_state.currentStep == OnboardingStep.widgetIntro &&
+        !_state.backgroundSetupIncluded) {
+      return _moveTo(OnboardingStep.reminder);
+    }
     final previous = OnboardingProgress.previousOf(_state.currentStep);
     return _moveTo(previous);
   }

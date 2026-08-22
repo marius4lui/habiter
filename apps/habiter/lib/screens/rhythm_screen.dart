@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../core/design_system/adaptive_presentation.dart';
 import '../core/design_system/components.dart';
 import '../core/design_system/tokens.dart';
 import '../features/reminders/domain/availability_profile.dart';
@@ -82,58 +83,85 @@ class _RhythmScreenState extends State<RhythmScreen> {
                   ),
                   const SizedBox(height: HabiterSpace.md),
                 ],
-                _CalibrationCard(
-                  copy: _copy,
-                  preferences: provider.reminderPreferences,
-                  session: provider.calibrationSession,
-                  confidence: profile?.confidence ?? 0,
-                  now: provider.reminderNow,
-                  activating: _activating,
-                  onActivate: _notificationPlatformSupported
-                      ? () => _activate(provider)
-                      : null,
-                  onPause: provider.pauseCalibration,
-                  onResume: provider.resumeCalibration,
-                  onRestart: () => _confirmRestart(provider),
+                HabiterAdaptiveGrid(
+                  key: const Key('rhythm-overview-grid'),
+                  minimumColumnWidth: 360,
+                  spacing: HabiterSpace.lg,
+                  runSpacing: HabiterSpace.lg,
+                  maxColumns: 2,
+                  children: [
+                    KeyedSubtree(
+                      key: const Key('rhythm-calibration-column'),
+                      child: _CalibrationCard(
+                        copy: _copy,
+                        preferences: provider.reminderPreferences,
+                        session: provider.calibrationSession,
+                        confidence: profile?.confidence ?? 0,
+                        now: provider.reminderNow,
+                        activating: _activating,
+                        onActivate: _notificationPlatformSupported
+                            ? () => _activate(provider)
+                            : null,
+                        onPause: provider.pauseCalibration,
+                        onResume: provider.resumeCalibration,
+                        onRestart: () => _confirmRestart(provider),
+                      ),
+                    ),
+                    KeyedSubtree(
+                      key: const Key('rhythm-profile-column'),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          HabiterSectionHeader(
+                            title: _copy.availabilityProfile,
+                            subtitle: _copy.profileBody,
+                          ),
+                          const SizedBox(height: HabiterSpace.md),
+                          if (habits.isEmpty)
+                            HabiterEmptyState(
+                              icon: Icons.schedule_outlined,
+                              title: _copy.noHabits,
+                              body: _copy.noHabitsBody,
+                            )
+                          else ...[
+                            DropdownButtonFormField<String>(
+                              key: ValueKey(selectedHabit?.id),
+                              initialValue: selectedHabit?.id,
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                labelText: _copy.habit,
+                              ),
+                              items: [
+                                for (final habit in habits)
+                                  DropdownMenuItem(
+                                    value: habit.id,
+                                    child: Text(
+                                      habit.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                              ],
+                              onChanged: (value) => setState(
+                                () => _selectedProfileHabitId = value,
+                              ),
+                            ),
+                            const SizedBox(height: HabiterSpace.md),
+                            _AvailabilityChart(
+                              copy: _copy,
+                              profile: profile,
+                              globalProfile: globalProfile,
+                              policy: selectedHabit == null
+                                  ? null
+                                  : provider.reminderPolicies[selectedHabit.id],
+                              preferences: provider.reminderPreferences,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: HabiterSpace.lg),
-                HabiterSectionHeader(
-                  title: _copy.availabilityProfile,
-                  subtitle: _copy.profileBody,
-                ),
-                const SizedBox(height: HabiterSpace.md),
-                if (habits.isEmpty)
-                  HabiterEmptyState(
-                    icon: Icons.schedule_outlined,
-                    title: _copy.noHabits,
-                    body: _copy.noHabitsBody,
-                  )
-                else ...[
-                  DropdownButtonFormField<String>(
-                    key: ValueKey(selectedHabit?.id),
-                    initialValue: selectedHabit?.id,
-                    decoration: InputDecoration(labelText: _copy.habit),
-                    items: [
-                      for (final habit in habits)
-                        DropdownMenuItem(
-                          value: habit.id,
-                          child: Text(habit.name),
-                        ),
-                    ],
-                    onChanged: (value) =>
-                        setState(() => _selectedProfileHabitId = value),
-                  ),
-                  const SizedBox(height: HabiterSpace.md),
-                  _AvailabilityChart(
-                    copy: _copy,
-                    profile: profile,
-                    globalProfile: globalProfile,
-                    policy: selectedHabit == null
-                        ? null
-                        : provider.reminderPolicies[selectedHabit.id],
-                    preferences: provider.reminderPreferences,
-                  ),
-                ],
                 const SizedBox(height: HabiterSpace.lg),
                 HabiterSectionHeader(
                   title: _copy.habitPlans,
@@ -143,28 +171,39 @@ class _RhythmScreenState extends State<RhythmScreen> {
                 if (habits.isEmpty)
                   Text(_copy.noPlans)
                 else
-                  for (final habit in habits) ...[
-                    _HabitPlanCard(
-                      copy: _copy,
-                      habit: habit,
-                      policy: provider.reminderPolicies[habit.id],
-                      next: _nextFor(
-                        provider.plannedReminders,
-                        habit.id,
-                        provider.reminderNow,
-                      ),
-                      explanationsEnabled:
-                          provider.reminderPreferences.showLearningExplanations,
-                      onEdit: () => HabitReminderPlanEditor.show(
-                        context,
-                        habit: habit,
-                        policy: provider.reminderPolicies[habit.id],
-                        onSave: provider.updateReminderPolicy,
-                      ),
-                      onWhy: (reminder) => _showWhy(reminder, habit),
-                    ),
-                    const SizedBox(height: HabiterSpace.sm),
-                  ],
+                  HabiterAdaptiveGrid(
+                    key: const Key('rhythm-plans-grid'),
+                    minimumColumnWidth: 360,
+                    spacing: HabiterSpace.md,
+                    runSpacing: HabiterSpace.sm,
+                    maxColumns: 2,
+                    children: [
+                      for (final habit in habits)
+                        KeyedSubtree(
+                          key: ValueKey('rhythm-plan-${habit.id}'),
+                          child: _HabitPlanCard(
+                            copy: _copy,
+                            habit: habit,
+                            policy: provider.reminderPolicies[habit.id],
+                            next: _nextFor(
+                              provider.plannedReminders,
+                              habit.id,
+                              provider.reminderNow,
+                            ),
+                            explanationsEnabled: provider
+                                .reminderPreferences
+                                .showLearningExplanations,
+                            onEdit: () => HabitReminderPlanEditor.show(
+                              context,
+                              habit: habit,
+                              policy: provider.reminderPolicies[habit.id],
+                              onSave: provider.updateReminderPolicy,
+                            ),
+                            onWhy: (reminder) => _showWhy(reminder, habit),
+                          ),
+                        ),
+                    ],
+                  ),
                 const SizedBox(height: HabiterSpace.lg),
                 OutlinedButton.icon(
                   onPressed: () => _confirmReset(provider),
@@ -894,10 +933,8 @@ class _GlobalReminderSettings extends StatefulWidget {
     BuildContext context, {
     required ReminderPreferences value,
     required Future<void> Function(ReminderPreferences value) onSave,
-  }) => showModalBottomSheet<void>(
+  }) => showHabiterAdaptivePane<void>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
     builder: (_) => _GlobalReminderSettings(value: value, onSave: onSave),
   );
 

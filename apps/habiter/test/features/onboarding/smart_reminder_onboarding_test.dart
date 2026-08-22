@@ -74,14 +74,14 @@ void main() {
       for (
         var attempt = 0;
         attempt < 30 &&
-            controller.state.currentStep != OnboardingStep.widgetIntro;
+            controller.state.currentStep != OnboardingStep.backgroundRuntime;
         attempt++
       ) {
         await tester.pump(const Duration(milliseconds: 100));
       }
 
       expect(permissionRequests, 1);
-      expect(controller.state.currentStep, OnboardingStep.widgetIntro);
+      expect(controller.state.currentStep, OnboardingStep.backgroundRuntime);
       expect(provider.habits, hasLength(1));
       expect(provider.habits.single.notificationEnabled, isTrue);
       expect(provider.habits.single.notificationTime, isNull);

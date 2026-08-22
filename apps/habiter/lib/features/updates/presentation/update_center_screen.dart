@@ -158,21 +158,37 @@ final class _StatusCard extends StatelessWidget {
                   state.phase != UpdatePhase.verifying &&
                   state.phase != UpdatePhase.installing)
                 OutlinedButton.icon(
-                  onPressed: state.phase == UpdatePhase.ready
+                  onPressed:
+                      const {
+                        UpdatePhase.ready,
+                        UpdatePhase.restartRequired,
+                      }.contains(state.phase)
                       ? () => requestUpdateInstall(context, controller)
                       : controller.download,
                   icon: Icon(
-                    state.phase == UpdatePhase.ready
+                    const {
+                          UpdatePhase.ready,
+                          UpdatePhase.restartRequired,
+                        }.contains(state.phase)
                         ? Icons.install_mobile_rounded
                         : Icons.download_rounded,
                   ),
                   label: Text(
-                    state.phase == UpdatePhase.ready
+                    state.phase == UpdatePhase.restartRequired
+                        ? context.l10n.updateRestart
+                        : state.phase == UpdatePhase.ready
                         ? context.l10n.updateInstall
-                        : controller.runtime?.supportsDirectInstall == true
+                        : !controller.candidateUsesExternalInstaller
                         ? context.l10n.updateDownload
                         : context.l10n.updateOpenDownload,
                   ),
+                ),
+              if (controller.canCancelDownload)
+                TextButton.icon(
+                  key: const Key('cancel-update-download'),
+                  onPressed: controller.cancelDownload,
+                  icon: const Icon(Icons.close_rounded),
+                  label: Text(context.l10n.updateCancelDownload),
                 ),
             ],
           ),
@@ -366,9 +382,11 @@ String _statusText(BuildContext context, UpdateState state) =>
       ),
       UpdatePhase.verifying => context.l10n.updateStatusVerifying,
       UpdatePhase.ready => context.l10n.updateStatusReady,
+      UpdatePhase.restartRequired => context.l10n.updateStatusRestartRequired,
       UpdatePhase.installing => context.l10n.updateStatusInstalling,
       UpdatePhase.mandatory => context.l10n.updateStatusMandatory,
-      UpdatePhase.error => context.l10n.updateStatusError,
+      UpdatePhase.unsupported => context.l10n.updateUnsupported,
+      UpdatePhase.error => _errorText(context, state.errorCode),
     };
 
 IconData _statusIcon(UpdatePhase phase) => switch (phase) {
@@ -377,10 +395,34 @@ IconData _statusIcon(UpdatePhase phase) => switch (phase) {
   UpdatePhase.available || UpdatePhase.mandatory => Icons.new_releases_rounded,
   UpdatePhase.downloading => Icons.downloading_rounded,
   UpdatePhase.ready => Icons.install_mobile_rounded,
+  UpdatePhase.restartRequired => Icons.restart_alt_rounded,
   UpdatePhase.installing => Icons.open_in_new_rounded,
+  UpdatePhase.unsupported => Icons.block_rounded,
   UpdatePhase.error => Icons.cloud_off_rounded,
   UpdatePhase.idle => Icons.system_update_alt_rounded,
 };
+
+String _errorText(BuildContext context, String? code) {
+  if (code == 'offline') return context.l10n.updateErrorOffline;
+  if (const {
+    'checksum_mismatch',
+    'wrong_hash',
+    'wrong_size',
+    'foreign_signer',
+    'verification_failed',
+    'metadata_mismatch',
+  }.contains(code)) {
+    return context.l10n.updateErrorIntegrity;
+  }
+  if (const {'insufficient_storage', 'storage_unavailable'}.contains(code)) {
+    return context.l10n.updateErrorStorage;
+  }
+  if (code == 'store_update_unavailable' ||
+      code == 'external_update_unavailable') {
+    return context.l10n.updateErrorExternal;
+  }
+  return context.l10n.updateStatusError;
+}
 
 String _bytes(int value) {
   if (value < 1024) return '$value B';

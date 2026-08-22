@@ -49,6 +49,91 @@ void main() {
       expect(result, isNull);
     });
 
+    test('desktop selection uses one primary format, not array order', () {
+      final release = releaseJson(
+        build: 10700,
+        channel: 'stable',
+        artifacts: [
+          _desktopArtifact(format: 'tar.gz', primary: false),
+          _desktopArtifact(format: 'appimage', primary: true),
+        ],
+      );
+      final reversed = releaseJson(
+        build: 10700,
+        channel: 'stable',
+        artifacts: [
+          _desktopArtifact(format: 'appimage', primary: true),
+          _desktopArtifact(format: 'tar.gz', primary: false),
+        ],
+      );
+
+      for (final input in [release, reversed]) {
+        final result = selector.select(
+          manifest: manifestOf([input]),
+          track: UpdateTrack.stable,
+          currentBuild: 10600,
+          platform: 'linux',
+          architecture: 'x64',
+        );
+        expect(result?.artifact.format, UpdateArtifactFormat.appImage);
+        expect(result?.artifact.primary, isTrue);
+      }
+    });
+
+    test(
+      'desktop selection fails closed for ambiguity or wrong architecture',
+      () {
+        final ambiguous = manifestOf([
+          releaseJson(
+            build: 10700,
+            channel: 'stable',
+            artifacts: [
+              _desktopArtifact(format: 'appimage', primary: true),
+              _desktopArtifact(
+                format: 'appimage',
+                primary: true,
+                fileName: 'habiter-copy.AppImage',
+              ),
+            ],
+          ),
+        ]);
+        final armOnly = manifestOf([
+          releaseJson(
+            build: 10700,
+            channel: 'stable',
+            artifacts: [
+              _desktopArtifact(
+                format: 'appimage',
+                primary: true,
+                architecture: 'arm64',
+              ),
+            ],
+          ),
+        ]);
+
+        expect(
+          selector.select(
+            manifest: ambiguous,
+            track: UpdateTrack.stable,
+            currentBuild: 10600,
+            platform: 'linux',
+            architecture: 'x64',
+          ),
+          isNull,
+        );
+        expect(
+          selector.select(
+            manifest: armOnly,
+            track: UpdateTrack.stable,
+            currentBuild: 10600,
+            platform: 'linux',
+            architecture: 'x64',
+          ),
+          isNull,
+        );
+      },
+    );
+
     test('aggregates every skipped build for the post-upgrade story', () {
       expect(
         selector
@@ -61,6 +146,28 @@ void main() {
         [10600, 10550, 10500],
       );
     });
+  });
+
+  test('artifact parsing rejects unsafe names and unknown formats', () {
+    final unsafe = releaseJson(
+      build: 10700,
+      channel: 'stable',
+      artifacts: [
+        _desktopArtifact(
+          format: 'appimage',
+          primary: true,
+          fileName: '../Habiter.AppImage',
+        ),
+      ],
+    );
+    final unknown = releaseJson(
+      build: 10700,
+      channel: 'stable',
+      artifacts: [_desktopArtifact(format: 'deb', primary: true)],
+    );
+
+    expect(() => manifestOf([unsafe]), throwsFormatException);
+    expect(() => manifestOf([unknown]), throwsFormatException);
   });
 
   group('update profiles', () {
@@ -161,3 +268,20 @@ void main() {
     expect(() => state.transition(UpdatePhase.installing), throwsStateError);
   });
 }
+
+Map<String, Object?> _desktopArtifact({
+  required String format,
+  required bool primary,
+  String architecture = 'x64',
+  String fileName = 'Habiter.AppImage',
+}) => {
+  'platform': 'linux',
+  'architecture': architecture,
+  'format': format,
+  'primary': primary,
+  'fileName': fileName,
+  'signed': false,
+  'url': 'https://example.com/$fileName',
+  'sha256': List.filled(64, 'b').join(),
+  'size': 42,
+};

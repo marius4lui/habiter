@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/core/design_system/habiter_theme.dart';
 import 'package:habiter/core/design_system/haptics.dart';
@@ -58,6 +59,28 @@ void main() {
     expect(find.byType(HabitDetailDialog), findsOneWidget);
   });
 
+  testWidgets(
+    'hero renders a stable custom schedule without implementation text',
+    (tester) async {
+      final custom = await _Fixture.withSchedule(
+        frequency: HabitFrequency.custom,
+        targetCount: 1,
+        customDays: const <int>[1, 3, 5],
+      );
+      addTearDown(custom.dispose);
+      await tester.pumpWidget(custom.app());
+      await tester.pumpAndSettle();
+
+      final schedule = tester.widget<Text>(
+        find.byKey(const Key('latest-habit-schedule')),
+      );
+      expect(schedule.data, '1 on 3 days');
+      expect(schedule.data, isNot(contains('Closure')));
+      expect(schedule.data, isNot(contains('Function')));
+      expect(schedule.data, isNot(contains('onDays')));
+    },
+  );
+
   testWidgets('top controls use the same destination callback as the wheel', (
     tester,
   ) async {
@@ -74,6 +97,49 @@ void main() {
       HabitHubDestination.appLock,
       HabitHubDestination.settings,
     ]);
+  });
+
+  testWidgets('hub promotes to two panes without resetting wheel state', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(700, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final fixture = await _Fixture.withHabits();
+    addTearDown(fixture.dispose);
+    final opened = <HabitHubDestination>[];
+
+    await tester.pumpWidget(fixture.app(onOpenDestination: opened.add));
+    await tester.pumpAndSettle();
+    final compactPrimary = tester.getCenter(
+      find.byKey(const Key('habit-hub-primary-pane')),
+    );
+    final compactSecondary = tester.getCenter(
+      find.byKey(const Key('habit-hub-secondary-pane')),
+    );
+    expect(compactSecondary.dx, compactPrimary.dx);
+
+    await tester.tap(find.byKey(const Key('hub-wheel-card-today')));
+    opened.clear();
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+
+    tester.view.physicalSize = const Size(1000, 700);
+    await tester.pumpAndSettle();
+    final expandedPrimary = tester.getCenter(
+      find.byKey(const Key('habit-hub-primary-pane')),
+    );
+    final expandedSecondary = tester.getCenter(
+      find.byKey(const Key('habit-hub-secondary-pane')),
+    );
+    expect(expandedSecondary.dx, greaterThan(expandedPrimary.dx));
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    expect(opened, <HabitHubDestination>[HabitHubDestination.analytics]);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('hub light visual contract at 390 by 844', (tester) async {
@@ -176,6 +242,29 @@ final class _Fixture {
       );
       await provider.archiveHabit(archivedId);
     }
+    return _Fixture(provider, SettingsProvider());
+  }
+
+  static Future<_Fixture> withSchedule({
+    required HabitFrequency frequency,
+    required int targetCount,
+    List<int>? customDays,
+  }) async {
+    final provider = HabitProvider(
+      repository: KeyValueHabitRepository(InMemoryKeyValueStore()),
+      lifecycleReminders: const _NoLifecycleReminders(),
+      clock: FakeClock(DateTime(2026, 8, 20, 12)),
+    );
+    await provider.load();
+    await provider.addHabit(
+      name: 'Training',
+      category: 'Health',
+      frequency: frequency,
+      targetCount: targetCount,
+      customDays: customDays,
+      color: '#6B8E7A',
+      icon: '🏋️',
+    );
     return _Fixture(provider, SettingsProvider());
   }
 

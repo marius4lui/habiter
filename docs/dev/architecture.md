@@ -51,8 +51,9 @@ Persistence uses versioned envelopes and migration logic over key-value storage.
 
 ## External boundaries
 
-- **Notifications:** `flutter_local_notifications` through reminder gateways and a durable action inbox.
-- **Android App Lock:** a method-channel gateway backed by an Android foreground service.
+- **Notifications:** `flutter_local_notifications` through reminder gateways and a durable action inbox; adaptive Android timing is evaluated by a persistent headless Flutter engine immediately before dispatch.
+- **Android background runtime:** one neutral foreground service owns independent adaptive-reminder and App Block feature state, targeted recovery wakes, battery guidance, and persisted diagnostics.
+- **Android App Lock:** a method-channel gateway supplies permission and blocking data to the shared background runtime; revoked access fails open.
 - **Classly-compatible sync:** HTTPS OAuth with PKCE; disabled until configured.
 - **Remote AI:** experimental and opt-in; local deterministic coaching is the default.
 - **Release API:** a Cloudflare Worker backed by the reviewed release manifest.
@@ -67,7 +68,7 @@ Within the application, Dart declarations remain visible only where cross-file i
 
 ## Design system
 
-The canonical mobile primitives live in `core/design_system/`: semantic colors, Material 3 themes, spacing and breakpoints, shared components, motion, and haptics. User-facing text belongs in both ARB localization files.
+The canonical presentation primitives live in `core/design_system/`: semantic colors, Material 3 themes, spacing, the [responsive layout contract](/dev/responsive-layout), shared components, motion, and haptics. User-facing text belongs in both ARB localization files.
 
 ## Quality gates
 

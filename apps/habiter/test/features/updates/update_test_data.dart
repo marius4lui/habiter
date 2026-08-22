@@ -64,6 +64,7 @@ Map<String, Object?> artifactJson({
       'habiter-$build-${distribution == 'play' ? 'store.aab' : 'direct.apk'}',
   'signed': true,
   'distribution': distribution,
+  'format': distribution == 'direct' ? 'apk' : 'aab',
   'url': 'https://example.com/habiter-$build-$distribution',
   'sha256': List.filled(64, 'a').join(),
   'size': build,

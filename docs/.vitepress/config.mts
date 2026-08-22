@@ -82,6 +82,7 @@ export default defineConfig({
             { text: 'Handoffs and Evidence', link: '/dev/agent-workflows/handoffs' },
             { text: 'Branch Workflow', link: '/dev/branches' },
             { text: 'State Management', link: '/dev/state' },
+            { text: 'Responsive Layout', link: '/dev/responsive-layout' },
             { text: 'Services', link: '/dev/services' },
             { text: 'Personal Sync Data Contract', link: '/dev/personal-sync-data-contract' },
             { text: 'Personal Sync Convergence', link: '/dev/personal-sync-convergence' },

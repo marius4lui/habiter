@@ -284,7 +284,12 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
         const SizedBox(height: HabiterSpace.sm2),
         LayoutBuilder(
           builder: (context, constraints) {
-            final columns = constraints.maxWidth >= 520 ? 3 : 2;
+            final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+            final columns = largeText
+                ? 1
+                : constraints.maxWidth >= 520
+                ? 3
+                : 2;
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -293,7 +298,7 @@ class _AddHabitSheetState extends State<AddHabitSheet> {
                 crossAxisCount: columns,
                 crossAxisSpacing: HabiterSpace.sm2,
                 mainAxisSpacing: HabiterSpace.sm2,
-                mainAxisExtent: 132,
+                mainAxisExtent: largeText ? 184 : 132,
               ),
               itemBuilder: (_, index) {
                 final template = templates[index];

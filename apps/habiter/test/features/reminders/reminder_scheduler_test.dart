@@ -182,6 +182,45 @@ void main() {
     );
   });
 
+  test('static and adaptive runtime schedules preserve each other', () async {
+    final store = InMemoryKeyValueStore();
+    final gateway = RecordingNotificationGateway();
+    final registry = NotificationIdRegistry(store);
+    final scheduler = ReminderScheduler(registry: registry, gateway: gateway);
+    final staticReminder = PlannedReminder(
+      logicalKey: 'static-reminder',
+      habit: _habit('habit', HabitFrequency.daily),
+      occurrence: LocalDate(2026, 8, 17),
+      scheduledFor: DateTime.utc(2026, 8, 17, 9),
+    );
+    final runtimeReminder = staticReminder.copyWith(
+      logicalKey: '${adaptiveRuntimeNotificationKeyPrefix}smart-reminder',
+      scheduledFor: DateTime.utc(2026, 8, 17, 10),
+    );
+
+    await scheduler.replaceWith(<PlannedReminder>[
+      staticReminder,
+      runtimeReminder,
+    ]);
+    await scheduler.replaceWith(
+      <PlannedReminder>[staticReminder],
+      preserveRegistered: (key) =>
+          key.startsWith(adaptiveRuntimeNotificationKeyPrefix),
+    );
+    expect(await gateway.pending(), hasLength(2));
+
+    await scheduler.replaceWith(
+      <PlannedReminder>[runtimeReminder],
+      preserveRegistered: (key) =>
+          !key.startsWith(adaptiveRuntimeNotificationKeyPrefix),
+    );
+    expect(await gateway.pending(), hasLength(2));
+    expect((await registry.snapshot()).keys, <String>{
+      staticReminder.logicalKey,
+      runtimeReminder.logicalKey,
+    });
+  });
+
   test('habit snooze duration is carried in the durable payload', () async {
     final gateway = RecordingNotificationGateway();
     final scheduler = ReminderScheduler(

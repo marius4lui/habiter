@@ -20,22 +20,30 @@ import java.io.ByteArrayOutputStream
 import java.util.TimeZone
 import android.util.Log
 import com.habiter.app.widget.HabiterWidgetPinPlugin
+import com.habiter.app.runtime.RuntimeStateStore
+import com.habiter.app.runtime.BackgroundRuntimePlugin
 
-class MainActivity: FlutterActivity() {
+open class MainActivity: FlutterActivity() {
     private val TAG = "HabiterAppLock"
     private val CHANNEL = "com.habiter.app/applock"
     private val TIME_ZONE_CHANNEL = "com.habiter.app/timezone"
     private val SETTINGS_CHANNEL = "com.habiter.app/settings"
     private val UPDATE_CHANNEL = "com.habiter.app/updates"
+    private val RUNTIME_CHANNEL = "com.habiter.app/runtime"
     private var updateMethodChannel: MethodChannel? = null
+    private var updateManager: UpdateManager? = null
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         flutterEngine.plugins.add(HabiterWidgetPinPlugin())
-        val updateManager = UpdateManager(this)
+        val updateManager = UpdateManager(this).also { this.updateManager = it }
         updateMethodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, UPDATE_CHANNEL).also {
             it.setMethodCallHandler(updateManager::handle)
         }
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            RUNTIME_CHANNEL,
+        ).setMethodCallHandler(BackgroundRuntimePlugin(this)::handle)
         
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
@@ -131,6 +139,17 @@ class MainActivity: FlutterActivity() {
             intent.removeExtra("openUpdateCenter")
             updateMethodChannel?.invokeMethod("openUpdateCenter", null)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateManager?.resumeStoreUpdate()
+    }
+
+    override fun onDestroy() {
+        updateManager?.dispose()
+        updateManager = null
+        super.onDestroy()
     }
 
     private fun getInstalledNonSystemApps(): List<Map<String, Any?>> {
@@ -287,15 +306,18 @@ class MainActivity: FlutterActivity() {
             .apply()
         
         // Start the service
-        val intent = Intent(this, AppMonitorService::class.java)
+        RuntimeStateStore(this).setAppBlockEnabled(true)
+        val intent = Intent(this, HabiterRuntimeService::class.java).apply {
+            putExtra(
+                HabiterRuntimeService.EXTRA_START_REASON,
+                HabiterRuntimeService.REASON_APP_BLOCK,
+            )
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
         } else {
             startService(intent)
         }
-        
-        // Schedule watchdog to keep service alive
-        WatchdogReceiver.schedule(this)
         
         return true
     }
@@ -305,11 +327,23 @@ class MainActivity: FlutterActivity() {
         prefs.edit().putBoolean("is_enabled", false).apply()
         BlockingOverlay.dismiss()
         
-        val intent = Intent(this, AppMonitorService::class.java)
-        stopService(intent)
+        val state = RuntimeStateStore(this).setAppBlockEnabled(false)
+        val intent = Intent(this, HabiterRuntimeService::class.java).apply {
+            putExtra(
+                HabiterRuntimeService.EXTRA_START_REASON,
+                HabiterRuntimeService.REASON_APP_BLOCK,
+            )
+        }
+        if (state.shouldRun) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+        } else {
+            stopService(intent)
+        }
         
-        // Cancel watchdog
-        WatchdogReceiver.cancel(this)
     }
 
     private fun updateLockedApps(lockedPackages: List<String>) {

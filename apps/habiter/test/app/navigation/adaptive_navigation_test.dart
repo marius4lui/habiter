@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/app/navigation/app_route.dart';
 import 'package:habiter/app/navigation/app_router.dart';
 import 'package:habiter/app/shell/adaptive_app_shell.dart';
+import 'package:habiter/core/design_system/layout.dart';
 import 'package:habiter/core/design_system/tokens.dart';
 
 void main() {
@@ -39,9 +40,116 @@ void main() {
     await tester.pump();
     expect(find.byType(NavigationBar), findsOneWidget);
 
-    await pumpAt(const Size(1200, 800));
+    await pumpAt(const Size(HabiterLayout.expandedMinWidth - 1, 800));
+    await tester.pumpWidget(_fixture(selected: AppRoute.analytics));
+    await tester.pump();
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(NavigationRail), findsNothing);
+
+    await pumpAt(const Size(HabiterLayout.expandedMinWidth, 800));
     expect(find.byType(NavigationRail), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
+      isFalse,
+    );
+
+    await pumpAt(const Size(HabiterLayout.largeMinWidth, 800));
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
+      isTrue,
+    );
+    expect(find.text('Habiter'), findsOneWidget);
+  });
+
+  testWidgets('shell matches every canonical reference size', (tester) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.devicePixelRatio = 1;
+    final scenarios = <({String name, Size size, bool rail, bool extended})>[
+      (
+        name: 'smart-display portrait',
+        size: const Size(320, 480),
+        rail: false,
+        extended: false,
+      ),
+      (
+        name: 'smart-display landscape',
+        size: const Size(480, 320),
+        rail: false,
+        extended: false,
+      ),
+      (name: 'phone', size: const Size(390, 844), rail: false, extended: false),
+      (
+        name: 'tablet portrait',
+        size: const Size(700, 1000),
+        rail: false,
+        extended: false,
+      ),
+      (
+        name: 'tablet landscape',
+        size: const Size(1000, 700),
+        rail: true,
+        extended: false,
+      ),
+      (
+        name: 'desktop',
+        size: const Size(1440, 900),
+        rail: true,
+        extended: true,
+      ),
+    ];
+
+    for (final scenario in scenarios) {
+      tester.view.physicalSize = scenario.size;
+      await tester.pumpWidget(_fixture(selected: AppRoute.analytics));
+      await tester.pump();
+
+      expect(
+        find.byType(NavigationRail),
+        scenario.rail ? findsOneWidget : findsNothing,
+        reason: scenario.name,
+      );
+      expect(
+        find.byType(NavigationBar),
+        scenario.rail ? findsNothing : findsOneWidget,
+        reason: scenario.name,
+      );
+      if (scenario.rail) {
+        expect(
+          tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
+          scenario.extended,
+          reason: scenario.name,
+        );
+      }
+      expect(tester.takeException(), isNull, reason: scenario.name);
+    }
+  });
+
+  testWidgets('content state survives bottom-navigation and rail changes', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(700, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      _fixture(selected: AppRoute.analytics, child: const _StatefulCounter()),
+    );
+
+    await tester.tap(find.text('Count 0'));
+    await tester.pump();
+    expect(find.text('Count 1'), findsOneWidget);
+
+    tester.view.physicalSize = const Size(1000, 700);
+    await tester.pump();
+    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.text('Count 1'), findsOneWidget);
+
+    tester.view.physicalSize = const Size(700, 1000);
+    await tester.pump();
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.text('Count 1'), findsOneWidget);
   });
 
   testWidgets('keyboard shortcuts select primary destinations', (tester) async {
@@ -65,6 +173,36 @@ void main() {
 
     expect(selected, AppRoute.rhythm);
   });
+
+  testWidgets(
+    'large-shell utility actions are focus-visible and keyboard usable',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      var settingsOpened = false;
+      await tester.pumpWidget(
+        _fixture(onOpenSettings: () => settingsOpened = true),
+      );
+      await tester.pump();
+
+      final settingsButton = find.ancestor(
+        of: find.text('Settings'),
+        matching: find.byType(TextButton),
+      );
+      expect(settingsButton, findsOneWidget);
+
+      for (var index = 0; index < 10 && !settingsOpened; index += 1) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pump();
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pump();
+      }
+
+      expect(settingsOpened, isTrue);
+    },
+  );
 
   testWidgets('compact pill navigation selects a different page on tap', (
     tester,
@@ -161,17 +299,45 @@ void main() {
 Widget _fixture({
   AppRoute selected = AppRoute.today,
   ValueChanged<AppRoute>? onSelected,
+  VoidCallback? onOpenSettings,
+  Widget child = const ColoredBox(color: Colors.white),
 }) => MaterialApp(
-  home: _fixtureShell(selected: selected, onSelected: onSelected),
+  home: _fixtureShell(
+    selected: selected,
+    onSelected: onSelected,
+    onOpenSettings: onOpenSettings,
+    child: child,
+  ),
 );
 
 Widget _fixtureShell({
   AppRoute selected = AppRoute.today,
   ValueChanged<AppRoute>? onSelected,
+  VoidCallback? onOpenSettings,
+  Widget child = const ColoredBox(color: Colors.white),
 }) => AdaptiveAppShell(
   selected: selected,
   onSelected: onSelected ?? (_) {},
-  onOpenSettings: () {},
+  onOpenSettings: onOpenSettings ?? () {},
   onOpenAppLock: () {},
-  child: const ColoredBox(color: Colors.white),
+  child: child,
 );
+
+class _StatefulCounter extends StatefulWidget {
+  const _StatefulCounter();
+
+  @override
+  State<_StatefulCounter> createState() => _StatefulCounterState();
+}
+
+class _StatefulCounterState extends State<_StatefulCounter> {
+  var count = 0;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: FilledButton(
+      onPressed: () => setState(() => count += 1),
+      child: Text('Count $count'),
+    ),
+  );
+}

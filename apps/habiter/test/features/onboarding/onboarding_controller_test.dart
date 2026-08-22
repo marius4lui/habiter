@@ -12,7 +12,7 @@ import '../../support/fakes/in_memory_key_value_store.dart';
 
 void main() {
   test(
-    'controller preserves the complete nine-step lifecycle contract',
+    'controller preserves the complete ten-step lifecycle contract',
     () async {
       final repository = KeyValueOnboardingRepository(InMemoryKeyValueStore());
       final controller = OnboardingController(
@@ -50,7 +50,9 @@ void main() {
       );
       final firstId = await controller.reserveFirstHabitId();
       expect(await controller.reserveFirstHabitId(), firstId);
-      await controller.markHabitReady();
+      await controller.markHabitReady(backgroundSetupRequired: true);
+      visited.add(controller.state.currentStep);
+      await controller.completeBackgroundSetup();
       visited.add(controller.state.currentStep);
       await controller.beginWidgetPin();
       visited.add(controller.state.currentStep);

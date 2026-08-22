@@ -39,6 +39,23 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".widget.HabiterWidgetConfigurationActivity"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:exported="true"
+            android:hardwareAccelerated="true"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme" />
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <!-- OAuth Callback -->
         <activity android:name="com.linusu.flutter_web_auth_2.CallbackActivity" android:exported="true">
             <intent-filter android:label="flutter_web_auth_2">
@@ -58,15 +75,15 @@
             android:launchMode="singleTask"
             android:taskAffinity="com.habiter.app.blocking" />
 
-        <!-- App Monitoring Foreground Service -->
+        <!-- Shared local reminder and App Block foreground runtime. -->
         <service
-            android:name=".AppMonitorService"
+            android:name=".HabiterRuntimeService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="App lock monitoring for habit completion" />
+                android:value="Local adaptive reminders and optional App Block monitoring" />
         </service>
 
         <!-- Boot Receiver to restart service -->
@@ -76,12 +93,13 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
 
-        <!-- Watchdog Receiver to keep service alive -->
+        <!-- One-shot recovery wake-up for the next useful reminder evaluation. -->
         <receiver
-            android:name=".WatchdogReceiver"
+            android:name=".RuntimeRecoveryReceiver"
             android:enabled="true"
             android:exported="false" />
 

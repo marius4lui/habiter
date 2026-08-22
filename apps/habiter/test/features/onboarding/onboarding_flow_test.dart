@@ -165,6 +165,47 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('tablet orientation changes preserve onboarding data', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(700, 1000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final controller = OnboardingController(
+      repository: KeyValueOnboardingRepository(InMemoryKeyValueStore()),
+      ids: FakeIdGenerator(const <String>['habit-1']),
+      clock: FakeClock(DateTime.utc(2026, 8, 21)),
+    );
+    addTearDown(controller.dispose);
+    await controller.initialize(hasExistingHabits: false);
+    await controller.start();
+    await controller.selectIntent(OnboardingIntent.learning);
+    await controller.selectHabit(
+      OnboardingHabitDraft(
+        name: 'Read',
+        category: 'Learning',
+        icon: '📚',
+        color: '#7B61A8',
+        frequency: HabitFrequency.weekly,
+        targetCount: 3,
+        customDays: const <int>[1, 3, 5],
+        templateId: 'read',
+        reminderEnabled: true,
+        reminderTime: '19:30',
+      ),
+    );
+
+    await tester.pumpWidget(_app(controller));
+    await tester.pumpAndSettle();
+    final beforeResize = controller.state.toMap();
+
+    await tester.binding.setSurfaceSize(const Size(1000, 700));
+    await tester.pumpAndSettle();
+
+    expect(controller.state.toMap(), equals(beforeResize));
+    expect(controller.state.currentStep, OnboardingStep.rhythm);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Widget _app(OnboardingController controller) => MultiProvider(

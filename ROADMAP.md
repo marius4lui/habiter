@@ -237,15 +237,15 @@ Scope:
 
 ---
 
-## Planned releases
-
 ### v1.8.0 — Persistent Habiter Runtime
 
-**Channel:** Stable
+**Channel:** Beta
 
-**Target:** After v1.7.0
+Released to the beta channel as the shared Android runtime baseline.
 
 **Issue:** #10
+
+- Introduce a shared background runtime for adaptive reminders and future focus features.
 
 Scope:
 
@@ -266,11 +266,13 @@ Stable testing required:
 
 ### v1.9.0 — App Block 2.0
 
-**Channel:** Stable
+**Channel:** Beta
 
-**Target:** After v1.8.0
+Released to the beta channel with optional App Block onboarding and per-app rules.
 
 **Issue:** #12
+
+- Add local distraction discovery and habit-based app blocking.
 
 Scope:
 
@@ -296,11 +298,13 @@ Build App Block on stable foundations instead of duplicating runtime, schedule o
 
 ### v1.10.0 — Responsive app shell
 
-**Channel:** Stable
+**Channel:** Beta
 
-**Target:** After v1.9.0
+Released to the beta channel with adaptive compact, tablet and desktop layouts.
 
 **Issue:** #26
+
+- Optimize Habiter for desktop, tablets and compact touch displays through one responsive layout system.
 
 Scope:
 
@@ -316,17 +320,54 @@ Improve every core flow across form factors without duplicating product logic.
 
 ### v1.11.0 — Pro-Widget Settings
 
-**Channel:** Stable
+**Channel:** Beta
 
-**Target:** After v1.10.0
+Released to the beta channel with independent Basic and Advanced settings for each placed widget.
 
 **Issue:** #20
+
+- Make every placed Habiter widget configurable with clear basic controls and advanced customization.
 
 Scope:
 
 - Persist configuration per widget instance.
 - Deliver focused basic display and interaction settings.
 - Add optional advanced customization without compromising the default experience.
+
+---
+
+## Planned releases
+
+### v1.12.0 — Personal Sync
+
+**Channel:** Beta
+
+**Target:** After v1.11.0
+
+**Issues:** #52, #57, #58, #59, #60, #61, #62, #63, #64, #65, #66, #67, #68, #69, #70
+
+Scope:
+
+- Define a versioned allow-listed sync contract, deterministic convergence rules, tombstones and durable cursors.
+- Provide SQLite and Cloudflare D1 storage, single-user authentication, PKCE browser login and secure mobile handoff.
+- Ship Docker Compose and Worker/D1 Beta operator paths with backup, restore, rollback and lifecycle guidance.
+- Add a local-first synchronization engine, initial reconciliation and explicit action-required recovery UX.
+- Prove cross-platform parity and two-device convergence with an auditable E2E evidence matrix and rollout documentation.
+
+Stable testing required:
+
+- Contract, adapter, migration, authentication, API and durable queue tests across SQLite and D1.
+- Two-device offline, retry, revocation, reconciliation and recovery scenarios on every supported client platform.
+- Manual Beta verification of self-hosted and Cloudflare operator flows, backup/restore and platform handoff behavior.
+
+Dependencies:
+
+- #57 through #69 must merge in their documented dependency order.
+- #70 owns the public Beta framing and rollout readiness after the implementation chain.
+
+Goal:
+
+Make multi-device sync optional, secure, recoverable and transparent before considering a stable channel.
 
 ---
 

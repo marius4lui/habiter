@@ -1,6 +1,7 @@
 packages:
   - apps/website
   - apps/release-api
+  - apps/sync-worker
   - packages/release-core
   - packages/sync-auth
   - packages/sync-http

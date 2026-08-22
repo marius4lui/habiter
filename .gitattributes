@@ -2,3 +2,4 @@
 *.yml text eol=lf
 *.yaml text eol=lf
 *.sh text eol=lf
+/apps/sync-worker/worker-configuration.d.ts whitespace=-trailing-space

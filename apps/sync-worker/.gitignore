@@ -1,0 +1,4 @@
+.dev.vars
+.tmp/
+.wrangler/
+backups/

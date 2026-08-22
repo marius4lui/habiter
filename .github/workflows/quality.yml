@@ -53,6 +53,7 @@ jobs:
       - run: pnpm sync:auth:check
       - run: pnpm sync:http:check
       - run: pnpm sync:service:check
+      - run: pnpm sync:worker:check
       - run: pnpm sync:d1:check
       - run: pnpm sync:docker:check
       - run: pnpm sync:sqlite:check

@@ -34,14 +34,14 @@ Android `assetlinks.json` contains package `com.habiter.app` and the public SHA-
 
 Google Play App Signing can use a different public app-signing certificate. Before claiming Store-build verification, obtain that fingerprint from Play Console, append it to `sha256_cert_fingerprints`, and verify an installed Store build. Do not substitute an upload-key fingerprint by assumption.
 
-The repository currently has no verifiable production Apple Team ID or signed iOS release. Local builds therefore generate a syntactically valid `0000000000.com.example.habiter` placeholder. A production build fails closed until `HABITER_APPLE_APP_ID` supplies the exact `TEAMID.bundle.identifier` from the signed app:
+The current production deployment is Android-only. Without `HABITER_APPLE_APP_ID`, the build deliberately omits `/.well-known/apple-app-site-association`; it never publishes a placeholder identity. Enable iOS only after a signed release exists by supplying the exact `TEAMID.bundle.identifier` from that app:
 
 ```bash
 HABITER_APPLE_APP_ID=ABCDE12345.com.example.habiter \
   pnpm --filter @habiter/mobile-handoff build:production
 ```
 
-The value is public association metadata, not a credential. Confirm that the bundle identifier, Team ID, provisioning profile, `Runner.entitlements`, and generated AASA all agree before deployment.
+The value is public association metadata, not a credential. Confirm that the bundle identifier, Team ID, provisioning profile, `Runner.entitlements`, and generated AASA all agree before deploying an iOS-enabled build.
 
 ## Local build and checks
 
@@ -52,7 +52,7 @@ pnpm install --frozen-lockfile
 pnpm mobile:handoff:check
 ```
 
-The check builds static output, validates both association documents, exercises valid and adversarial fragments, proves that production Apple placeholders fail closed, starts a local Wrangler server, verifies real response headers and MIME types, checks a missing route, and performs a Cloudflare deployment dry run.
+The check builds Android-only static output, validates the Android association document, verifies that no Apple association document is served without a configured Apple App ID, exercises valid and adversarial fragments, starts a local Wrangler server, verifies real response headers and MIME types, checks a missing route, and performs a Cloudflare deployment dry run.
 
 For manual inspection:
 
@@ -72,7 +72,7 @@ The checked-in `_headers` contract applies a restrictive policy to all assets:
 - restrictive Permissions, opener, and resource policies;
 - `no-store` for HTML and callbacks.
 
-The two association documents are the only cacheable responses and revalidate after one hour. They must be served over HTTPS at their exact `.well-known` paths with `application/json`, status 200, and no redirect.
+When enabled, association documents are the only cacheable responses and revalidate after one hour. They must be served over HTTPS at their exact `.well-known` paths with `application/json`, status 200, and no redirect.
 
 ## Platform verification runbook
 
@@ -80,7 +80,6 @@ After deploying a preview or production-equivalent custom domain with the correc
 
 ```bash
 curl --fail --include --max-redirs 0 https://mobile.habiter.dev/.well-known/assetlinks.json
-curl --fail --include --max-redirs 0 https://mobile.habiter.dev/.well-known/apple-app-site-association
 ```
 
 On a connected Android device with the matching signed APK:
@@ -96,7 +95,7 @@ adb shell am start -W -a android.intent.action.VIEW \
 
 Record the package, signing fingerprint, Android version, verification state, resolved activity, cold/warm result, and browser used. A chooser, browser landing, wrong activity, or mismatched fingerprint is a failed association, not a pass.
 
-For iOS, use an installed build signed with the exact Team ID represented by the AASA. Confirm the Associated Domains entitlement in the signed app, remove and reinstall after association changes, and open the HTTPS callback from Notes or another domain in Safari for both cold and warm states. Safari navigation from the same domain can intentionally remain in Safari, so also exercise the visible custom-scheme button. Record the iOS version, device/simulator, signing identity, cold/warm behavior, and any Apple CDN diagnostics. Do not claim iOS Universal Link support while the placeholder App ID remains.
+For iOS, do not claim Universal Link support until an iOS-enabled build has deployed an AASA for a signed app. Then confirm the Associated Domains entitlement, remove and reinstall after association changes, and exercise cold and warm links from another domain in Safari.
 
 ## Update and rollback
 

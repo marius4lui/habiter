@@ -26,13 +26,13 @@ try {
   assert.match(callback.headers.get("content-security-policy") ?? "", /connect-src 'none'/);
   assert.doesNotMatch(await callback.text(), /code=c{10}|state=s{10}/);
 
-  for (const path of ["/.well-known/assetlinks.json", "/.well-known/apple-app-site-association"]) {
-    const response = await fetch(`${origin}${path}`, { redirect: "manual" });
-    assert.equal(response.status, 200);
-    assert.equal(response.headers.get("content-type"), "application/json; charset=utf-8");
-    assert.match(response.headers.get("cache-control") ?? "", /max-age=3600/);
-    JSON.parse(await response.text());
-  }
+  const assetLinks = await fetch(`${origin}/.well-known/assetlinks.json`, { redirect: "manual" });
+  assert.equal(assetLinks.status, 200);
+  assert.equal(assetLinks.headers.get("content-type"), "application/json; charset=utf-8");
+  assert.match(assetLinks.headers.get("cache-control") ?? "", /max-age=3600/);
+  JSON.parse(await assetLinks.text());
+  const appleAssociation = await fetch(`${origin}/.well-known/apple-app-site-association`, { redirect: "manual" });
+  assert.equal(appleAssociation.status, 404);
   const missing = await fetch(`${origin}/not-a-route`, { redirect: "manual" });
   assert.equal(missing.status, 404);
   console.log("Local handoff assets and security headers are valid.");

@@ -35,17 +35,27 @@ test("handoff is static, first-party, and storage-free", async () => {
   assert.doesNotMatch(script, /access_token|refresh_token|password|verifier/i);
 });
 
-test("association documents are narrow and use verified native identities", async () => {
+test("Android association document is narrow and uses a verified native identity", async () => {
   const android = JSON.parse(await read("dist/.well-known/assetlinks.json"));
   assert.deepEqual(android[0].relation, ["delegate_permission/common.handle_all_urls"]);
   assert.equal(android[0].target.package_name, "com.habiter.app");
   assert.deepEqual(android[0].target.sha256_cert_fingerprints, ["82:8F:35:B5:48:94:40:98:E9:B5:FC:41:78:33:22:74:94:07:52:2B:FB:5A:52:B3:11:A6:F0:17:9C:20:F5:C8"]);
-  const apple = JSON.parse(await read("dist/.well-known/apple-app-site-association"));
-  assert.deepEqual(apple.applinks.details[0].components.map((item) => item["/"]), ["/auth/callback"]);
-  assert.match(apple.applinks.details[0].appIDs[0], /^[A-Z0-9]{10}\.[A-Za-z0-9.-]+$/);
+  await assert.rejects(read("dist/.well-known/apple-app-site-association"), { code: "ENOENT" });
 });
 
-test("production association build fails closed without a real Apple App ID", () => {
+test("Apple association is emitted only for a configured signed app", async () => {
+  const result = spawnSync(process.execPath, ["scripts/build.mjs", "--production"], {
+    cwd: root,
+    encoding: "utf8",
+    env: { ...process.env, HABITER_APPLE_APP_ID: "ABCDE12345.com.example.habiter" },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const apple = JSON.parse(await read("dist/.well-known/apple-app-site-association"));
+  assert.deepEqual(apple.applinks.details[0].components.map((item) => item["/"]), ["/auth/callback"]);
+  assert.equal(apple.applinks.details[0].appIDs[0], "ABCDE12345.com.example.habiter");
+});
+
+test("production build supports an Android-only deployment", () => {
   const environment = { ...process.env };
   delete environment.HABITER_APPLE_APP_ID;
   const result = spawnSync(process.execPath, ["scripts/build.mjs", "--production"], {
@@ -53,8 +63,8 @@ test("production association build fails closed without a real Apple App ID", ()
     encoding: "utf8",
     env: environment,
   });
-  assert.equal(result.status, 2);
-  assert.match(result.stderr, /HABITER_APPLE_APP_ID/);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Android-only/);
 });
 
 test("native projects declare the verified link and collision-resistant fallback", async () => {

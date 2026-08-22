@@ -14,6 +14,7 @@
     "sync:http:check": "pnpm --filter @habiter/sync-http check",
     "sync:service:check": "pnpm --filter @habiter/sync-service check",
     "sync:worker:check": "pnpm --filter @habiter/sync-worker check",
+    "mobile:handoff:check": "pnpm --filter @habiter/mobile-handoff check",
     "sync:d1:check": "pnpm --filter @habiter/sync-d1 check",
     "sync:docker:check": "node scripts/sync/validate-docker.mjs",
     "sync:sqlite:check": "pnpm --filter @habiter/sync-sqlite check",

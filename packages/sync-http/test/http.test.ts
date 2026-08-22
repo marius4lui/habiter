@@ -216,6 +216,8 @@ describe("browser login document", () => {
     expect(document.querySelector("[role=alert][aria-live=polite]")).not.toBeNull();
     expect(document.querySelectorAll("script[src],link[rel=stylesheet],img")).toHaveLength(0);
     expect(html).not.toContain("analytics");
+    expect(html).toContain("target.hash=new URLSearchParams({code:result.code,state:result.state}).toString()");
+    expect(html).not.toContain("target.searchParams.set('code'");
     dom.window.close();
   });
 });

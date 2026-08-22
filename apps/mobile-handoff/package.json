@@ -1,0 +1,16 @@
+{
+  "name": "@habiter/mobile-handoff",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:production": "node scripts/build.mjs --production",
+    "check": "pnpm build && node --test test/*.test.mjs && node scripts/check-runtime.mjs && pnpm deploy:dry",
+    "dev": "pnpm build && wrangler dev",
+    "deploy:dry": "wrangler deploy --dry-run"
+  },
+  "devDependencies": {
+    "wrangler": "4.123.0"
+  }
+}

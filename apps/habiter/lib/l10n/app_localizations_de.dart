@@ -1724,4 +1724,41 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get personalSyncCancelPending => 'Anmeldung abbrechen';
+
+  @override
+  String get personalSyncStatusIdle => 'Bereit';
+
+  @override
+  String get personalSyncStatusSyncing => 'Synchronisiert …';
+
+  @override
+  String get personalSyncStatusOffline =>
+      'Offline – Änderungen bleiben sicher vorgemerkt';
+
+  @override
+  String get personalSyncStatusRetrying =>
+      'Verbindung unterbrochen – neuer Versuch folgt';
+
+  @override
+  String get personalSyncStatusAuth => 'Erneute Anmeldung erforderlich';
+
+  @override
+  String get personalSyncStatusProtocol =>
+      'Server oder App muss aktualisiert werden';
+
+  @override
+  String get personalSyncStatusAction =>
+      'Aktion für den sicheren Abgleich erforderlich';
+
+  @override
+  String personalSyncPendingOperations(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count vorgemerkte Änderungen',
+      one: '1 vorgemerkte Änderung',
+      zero: 'Keine vorgemerkten Änderungen',
+    );
+    return '$_temp0';
+  }
 }

@@ -14,6 +14,8 @@ import '../infrastructure/personal_sync_secure_vault.dart';
 typedef PersonalSyncBytes = Uint8List Function(int length);
 typedef PersonalSyncTrigger =
     Future<void> Function(PersonalSyncConnection connection);
+typedef PersonalSyncConnectionChanged =
+    void Function(PersonalSyncConnection? connection);
 
 final class PersonalSyncConnectionController extends ChangeNotifier {
   PersonalSyncConnectionController({
@@ -23,12 +25,14 @@ final class PersonalSyncConnectionController extends ChangeNotifier {
     required Clock clock,
     PersonalSyncBytes? randomBytes,
     PersonalSyncTrigger? syncTrigger,
+    PersonalSyncConnectionChanged? onConnectionChanged,
   }) : _vault = vault,
        _remoteFactory = remoteFactory,
        _handoff = handoff,
        _clock = clock,
        _randomBytes = randomBytes ?? _secureRandomBytes,
-       _syncTrigger = syncTrigger;
+       _syncTrigger = syncTrigger,
+       _onConnectionChanged = onConnectionChanged;
 
   final PersonalSyncSecureVault _vault;
   final PersonalSyncRemoteFactory _remoteFactory;
@@ -36,6 +40,7 @@ final class PersonalSyncConnectionController extends ChangeNotifier {
   final Clock _clock;
   final PersonalSyncBytes _randomBytes;
   final PersonalSyncTrigger? _syncTrigger;
+  final PersonalSyncConnectionChanged? _onConnectionChanged;
 
   PersonalSyncConnectionPhase _phase = PersonalSyncConnectionPhase.loading;
   PersonalSyncConnectionProblem? _problem;
@@ -78,6 +83,7 @@ final class PersonalSyncConnectionController extends ChangeNotifier {
       _phase = PersonalSyncConnectionPhase.disconnected;
     }
     _initialized = true;
+    _onConnectionChanged?.call(_connection);
     notifyListeners();
     try {
       await _handoff.initialize((callback) async {
@@ -253,6 +259,7 @@ final class PersonalSyncConnectionController extends ChangeNotifier {
       await _vault.writeConnection(connection);
       await _vault.deletePending();
       _connection = connection;
+      _onConnectionChanged?.call(connection);
       _pending = null;
       _phase = PersonalSyncConnectionPhase.connected;
       _problem = null;
@@ -292,6 +299,7 @@ final class PersonalSyncConnectionController extends ChangeNotifier {
       final updated = connection.copyWith(lastSuccessAt: now);
       await _vault.writeConnection(updated);
       _connection = updated;
+      _onConnectionChanged?.call(updated);
       _phase = PersonalSyncConnectionPhase.connected;
       notifyListeners();
       return true;
@@ -316,6 +324,7 @@ final class PersonalSyncConnectionController extends ChangeNotifier {
 
   Future<void> disconnect() async {
     await _clearSecureState();
+    _onConnectionChanged?.call(null);
     _phase = PersonalSyncConnectionPhase.disconnected;
     _problem = null;
     notifyListeners();
@@ -372,6 +381,7 @@ final class PersonalSyncConnectionController extends ChangeNotifier {
       );
       await _vault.writeConnection(updated);
       _connection = updated;
+      _onConnectionChanged?.call(updated);
       return updated;
     } finally {
       remote.close();

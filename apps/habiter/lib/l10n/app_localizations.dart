@@ -3103,6 +3103,54 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Anmeldung abbrechen'**
   String get personalSyncCancelPending;
+
+  /// No description provided for @personalSyncStatusIdle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bereit'**
+  String get personalSyncStatusIdle;
+
+  /// No description provided for @personalSyncStatusSyncing.
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisiert …'**
+  String get personalSyncStatusSyncing;
+
+  /// No description provided for @personalSyncStatusOffline.
+  ///
+  /// In de, this message translates to:
+  /// **'Offline – Änderungen bleiben sicher vorgemerkt'**
+  String get personalSyncStatusOffline;
+
+  /// No description provided for @personalSyncStatusRetrying.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung unterbrochen – neuer Versuch folgt'**
+  String get personalSyncStatusRetrying;
+
+  /// No description provided for @personalSyncStatusAuth.
+  ///
+  /// In de, this message translates to:
+  /// **'Erneute Anmeldung erforderlich'**
+  String get personalSyncStatusAuth;
+
+  /// No description provided for @personalSyncStatusProtocol.
+  ///
+  /// In de, this message translates to:
+  /// **'Server oder App muss aktualisiert werden'**
+  String get personalSyncStatusProtocol;
+
+  /// No description provided for @personalSyncStatusAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktion für den sicheren Abgleich erforderlich'**
+  String get personalSyncStatusAction;
+
+  /// No description provided for @personalSyncPendingOperations.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Keine vorgemerkten Änderungen} =1{1 vorgemerkte Änderung} other{{count} vorgemerkte Änderungen}}'**
+  String personalSyncPendingOperations(int count);
 }
 
 class _AppLocalizationsDelegate

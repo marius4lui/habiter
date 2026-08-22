@@ -19,6 +19,7 @@ import 'features/onboarding/application/onboarding_controller.dart';
 import 'features/onboarding/application/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_flow.dart';
 import 'features/personal_sync/application/personal_sync_connection_controller.dart';
+import 'features/personal_sync/application/personal_sync_engine.dart';
 import 'features/personal_sync/presentation/personal_sync_screen.dart';
 import 'features/updates/application/update_controller.dart';
 import 'features/updates/presentation/update_center_screen.dart';
@@ -158,19 +159,30 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
         Provider<WidgetBridge>.value(value: const AndroidWidgetBridge()),
         Provider<WidgetSyncController>.value(value: widgetSync),
         ChangeNotifierProvider(
-          create: (_) => HabitProvider(
-            repository: dependencies.habitRepository,
-            clock: dependencies.clock,
-            ids: dependencies.ids,
-            actionStore: dependencies.store,
-            synchronizeWidget: () => widgetSync.synchronize(
-              locale: WidgetsBinding
-                  .instance
-                  .platformDispatcher
-                  .locale
-                  .languageCode,
-            ),
-          )..load(),
+          create: (_) {
+            final habits = HabitProvider(
+              repository: dependencies.habitRepository,
+              clock: dependencies.clock,
+              ids: dependencies.ids,
+              actionStore: dependencies.store,
+              synchronizeWidget: () => widgetSync.synchronize(
+                locale: WidgetsBinding
+                    .instance
+                    .platformDispatcher
+                    .locale
+                    .languageCode,
+              ),
+              captureSyncSettings:
+                  dependencies.personalSyncEngine.captureSettings,
+            );
+            dependencies.personalSyncEngine.setProjectionReconciler(
+              () => habits.reconcileExternalHabitState(
+                processReminderActions: false,
+                refreshTimeZone: false,
+              ),
+            );
+            return habits..load();
+          },
         ),
         ChangeNotifierProvider(
           create: (_) => OnboardingController(
@@ -180,11 +192,28 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
           ),
         ),
         ChangeNotifierProvider(create: (_) => AppLockProvider()..load()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
+        ChangeNotifierProvider(
+          create: (_) => SettingsProvider(
+            captureSyncSettings:
+                dependencies.personalSyncEngine.captureSettings,
+          )..load(),
+        ),
         ChangeNotifierProvider(create: (_) => dependencies.updateController),
         ChangeNotifierProvider(
-          create: (_) =>
-              dependencies.personalSyncConnectionController..initialize(),
+          lazy: false,
+          create: (_) => dependencies.personalSyncEngine,
+        ),
+        ChangeNotifierProvider(
+          lazy: false,
+          create: (_) {
+            final controller = dependencies.personalSyncConnectionController;
+            unawaited(
+              dependencies.personalSyncEngine.initialize().then(
+                (_) => controller.initialize(),
+              ),
+            );
+            return controller;
+          },
         ),
       ],
       child: const HabiterApp(),
@@ -454,6 +483,7 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
       final updates = context.read<UpdateController>();
       if (updates.initialized) unawaited(updates.handleResume());
     }
+    context.read<PersonalSyncEngine>().handleLifecycle(state);
   }
 
   void _onNavChange(int index) {

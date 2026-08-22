@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../domain/personal_sync_operation.dart';
+
 final class PersonalSyncRemoteException implements Exception {
   const PersonalSyncRemoteException(this.code);
   final String code;
@@ -35,6 +37,24 @@ final class PersonalSyncTokenPair {
   final String deviceId;
 }
 
+final class PersonalSyncPullPage {
+  const PersonalSyncPullPage({
+    required this.operations,
+    required this.cursor,
+    required this.headOffset,
+    required this.compactionFloor,
+    required this.requiresSnapshot,
+    required this.recoveryReason,
+  });
+
+  final List<PersonalSyncOperation> operations;
+  final PersonalSyncServerCursor cursor;
+  final int headOffset;
+  final int compactionFloor;
+  final bool requiresSnapshot;
+  final String recoveryReason;
+}
+
 abstract interface class PersonalSyncRemote {
   Future<PersonalSyncInstanceInfo> instanceInfo();
   Future<PersonalSyncTokenPair> redeem({
@@ -46,6 +66,12 @@ abstract interface class PersonalSyncRemote {
   Future<PersonalSyncTokenPair> refresh(String refreshToken);
   Future<String> verifyDevice(String accessToken);
   Future<void> revokeAll(String accessToken);
+  Future<void> push(List<PersonalSyncOperation> operations, String accessToken);
+  Future<PersonalSyncPullPage> pull({
+    required PersonalSyncServerCursor? cursor,
+    required int limit,
+    required String accessToken,
+  });
   void close();
 }
 
@@ -138,6 +164,95 @@ final class HttpPersonalSyncRemote implements PersonalSyncRemote {
     );
   }
 
+  @override
+  Future<void> push(
+    List<PersonalSyncOperation> operations,
+    String accessToken,
+  ) async {
+    if (operations.isEmpty || operations.length > 100) {
+      throw const PersonalSyncRemoteException('invalid_batch');
+    }
+    final map = await _json(
+      'POST',
+      '/v1/push',
+      accessToken: accessToken,
+      body: <String, Object?>{
+        'operations': operations.map((operation) => operation.toMap()).toList(),
+      },
+    );
+    final receipts = map['receipts'];
+    if (receipts is! List ||
+        receipts.length != operations.length ||
+        receipts.any((receipt) => !_validReceipt(receipt))) {
+      throw const PersonalSyncRemoteException('invalid_response');
+    }
+  }
+
+  @override
+  Future<PersonalSyncPullPage> pull({
+    required PersonalSyncServerCursor? cursor,
+    required int limit,
+    required String accessToken,
+  }) async {
+    if (limit < 1 || limit > 100) {
+      throw const PersonalSyncRemoteException('invalid_batch');
+    }
+    final uri = origin
+        .resolve('/v1/pull')
+        .replace(
+          queryParameters: <String, String>{
+            if (cursor != null) 'cursor': cursor.token,
+            'limit': '$limit',
+          },
+        );
+    final map = await _jsonUri('GET', uri, accessToken: accessToken);
+    final operations = map['operations'];
+    final cursorValue = map['cursor'];
+    final headOffset = map['headOffset'];
+    final compactionFloor = map['compactionFloor'];
+    final requiresSnapshot = map['requiresSnapshot'];
+    final recoveryReason = map['recoveryReason'];
+    if (operations is! List ||
+        operations.length > limit ||
+        operations.any((operation) => operation is! Map) ||
+        cursorValue is! String ||
+        headOffset is! int ||
+        headOffset < 0 ||
+        compactionFloor is! int ||
+        compactionFloor < 0 ||
+        compactionFloor > headOffset ||
+        requiresSnapshot is! bool ||
+        recoveryReason is! String ||
+        !const <String>{
+          'none',
+          'missing_compacted_history',
+          'generation_changed',
+          'cursor_ahead',
+        }.contains(recoveryReason)) {
+      throw const PersonalSyncRemoteException('invalid_response');
+    }
+    final parsedCursor = PersonalSyncServerCursor.parse(cursorValue);
+    if (parsedCursor.offset > headOffset ||
+        (requiresSnapshot && operations.isNotEmpty) ||
+        (requiresSnapshot == (recoveryReason == 'none'))) {
+      throw const PersonalSyncRemoteException('invalid_response');
+    }
+    return PersonalSyncPullPage(
+      operations: operations
+          .map(
+            (operation) => PersonalSyncOperation.fromMap(
+              Map<String, Object?>.from(operation as Map),
+            ),
+          )
+          .toList(growable: false),
+      cursor: parsedCursor,
+      headOffset: headOffset,
+      compactionFloor: compactionFloor,
+      requiresSnapshot: requiresSnapshot,
+      recoveryReason: recoveryReason,
+    );
+  }
+
   PersonalSyncTokenPair _tokenPair(Map<String, Object?> map) {
     final tokenType = map['tokenType'];
     final accessToken = map['accessToken'];
@@ -178,8 +293,20 @@ final class HttpPersonalSyncRemote implements PersonalSyncRemote {
     String path, {
     Map<String, Object?>? body,
     String? accessToken,
+  }) => _jsonUri(
+    method,
+    origin.resolve(path),
+    body: body,
+    accessToken: accessToken,
+  );
+
+  Future<Map<String, Object?>> _jsonUri(
+    String method,
+    Uri uri, {
+    Map<String, Object?>? body,
+    String? accessToken,
   }) async {
-    final request = http.Request(method, origin.resolve(path))
+    final request = http.Request(method, uri)
       ..followRedirects = false
       ..maxRedirects = 0
       ..headers['accept'] = 'application/json';
@@ -234,4 +361,28 @@ final class HttpPersonalSyncRemote implements PersonalSyncRemote {
 
   @override
   void close() => _client.close();
+}
+
+bool _validReceipt(Object? value) {
+  if (value is! Map) return false;
+  final map = Map<String, Object?>.from(value);
+  if (map.keys.toSet().difference(const <String>{
+        'cursor',
+        'offset',
+        'duplicate',
+        'changed',
+      }).isNotEmpty ||
+      map.length != 4 ||
+      map['cursor'] is! String ||
+      map['offset'] is! int ||
+      map['duplicate'] is! bool ||
+      map['changed'] is! bool) {
+    return false;
+  }
+  try {
+    return PersonalSyncServerCursor.parse(map['cursor']! as String).offset ==
+        map['offset'];
+  } on Object {
+    return false;
+  }
 }

@@ -28,11 +28,14 @@ final class HabitRepositoryDraft {
   HabitRepositoryDraft({
     required Iterable<Habit> habits,
     required Iterable<HabitEntry> entries,
+    Map<String, Object?> sidecar = const <String, Object?>{},
   }) : habits = habits.toList(),
-       entries = entries.toList();
+       entries = entries.toList(),
+       sidecar = Map<String, Object?>.from(sidecar);
 
   final List<Habit> habits;
   final List<HabitEntry> entries;
+  final Map<String, Object?> sidecar;
 
   void upsertHabit(Habit habit) {
     habits.removeWhere((existing) => existing.id == habit.id);

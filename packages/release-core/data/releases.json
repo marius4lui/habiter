@@ -2,6 +2,81 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.9.0",
+      "buildNumber": 10900,
+      "channel": "beta",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.5.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "App Block führt optional durch die Einrichtung und hilft, lokal erkannte Ablenkungen bewusst Habit-Zielen zuzuordnen.",
+          "Für ausgewählte Apps können eigene allgemeine Fokusregeln oder konkrete Habit-Bindungen eingerichtet werden."
+        ],
+        "changed": [
+          "App-Block-Regeln berücksichtigen jetzt tägliche, feste Wochentage und flexible Wochenziele über die gemeinsame Habit-Logik.",
+          "Bestehende globale App-Lock-Einstellungen werden sicher in versionierte Regeln pro App überführt."
+        ],
+        "fixed": [
+          "App Block bleibt bei fehlenden Berechtigungen oder nicht verfügbaren Hintergrunddaten bewusst deaktiviert, statt Apps unbeabsichtigt zu sperren."
+        ],
+        "security": [
+          "Die Analyse von App-Nutzung und Ablenkungskandidaten erfolgt ausschließlich lokal auf dem Gerät."
+        ]
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.9.0-android-universal.apk",
+          "signed": true,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.9.0-android-playstore.aab",
+          "signed": true,
+          "distribution": "play"
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.9.0-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.9.0-x86_64.AppImage",
+          "signed": false
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.9.0-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.9.0-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.8.0",
       "buildNumber": 10800,
       "channel": "beta",

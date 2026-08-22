@@ -1,0 +1,100 @@
+name: Personal Sync Docker Beta
+
+on:
+  push:
+    paths:
+      - deploy/personal-sync/**
+      - packages/sync-*/**
+      - scripts/sync/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .dockerignore
+      - .github/workflows/sync-docker.yml
+  pull_request:
+    paths:
+      - deploy/personal-sync/**
+      - packages/sync-*/**
+      - scripts/sync/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .dockerignore
+      - .github/workflows/sync-docker.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-docker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lifecycle:
+    name: Image and lifecycle drill
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      HABITER_SYNC_BASE_URL: http://127.0.0.1:8787
+      HABITER_SYNC_REDIRECT_URIS: http://127.0.0.1:8787/callback
+      HABITER_SYNC_BIND_ADDRESS: 127.0.0.1
+      HABITER_SYNC_HOST_PORT: 8787
+      COMPOSE_FILE: deploy/personal-sync/compose.yaml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.1'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm sync:sqlite:check
+      - run: pnpm sync:service:check
+      - run: pnpm sync:docker:check
+      - run: docker compose build --pull
+      - name: Inspect hardened image
+        run: |
+          test "$(docker image inspect habiter-personal-sync:1.12.0-beta --format '{{.Config.User}}')" = node:node
+          test "$(docker image inspect habiter-personal-sync:1.12.0-beta --format '{{index .Config.Labels "dev.habiter.distribution"}}')" = beta
+          test -z "$(docker image inspect habiter-personal-sync:1.12.0-beta --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -Ei 'password|secret|instance.key' || true)"
+      - name: Fresh start and credential-safe setup
+        run: |
+          docker compose up -d --wait
+          curl --fail --silent http://127.0.0.1:8787/v1/health | jq -e '.status == "ok"'
+          curl --fail --silent http://127.0.0.1:8787/v1/instance-info | jq -e '.initialized == false'
+          setup_output="$(printf '%s\n' 'ci-only-password-material' | docker compose run --rm -T sync setup --username owner --password-stdin 2>&1)"
+          test "${setup_output#*ci-only-password-material}" = "$setup_output"
+          docker compose up -d --wait
+          curl --fail --silent http://127.0.0.1:8787/v1/instance-info | jq -e '.initialized == true'
+          test "$(docker compose exec -T sync stat -c '%a' /var/lib/habiter-sync/instance-key)" = 600
+      - name: Replacement, backup, restore, and rollback
+        run: |
+          docker compose exec -T sync backup ci.sqlite > /tmp/backup.json
+          checksum="$(jq -r '.manifest.sha256' /tmp/backup.json)"
+          docker compose exec -T sync verify ci.sqlite "$checksum"
+          docker compose up -d --force-recreate --wait
+          curl --fail --silent http://127.0.0.1:8787/v1/instance-info | jq -e '.initialized == true'
+          docker compose stop sync
+          docker compose run --rm -T sync restore ci.sqlite "$checksum" > /tmp/restore.json
+          rollback="$(jq -r '.rollback' /tmp/restore.json)"
+          test -n "$rollback"
+          docker compose run --rm -T sync rollback "$rollback"
+          docker compose up -d --wait
+          curl --fail --silent http://127.0.0.1:8787/v1/instance-info | jq -e '.initialized == true'
+      - name: Graceful stop and recoverable uninstall default
+        run: |
+          container="$(docker compose ps -q sync)"
+          docker compose stop --timeout 30 sync
+          test "$(docker inspect "$container" --format '{{.State.ExitCode}}')" = 0
+          docker compose down
+          docker volume inspect habiter-personal-sync-data >/dev/null
+          docker volume inspect habiter-personal-sync-backups >/dev/null
+      - name: Diagnostics
+        if: failure()
+        run: docker compose logs --no-color || true
+      - name: Cleanup
+        if: always()
+        run: docker compose down --volumes --remove-orphans || true

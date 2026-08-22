@@ -10,6 +10,7 @@ import '../features/reminders/application/reminder_diagnostics.dart';
 import '../features/reminders/infrastructure/local_reminder_permission_gateway.dart';
 import '../features/reminders/presentation/reminder_diagnostics_panel.dart';
 import '../features/runtime/infrastructure/method_channel_background_runtime_gateway.dart';
+import '../features/personal_sync/presentation/personal_sync_settings_card.dart';
 import '../features/widgets/domain/widget_bridge.dart';
 import '../features/widgets/application/widget_sync_controller.dart';
 import '../features/widgets/presentation/widget_management_screen.dart';
@@ -315,6 +316,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                       ],
+                    ),
+                    _SettingsSection(
+                      icon: Icons.cloud_sync_outlined,
+                      title: context.l10n.personalSyncBeta,
+                      children: const [PersonalSyncSettingsCard()],
                     ),
                     _SettingsSection(
                       key: const Key('settings-privacy-section'),

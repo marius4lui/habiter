@@ -18,6 +18,9 @@ import 'features/home/application/habit_hub_model.dart';
 import 'features/onboarding/application/onboarding_controller.dart';
 import 'features/onboarding/application/onboarding_repository.dart';
 import 'features/onboarding/presentation/onboarding_flow.dart';
+import 'features/personal_sync/application/personal_sync_connection_controller.dart';
+import 'features/personal_sync/application/personal_sync_engine.dart';
+import 'features/personal_sync/presentation/personal_sync_screen.dart';
 import 'features/reminders/application/adaptive_reminder_runtime.dart';
 import 'features/runtime/infrastructure/method_channel_background_runtime_gateway.dart';
 import 'features/updates/application/update_controller.dart';
@@ -165,21 +168,32 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
         Provider<WidgetConfigurationGateway>.value(value: widgetBridge),
         Provider<WidgetSyncController>.value(value: widgetSync),
         ChangeNotifierProvider(
-          create: (_) => HabitProvider(
-            repository: dependencies.habitRepository,
-            clock: dependencies.clock,
-            ids: dependencies.ids,
-            actionStore: dependencies.store,
-            backgroundRuntimeGateway:
-                const MethodChannelBackgroundRuntimeGateway(),
-            synchronizeWidget: () => widgetSync.synchronize(
-              locale: WidgetsBinding
-                  .instance
-                  .platformDispatcher
-                  .locale
-                  .languageCode,
-            ),
-          )..load(),
+          create: (_) {
+            final habits = HabitProvider(
+              repository: dependencies.habitRepository,
+              clock: dependencies.clock,
+              ids: dependencies.ids,
+              actionStore: dependencies.store,
+              backgroundRuntimeGateway:
+                  const MethodChannelBackgroundRuntimeGateway(),
+              synchronizeWidget: () => widgetSync.synchronize(
+                locale: WidgetsBinding
+                    .instance
+                    .platformDispatcher
+                    .locale
+                    .languageCode,
+              ),
+              captureSyncSettings:
+                  dependencies.personalSyncEngine.captureSettings,
+            );
+            dependencies.personalSyncEngine.setProjectionReconciler(
+              () => habits.reconcileExternalHabitState(
+                processReminderActions: false,
+                refreshTimeZone: false,
+              ),
+            );
+            return habits..load();
+          },
         ),
         ChangeNotifierProvider(
           create: (_) => OnboardingController(
@@ -189,8 +203,29 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
           ),
         ),
         ChangeNotifierProvider(create: (_) => AppLockProvider()..load()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()..load()),
+        ChangeNotifierProvider(
+          create: (_) => SettingsProvider(
+            captureSyncSettings:
+                dependencies.personalSyncEngine.captureSettings,
+          )..load(),
+        ),
         ChangeNotifierProvider(create: (_) => dependencies.updateController),
+        ChangeNotifierProvider<PersonalSyncEngine?>(
+          lazy: false,
+          create: (_) => dependencies.personalSyncEngine,
+        ),
+        ChangeNotifierProvider(
+          lazy: false,
+          create: (_) {
+            final controller = dependencies.personalSyncConnectionController;
+            unawaited(
+              dependencies.personalSyncEngine.initialize().then(
+                (_) => controller.initialize(),
+              ),
+            );
+            return controller;
+          },
+        ),
       ],
       child: const HabiterApp(),
     );
@@ -430,12 +465,14 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
     _index = switch (widget.initialRoute) {
       AppRoute.analytics => 1,
       AppRoute.rhythm => 2,
+      AppRoute.sync => 3,
       _ => 0,
     };
     _pages = <Widget>[
       HomeScreen(onOpenDestination: _openHubDestination),
       const AnalyticsScreen(),
       const RhythmScreen(),
+      const PersonalSyncScreen(),
     ];
     _pageController = PageController(initialPage: _index);
     WidgetsBinding.instance.addObserver(this);
@@ -491,6 +528,7 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
       final updates = context.read<UpdateController>();
       if (updates.initialized) unawaited(updates.handleResume());
     }
+    context.read<PersonalSyncEngine?>()?.handleLifecycle(state);
   }
 
   void _onNavChange(int index) {
@@ -517,9 +555,14 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
   }
 
   void _onRouteSelected(AppRoute route) {
+    if (route == AppRoute.sync &&
+        !context.read<PersonalSyncConnectionController>().isConnected) {
+      return;
+    }
     _onNavChange(switch (route) {
       AppRoute.analytics => 1,
       AppRoute.rhythm => 2,
+      AppRoute.sync => 3,
       _ => 0,
     });
   }
@@ -535,6 +578,7 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
         AppRouteCodec.encode(switch (index) {
           1 => AppRoute.analytics,
           2 => AppRoute.rhythm,
+          3 => AppRoute.sync,
           _ => AppRoute.today,
         }),
       ),
@@ -577,15 +621,23 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final personalSync = context.watch<PersonalSyncConnectionController>();
+    if (!personalSync.isConnected && _index == 3) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _index == 3) _pageController.jumpToPage(0);
+      });
+    }
     return AdaptiveAppShell(
       selected: switch (_index) {
         1 => AppRoute.analytics,
         2 => AppRoute.rhythm,
+        3 when personalSync.isConnected => AppRoute.sync,
         _ => AppRoute.today,
       },
       onSelected: _onRouteSelected,
       onOpenSettings: _openSettings,
       onOpenAppLock: _openAppLock,
+      personalSyncConnected: personalSync.isConnected,
       child: PageView(
         controller: _pageController,
         onPageChanged: _onPageChanged,

@@ -18,6 +18,7 @@ class AdaptiveAppShell extends StatelessWidget {
     required this.onSelected,
     required this.onOpenSettings,
     required this.onOpenAppLock,
+    this.personalSyncConnected = false,
     required this.child,
   });
 
@@ -25,11 +26,13 @@ class AdaptiveAppShell extends StatelessWidget {
   final ValueChanged<AppRoute> onSelected;
   final VoidCallback onOpenSettings;
   final VoidCallback onOpenAppLock;
+  final bool personalSyncConnected;
   final Widget child;
 
   int get _selectedIndex => switch (selected) {
     AppRoute.analytics => 1,
     AppRoute.rhythm => 2,
+    AppRoute.sync => personalSyncConnected ? 3 : 0,
     _ => 0,
   };
 
@@ -43,6 +46,8 @@ class AdaptiveAppShell extends StatelessWidget {
             _SelectRouteIntent(AppRoute.analytics),
         SingleActivator(LogicalKeyboardKey.digit3, control: true):
             _SelectRouteIntent(AppRoute.rhythm),
+        SingleActivator(LogicalKeyboardKey.digit4, control: true):
+            _SelectRouteIntent(AppRoute.sync),
       },
       child: Actions(
         actions: <Type, Action<Intent>>{
@@ -121,6 +126,7 @@ class AdaptiveAppShell extends StatelessWidget {
     final todayLabel = l10n?.today ?? 'Today';
     final analyticsLabel = l10n?.analytics ?? 'Analytics';
     final rhythmLabel = l10n?.habitSchedule ?? 'Rhythm';
+    final syncLabel = l10n?.personalSync ?? 'Sync';
     return SafeArea(
       minimum: const EdgeInsets.fromLTRB(16, 6, 16, 8),
       child: Align(
@@ -150,6 +156,15 @@ class AdaptiveAppShell extends StatelessWidget {
                   selectedIcon: const Icon(Icons.schedule_rounded, size: 22),
                   label: rhythmLabel,
                 ),
+                if (personalSyncConnected)
+                  NavigationDestination(
+                    icon: const Icon(Icons.cloud_outlined, size: 22),
+                    selectedIcon: const Icon(
+                      Icons.cloud_done_rounded,
+                      size: 22,
+                    ),
+                    label: syncLabel,
+                  ),
               ],
             ),
           ),
@@ -163,6 +178,7 @@ class AdaptiveAppShell extends StatelessWidget {
     final todayLabel = l10n?.today ?? 'Today';
     final analyticsLabel = l10n?.analytics ?? 'Analytics';
     final rhythmLabel = l10n?.habitSchedule ?? 'Rhythm';
+    final syncLabel = l10n?.personalSync ?? 'Sync';
     final appLockLabel = l10n?.appLock ?? 'App lock';
     final settingsLabel = l10n?.settings ?? 'Settings';
     return NavigationRail(
@@ -211,6 +227,12 @@ class AdaptiveAppShell extends StatelessWidget {
           selectedIcon: const Icon(Icons.schedule_rounded),
           label: Text(rhythmLabel),
         ),
+        if (personalSyncConnected)
+          NavigationRailDestination(
+            icon: const Icon(Icons.cloud_outlined),
+            selectedIcon: const Icon(Icons.cloud_done_rounded),
+            label: Text(syncLabel),
+          ),
       ],
       trailing: Expanded(
         child: Column(
@@ -269,6 +291,7 @@ class AdaptiveAppShell extends StatelessWidget {
     onSelected(switch (index) {
       1 => AppRoute.analytics,
       2 => AppRoute.rhythm,
+      3 when personalSyncConnected => AppRoute.sync,
       _ => AppRoute.today,
     });
   }

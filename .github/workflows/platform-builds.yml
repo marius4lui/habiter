@@ -4,10 +4,20 @@ on:
   push:
     paths:
       - 'apps/habiter/**'
+      - 'apps/sync-worker/**'
+      - 'packages/sync-*/**'
+      - 'deploy/personal-sync/**'
+      - 'docs/dev/personal-sync-e2e.md'
+      - 'scripts/sync/**'
       - '.github/workflows/platform-builds.yml'
   pull_request:
     paths:
       - 'apps/habiter/**'
+      - 'apps/sync-worker/**'
+      - 'packages/sync-*/**'
+      - 'deploy/personal-sync/**'
+      - 'docs/dev/personal-sync-e2e.md'
+      - 'scripts/sync/**'
       - '.github/workflows/platform-builds.yml'
   workflow_dispatch:
 

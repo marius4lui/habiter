@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.habiter.app",
+      "sha256_cert_fingerprints": [
+        "82:8F:35:B5:48:94:40:98:E9:B5:FC:41:78:33:22:74:94:07:52:2B:FB:5A:52:B3:11:A6:F0:17:9C:20:F5:C8"
+      ]
+    }
+  }
+]

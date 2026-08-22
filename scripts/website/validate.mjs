@@ -53,8 +53,8 @@ await Promise.all([
   access(new URL("src/app/privacy/page.tsx", website)),
 ]);
 
-assert.equal(packageJson.dependencies.next, "15.4.6");
-assert.equal(packageJson.devDependencies.wrangler, "4.123.0");
+assert.equal(packageJson.dependencies.next, "16.3.1");
+assert.equal(packageJson.devDependencies.wrangler, "4.124.0");
 
 for (const source of [landing, product, focus, privacy]) {
   assert.match(source, /https:\/\/get-the\.habiter\.dev\//);

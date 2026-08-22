@@ -1,0 +1,23 @@
+{
+  "name": "@habiter/sync-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "bin": { "habiter-sync": "./dist/service.mjs" },
+  "scripts": {
+    "build": "esbuild src/cli.ts --bundle --platform=node --format=esm --target=node24 --banner:js=\"#!/usr/bin/env node\" --outfile=dist/service.mjs",
+    "check": "tsc --noEmit && pnpm build && vitest run",
+    "test": "pnpm build && vitest run"
+  },
+  "dependencies": {
+    "@habiter/sync-auth": "workspace:*",
+    "@habiter/sync-http": "workspace:*",
+    "@habiter/sync-sqlite": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  }
+}

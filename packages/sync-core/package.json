@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./test-support": "./test-support/storage-conformance.ts"
+  },
   "scripts": {
     "check": "tsc --noEmit && vitest run",
     "test": "vitest run"

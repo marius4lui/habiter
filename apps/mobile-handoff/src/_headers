@@ -1,0 +1,26 @@
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; child-src 'none'; worker-src 'none'; manifest-src 'none'; frame-src 'none'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Permissions-Policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), publickey-credentials-get=(), screen-wake-lock=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/
+  Cache-Control: no-store
+
+/auth/callback
+  Cache-Control: no-store
+
+/assets/*
+  Cache-Control: no-store
+
+/.well-known/assetlinks.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=3600, must-revalidate
+
+/.well-known/apple-app-site-association
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=3600, must-revalidate

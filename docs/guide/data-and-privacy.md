@@ -1,6 +1,6 @@
 # Data and privacy
 
-Habiter is local-first. Core tracking requires no account, and the application does not provide a Habiter cloud-sync service.
+Habiter is local-first. Core tracking requires no account, and the project does not provide a company-operated synchronization service.
 
 ## What stays on the device
 
@@ -22,10 +22,13 @@ Data leaves Habiter only after you choose a boundary that requires it:
 - **Backup export** copies a versioned JSON document to the clipboard so you can place it in storage you control.
 - **Backup import** reads JSON that you paste and shows a preview before mutation.
 - **Classly-compatible sync** communicates with the HTTPS service you configure.
+- **Personal Sync Beta** sends only the allow-listed synchronization contract to the Docker/SQLite or Worker/D1 instance you operate. There is no Habiter-hosted fallback.
 - **Experimental remote AI** sends the data required for the selected request to the provider you configure.
 - **Release checks** request signed release metadata and platform download information; they do not send habit data.
 
 External services have their own privacy, retention, availability, and pricing terms. Core habit tracking continues to work when optional integrations are disconnected.
+
+See [Personal Sync Beta](/guide/personal-sync) for the exact synchronized, device-local, and never-synchronized categories; server ownership; backups; sessions; and deletion boundaries.
 
 ## Credentials
 

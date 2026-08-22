@@ -2,6 +2,80 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.12.0",
+      "buildNumber": 11200,
+      "channel": "beta",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.5.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Optional self-hosted Personal Sync Beta for one private account and data space on Docker/SQLite or Cloudflare Worker/D1.",
+          "Secure external-browser PKCE connection and separately revocable device sessions.",
+          "Durable local-first synchronization of allow-listed habits, entries, lifecycle state, and non-secret preferences."
+        ],
+        "changed": [
+          "Personal Sync now documents initial merge choices, deterministic conflict handling, snapshot recovery, backups, upgrades, rollback, and disablement."
+        ],
+        "fixed": [],
+        "security": [
+          "Passwords, tokens, keys, device-only settings, notification runtime state, and private diagnostics are never synchronized.",
+          "This Beta has no Habiter-hosted fallback; the instance operator owns access, availability, hardening, costs, backups, and recovery."
+        ]
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.12.0-android-universal.apk",
+          "signed": true,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.12.0-android-playstore.aab",
+          "signed": true,
+          "distribution": "play"
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.12.0-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.12.0-x86_64.AppImage",
+          "signed": false
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.12.0-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.12.0-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.7.3",
       "buildNumber": 10703,
       "channel": "stable",

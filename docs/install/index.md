@@ -21,6 +21,10 @@ irm https://get.habiter.dev/install.ps1 | iex
 
 The installers are repository-backed, user-scoped by default, transparent about every change, and require an HTTPS artifact plus matching SHA-256 before replacement. See the platform pages for manual verification, signing status, updates, uninstall, and troubleshooting.
 
+## Optional Personal Sync server
+
+Personal Sync is a self-hosted Beta, separate from installing the Habiter client. Choose [Docker with SQLite](/install/personal-sync-docker) or [Cloudflare Worker with D1](/install/personal-sync-worker), then follow the [Personal Sync user guide](/guide/personal-sync). Habiter does not operate a hosted fallback.
+
 ## Uninstall safely
 
 Habiter also publishes repository-backed uninstallers at `https://get.habiter.dev/uninstall.sh` and `https://get.habiter.dev/uninstall.ps1`. Download and review the matching script, run its dry-run, and only then start the interactive uninstall. It discovers bounded known locations, verifies the installer ownership manifest and platform identity, prints every literal removal target, requires two confirmations, and preserves application data by default.

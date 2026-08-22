@@ -290,6 +290,30 @@
         "Deliver focused basic display and interaction settings.",
         "Add optional advanced customization without compromising the default experience."
       ]
+    },
+    {
+      "version": "1.12.0",
+      "title": "Personal Sync Beta",
+      "status": "planned",
+      "channel": "beta",
+      "target": "After v1.11.0",
+      "issues": [52],
+      "summary": [
+        "Introduce optional self-hosted Personal Sync while preserving local-first use without an account."
+      ],
+      "scope": [
+        "Support one private account and data space through Docker/SQLite or Cloudflare Worker/D1.",
+        "Add secure external-browser PKCE handoff and device-scoped sessions.",
+        "Synchronize allow-listed habits, entries, lifecycle state, and non-secret preferences with durable automatic reconciliation.",
+        "Document operator ownership, backups, security, Beta compatibility, and the absence of a Habiter-hosted fallback."
+      ],
+      "testing": [
+        "Shared protocol, authentication, storage, and convergence parity across SQLite and D1.",
+        "Flutter client, platform handoff, accessibility, localization, and background-resume behavior.",
+        "Docker lifecycle and D1 migration, restore, rollback, usage, and dry-deployment evidence.",
+        "Explicit physical-device and hosted-environment verification ledger before release."
+      ],
+      "goal": "Offer private operator-controlled synchronization without turning local-first Habiter into a hosted account service."
     }
   ],
   "versioning": {

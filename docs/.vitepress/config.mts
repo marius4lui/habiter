@@ -55,6 +55,7 @@ export default defineConfig({
             { text: 'Reminders', link: '/guide/reminders' },
             { text: 'Updates', link: '/guide/updates' },
             { text: 'Data and Privacy', link: '/guide/data-and-privacy' },
+            { text: 'Personal Sync Beta', link: '/guide/personal-sync' },
             { text: 'App Lock', link: '/guide/app-lock' },
             { text: 'Classly Sync', link: '/guide/classly-sync' }
           ]

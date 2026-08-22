@@ -330,6 +330,34 @@ Scope:
 
 ---
 
+### v1.12.0 — Personal Sync Beta
+
+**Channel:** Beta
+
+**Target:** After v1.11.0
+
+**Issue:** #52
+
+Scope:
+
+- Support one private account and data space through Docker/SQLite or Cloudflare Worker/D1.
+- Add secure external-browser PKCE handoff and device-scoped sessions.
+- Synchronize allow-listed habits, entries, lifecycle state, and non-secret preferences with durable automatic reconciliation.
+- Document operator ownership, backups, security, Beta compatibility, and the absence of a Habiter-hosted fallback.
+
+Stable testing required:
+
+- Shared protocol, authentication, storage, and convergence parity across SQLite and D1.
+- Flutter client, platform handoff, accessibility, localization, and background-resume behavior.
+- Docker lifecycle and D1 migration, restore, rollback, usage, and dry-deployment evidence.
+- Explicit physical-device and hosted-environment verification ledger before release.
+
+Goal:
+
+Offer private operator-controlled synchronization without turning local-first Habiter into a hosted account service.
+
+---
+
 ## Versioning rules
 
 ### Patch releases

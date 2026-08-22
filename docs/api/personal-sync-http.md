@@ -20,6 +20,7 @@ All routes are below the configured HTTPS origin. JSON request bodies must use `
 | `POST /v1/revoke` | Bearer | Revoke the current device or every device |
 | `POST /v1/push` | Bearer | Validate and commit a bounded operation batch |
 | `GET /v1/pull` | Bearer | Read a bounded cursor page |
+| `GET /v1/snapshot` | Bearer | Read a validated replacement snapshot for initial sync or cursor recovery |
 | `GET /v1/device` | Bearer | Describe the current authenticated device |
 | `DELETE /v1/device` | Bearer | Revoke the current device |
 
@@ -79,6 +80,8 @@ Content-Type: application/json
 ```
 
 Push accepts `{ "operations": [...] }`. Pull accepts `cursor` and `limit`; omit `cursor` for the first page. A response with `requiresSnapshot: true` carries the stable recovery reason from the storage contract.
+
+`GET /v1/snapshot` returns the current synchronized records, lifecycle markers, and the cursor that immediately follows the snapshot. Clients validate the complete authenticated response before mutation. They use it only for a confirmed initial replacement or when pull reports an invalid or compacted cursor, and create a local recovery artifact before replacing synchronized state. Unsent local operations remain durable and are reconciled afterward.
 
 ## Error envelope
 

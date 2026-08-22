@@ -27,8 +27,8 @@ const passwordKey = Buffer.alloc(32, 11).toString("base64url");
 const setup: SetupInput = { username: "owner", passwordKey, salt: Buffer.alloc(16, 13).toString("base64url"), iterations: passwordKdfIterations };
 const verifier = generatePkceVerifier(() => new Uint8Array(32).fill(21));
 
-async function makeAttempt(username = "owner"): Promise<AuthorizationAttempt> {
-  return { username, codeChallenge: await pkceChallenge(verifier), state: "state-123456789012", redirectUri, attemptId: "attempt-a", deviceId: "phone-a" };
+async function makeAttempt(username = "owner", deviceId = "phone-a"): Promise<AuthorizationAttempt> {
+  return { username, codeChallenge: await pkceChallenge(verifier), state: `state-${deviceId}-123456789012`, redirectUri, attemptId: `attempt-${deviceId}`, deviceId };
 }
 
 function request(path: string, init: RequestInit = {}): Request { return new Request(`${base}${path}`, init); }
@@ -69,8 +69,8 @@ async function d1Harness(): Promise<Harness> {
 
 afterEach(async () => { await Promise.all(instances.splice(0).map((item) => item.cleanup())); });
 
-async function login(harness: Harness, username = "owner", key = passwordKey) {
-  const attempt = await makeAttempt(username);
+async function login(harness: Harness, username = "owner", key = passwordKey, deviceId = "phone-a") {
+  const attempt = await makeAttempt(username, deviceId);
   const begin = await harness.fetch(jsonRequest("/v1/authorize", { action: "begin", csrf: attempt.state, attempt }, { "x-habiter-csrf": attempt.state, "sec-fetch-site": "same-origin" }));
   const challenge = await body<{ challengeId: string; salt: string; iterations: number }>(begin);
   const proof = await createLoginProof(key, challenge.challengeId, attempt);
@@ -79,8 +79,8 @@ async function login(harness: Harness, username = "owner", key = passwordKey) {
   return { attempt, challenge, grant };
 }
 
-async function tokens(harness: Harness) {
-  const { attempt, grant } = await login(harness);
+async function tokens(harness: Harness, deviceId = "phone-a") {
+  const { attempt, grant } = await login(harness, "owner", passwordKey, deviceId);
   const response = await harness.fetch(jsonRequest("/v1/token", { grantType: "authorization_code", code: grant.code, codeVerifier: verifier, redirectUri, attemptId: attempt.attemptId }));
   expect(response.status).toBe(200);
   return body<{ accessToken: string; refreshToken: string }>(response);
@@ -89,6 +89,18 @@ async function tokens(harness: Harness) {
 function operation() {
   const payload = { id: "habit-a", name: "Walk", description: "Daily", color: "#4CAF50", icon: "walk", frequency: "daily", targetCount: 1, category: "Health", customDays: null, createdAt: "2026-08-22T08:00:00.000Z", isActive: true, notificationEnabled: false, notificationTime: null };
   return createOperation({ kind: "create", revision: { deviceId: "phone-a", sequence: 1 }, document: { schemaVersion: 1, entityId: "habit/habit-a", deleted: false, payload }, changedFields: Object.keys(payload), changedMetadataFields: [] });
+}
+
+function patchOperation(deviceId: string, sequence: number, changes: { name?: string; description?: string }) {
+  const base = operation().document.payload!;
+  const payload = { ...base, ...changes };
+  return createOperation({
+    kind: "patch",
+    revision: { deviceId, sequence },
+    document: { schemaVersion: 1, entityId: "habit/habit-a", deleted: false, payload },
+    changedFields: Object.keys(changes),
+    changedMetadataFields: [],
+  });
 }
 
 function registerRouteSuite(name: string, factory: () => Promise<Harness>): void {
@@ -147,6 +159,37 @@ function registerRouteSuite(name: string, factory: () => Promise<Harness>): void
       expect(rejected.status).toBe(400);
       const pulled = await harness.fetch(request("/v1/pull?limit=100", { headers: authorization }));
       expect(await body<{ operations: unknown[] }>(pulled)).toMatchObject({ operations: [] });
+    });
+
+    it("converges two authenticated offline devices and enforces revocation", async () => {
+      const harness = await factory();
+      const phoneA = await tokens(harness, "phone-a");
+      const phoneB = await tokens(harness, "phone-b");
+      const authA = { authorization: `Bearer ${phoneA.accessToken}` };
+      const authB = { authorization: `Bearer ${phoneB.accessToken}` };
+
+      expect((await harness.fetch(jsonRequest("/v1/push", { operations: [operation()] }, authA))).status).toBe(200);
+      const fromA = patchOperation("phone-a", 2, { description: "From A while offline" });
+      const fromB = patchOperation("phone-b", 1, { name: "From B while offline" });
+      expect((await harness.fetch(jsonRequest("/v1/push", { operations: [fromB] }, authB))).status).toBe(200);
+      expect((await harness.fetch(jsonRequest("/v1/push", { operations: [fromA] }, authA))).status).toBe(200);
+
+      const duplicate = await harness.fetch(jsonRequest("/v1/push", { operations: [fromB] }, authB));
+      expect(await body<{ receipts: unknown[] }>(duplicate)).toMatchObject({ receipts: [{ duplicate: true }] });
+      const snapshot = await body<{ entities: Array<{ payloadFields: Record<string, { value: unknown }> }> }>(
+        await harness.fetch(request("/v1/snapshot", { headers: authA })),
+      );
+      expect(snapshot.entities[0]?.payloadFields.name?.value).toBe("From B while offline");
+      expect(snapshot.entities[0]?.payloadFields.description?.value).toBe("From A while offline");
+
+      expect((await harness.fetch(jsonRequest("/v1/revoke", { scope: "all" }, authA))).status).toBe(200);
+      // Already-issued access tokens intentionally retain their short five-minute
+      // lifetime; revocation cuts off every durable refresh session immediately.
+      expect((await harness.fetch(request("/v1/pull?limit=100", { headers: authB }))).status).toBe(200);
+      expect((await harness.fetch(jsonRequest("/v1/refresh", {
+        grantType: "refresh_token",
+        refreshToken: phoneB.refreshToken,
+      }))).status).toBe(401);
     });
   });
 }

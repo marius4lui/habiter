@@ -12,7 +12,7 @@ import '../features/reminders/presentation/reminder_diagnostics_panel.dart';
 import '../features/runtime/infrastructure/method_channel_background_runtime_gateway.dart';
 import '../features/widgets/domain/widget_bridge.dart';
 import '../features/widgets/application/widget_sync_controller.dart';
-import '../features/widgets/presentation/widget_promotion_card.dart';
+import '../features/widgets/presentation/widget_management_screen.dart';
 import '../features/updates/application/update_controller.dart';
 import '../features/updates/domain/update_models.dart';
 import '../l10n/l10n.dart';
@@ -258,7 +258,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             trailing: const Icon(Icons.chevron_right_rounded),
                             onTap: widgetBridge == null
                                 ? null
-                                : () => showWidgetManagementDialog(context),
+                                : () => Navigator.of(context).push<void>(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) =>
+                                          const WidgetManagementScreen(),
+                                    ),
+                                  ),
                           ),
                         ),
                       ],

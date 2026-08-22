@@ -30,6 +30,8 @@ import 'features/widgets/application/widget_lifecycle_coordinator.dart';
 import 'features/widgets/data/android_widget_bridge.dart';
 import 'features/widgets/domain/home_widget_platform.dart';
 import 'features/widgets/domain/widget_bridge.dart';
+import 'features/widgets/domain/widget_configuration_gateway.dart';
+import 'features/widgets/presentation/widget_management_screen.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n.dart';
 import 'providers/app_lock_provider.dart';
@@ -149,16 +151,18 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
 
   Widget _buildApplication() {
     final dependencies = _resultDependencies;
+    const widgetBridge = AndroidWidgetBridge();
     final widgetSync = WidgetSyncController(
       repository: dependencies.habitRepository,
-      bridge: const AndroidWidgetBridge(),
+      bridge: widgetBridge,
       clock: dependencies.clock,
       appLockResolver: WidgetAppLockStateResolver(dependencies.store),
     );
     return MultiProvider(
       providers: [
         Provider<HapticGateway>.value(value: dependencies.haptics),
-        Provider<WidgetBridge>.value(value: const AndroidWidgetBridge()),
+        Provider<WidgetBridge>.value(value: widgetBridge),
+        Provider<WidgetConfigurationGateway>.value(value: widgetBridge),
         Provider<WidgetSyncController>.value(value: widgetSync),
         ChangeNotifierProvider(
           create: (_) => HabitProvider(
@@ -210,6 +214,7 @@ class _HabiterAppState extends State<HabiterApp> {
   static const _updateChannel = MethodChannel('com.habiter.app/updates');
   final _navigatorKey = GlobalKey<NavigatorState>();
   StreamSubscription<Uri?>? _widgetLaunchSubscription;
+  bool _openingWidgetConfiguration = false;
 
   @override
   void initState() {
@@ -221,6 +226,7 @@ class _HabiterAppState extends State<HabiterApp> {
       unawaited(_consumePendingUpdateNavigation());
     }
     if (!supportsHomeWidget) return;
+    unawaited(_consumePendingWidgetConfiguration());
     _widgetLaunchSubscription = HomeWidget.widgetClicked.listen(
       (_) => _openTodayFromWidget(),
     );
@@ -230,6 +236,38 @@ class _HabiterAppState extends State<HabiterApp> {
   Future<void> _handleInitialWidgetLaunch() async {
     final launch = await HomeWidget.initiallyLaunchedFromHomeWidget();
     if (launch != null) _openTodayFromWidget();
+  }
+
+  Future<void> _consumePendingWidgetConfiguration() async {
+    try {
+      final pending = await context
+          .read<WidgetConfigurationGateway>()
+          .pendingWidgetConfiguration();
+      if (pending != null) _openWidgetConfiguration();
+    } on MissingPluginException {
+      // Non-Android test and desktop hosts have no configuration activity.
+    }
+  }
+
+  void _openWidgetConfiguration() {
+    if (!mounted || _openingWidgetConfiguration) return;
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _openWidgetConfiguration(),
+      );
+      return;
+    }
+    _openingWidgetConfiguration = true;
+    unawaited(
+      navigator
+          .push<void>(
+            MaterialPageRoute<void>(
+              builder: (_) => const WidgetManagementScreen(),
+            ),
+          )
+          .whenComplete(() => _openingWidgetConfiguration = false),
+    );
   }
 
   void _openTodayFromWidget() {

@@ -79,3 +79,39 @@ Manual Android regression checks:
   not create refresh storms.
 
 This lifecycle matrix is the regression gate for GitHub issue #11.
+
+## Per-instance configuration
+
+Every placed widget owns an independent, versioned configuration keyed by its
+Android `appWidgetId`. The editor exposes a live preview, five presets, a reset
+to the legacy baseline, and Basic and collapsed Advanced controls. Copying
+settings changes the current draft while preserving its widget ID and display
+name; duplicating settings saves the current draft to another installed widget
+while preserving the destination identity. Removing a widget must remove only
+that instance's configuration.
+
+Automated contracts cover:
+
+- isolated storage, migration, invalid-schema fallback, and instance cleanup;
+- all six responsive breakpoints and their override precedence;
+- launcher create, reconfigure, save, and cancel result handling;
+- preset, reset, copy, duplicate, and immediate live-preview behavior;
+- localized management and editing flows; and
+- native rendering, visibility, interaction, completion, theme, geometry, and
+  typography projections.
+
+Manual launcher checks for each size in the table above:
+
+1. Place two widgets and give them distinct names, habit selections, themes,
+   and progress styles; confirm that editing either one never changes the other.
+2. Reconfigure an existing widget from the launcher and verify Save updates the
+   selected instance while Back leaves its previous configuration intact.
+3. Exercise Default, Minimal, Focus, Dense List, and Dashboard presets; confirm
+   the live preview changes immediately and matches the rendered widget.
+4. Copy and duplicate settings between instances, then delete one instance and
+   confirm the remaining configuration is unchanged.
+5. Repeat in German and English, light and dark themes, and at 200% system text
+   scaling. Confirm controls, preview content, habit names, and accessibility
+   labels remain usable without clipping.
+
+This configuration matrix is the regression gate for GitHub issue #20.

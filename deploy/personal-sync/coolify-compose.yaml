@@ -7,14 +7,15 @@
 
 # Coolify Docker Compose Empty / Git Compose template.
 #
-# For a Git Compose deployment, select this file and keep the repository root as
-# the build context.  For Docker Compose Empty, paste this file and replace the
-# build block with a published, immutable image for the same release.
+# For a Git Compose deployment, select this file. Coolify uses the repository
+# root as its Compose project directory, so the build paths below are rooted
+# there. For Docker Compose Empty, paste this file and replace the build block
+# with a published, immutable image for the same release.
 services:
   sync:
     image: habiter-personal-sync:1.12.0-beta
     build:
-      context: ../..
+      context: .
       dockerfile: deploy/personal-sync/Dockerfile
     init: true
     restart: unless-stopped
@@ -26,9 +27,9 @@ services:
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=16m,mode=1777
     environment:
-      # Coolify creates a HTTPS domain and routes it to the internal service port.
-      SERVICE_URL_SYNC_8787: /
-      HABITER_SYNC_BASE_URL: ${SERVICE_URL_SYNC_8787}
+      # Set this to the public HTTPS domain assigned to this component in
+      # Coolify, for example https://sync.example.com.
+      HABITER_SYNC_BASE_URL: ${HABITER_SYNC_BASE_URL:?Set the public HTTPS URL}
       # Configure this exact, comma-separated browser callback allowlist in Coolify.
       HABITER_SYNC_REDIRECT_URIS: ${HABITER_SYNC_REDIRECT_URIS:?Set the exact redirect URI allowlist}
       HABITER_SYNC_CORS_ORIGINS: ${HABITER_SYNC_CORS_ORIGINS:-}

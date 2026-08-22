@@ -2,6 +2,78 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.8.0",
+      "buildNumber": 10800,
+      "channel": "beta",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.5.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Habiter nutzt jetzt eine gemeinsame Hintergrund-Runtime für adaptive Erinnerungen und App Block."
+        ],
+        "changed": [
+          "Adaptive Erinnerungen werden kurz vor der Zustellung mit dem aktuellen lokalen Habit-Status neu bewertet.",
+          "Die Einrichtung für Hintergrundbetrieb und Akku-Optimierung steht nun beiden Funktionen gemeinsam zur Verfügung."
+        ],
+        "fixed": [
+          "Das Deaktivieren von App Block beendet den Hintergrundbetrieb nicht mehr, wenn Erinnerungen ihn noch benötigen."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.8.0-android-universal.apk",
+          "signed": true,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.8.0-android-playstore.aab",
+          "signed": true,
+          "distribution": "play"
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.8.0-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.8.0-x86_64.AppImage",
+          "signed": false
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.8.0-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.8.0-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.7.4",
       "buildNumber": 10704,
       "channel": "stable",

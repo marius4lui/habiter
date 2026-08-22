@@ -87,6 +87,7 @@ export default defineConfig({
             { text: 'Personal Sync Convergence', link: '/dev/personal-sync-convergence' },
             { text: 'Personal Sync SQLite Storage', link: '/dev/personal-sync-sqlite' },
             { text: 'Personal Sync D1 Storage', link: '/dev/personal-sync-d1' },
+            { text: 'Personal Sync Authentication', link: '/dev/personal-sync-auth' },
             { text: 'Platform Channels', link: '/dev/platform-contracts' },
             { text: 'Testing and Quality', link: '/dev/testing' },
             { text: 'Android Widget QA', link: '/dev/widget-qa' },

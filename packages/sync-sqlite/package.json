@@ -1,17 +1,18 @@
 {
-  "name": "@habiter/sync-core",
+  "name": "@habiter/sync-sqlite",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./test-support": "./test-support/storage-conformance.ts"
-  },
+  "exports": "./src/index.ts",
   "scripts": {
     "check": "tsc --noEmit && vitest run",
     "test": "vitest run"
   },
+  "dependencies": {
+    "@habiter/sync-core": "workspace:*"
+  },
   "devDependencies": {
+    "@types/node": "^24.0.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10"
   }

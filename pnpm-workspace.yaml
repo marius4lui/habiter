@@ -3,6 +3,7 @@ packages:
   - apps/release-api
   - packages/release-core
   - packages/sync-core
+  - packages/sync-sqlite
 
 allowBuilds:
   esbuild: true

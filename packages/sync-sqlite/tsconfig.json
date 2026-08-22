@@ -7,7 +7,8 @@
     "strict": true,
     "skipLibCheck": true,
     "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "types": ["node"]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "test-support/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

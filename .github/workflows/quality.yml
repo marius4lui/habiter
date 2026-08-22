@@ -50,6 +50,7 @@ jobs:
       - run: pnpm release:validate
       - run: pnpm release:test
       - run: pnpm sync:check
+      - run: pnpm sync:sqlite:check
       - run: pnpm website:check
       - run: pnpm --filter @habiter/release-api types
       - run: pnpm --filter @habiter/release-api check

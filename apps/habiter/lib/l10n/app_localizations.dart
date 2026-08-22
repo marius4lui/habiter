@@ -2917,6 +2917,192 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Updates sind auf dieser Plattform noch nicht verfügbar.'**
   String get updateUnsupported;
+
+  /// No description provided for @personalSync.
+  ///
+  /// In de, this message translates to:
+  /// **'Sync'**
+  String get personalSync;
+
+  /// No description provided for @personalSyncBeta.
+  ///
+  /// In de, this message translates to:
+  /// **'Personal Sync Beta'**
+  String get personalSyncBeta;
+
+  /// No description provided for @personalSyncSetupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbinde deine eigene Habiter-Sync-Instanz. Die Anmeldung öffnet sich sicher im externen Browser; Habiter fragt niemals nach deinem Passwort.'**
+  String get personalSyncSetupBody;
+
+  /// No description provided for @personalSyncSelfHosted.
+  ///
+  /// In de, this message translates to:
+  /// **'Self-Hosting bedeutet: Du oder eine vertrauenswürdige Person betreibt den Server und ist für Betrieb, Backups und Updates verantwortlich.'**
+  String get personalSyncSelfHosted;
+
+  /// No description provided for @personalSyncServer.
+  ///
+  /// In de, this message translates to:
+  /// **'Server-Adresse'**
+  String get personalSyncServer;
+
+  /// No description provided for @personalSyncServerHint.
+  ///
+  /// In de, this message translates to:
+  /// **'https://sync.example.de'**
+  String get personalSyncServerHint;
+
+  /// No description provided for @personalSyncHttpsOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur HTTPS ist erlaubt. Für lokale Entwicklung sind localhost und Loopback-Adressen über HTTP zulässig.'**
+  String get personalSyncHttpsOnly;
+
+  /// No description provided for @personalSyncConnect.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Browser verbinden'**
+  String get personalSyncConnect;
+
+  /// No description provided for @personalSyncConnecting.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung wird vorbereitet …'**
+  String get personalSyncConnecting;
+
+  /// No description provided for @personalSyncConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbunden'**
+  String get personalSyncConnected;
+
+  /// No description provided for @personalSyncLastSuccess.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzter erfolgreicher Kontakt: {value}'**
+  String personalSyncLastSuccess(String value);
+
+  /// No description provided for @personalSyncSyncNow.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt synchronisieren'**
+  String get personalSyncSyncNow;
+
+  /// No description provided for @personalSyncReconnect.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu verbinden'**
+  String get personalSyncReconnect;
+
+  /// No description provided for @personalSyncDisconnect.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung trennen'**
+  String get personalSyncDisconnect;
+
+  /// No description provided for @personalSyncRevokeAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Geräte abmelden'**
+  String get personalSyncRevokeAll;
+
+  /// No description provided for @personalSyncDisconnectBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Anmeldedaten und Verbindungsstatus werden entfernt. Lokale und entfernte Habits bleiben erhalten.'**
+  String get personalSyncDisconnectBody;
+
+  /// No description provided for @personalSyncRevokeBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server meldet alle Geräte ab. Lokale und entfernte Habits werden nicht gelöscht.'**
+  String get personalSyncRevokeBody;
+
+  /// No description provided for @personalSyncTroubleshooting.
+  ///
+  /// In de, this message translates to:
+  /// **'Problemlösung'**
+  String get personalSyncTroubleshooting;
+
+  /// No description provided for @personalSyncTroubleshootingBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe die Server-Adresse und Internetverbindung. Bei abgelaufener Anmeldung verbinde dich erneut. Ein abgebrochener Browser-Dialog verändert deine bestehenden Daten nicht.'**
+  String get personalSyncTroubleshootingBody;
+
+  /// No description provided for @personalSyncInvalidOrigin.
+  ///
+  /// In de, this message translates to:
+  /// **'Gib eine gültige HTTPS-Server-Adresse ohne Pfad ein.'**
+  String get personalSyncInvalidOrigin;
+
+  /// No description provided for @personalSyncUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Sync-Instanz ist nicht erreichbar oder noch nicht eingerichtet.'**
+  String get personalSyncUnavailable;
+
+  /// No description provided for @personalSyncIncompatible.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Sync-Instanz verwendet eine inkompatible Protokollversion.'**
+  String get personalSyncIncompatible;
+
+  /// No description provided for @personalSyncCallbackRejected.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Browser-Rückgabe wurde aus Sicherheitsgründen abgelehnt. Bitte starte die Verbindung erneut.'**
+  String get personalSyncCallbackRejected;
+
+  /// No description provided for @personalSyncCallbackExpired.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Anmeldung ist abgelaufen. Bitte starte sie erneut.'**
+  String get personalSyncCallbackExpired;
+
+  /// No description provided for @personalSyncBrowserCanceled.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Anmeldung wurde abgebrochen oder der Browser konnte nicht geöffnet werden.'**
+  String get personalSyncBrowserCanceled;
+
+  /// No description provided for @personalSyncAuthFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Die sichere Anmeldung konnte nicht abgeschlossen werden.'**
+  String get personalSyncAuthFailed;
+
+  /// No description provided for @personalSyncStorageFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Anmeldedaten konnten nicht sicher gespeichert werden.'**
+  String get personalSyncStorageFailed;
+
+  /// No description provided for @personalSyncAuthRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Anmeldung ist abgelaufen. Bitte verbinde dich erneut.'**
+  String get personalSyncAuthRequired;
+
+  /// No description provided for @personalSyncNetworkError.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server ist derzeit nicht erreichbar.'**
+  String get personalSyncNetworkError;
+
+  /// No description provided for @personalSyncPending.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Anmeldung wartet auf die Rückgabe aus dem Browser.'**
+  String get personalSyncPending;
+
+  /// No description provided for @personalSyncCancelPending.
+  ///
+  /// In de, this message translates to:
+  /// **'Anmeldung abbrechen'**
+  String get personalSyncCancelPending;
 }
 
 class _AppLocalizationsDelegate

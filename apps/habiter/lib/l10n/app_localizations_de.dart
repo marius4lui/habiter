@@ -1612,4 +1612,116 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get updateUnsupported =>
       'Updates sind auf dieser Plattform noch nicht verfügbar.';
+
+  @override
+  String get personalSync => 'Sync';
+
+  @override
+  String get personalSyncBeta => 'Personal Sync Beta';
+
+  @override
+  String get personalSyncSetupBody =>
+      'Verbinde deine eigene Habiter-Sync-Instanz. Die Anmeldung öffnet sich sicher im externen Browser; Habiter fragt niemals nach deinem Passwort.';
+
+  @override
+  String get personalSyncSelfHosted =>
+      'Self-Hosting bedeutet: Du oder eine vertrauenswürdige Person betreibt den Server und ist für Betrieb, Backups und Updates verantwortlich.';
+
+  @override
+  String get personalSyncServer => 'Server-Adresse';
+
+  @override
+  String get personalSyncServerHint => 'https://sync.example.de';
+
+  @override
+  String get personalSyncHttpsOnly =>
+      'Nur HTTPS ist erlaubt. Für lokale Entwicklung sind localhost und Loopback-Adressen über HTTP zulässig.';
+
+  @override
+  String get personalSyncConnect => 'Im Browser verbinden';
+
+  @override
+  String get personalSyncConnecting => 'Verbindung wird vorbereitet …';
+
+  @override
+  String get personalSyncConnected => 'Verbunden';
+
+  @override
+  String personalSyncLastSuccess(String value) {
+    return 'Letzter erfolgreicher Kontakt: $value';
+  }
+
+  @override
+  String get personalSyncSyncNow => 'Jetzt synchronisieren';
+
+  @override
+  String get personalSyncReconnect => 'Neu verbinden';
+
+  @override
+  String get personalSyncDisconnect => 'Verbindung trennen';
+
+  @override
+  String get personalSyncRevokeAll => 'Alle Geräte abmelden';
+
+  @override
+  String get personalSyncDisconnectBody =>
+      'Nur Anmeldedaten und Verbindungsstatus werden entfernt. Lokale und entfernte Habits bleiben erhalten.';
+
+  @override
+  String get personalSyncRevokeBody =>
+      'Der Server meldet alle Geräte ab. Lokale und entfernte Habits werden nicht gelöscht.';
+
+  @override
+  String get personalSyncTroubleshooting => 'Problemlösung';
+
+  @override
+  String get personalSyncTroubleshootingBody =>
+      'Prüfe die Server-Adresse und Internetverbindung. Bei abgelaufener Anmeldung verbinde dich erneut. Ein abgebrochener Browser-Dialog verändert deine bestehenden Daten nicht.';
+
+  @override
+  String get personalSyncInvalidOrigin =>
+      'Gib eine gültige HTTPS-Server-Adresse ohne Pfad ein.';
+
+  @override
+  String get personalSyncUnavailable =>
+      'Die Sync-Instanz ist nicht erreichbar oder noch nicht eingerichtet.';
+
+  @override
+  String get personalSyncIncompatible =>
+      'Diese Sync-Instanz verwendet eine inkompatible Protokollversion.';
+
+  @override
+  String get personalSyncCallbackRejected =>
+      'Die Browser-Rückgabe wurde aus Sicherheitsgründen abgelehnt. Bitte starte die Verbindung erneut.';
+
+  @override
+  String get personalSyncCallbackExpired =>
+      'Die Anmeldung ist abgelaufen. Bitte starte sie erneut.';
+
+  @override
+  String get personalSyncBrowserCanceled =>
+      'Die Anmeldung wurde abgebrochen oder der Browser konnte nicht geöffnet werden.';
+
+  @override
+  String get personalSyncAuthFailed =>
+      'Die sichere Anmeldung konnte nicht abgeschlossen werden.';
+
+  @override
+  String get personalSyncStorageFailed =>
+      'Anmeldedaten konnten nicht sicher gespeichert werden.';
+
+  @override
+  String get personalSyncAuthRequired =>
+      'Die Anmeldung ist abgelaufen. Bitte verbinde dich erneut.';
+
+  @override
+  String get personalSyncNetworkError =>
+      'Der Server ist derzeit nicht erreichbar.';
+
+  @override
+  String get personalSyncPending =>
+      'Die Anmeldung wartet auf die Rückgabe aus dem Browser.';
+
+  @override
+  String get personalSyncCancelPending => 'Anmeldung abbrechen';
 }

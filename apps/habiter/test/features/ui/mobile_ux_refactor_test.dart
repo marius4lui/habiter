@@ -16,6 +16,7 @@ import 'package:habiter/providers/habit_provider.dart';
 import 'package:habiter/providers/settings_provider.dart';
 import 'package:habiter/screens/analytics_screen.dart';
 import 'package:habiter/screens/home_screen.dart';
+import 'package:habiter/screens/rhythm_screen.dart';
 import 'package:habiter/screens/settings_screen.dart';
 import 'package:habiter/widgets/add_habit_sheet.dart';
 import 'package:provider/provider.dart';
@@ -125,6 +126,253 @@ void main() {
         reason: screen.runtimeType.toString(),
       );
     }
+  });
+
+  testWidgets('secondary screens support compact low-height viewports', (
+    tester,
+  ) async {
+    final provider = await _providerWithHabits();
+    final settings = SettingsProvider();
+    addTearDown(provider.dispose);
+    addTearDown(settings.dispose);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    for (final size in <Size>[const Size(320, 480), const Size(480, 320)]) {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      for (final screen in <Widget>[
+        const AnalyticsScreen(),
+        const SettingsScreen(),
+        const RhythmScreen(),
+      ]) {
+        await tester.pumpWidget(
+          _app(
+            provider: provider,
+            settings: settings,
+            home: screen,
+            textScale: 2,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(screen.runtimeType), findsOneWidget);
+      }
+    }
+  });
+
+  testWidgets('settings groups use available tablet width without stretching', (
+    tester,
+  ) async {
+    final provider = await _providerWithHabits();
+    final settings = SettingsProvider();
+    addTearDown(provider.dispose);
+    addTearDown(settings.dispose);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.devicePixelRatio = 1;
+
+    Future<void> pumpAt(Size size) async {
+      tester.view.physicalSize = size;
+      await tester.pumpWidget(
+        _app(
+          provider: provider,
+          settings: settings,
+          home: const SettingsScreen(),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await pumpAt(const Size(600, 1000));
+    final compactAppearance = tester.getTopLeft(
+      find.byKey(const Key('settings-appearance-section')),
+    );
+    final compactNotifications = tester.getTopLeft(
+      find.byKey(const Key('settings-notifications-section')),
+    );
+    expect(compactNotifications.dx, compactAppearance.dx);
+    expect(compactNotifications.dy, greaterThan(compactAppearance.dy));
+
+    await pumpAt(const Size(700, 1000));
+    final tabletAppearance = tester.getTopLeft(
+      find.byKey(const Key('settings-appearance-section')),
+    );
+    final tabletNotifications = tester.getTopLeft(
+      find.byKey(const Key('settings-notifications-section')),
+    );
+    expect(tabletNotifications.dx, greaterThan(tabletAppearance.dx));
+    expect(tabletNotifications.dy, tabletAppearance.dy);
+  });
+
+  testWidgets('analytics preserves selection across tablet rotation', (
+    tester,
+  ) async {
+    final provider = await _providerWithHabits();
+    addTearDown(provider.dispose);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(700, 1000);
+
+    await tester.pumpWidget(
+      _app(provider: provider, home: const AnalyticsScreen()),
+    );
+    await tester.pumpAndSettle();
+    final portraitWeek = tester.getTopLeft(
+      find.byKey(const Key('analytics-week-column')),
+    );
+    final portraitDetail = tester.getTopLeft(
+      find.byKey(const Key('analytics-detail-column')),
+    );
+    expect(portraitDetail.dx, portraitWeek.dx);
+    expect(portraitDetail.dy, greaterThan(portraitWeek.dy));
+
+    final selectedId = provider.habits.last.id;
+    final selector = find.descendant(
+      of: find.byKey(const Key('analytics-habit-selector')),
+      matching: find.byType(DropdownButtonFormField<String>),
+    );
+    tester.widget<DropdownButtonFormField<String>>(selector).onChanged!(
+      selectedId,
+    );
+    await tester.pumpAndSettle();
+
+    final habitIdsBefore = provider.habits.map((habit) => habit.id).toList();
+    final entryCountBefore = provider.habitEntries.length;
+    tester.view.physicalSize = const Size(1000, 700);
+    await tester.pumpAndSettle();
+
+    final landscapeWeek = tester.getTopLeft(
+      find.byKey(const Key('analytics-week-column')),
+    );
+    final landscapeDetail = tester.getTopLeft(
+      find.byKey(const Key('analytics-detail-column')),
+    );
+    expect(landscapeDetail.dx, greaterThan(landscapeWeek.dx));
+    expect(landscapeDetail.dy, landscapeWeek.dy);
+    expect(
+      tester.widget<DropdownButtonFormField<String>>(selector).initialValue,
+      selectedId,
+    );
+    expect(provider.habits.map((habit) => habit.id), habitIdsBefore);
+    expect(provider.habitEntries, hasLength(entryCountBefore));
+  });
+
+  testWidgets('rhythm promotes overview and plans into tablet columns', (
+    tester,
+  ) async {
+    final provider = await _providerWithHabits();
+    addTearDown(provider.dispose);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(700, 1000);
+
+    await tester.pumpWidget(
+      _app(provider: provider, home: const RhythmScreen()),
+    );
+    await tester.pumpAndSettle();
+    final portraitCalibration = tester.getTopLeft(
+      find.byKey(const Key('rhythm-calibration-column')),
+    );
+    final portraitProfile = tester.getTopLeft(
+      find.byKey(const Key('rhythm-profile-column')),
+    );
+    expect(portraitProfile.dx, portraitCalibration.dx);
+    expect(portraitProfile.dy, greaterThan(portraitCalibration.dy));
+
+    tester.view.physicalSize = const Size(1000, 700);
+    await tester.pumpAndSettle();
+    final landscapeCalibration = tester.getTopLeft(
+      find.byKey(const Key('rhythm-calibration-column')),
+    );
+    final landscapeProfile = tester.getTopLeft(
+      find.byKey(const Key('rhythm-profile-column')),
+    );
+    expect(landscapeProfile.dx, greaterThan(landscapeCalibration.dx));
+    expect(landscapeProfile.dy, landscapeCalibration.dy);
+
+    final firstPlan = tester.getTopLeft(
+      find.byKey(ValueKey('rhythm-plan-${provider.habits.first.id}')),
+    );
+    final secondPlan = tester.getTopLeft(
+      find.byKey(ValueKey('rhythm-plan-${provider.habits.last.id}')),
+    );
+    expect(secondPlan.dx, greaterThan(firstPlan.dx));
+    expect(secondPlan.dy, firstPlan.dy);
+  });
+
+  testWidgets('core flows pass the canonical responsive reference matrix', (
+    tester,
+  ) async {
+    final provider = await _providerWithHabits();
+    final settings = SettingsProvider();
+    addTearDown(provider.dispose);
+    addTearDown(settings.dispose);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.devicePixelRatio = 1;
+    final habitsBefore = provider.habits
+        .map((habit) => habit.toJson())
+        .toList();
+    final entriesBefore = provider.habitEntries
+        .map((entry) => entry.toMap())
+        .toList();
+    final reminderPreferencesBefore = provider.reminderPreferences.toMap();
+    final reminderPoliciesBefore = {
+      for (final entry in provider.reminderPolicies.entries)
+        entry.key: entry.value.toMap(),
+    };
+    final scenarios = <({String name, Size size, double textScale})>[
+      (
+        name: 'smart-display portrait',
+        size: const Size(320, 480),
+        textScale: 2,
+      ),
+      (
+        name: 'smart-display landscape',
+        size: const Size(480, 320),
+        textScale: 2,
+      ),
+      (name: 'phone', size: const Size(390, 844), textScale: 1),
+      (name: 'tablet portrait', size: const Size(700, 1000), textScale: 1),
+      (name: 'tablet landscape', size: const Size(1000, 700), textScale: 1),
+      (name: 'desktop', size: const Size(1440, 900), textScale: 1),
+    ];
+
+    for (final scenario in scenarios) {
+      tester.view.physicalSize = scenario.size;
+      for (final screen in <Widget>[
+        const HomeScreen(),
+        const AnalyticsScreen(),
+        const RhythmScreen(),
+        const SettingsScreen(),
+        const Scaffold(body: AddHabitSheet()),
+      ]) {
+        await tester.pumpWidget(
+          _app(
+            provider: provider,
+            settings: settings,
+            home: screen,
+            textScale: scenario.textScale,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: '${scenario.name}: ${screen.runtimeType}',
+        );
+      }
+    }
+
+    expect(provider.habits.map((habit) => habit.toJson()), habitsBefore);
+    expect(provider.habitEntries.map((entry) => entry.toMap()), entriesBefore);
+    expect(provider.reminderPreferences.toMap(), reminderPreferencesBefore);
+    expect({
+      for (final entry in provider.reminderPolicies.entries)
+        entry.key: entry.value.toMap(),
+    }, reminderPoliciesBefore);
   });
 
   testWidgets('guided editor keeps primary controls reachable at 200 percent', (

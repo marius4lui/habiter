@@ -5,8 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../app/navigation/app_route.dart';
+import '../core/design_system/adaptive_presentation.dart';
 import '../core/design_system/components.dart';
 import '../core/design_system/haptics.dart';
+import '../core/design_system/layout.dart';
+import '../core/design_system/tokens.dart';
 import '../core/time/local_date.dart';
 import '../features/home/application/habit_hub_model.dart';
 import '../features/home/presentation/habit_navigation_wheel.dart';
@@ -29,6 +32,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final _wheelKey = GlobalKey(debugLabel: 'habit-navigation-wheel-state');
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<HabitProvider>();
@@ -79,69 +84,121 @@ class _HomeScreenState extends State<HomeScreen> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final short = constraints.maxHeight < 680;
+          final layout = HabiterLayout.fromSize(
+            Size(constraints.maxWidth, constraints.maxHeight),
+          );
+          final topActions = _TopActions(
+            leadingLabel: inactiveCount > 0
+                ? context.l10n.pausedArchivedCount(inactiveCount)
+                : context.l10n.appLock,
+            leadingIcon: inactiveCount > 0
+                ? Icons.history_rounded
+                : Icons.lock_outline_rounded,
+            leadingKey: Key(
+              inactiveCount > 0
+                  ? 'hub-inactive-habits-action'
+                  : 'hub-app-lock-action',
+            ),
+            onOpenLeading: inactiveCount > 0
+                ? () => _openLifecycle(provider)
+                : () => _activate(HabitHubDestination.appLock),
+            onOpenSettings: () => _activate(HabitHubDestination.settings),
+          );
+          final hero = latest == null
+              ? _EmptyHabitHero(onCreate: () => _openEditor(context))
+              : _LatestHabitHero(
+                  habit: latest,
+                  status: _statusFor(latest, snapshot),
+                  onOpen: () => _openDetails(
+                    provider,
+                    latest,
+                    snapshot.completed.any((habit) => habit.id == latest.id),
+                    date.toString(),
+                  ),
+                  onComplete:
+                      snapshot.pending.any((habit) => habit.id == latest.id)
+                      ? () => _complete(provider, latest, date)
+                      : null,
+                );
+          final wheel = HabitNavigationWheel(key: _wheelKey, onOpen: _activate);
+
+          if (layout.atLeast(HabiterLayoutClass.expanded)) {
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(top: 0, left: 0, right: 0, child: topActions),
+                Positioned.fill(
+                  top: short ? 58 : 72,
+                  bottom: HabiterSpace.lg,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1120),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: layout.horizontalPagePadding,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 5,
+                              child: KeyedSubtree(
+                                key: const Key('habit-hub-primary-pane'),
+                                child: SingleChildScrollView(
+                                  key: const Key('habit-hub-hero-scroll'),
+                                  physics: const ClampingScrollPhysics(),
+                                  child: Center(
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(
+                                        maxWidth: 500,
+                                      ),
+                                      child: hero,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: HabiterSpace.xl),
+                            Expanded(
+                              flex: 6,
+                              child: KeyedSubtree(
+                                key: const Key('habit-hub-secondary-pane'),
+                                child: Center(child: wheel),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
           return Stack(
             clipBehavior: Clip.none,
             children: [
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: _TopActions(
-                  leadingLabel: inactiveCount > 0
-                      ? context.l10n.pausedArchivedCount(inactiveCount)
-                      : context.l10n.appLock,
-                  leadingIcon: inactiveCount > 0
-                      ? Icons.history_rounded
-                      : Icons.lock_outline_rounded,
-                  leadingKey: Key(
-                    inactiveCount > 0
-                        ? 'hub-inactive-habits-action'
-                        : 'hub-app-lock-action',
-                  ),
-                  onOpenLeading: inactiveCount > 0
-                      ? () => _openLifecycle(provider)
-                      : () => _activate(HabitHubDestination.appLock),
-                  onOpenSettings: () => _activate(HabitHubDestination.settings),
-                ),
-              ),
+              Positioned(top: 0, left: 0, right: 0, child: topActions),
               Positioned(
                 top: short ? 58 : 72,
                 left: 20,
                 right: 20,
                 bottom: short ? 226 : 244,
-                child: SingleChildScrollView(
-                  key: const Key('habit-hub-hero-scroll'),
-                  physics: const ClampingScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: (constraints.maxHeight - (short ? 284 : 316))
-                          .clamp(0, double.infinity),
-                    ),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 560),
-                        child: latest == null
-                            ? _EmptyHabitHero(
-                                onCreate: () => _openEditor(context),
-                              )
-                            : _LatestHabitHero(
-                                habit: latest,
-                                status: _statusFor(latest, snapshot),
-                                onOpen: () => _openDetails(
-                                  provider,
-                                  latest,
-                                  snapshot.completed.any(
-                                    (habit) => habit.id == latest.id,
-                                  ),
-                                  date.toString(),
-                                ),
-                                onComplete:
-                                    snapshot.pending.any(
-                                      (habit) => habit.id == latest.id,
-                                    )
-                                    ? () => _complete(provider, latest, date)
-                                    : null,
-                              ),
+                child: KeyedSubtree(
+                  key: const Key('habit-hub-primary-pane'),
+                  child: SingleChildScrollView(
+                    key: const Key('habit-hub-hero-scroll'),
+                    physics: const ClampingScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: (constraints.maxHeight - (short ? 284 : 316))
+                            .clamp(0, double.infinity),
+                      ),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 560),
+                          child: hero,
+                        ),
                       ),
                     ),
                   ),
@@ -151,7 +208,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 left: 0,
                 right: 0,
                 bottom: constraints.maxWidth <= 340 ? -24 : -12,
-                child: HabitNavigationWheel(onOpen: _activate),
+                child: KeyedSubtree(
+                  key: const Key('habit-hub-secondary-pane'),
+                  child: wheel,
+                ),
               ),
             ],
           );
@@ -220,11 +280,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openEditor(BuildContext context, [Habit? habit]) {
-    showModalBottomSheet<void>(
+    showHabiterAdaptivePane<void>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
+      frameSheet: false,
       builder: (_) => AddHabitSheet(habit: habit),
     );
   }
@@ -453,8 +511,9 @@ class _LatestHabitHero extends StatelessWidget {
           button: true,
           label: context.l10n.openHabit(habit.name),
           onTap: onOpen,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
+          child: InkWell(
+            key: const Key('latest-habit-open'),
+            borderRadius: BorderRadius.circular(HabiterRadius.card),
             excludeFromSemantics: true,
             onTap: onOpen,
             child: Column(

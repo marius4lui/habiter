@@ -68,7 +68,7 @@ Within the application, Dart declarations remain visible only where cross-file i
 
 ## Design system
 
-The canonical mobile primitives live in `core/design_system/`: semantic colors, Material 3 themes, spacing and breakpoints, shared components, motion, and haptics. User-facing text belongs in both ARB localization files.
+The canonical presentation primitives live in `core/design_system/`: semantic colors, Material 3 themes, spacing, the [responsive layout contract](/dev/responsive-layout), shared components, motion, and haptics. User-facing text belongs in both ARB localization files.
 
 ## Quality gates
 

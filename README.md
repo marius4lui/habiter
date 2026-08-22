@@ -178,11 +178,11 @@ A concise view of the released baseline and upcoming product milestones.
 
 - Optimize Habiter for desktop, tablets and compact touch displays through one responsive layout system.
 
-### Upcoming
-
-**v1.11.0 — Pro-Widget Settings (Stable)**
+**v1.11.0 — Pro-Widget Settings (Beta)**
 
 - Make every placed Habiter widget configurable with clear basic controls and advanced customization.
+
+### Upcoming
 
 **v1.12.0 — Personal Sync (Beta)**
 

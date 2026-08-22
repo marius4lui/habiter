@@ -42,6 +42,32 @@ void main() {
       expect(content, contains('android.permission.ACCESS_NETWORK_STATE'));
     });
 
+    test('mobile sync handoff has narrow verified and fallback links', () {
+      final manifest = File(
+        'android/app/src/main/AndroidManifest.xml',
+      ).readAsStringSync();
+      final info = File('ios/Runner/Info.plist').readAsStringSync();
+      final entitlements = File(
+        'ios/Runner/Runner.entitlements',
+      ).readAsStringSync();
+      final project = File(
+        'ios/Runner.xcodeproj/project.pbxproj',
+      ).readAsStringSync();
+
+      expect(manifest, contains('android:autoVerify="true"'));
+      expect(manifest, contains('android:host="mobile.habiter.dev"'));
+      expect(manifest, contains('android:path="/auth/callback"'));
+      expect(manifest, contains('android:scheme="dev.habiter.app"'));
+      expect(info, contains('<string>dev.habiter.app</string>'));
+      expect(entitlements, contains('applinks:mobile.habiter.dev'));
+      expect(
+        RegExp(
+          'CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;',
+        ).allMatches(project).length,
+        3,
+      );
+    });
+
     test('direct and store update flavors have isolated installer access', () {
       final buildFile = File('android/app/build.gradle.kts').readAsStringSync();
       final mainManifest = File(

@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "habiter-sync-d1-local",
+  "main": "test/worker.ts",
+  "compatibility_date": "2026-08-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "habiter-sync-local",
+      "database_id": "00000000-0000-0000-0000-000000000060",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

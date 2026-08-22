@@ -46,6 +46,7 @@ class HabitProvider extends ChangeNotifier {
     BackgroundRuntimeGateway? backgroundRuntimeGateway,
     Future<bool> Function()? requestReminderPermission,
     Future<void> Function()? synchronizeWidget,
+    Future<void> Function(Map<String, Object?> values)? captureSyncSettings,
     Future<void> Function({
       required Iterable<Habit> habits,
       required Iterable<HabitEntry> entries,
@@ -103,6 +104,7 @@ class HabitProvider extends ChangeNotifier {
     _requestReminderPermission =
         requestReminderPermission ?? _requestNativeReminderPermission;
     _synchronizeWidget = synchronizeWidget;
+    _captureSyncSettings = captureSyncSettings;
     _reconcileRuntime = reconcileRuntime;
     _delay = delay ?? Future<void>.delayed;
     _habitsController.addListener(notifyListeners);
@@ -121,6 +123,7 @@ class HabitProvider extends ChangeNotifier {
   late final Future<bool> Function() _requestReminderPermission;
   late final Future<void> Function(Duration duration) _delay;
   Future<void> Function()? _synchronizeWidget;
+  Future<void> Function(Map<String, Object?> values)? _captureSyncSettings;
   Future<void> Function({
     required Iterable<Habit> habits,
     required Iterable<HabitEntry> entries,
@@ -480,6 +483,14 @@ class HabitProvider extends ChangeNotifier {
     final oldPrefs = preferences;
     preferences = prefs;
     await StorageService.saveUserPreferences(prefs);
+    await _captureSyncSettings?.call(<String, Object?>{
+      'appearance.theme': prefs.theme.name,
+      'appearance.language': prefs.language,
+      'coaching.showRecoverySupport': prefs.showRecoverySupport,
+      'reminders.enabled': prefs.notifications,
+      'reminders.dailyOverview.enabled': prefs.notifications,
+      'reminders.dailyOverview.time': prefs.reminderTime,
+    });
 
     if (prefs.notifications != oldPrefs.notifications ||
         prefs.reminderTime != oldPrefs.reminderTime) {
@@ -567,6 +578,23 @@ class HabitProvider extends ChangeNotifier {
 
   Future<void> updateReminderPreferences(ReminderPreferences value) async {
     await _reminders.updatePreferences(value);
+    await _captureSyncSettings?.call(<String, Object?>{
+      'reminders.enabled': value.enabled,
+      'reminders.activeDayStart': value.activeDayStart.toString(),
+      'reminders.activeDayEnd': value.activeDayEnd.toString(),
+      'reminders.globalDailyLimit': value.globalDailyLimit,
+      'reminders.globalMinimumSpacingMinutes':
+          value.globalMinimumSpacing.inMinutes,
+      'reminders.quietHours': value.quietHours
+          .map((range) => range.toMap())
+          .toList(growable: false),
+      'reminders.calibrationEnabled': value.calibrationEnabled,
+      'reminders.ongoingLearningEnabled': value.ongoingLearningEnabled,
+      'reminders.showLearningExplanations': value.showLearningExplanations,
+      'reminders.defaultSnoozeMinutes': value.defaultSnooze.inMinutes,
+      'reminders.dailyOverview.enabled': value.dailyOverview.enabled,
+      'reminders.dailyOverview.time': value.dailyOverview.time.toString(),
+    });
     notifyListeners();
   }
 

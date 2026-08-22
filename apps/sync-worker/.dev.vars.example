@@ -1,0 +1,3 @@
+# Generate real local-only values with: pnpm dev:prepare
+HABITER_SYNC_INSTANCE_KEY=base64url-32-byte-key
+HABITER_SYNC_SETUP_TOKEN=base64url-one-time-token

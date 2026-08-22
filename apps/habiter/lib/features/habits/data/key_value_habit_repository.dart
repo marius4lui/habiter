@@ -7,13 +7,19 @@ import '../../../models/habit.dart';
 import '../application/habit_repository.dart';
 
 final class KeyValueHabitRepository implements HabitRepository {
-  KeyValueHabitRepository(this._store);
+  KeyValueHabitRepository(
+    this._store, {
+    Set<String> transactionalSidecarKeys = const <String>{},
+  }) : _transactionalSidecarKeys = Set<String>.unmodifiable(
+         transactionalSidecarKeys,
+       );
 
   static const habitsKey = 'habiter_habits';
   static const entriesKey = 'habiter_habit_entries';
   static const revisionKey = 'habiter_habit_state_revision';
 
   final KeyValueStore _store;
+  final Set<String> _transactionalSidecarKeys;
   Future<void> _queue = Future<void>.value();
 
   @override
@@ -34,11 +40,16 @@ final class KeyValueHabitRepository implements HabitRepository {
       final oldHabits = await _store.read(habitsKey);
       final oldEntries = await _store.read(entriesKey);
       final oldRevision = await _store.read(revisionKey);
+      final oldSidecar = <String, Object?>{
+        for (final key in _transactionalSidecarKeys)
+          key: await _store.read(key),
+      };
       try {
         final snapshot = _decode(oldHabits, oldEntries, oldRevision);
         final draft = HabitRepositoryDraft(
           habits: snapshot.habits,
           entries: snapshot.entries,
+          sidecar: oldSidecar,
         );
         await mutation(draft);
         await _store.write(
@@ -50,10 +61,21 @@ final class KeyValueHabitRepository implements HabitRepository {
           jsonEncode(draft.entries.map((entry) => entry.toMap()).toList()),
         );
         await _store.write(revisionKey, snapshot.revision + 1);
+        for (final key in _transactionalSidecarKeys) {
+          final value = draft.sidecar[key];
+          if (value == null) {
+            await _store.remove(key);
+          } else {
+            await _store.write(key, value);
+          }
+        }
       } catch (error) {
         await _restore(habitsKey, oldHabits);
         await _restore(entriesKey, oldEntries);
         await _restore(revisionKey, oldRevision);
+        for (final entry in oldSidecar.entries) {
+          await _restore(entry.key, entry.value);
+        }
         if (error is HabitRepositoryException) rethrow;
         throw HabitRepositoryException(
           'The habit transaction failed and was rolled back.',
@@ -138,9 +160,10 @@ final class KeyValueHabitRepository implements HabitRepository {
       final draft = HabitRepositoryDraft(
         habits: snapshot.habits,
         entries: snapshot.entries,
+        sidecar: envelope.data,
       );
       await mutation(draft);
-      final data = Map<String, Object?>.from(envelope.data)
+      final data = Map<String, Object?>.from(draft.sidecar)
         ..[habitsKey] = _mergeHabits(envelope.data[habitsKey], draft.habits)
         ..[entriesKey] = _mergeEntries(envelope.data[entriesKey], draft.entries)
         ..[revisionKey] = snapshot.revision + 1;

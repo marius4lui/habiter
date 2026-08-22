@@ -1,0 +1,51 @@
+name: habiter-personal-sync-beta
+
+services:
+  sync:
+    image: habiter-personal-sync:1.12.0-beta
+    build:
+      context: ../..
+      dockerfile: deploy/personal-sync/Dockerfile
+    init: true
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m,mode=1777
+    ports:
+      - "${HABITER_SYNC_BIND_ADDRESS:-127.0.0.1}:${HABITER_SYNC_HOST_PORT:-8787}:8787"
+    environment:
+      HABITER_SYNC_BASE_URL: "${HABITER_SYNC_BASE_URL:?Set the public HTTPS URL}"
+      HABITER_SYNC_REDIRECT_URIS: "${HABITER_SYNC_REDIRECT_URIS:?Set exact redirect URI allowlist}"
+      HABITER_SYNC_CORS_ORIGINS: "${HABITER_SYNC_CORS_ORIGINS:-}"
+      HABITER_SYNC_INSTANCE_NAME: "${HABITER_SYNC_INSTANCE_NAME:-Habiter Personal Sync Beta}"
+      HABITER_SYNC_AUDIENCE: habiter-mobile
+      HABITER_SYNC_HOST: 0.0.0.0
+      HABITER_SYNC_PORT: "8787"
+    volumes:
+      - sync-data:/var/lib/habiter-sync
+      - sync-backups:/var/lib/habiter-sync-backups
+    healthcheck:
+      test: ["CMD", "node", "/app/service.mjs", "health", "http://127.0.0.1:8787/v1/health"]
+      interval: 15s
+      timeout: 6s
+      retries: 5
+      start_period: 15s
+    stop_grace_period: 30s
+    pids_limit: 100
+    mem_limit: 512m
+    cpus: 1.0
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  sync-data:
+    name: habiter-personal-sync-data
+  sync-backups:
+    name: habiter-personal-sync-backups

@@ -50,6 +50,15 @@ jobs:
       - run: pnpm release:validate
       - run: pnpm release:test
       - run: pnpm sync:check
+      - run: pnpm sync:auth:check
+      - run: pnpm sync:http:check
+      - run: pnpm sync:service:check
+      - run: pnpm sync:worker:check
+      - run: pnpm mobile:handoff:check
+      - run: pnpm sync:d1:check
+      - run: pnpm sync:docker:check
+      - run: pnpm sync:sqlite:check
+      - run: pnpm sync:e2e:check
       - run: pnpm website:check
       - run: pnpm --filter @habiter/release-api types
       - run: pnpm --filter @habiter/release-api check

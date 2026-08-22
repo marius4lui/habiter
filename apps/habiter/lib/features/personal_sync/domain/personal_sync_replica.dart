@@ -191,6 +191,27 @@ final class PersonalSyncReplica {
         cursor: cursor,
       );
 
+  factory PersonalSyncReplica.fromSnapshot({
+    required Iterable<PersonalSyncEntityState> entities,
+    required PersonalSyncServerCursor cursor,
+  }) {
+    final indexed = <String, PersonalSyncEntityState>{};
+    for (final entity in entities) {
+      if (indexed.containsKey(entity.entityId.value)) {
+        throw const PersonalSyncContractException(
+          'invalid_snapshot',
+          'A snapshot cannot contain duplicate entities.',
+        );
+      }
+      indexed[entity.entityId.value] = entity;
+    }
+    return PersonalSyncReplica._(
+      entities: indexed,
+      processedOperations: <String, String>{},
+      cursor: cursor,
+    );
+  }
+
   factory PersonalSyncReplica.fromMap(Map<String, Object?> map) {
     final schemaVersion = map['schemaVersion'];
     final entitiesValue = map['entities'];

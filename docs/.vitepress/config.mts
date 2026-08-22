@@ -39,6 +39,8 @@ export default defineConfig({
             { text: 'Arch Linux', link: '/install/linux/arch' },
             { text: 'openSUSE', link: '/install/linux/opensuse' },
             { text: 'Generic Linux', link: '/install/linux/generic' },
+            { text: 'Personal Sync Docker Beta', link: '/install/personal-sync-docker' },
+            { text: 'Personal Sync Worker Beta', link: '/install/personal-sync-worker' },
             { text: 'Windows', link: '/install/windows' },
             { text: 'macOS', link: '/install/macos' }
           ]
@@ -65,7 +67,8 @@ export default defineConfig({
             { text: 'Release API', link: '/api/release-api' },
             { text: 'Manifest and Signatures', link: '/api/release-manifest' },
             { text: 'Classly Compatibility', link: '/api/classly-compatible' },
-            { text: 'Backup JSON Format', link: '/api/backup-format' }
+            { text: 'Backup JSON Format', link: '/api/backup-format' },
+            { text: 'Personal Sync HTTP API', link: '/api/personal-sync-http' }
           ]
         }
       ],
@@ -86,6 +89,11 @@ export default defineConfig({
             { text: 'Services', link: '/dev/services' },
             { text: 'Personal Sync Data Contract', link: '/dev/personal-sync-data-contract' },
             { text: 'Personal Sync Convergence', link: '/dev/personal-sync-convergence' },
+            { text: 'Personal Sync SQLite Storage', link: '/dev/personal-sync-sqlite' },
+            { text: 'Personal Sync D1 Storage', link: '/dev/personal-sync-d1' },
+            { text: 'Personal Sync Authentication', link: '/dev/personal-sync-auth' },
+            { text: 'Mobile Sync Handoff', link: '/dev/mobile-sync-handoff' },
+            { text: 'Personal Sync E2E Evidence', link: '/dev/personal-sync-e2e' },
             { text: 'Platform Channels', link: '/dev/platform-contracts' },
             { text: 'Testing and Quality', link: '/dev/testing' },
             { text: 'Android Widget QA', link: '/dev/widget-qa' },

@@ -1,8 +1,15 @@
 packages:
   - apps/website
   - apps/release-api
+  - apps/sync-worker
+  - apps/mobile-handoff
   - packages/release-core
+  - packages/sync-auth
+  - packages/sync-http
+  - packages/sync-service
   - packages/sync-core
+  - packages/sync-d1
+  - packages/sync-sqlite
 
 allowBuilds:
   esbuild: true

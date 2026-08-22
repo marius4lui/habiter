@@ -8,6 +8,12 @@ import '../core/persistence/shared_preferences_key_value_store.dart';
 import '../core/time/clock.dart';
 import '../features/habits/application/habit_repository.dart';
 import '../features/habits/data/key_value_habit_repository.dart';
+import '../features/personal_sync/application/personal_sync_connection_controller.dart';
+import '../features/personal_sync/application/personal_sync_engine.dart';
+import '../features/personal_sync/infrastructure/personal_sync_api_client.dart';
+import '../features/personal_sync/infrastructure/personal_sync_handoff.dart';
+import '../features/personal_sync/infrastructure/personal_sync_secure_vault.dart';
+import '../features/personal_sync/infrastructure/syncing_habit_repository.dart';
 import '../features/updates/application/update_controller.dart';
 import '../features/updates/data/signed_manifest_client.dart';
 import '../features/updates/data/update_local_repository.dart';
@@ -26,8 +32,25 @@ final class AppDependencies {
     required this.verifyRepository,
     required this.initializeOptionalServices,
     UpdateController? updateController,
+    PersonalSyncConnectionController? personalSyncConnectionController,
+    PersonalSyncEngine? personalSyncEngine,
     HabitRepository? habitRepository,
   }) : habitRepository = habitRepository ?? KeyValueHabitRepository(store),
+       personalSyncEngine =
+           personalSyncEngine ??
+           PersonalSyncEngine(
+             store: store,
+             remoteFactory: (origin) => HttpPersonalSyncRemote(origin),
+             clock: clock,
+           ),
+       personalSyncConnectionController =
+           personalSyncConnectionController ??
+           PersonalSyncConnectionController(
+             vault: const FlutterPersonalSyncSecureVault(),
+             remoteFactory: (origin) => HttpPersonalSyncRemote(origin),
+             handoff: PlatformPersonalSyncHandoff(),
+             clock: clock,
+           ),
        updateController =
            updateController ??
            UpdateController(
@@ -41,7 +64,34 @@ final class AppDependencies {
   factory AppDependencies.production() {
     final store = SharedPreferencesKeyValueStore();
     const clock = SystemClock();
-    final repository = KeyValueHabitRepository(store);
+    final engine = PersonalSyncEngine(
+      store: store,
+      remoteFactory: (origin) => HttpPersonalSyncRemote(origin),
+      clock: clock,
+    );
+    final repository = SyncingHabitRepository(
+      delegate: KeyValueHabitRepository(
+        store,
+        transactionalSidecarKeys: const <String>{
+          PersonalSyncEngine.storageKey,
+          PersonalSyncEngine.recoveryKey,
+        },
+      ),
+      recorder: engine,
+    );
+    engine.attachRepository(repository);
+    late final PersonalSyncConnectionController personalSyncConnection;
+    personalSyncConnection = PersonalSyncConnectionController(
+      vault: const FlutterPersonalSyncSecureVault(),
+      remoteFactory: (origin) => HttpPersonalSyncRemote(origin),
+      handoff: PlatformPersonalSyncHandoff(),
+      clock: clock,
+      syncTrigger: engine.synchronize,
+      onConnectionChanged: (connection) => engine.configureConnection(
+        connection,
+        requestSync: personalSyncConnection.syncNow,
+      ),
+    );
     final updates = UpdateController(
       repository: UpdateLocalRepository(store),
       client: SignedManifestClient(
@@ -57,6 +107,8 @@ final class AppDependencies {
       store: store,
       clock: clock,
       habitRepository: repository,
+      personalSyncEngine: engine,
+      personalSyncConnectionController: personalSyncConnection,
       updateController: updates,
       migrateStorage: () async {
         await migratorFor(store, clock).migrate();
@@ -76,6 +128,8 @@ final class AppDependencies {
   final HapticGateway haptics;
   final HabitRepository habitRepository;
   final UpdateController updateController;
+  final PersonalSyncConnectionController personalSyncConnectionController;
+  final PersonalSyncEngine personalSyncEngine;
   final StartupTask migrateStorage;
   final StartupTask verifyRepository;
   final StartupTask initializeOptionalServices;

@@ -1,0 +1,40 @@
+{
+  "name": "@habiter/sync-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:test-worker": "esbuild src/index.ts --bundle --format=esm --platform=browser --target=es2022 --outfile=.tmp/worker.mjs",
+    "check:migrations": "node scripts/check-migrations.mjs && node scripts/check-local-runtime.mjs && node scripts/check-backup-runtime.mjs",
+    "check:operator": "node scripts/validate-operator.mjs",
+    "check": "tsc --noEmit && pnpm check:migrations && pnpm check:operator && pnpm build:test-worker && vitest run && pnpm types:check && pnpm deploy:dry",
+    "types": "wrangler types worker-configuration.d.ts",
+    "types:check": "wrangler types worker-configuration.d.ts --check",
+    "deploy:dry": "wrangler deploy --dry-run",
+    "dev:prepare": "node scripts/prepare-local.mjs",
+    "dev:migrate": "wrangler d1 migrations apply DB --local",
+    "migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "dev": "wrangler dev",
+    "setup": "node scripts/setup.mjs",
+    "secret:instance": "node scripts/configure-instance-key.mjs",
+    "backup:local": "node scripts/export.mjs --local",
+    "backup:remote": "node scripts/export.mjs --remote",
+    "restore:local": "wrangler d1 execute DB --local --file backups/local.sql",
+    "restore:remote": "wrangler d1 execute DB --remote --file backups/remote.sql",
+    "bookmark:remote": "wrangler d1 time-travel info DB --json",
+    "rollback:remote": "wrangler d1 time-travel restore DB"
+  },
+  "dependencies": {
+    "@habiter/sync-auth": "workspace:*",
+    "@habiter/sync-d1": "workspace:*",
+    "@habiter/sync-http": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.1",
+    "miniflare": "3.20250718.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10",
+    "wrangler": "4.123.0"
+  }
+}

@@ -1711,6 +1711,165 @@ class AppLocalizationsEn extends AppLocalizations {
       'Updates are not available on this platform yet.';
 
   @override
+  String get personalSync => 'Sync';
+
+  @override
+  String get personalSyncBeta => 'Personal Sync Beta';
+
+  @override
+  String get personalSyncSetupBody =>
+      'Connect your own Habiter Sync instance. Sign-in opens securely in your external browser; Habiter never asks for your password.';
+
+  @override
+  String get personalSyncSelfHosted =>
+      'Self-hosting means you or someone you trust operates the server and is responsible for its availability, backups, and updates.';
+
+  @override
+  String get personalSyncServer => 'Server address';
+
+  @override
+  String get personalSyncServerHint => 'https://sync.example.com';
+
+  @override
+  String get personalSyncHttpsOnly =>
+      'Only HTTPS is allowed. HTTP is permitted for localhost and loopback addresses during local development.';
+
+  @override
+  String get personalSyncConnect => 'Connect in browser';
+
+  @override
+  String get personalSyncConnecting => 'Preparing connection …';
+
+  @override
+  String get personalSyncConnected => 'Connected';
+
+  @override
+  String personalSyncLastSuccess(String value) {
+    return 'Last successful contact: $value';
+  }
+
+  @override
+  String get personalSyncSyncNow => 'Sync now';
+
+  @override
+  String get personalSyncReconnect => 'Reconnect';
+
+  @override
+  String get personalSyncDisconnect => 'Disconnect';
+
+  @override
+  String get personalSyncRevokeAll => 'Sign out all devices';
+
+  @override
+  String get personalSyncDisconnectBody =>
+      'Only credentials and connection metadata are removed. Local and remote habits remain intact.';
+
+  @override
+  String get personalSyncRevokeBody =>
+      'The server signs out every device. Local and remote habits are not deleted.';
+
+  @override
+  String get personalSyncTroubleshooting => 'Troubleshooting';
+
+  @override
+  String get personalSyncTroubleshootingBody =>
+      'Check the server address and internet connection. Reconnect if authorization expired. Canceling the browser flow does not change existing data.';
+
+  @override
+  String get personalSyncInvalidOrigin =>
+      'Enter a valid HTTPS server address without a path.';
+
+  @override
+  String get personalSyncUnavailable =>
+      'The Sync instance is unavailable or has not been set up yet.';
+
+  @override
+  String get personalSyncIncompatible =>
+      'This Sync instance uses an incompatible protocol version.';
+
+  @override
+  String get personalSyncCallbackRejected =>
+      'The browser callback was rejected for security. Start the connection again.';
+
+  @override
+  String get personalSyncCallbackExpired =>
+      'Authorization expired. Start it again.';
+
+  @override
+  String get personalSyncBrowserCanceled =>
+      'Authorization was canceled or the browser could not be opened.';
+
+  @override
+  String get personalSyncAuthFailed =>
+      'Secure authorization could not be completed.';
+
+  @override
+  String get personalSyncStorageFailed =>
+      'Credentials could not be stored securely.';
+
+  @override
+  String get personalSyncAuthRequired =>
+      'Authorization expired. Please reconnect.';
+
+  @override
+  String get personalSyncNetworkError => 'The server is currently unavailable.';
+
+  @override
+  String get personalSyncPending =>
+      'Authorization is waiting for the browser callback.';
+
+  @override
+  String get personalSyncCancelPending => 'Cancel authorization';
+
+  @override
+  String get personalSyncStatusIdle => 'Ready';
+
+  @override
+  String get personalSyncStatusSyncing => 'Syncing …';
+
+  @override
+  String get personalSyncStatusOffline =>
+      'Offline — changes remain safely queued';
+
+  @override
+  String get personalSyncStatusRetrying =>
+      'Connection interrupted — retry scheduled';
+
+  @override
+  String get personalSyncStatusAuth => 'Authorization required';
+
+  @override
+  String get personalSyncStatusProtocol => 'The server or app needs an update';
+
+  @override
+  String get personalSyncStatusAction =>
+      'Action is required for safe reconciliation';
+
+  @override
+  String get personalSyncReconciliationTitle => 'Review initial reconciliation';
+
+  @override
+  String personalSyncReconciliationBody(int localCount, int remoteCount) {
+    return 'This device contains $localCount items and the server contains $remoteCount. Neither side will be replaced silently. Habiter will create a verified local recovery copy, then merge both histories deterministically.';
+  }
+
+  @override
+  String get personalSyncReconciliationConfirm =>
+      'Create recovery copy and merge';
+
+  @override
+  String personalSyncPendingOperations(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count queued changes',
+      one: '1 queued change',
+      zero: 'No queued changes',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get widgetInstancesTitle => 'Widgets';
 
   @override

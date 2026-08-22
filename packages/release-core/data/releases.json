@@ -2,6 +2,79 @@
   "schemaVersion": 1,
   "releases": [
     {
+      "version": "1.11.0",
+      "buildNumber": 11100,
+      "channel": "beta",
+      "status": "draft",
+      "publishedAt": null,
+      "minimumSupportedVersion": "1.5.0",
+      "mandatoryAfter": null,
+      "notes": {
+        "added": [
+          "Jedes platzierte Habiter-Widget kann jetzt unabhängig mit klaren Basis-Einstellungen angepasst werden.",
+          "Eine optionale erweiterte Konfiguration bietet zusätzliche Darstellungsmöglichkeiten mit Live-Vorschau."
+        ],
+        "changed": [
+          "Die Widget-Verwaltung öffnet gezielt die gewählte Instanz und bewahrt deren Konfiguration beim Kopieren und Duplizieren.",
+          "Android-Widget-Aktionen verwenden eine versionierte, pro Instanz getrennte Konfiguration."
+        ],
+        "fixed": [
+          "Änderungen an einem Widget überschreiben nicht mehr die Darstellung anderer platzierter Widgets."
+        ],
+        "security": []
+      },
+      "artifacts": [
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "apk",
+          "fileName": "habiter-1.11.0-android-universal.apk",
+          "signed": true,
+          "distribution": "direct"
+        },
+        {
+          "platform": "android",
+          "architecture": "universal",
+          "format": "aab",
+          "fileName": "habiter-1.11.0-android-playstore.aab",
+          "signed": true,
+          "distribution": "play"
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "tar.gz",
+          "primary": false,
+          "fileName": "habiter-1.11.0-linux-x64.tar.gz",
+          "signed": false
+        },
+        {
+          "platform": "linux",
+          "architecture": "x64",
+          "format": "appimage",
+          "primary": true,
+          "fileName": "Habiter-1.11.0-x86_64.AppImage",
+          "signed": false
+        },
+        {
+          "platform": "windows",
+          "architecture": "x64",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.11.0-windows-x64.zip",
+          "signed": false
+        },
+        {
+          "platform": "macos",
+          "architecture": "universal",
+          "format": "zip",
+          "primary": true,
+          "fileName": "habiter-1.11.0-macos-universal.zip",
+          "signed": false
+        }
+      ]
+    },
+    {
       "version": "1.10.0",
       "buildNumber": 11000,
       "channel": "beta",

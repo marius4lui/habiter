@@ -318,15 +318,15 @@ Improve every core flow across form factors without duplicating product logic.
 
 ---
 
-## Planned releases
-
 ### v1.11.0 — Pro-Widget Settings
 
-**Channel:** Stable
+**Channel:** Beta
 
-**Target:** After v1.10.0 stabilization
+Released to the beta channel with independent Basic and Advanced settings for each placed widget.
 
 **Issue:** #20
+
+- Make every placed Habiter widget configurable with clear basic controls and advanced customization.
 
 Scope:
 
@@ -335,6 +335,8 @@ Scope:
 - Add optional advanced customization without compromising the default experience.
 
 ---
+
+## Planned releases
 
 ### v1.12.0 — Personal Sync
 

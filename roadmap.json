@@ -280,9 +280,9 @@
     {
       "version": "1.11.0",
       "title": "Pro-Widget Settings",
-      "status": "planned",
-      "channel": "stable",
-      "target": "After v1.10.0 stabilization",
+      "status": "released",
+      "channel": "beta",
+      "statusText": "Released to the beta channel with independent Basic and Advanced settings for each placed widget.",
       "issues": [20],
       "summary": ["Make every placed Habiter widget configurable with clear basic controls and advanced customization."],
       "scope": [

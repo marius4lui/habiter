@@ -85,6 +85,7 @@ export default defineConfig({
             { text: 'Responsive Layout', link: '/dev/responsive-layout' },
             { text: 'Services', link: '/dev/services' },
             { text: 'Personal Sync Data Contract', link: '/dev/personal-sync-data-contract' },
+            { text: 'Personal Sync Convergence', link: '/dev/personal-sync-convergence' },
             { text: 'Platform Channels', link: '/dev/platform-contracts' },
             { text: 'Testing and Quality', link: '/dev/testing' },
             { text: 'Android Widget QA', link: '/dev/widget-qa' },

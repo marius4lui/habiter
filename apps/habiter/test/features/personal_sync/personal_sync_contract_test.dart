@@ -247,6 +247,26 @@ void main() {
         ),
         _throwsCode('non_json_value'),
       );
+      expect(
+        () => PersonalSyncEntityDocument(
+          entityId: PersonalSyncEntityId.habit('habit-1'),
+          deleted: false,
+          payload: <String, Object?>{
+            ..._habitPayload(),
+            'futureScore': double.nan,
+          },
+        ),
+        _throwsCode('non_json_value'),
+      );
+      expect(
+        () => PersonalSyncEntityDocument.fromMap(<String, Object?>{
+          'schemaVersion': 1.5,
+          'entityId': 'habit/habit-1',
+          'deleted': false,
+          'payload': _habitPayload(),
+        }),
+        _throwsCode('invalid_document'),
+      );
     });
   });
 }

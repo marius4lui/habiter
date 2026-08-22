@@ -2,6 +2,7 @@ packages:
   - apps/website
   - apps/release-api
   - packages/release-core
+  - packages/sync-core
 
 allowBuilds:
   esbuild: true

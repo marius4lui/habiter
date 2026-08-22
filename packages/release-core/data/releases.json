@@ -5,8 +5,8 @@
       "version": "1.9.0",
       "buildNumber": 10900,
       "channel": "beta",
-      "status": "draft",
-      "publishedAt": null,
+      "status": "published",
+      "publishedAt": "2026-08-22T11:57:23+02:00",
       "minimumSupportedVersion": "1.5.0",
       "mandatoryAfter": null,
       "notes": {
@@ -32,7 +32,10 @@
           "format": "apk",
           "fileName": "habiter-1.9.0-android-universal.apk",
           "signed": true,
-          "distribution": "direct"
+          "distribution": "direct",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.9.0/habiter-1.9.0-android-universal.apk",
+          "sha256": "3671e48e03052d88f1da1c888f88d7b3a03ff3a0b690d0ca19b3274a29a4410e",
+          "size": 64852404
         },
         {
           "platform": "android",
@@ -40,7 +43,10 @@
           "format": "aab",
           "fileName": "habiter-1.9.0-android-playstore.aab",
           "signed": true,
-          "distribution": "play"
+          "distribution": "play",
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.9.0/habiter-1.9.0-android-playstore.aab",
+          "sha256": "87b266d3ecd70ff21e94691c55b299a7fa4ad65da46404d0faa8dc376839edc3",
+          "size": 63193388
         },
         {
           "platform": "linux",
@@ -48,7 +54,10 @@
           "format": "tar.gz",
           "primary": false,
           "fileName": "habiter-1.9.0-linux-x64.tar.gz",
-          "signed": false
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.9.0/habiter-1.9.0-linux-x64.tar.gz",
+          "sha256": "24cb089836903e56e75108c486a0ad7a8d7de4085ce06d7bf24ef03fa1dbce92",
+          "size": 12091303
         },
         {
           "platform": "linux",
@@ -56,7 +65,10 @@
           "format": "appimage",
           "primary": true,
           "fileName": "Habiter-1.9.0-x86_64.AppImage",
-          "signed": false
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.9.0/Habiter-1.9.0-x86_64.AppImage",
+          "sha256": "6c7f649495c249d29240991b1aa8f2181ab08bd2b2fdd435962e663806d395b3",
+          "size": 11954680
         },
         {
           "platform": "windows",
@@ -64,7 +76,10 @@
           "format": "zip",
           "primary": true,
           "fileName": "habiter-1.9.0-windows-x64.zip",
-          "signed": false
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.9.0/habiter-1.9.0-windows-x64.zip",
+          "sha256": "e0bf3b40b32079037e7239f2c8ef92814a00e0aba5598400e7dbb43e54a50a4e",
+          "size": 14813954
         },
         {
           "platform": "macos",
@@ -72,7 +87,10 @@
           "format": "zip",
           "primary": true,
           "fileName": "habiter-1.9.0-macos-universal.zip",
-          "signed": false
+          "signed": false,
+          "url": "https://github.com/marius4lui/habiter/releases/download/v1.9.0/habiter-1.9.0-macos-universal.zip",
+          "sha256": "a71040929db239cda88993dbc5a3838f72f27ce088b36864749409e3532dc5d2",
+          "size": 21412190
         }
       ]
     },

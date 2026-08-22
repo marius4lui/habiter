@@ -1,0 +1,62 @@
+# documentation: https://github.com/marius4lui/habiter/blob/main/docs/install/personal-sync-docker.md
+# slogan: Private, single-account synchronization for Habiter.
+# category: Productivity
+# tags: habiter,sync,backup,sqlite
+# logo: svgs/habiter.svg
+# port: 8787
+
+# Coolify Docker Compose Empty / Git Compose template.
+#
+# For a Git Compose deployment, select this file and keep the repository root as
+# the build context.  For Docker Compose Empty, paste this file and replace the
+# build block with a published, immutable image for the same release.
+services:
+  sync:
+    image: habiter-personal-sync:1.12.0-beta
+    build:
+      context: ../..
+      dockerfile: deploy/personal-sync/Dockerfile
+    init: true
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m,mode=1777
+    environment:
+      # Coolify creates a HTTPS domain and routes it to the internal service port.
+      SERVICE_URL_SYNC_8787: /
+      HABITER_SYNC_BASE_URL: ${SERVICE_URL_SYNC_8787}
+      # Configure this exact, comma-separated browser callback allowlist in Coolify.
+      HABITER_SYNC_REDIRECT_URIS: ${HABITER_SYNC_REDIRECT_URIS:?Set the exact redirect URI allowlist}
+      HABITER_SYNC_CORS_ORIGINS: ${HABITER_SYNC_CORS_ORIGINS:-}
+      HABITER_SYNC_INSTANCE_NAME: ${HABITER_SYNC_INSTANCE_NAME:-Habiter Personal Sync Beta}
+      HABITER_SYNC_AUDIENCE: habiter-mobile
+      HABITER_SYNC_HOST: 0.0.0.0
+      HABITER_SYNC_PORT: "8787"
+    volumes:
+      - sync-data:/var/lib/habiter-sync
+      - sync-backups:/var/lib/habiter-sync-backups
+    healthcheck:
+      test: ["CMD", "node", "/app/service.mjs", "health", "http://127.0.0.1:8787/v1/health"]
+      interval: 15s
+      timeout: 6s
+      retries: 5
+      start_period: 15s
+    stop_grace_period: 30s
+    pids_limit: 100
+    mem_limit: 512m
+    cpus: 1.0
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  # Keep names implicit: Coolify prefixes managed volumes per Service to avoid
+  # collisions and exposes them under Configuration > Persistent Storages.
+  sync-data:
+  sync-backups:

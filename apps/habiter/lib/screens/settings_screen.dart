@@ -7,6 +7,7 @@ import '../core/design_system/tokens.dart';
 import '../app/navigation/app_route.dart';
 import '../features/reminders/application/reminder_permission_controller.dart';
 import '../features/reminders/infrastructure/local_reminder_permission_gateway.dart';
+import '../features/personal_sync/presentation/personal_sync_settings_card.dart';
 import '../features/widgets/domain/widget_bridge.dart';
 import '../features/widgets/application/widget_sync_controller.dart';
 import '../features/widgets/presentation/widget_promotion_card.dart';
@@ -280,6 +281,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                   ],
+                ),
+                _SettingsSection(
+                  icon: Icons.cloud_sync_outlined,
+                  title: context.l10n.personalSyncBeta,
+                  children: const [PersonalSyncSettingsCard()],
                 ),
                 _SettingsSection(
                   icon: Icons.shield_outlined,

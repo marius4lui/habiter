@@ -1,4 +1,4 @@
-enum AppRoute { today, analytics, rhythm, settings, appLock, updates }
+enum AppRoute { today, analytics, rhythm, sync, settings, appLock, updates }
 
 abstract final class AppRouteCodec {
   static AppRoute decode(String location) {
@@ -6,6 +6,7 @@ abstract final class AppRouteCodec {
     return switch (path) {
       '/analytics' => AppRoute.analytics,
       '/rhythm' => AppRoute.rhythm,
+      '/sync' => AppRoute.sync,
       '/settings' => AppRoute.settings,
       '/app-lock' => AppRoute.appLock,
       '/updates' => AppRoute.updates,
@@ -17,6 +18,7 @@ abstract final class AppRouteCodec {
     AppRoute.today => '/today',
     AppRoute.analytics => '/analytics',
     AppRoute.rhythm => '/rhythm',
+    AppRoute.sync => '/sync',
     AppRoute.settings => '/settings',
     AppRoute.appLock => '/app-lock',
     AppRoute.updates => '/updates',

@@ -27,7 +27,10 @@ class MainActivity: FlutterActivity() {
     private val TIME_ZONE_CHANNEL = "com.habiter.app/timezone"
     private val SETTINGS_CHANNEL = "com.habiter.app/settings"
     private val UPDATE_CHANNEL = "com.habiter.app/updates"
+    private val PERSONAL_SYNC_CHANNEL = "com.habiter.app/personal_sync_handoff"
     private var updateMethodChannel: MethodChannel? = null
+    private var personalSyncMethodChannel: MethodChannel? = null
+    private var pendingPersonalSyncCallback: String? = null
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -35,6 +38,21 @@ class MainActivity: FlutterActivity() {
         val updateManager = UpdateManager(this)
         updateMethodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, UPDATE_CHANNEL).also {
             it.setMethodCallHandler(updateManager::handle)
+        }
+        pendingPersonalSyncCallback = syncCallback(intent?.data)
+        personalSyncMethodChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            PERSONAL_SYNC_CHANNEL,
+        ).also { channel ->
+            channel.setMethodCallHandler { call, result ->
+                if (call.method == "consumeInitialCallback") {
+                    val callback = pendingPersonalSyncCallback
+                    pendingPersonalSyncCallback = null
+                    result.success(callback)
+                } else {
+                    result.notImplemented()
+                }
+            }
         }
         
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
@@ -131,6 +149,25 @@ class MainActivity: FlutterActivity() {
             intent.removeExtra("openUpdateCenter")
             updateMethodChannel?.invokeMethod("openUpdateCenter", null)
         }
+        syncCallback(intent.data)?.let { callback ->
+            intent.data = null
+            if (personalSyncMethodChannel == null) {
+                pendingPersonalSyncCallback = callback
+            } else {
+                personalSyncMethodChannel?.invokeMethod("callback", callback)
+            }
+        }
+    }
+
+    private fun syncCallback(uri: Uri?): String? {
+        if (uri == null) return null
+        val verified = uri.scheme == "https" &&
+            uri.host == "mobile.habiter.dev" &&
+            uri.path == "/auth/callback"
+        val fallback = uri.scheme == "dev.habiter.app" &&
+            uri.host == "auth" &&
+            uri.path == "/callback"
+        return if (verified || fallback) uri.toString() else null
     }
 
     private fun getInstalledNonSystemApps(): List<Map<String, Any?>> {

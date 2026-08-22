@@ -11,10 +11,12 @@ void main() {
     expect(AppRouteCodec.decode('/'), AppRoute.today);
     expect(AppRouteCodec.decode('/analytics?range=week'), AppRoute.analytics);
     expect(AppRouteCodec.decode('/rhythm'), AppRoute.rhythm);
+    expect(AppRouteCodec.decode('/sync'), AppRoute.sync);
     expect(AppRouteCodec.decode('/settings'), AppRoute.settings);
     expect(AppRouteCodec.decode('/unknown'), AppRoute.today);
     expect(AppRouteCodec.encode(AppRoute.appLock), '/app-lock');
     expect(AppRouteCodec.encode(AppRoute.rhythm), '/rhythm');
+    expect(AppRouteCodec.encode(AppRoute.sync), '/sync');
   });
 
   testWidgets('shell stays adaptive from 320px through desktop', (
@@ -129,6 +131,36 @@ void main() {
     expect(find.byType(AppBar), findsNothing);
   });
 
+  testWidgets(
+    'Sync destination appears conditionally without shifting routes',
+    (tester) async {
+      var selected = AppRoute.today;
+      await tester.pumpWidget(
+        _fixture(
+          selected: AppRoute.analytics,
+          onSelected: (route) => selected = route,
+        ),
+      );
+      expect(find.text('Sync'), findsNothing);
+
+      await tester.pumpWidget(
+        _fixture(
+          selected: AppRoute.analytics,
+          personalSyncConnected: true,
+          onSelected: (route) => selected = route,
+        ),
+      );
+      final navigation = tester.widget<NavigationBar>(
+        find.byType(NavigationBar),
+      );
+      expect(navigation.selectedIndex, 1);
+      expect(navigation.destinations, hasLength(4));
+      await tester.tap(find.text('Sync'));
+      await tester.pump();
+      expect(selected, AppRoute.sync);
+    },
+  );
+
   testWidgets('secondary routes pop back to the primary shell', (tester) async {
     final router = AppRouter(
       primaryBuilder: (_, _) => Builder(
@@ -161,17 +193,24 @@ void main() {
 Widget _fixture({
   AppRoute selected = AppRoute.today,
   ValueChanged<AppRoute>? onSelected,
+  bool personalSyncConnected = false,
 }) => MaterialApp(
-  home: _fixtureShell(selected: selected, onSelected: onSelected),
+  home: _fixtureShell(
+    selected: selected,
+    onSelected: onSelected,
+    personalSyncConnected: personalSyncConnected,
+  ),
 );
 
 Widget _fixtureShell({
   AppRoute selected = AppRoute.today,
   ValueChanged<AppRoute>? onSelected,
+  bool personalSyncConnected = false,
 }) => AdaptiveAppShell(
   selected: selected,
   onSelected: onSelected ?? (_) {},
   onOpenSettings: () {},
   onOpenAppLock: () {},
+  personalSyncConnected: personalSyncConnected,
   child: const ColoredBox(color: Colors.white),
 );

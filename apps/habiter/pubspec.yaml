@@ -1,7 +1,7 @@
 name: habiter
 description: Flutter port of the Habiter mobile app (UI/UX parity, extensible for AI features)
 publish_to: 'none'
-version: 1.7.3+10703
+version: 1.7.4+10704
 
 environment:
   sdk: ">=3.10.0 <4.0.0"

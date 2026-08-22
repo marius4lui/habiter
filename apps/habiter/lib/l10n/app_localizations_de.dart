@@ -1751,6 +1751,18 @@ class AppLocalizationsDe extends AppLocalizations {
       'Aktion für den sicheren Abgleich erforderlich';
 
   @override
+  String get personalSyncReconciliationTitle => 'Erste Zusammenführung prüfen';
+
+  @override
+  String personalSyncReconciliationBody(int localCount, int remoteCount) {
+    return 'Dieses Gerät enthält $localCount Elemente und der Server $remoteCount. Keine Seite wird still ersetzt. Habiter erstellt zuerst eine verifizierte lokale Wiederherstellungskopie und führt dann beide Verläufe deterministisch zusammen.';
+  }
+
+  @override
+  String get personalSyncReconciliationConfirm =>
+      'Wiederherstellungskopie erstellen und zusammenführen';
+
+  @override
   String personalSyncPendingOperations(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

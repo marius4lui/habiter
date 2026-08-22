@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:habiter/core/persistence/storage_envelope.dart';
 import 'package:habiter/core/time/clock.dart';
+import 'package:habiter/features/habits/data/key_value_habit_repository.dart';
 import 'package:habiter/features/personal_sync/application/personal_sync_connection_controller.dart';
+import 'package:habiter/features/personal_sync/application/personal_sync_engine.dart';
 import 'package:habiter/features/personal_sync/domain/personal_sync_connection.dart';
+import 'package:habiter/features/personal_sync/domain/personal_sync_contract.dart';
 import 'package:habiter/features/personal_sync/domain/personal_sync_operation.dart';
+import 'package:habiter/features/personal_sync/domain/personal_sync_replica.dart';
 import 'package:habiter/features/personal_sync/infrastructure/personal_sync_api_client.dart';
 import 'package:habiter/features/personal_sync/infrastructure/personal_sync_handoff.dart';
 import 'package:habiter/features/personal_sync/infrastructure/personal_sync_secure_vault.dart';
+import 'package:habiter/features/personal_sync/infrastructure/syncing_habit_repository.dart';
 import 'package:habiter/features/personal_sync/presentation/personal_sync_screen.dart';
 import 'package:habiter/features/personal_sync/presentation/personal_sync_settings_card.dart';
 import 'package:habiter/l10n/app_localizations.dart';
+import 'package:habiter/models/habit.dart';
 import 'package:provider/provider.dart';
+
+import '../../support/fakes/in_memory_key_value_store.dart';
 
 void main() {
   testWidgets('setup is localized and contains only a server URL field', (
@@ -86,6 +95,93 @@ void main() {
     expect(find.byKey(const Key('personal-sync-revoke-all')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('initial merge action is explicit, localized, and accessible', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final now = DateTime.utc(2026, 8, 22, 12);
+    final connection = PersonalSyncConnection(
+      instanceOrigin: 'https://sync.example.com',
+      instanceName: 'Private Sync',
+      deviceId: 'phone-a',
+      accessToken: 'access-secret',
+      accessExpiresAt: now.add(const Duration(hours: 1)),
+      refreshToken: 'refresh-secret',
+      refreshExpiresAt: now.add(const Duration(days: 30)),
+      connectedAt: now,
+      lastSuccessAt: now,
+    );
+    final controller = _controller(connection: connection);
+    await controller.initialize();
+    final store = InMemoryKeyValueStore();
+    await store.write(
+      StorageEnvelope.storageKey,
+      StorageEnvelope(
+        schemaVersion: 1,
+        migratedAt: now,
+        data: const <String, Object?>{},
+      ).toJson(),
+    );
+    final remoteOperation = _remoteHabitOperation();
+    final remoteState = PersonalSyncReplica.empty()
+        .apply(remoteOperation)
+        .replica;
+    final remote = _Remote(
+      snapshotValue: PersonalSyncSnapshot(
+        cursor: PersonalSyncServerCursor(generation: 'epoch-a', offset: 1),
+        entities: remoteState.entities.values.toList(),
+      ),
+    );
+    final engine = PersonalSyncEngine(
+      store: store,
+      remoteFactory: (_) => remote,
+      clock: _Clock(),
+    );
+    final repository = SyncingHabitRepository(
+      delegate: KeyValueHabitRepository(
+        store,
+        transactionalSidecarKeys: const <String>{
+          PersonalSyncEngine.storageKey,
+          PersonalSyncEngine.recoveryKey,
+        },
+      ),
+      recorder: engine,
+    );
+    engine.attachRepository(repository);
+    await engine.initialize();
+    await repository.transact((draft) => draft.upsertHabit(_habit('Local')));
+    engine.configureConnection(connection);
+    await expectLater(engine.synchronize(connection), throwsException);
+    addTearDown(controller.dispose);
+    addTearDown(engine.dispose);
+
+    await tester.pumpWidget(
+      _fixture(
+        controller,
+        engine: engine,
+        locale: const Locale('de'),
+        textScaler: const TextScaler.linear(2),
+        child: const Scaffold(body: PersonalSyncScreen()),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const Key('personal-sync-reconciliation')),
+      findsOneWidget,
+    );
+    expect(find.text('Erste Zusammenführung prüfen'), findsOneWidget);
+    expect(
+      find.byKey(const Key('personal-sync-confirm-reconciliation')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('access-secret'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Widget _fixture(
@@ -93,8 +189,13 @@ Widget _fixture(
   required Locale locale,
   required Widget child,
   TextScaler textScaler = TextScaler.noScaling,
-}) => ChangeNotifierProvider.value(
-  value: controller,
+  PersonalSyncEngine? engine,
+}) => MultiProvider(
+  providers: [
+    ChangeNotifierProvider.value(value: controller),
+    if (engine != null)
+      ChangeNotifierProvider<PersonalSyncEngine?>.value(value: engine),
+  ],
   child: MaterialApp(
     locale: locale,
     supportedLocales: AppLocalizations.supportedLocales,
@@ -160,6 +261,15 @@ final class _Clock implements Clock {
 }
 
 final class _Remote implements PersonalSyncRemote {
+  _Remote({PersonalSyncSnapshot? snapshotValue})
+    : snapshotValue =
+          snapshotValue ??
+          PersonalSyncSnapshot(
+            cursor: PersonalSyncServerCursor(generation: 'epoch-a', offset: 0),
+            entities: const <PersonalSyncEntityState>[],
+          );
+
+  final PersonalSyncSnapshot snapshotValue;
   @override
   void close() {}
   @override
@@ -188,5 +298,41 @@ final class _Remote implements PersonalSyncRemote {
     required PersonalSyncServerCursor? cursor,
     required int limit,
     required String accessToken,
-  }) => throw UnimplementedError();
+  }) async => PersonalSyncPullPage(
+    operations: const <PersonalSyncOperation>[],
+    cursor:
+        cursor ?? PersonalSyncServerCursor(generation: 'epoch-a', offset: 0),
+    headOffset: cursor?.offset ?? 0,
+    compactionFloor: 0,
+    requiresSnapshot: false,
+    recoveryReason: 'none',
+  );
+  @override
+  Future<PersonalSyncSnapshot> snapshot(String accessToken) async =>
+      snapshotValue;
 }
+
+Habit _habit(String name) => Habit(
+  id: 'habit-a',
+  name: name,
+  description: null,
+  color: '#6750A4',
+  icon: 'walk',
+  frequency: HabitFrequency.daily,
+  targetCount: 1,
+  category: 'Health',
+  customDays: null,
+  createdAt: DateTime.utc(2026, 8, 22),
+  isActive: true,
+);
+
+PersonalSyncOperation _remoteHabitOperation() => PersonalSyncOperation(
+  kind: PersonalSyncOperationKind.create,
+  revision: PersonalSyncRevision(deviceId: 'remote-phone', sequence: 1),
+  document: PersonalSyncEntityDocument(
+    entityId: PersonalSyncEntityId.habit('habit-a'),
+    deleted: false,
+    payload: Map<String, Object?>.from(_habit('Remote').toMap()),
+  ),
+  changedFields: _habit('Remote').toMap().keys,
+);

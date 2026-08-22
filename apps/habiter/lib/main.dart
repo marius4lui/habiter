@@ -199,7 +199,7 @@ class _HabiterLauncherState extends State<_HabiterLauncher> {
           )..load(),
         ),
         ChangeNotifierProvider(create: (_) => dependencies.updateController),
-        ChangeNotifierProvider(
+        ChangeNotifierProvider<PersonalSyncEngine?>(
           lazy: false,
           create: (_) => dependencies.personalSyncEngine,
         ),
@@ -483,7 +483,7 @@ class _RootShellState extends State<_RootShell> with WidgetsBindingObserver {
       final updates = context.read<UpdateController>();
       if (updates.initialized) unawaited(updates.handleResume());
     }
-    context.read<PersonalSyncEngine>().handleLifecycle(state);
+    context.read<PersonalSyncEngine?>()?.handleLifecycle(state);
   }
 
   void _onNavChange(int index) {

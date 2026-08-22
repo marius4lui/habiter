@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/features/personal_sync/domain/personal_sync_contract.dart';
 import 'package:habiter/features/personal_sync/domain/personal_sync_operation.dart';
+import 'package:habiter/features/personal_sync/domain/personal_sync_replica.dart';
 import 'package:habiter/features/personal_sync/infrastructure/personal_sync_api_client.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -111,6 +112,39 @@ void main() {
         ),
       ),
     );
+    remote.close();
+  });
+
+  test('snapshot validates schema, cursor, and entity state', () async {
+    final operation = _operation();
+    final entity = PersonalSyncReplica.empty()
+        .apply(operation)
+        .replica
+        .entities
+        .values
+        .single;
+    final cursor = PersonalSyncServerCursor(generation: 'epoch-a', offset: 1);
+    final remote = HttpPersonalSyncRemote(
+      Uri.parse('https://sync.example.com'),
+      client: MockClient((request) async {
+        expect(request.url, Uri.parse('https://sync.example.com/v1/snapshot'));
+        expect(request.headers['authorization'], 'Bearer access-secret');
+        return http.Response(
+          jsonEncode(<String, Object?>{
+            'schemaVersion': 1,
+            'cursor': cursor.token,
+            'entities': <Object?>[entity.toMap()],
+          }),
+          200,
+          headers: const <String, String>{'content-type': 'application/json'},
+        );
+      }),
+    );
+
+    final snapshot = await remote.snapshot('access-secret');
+
+    expect(snapshot.cursor, cursor);
+    expect(snapshot.entities.single.entityId.value, 'habit/habit-a');
     remote.close();
   });
 }

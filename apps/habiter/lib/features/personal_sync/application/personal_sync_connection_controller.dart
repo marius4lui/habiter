@@ -304,11 +304,14 @@ final class PersonalSyncConnectionController extends ChangeNotifier {
       notifyListeners();
       return true;
     } on PersonalSyncRemoteException catch (error) {
-      _setProblem(
-        error.code == 'authentication_required'
-            ? PersonalSyncConnectionProblem.authenticationRequired
-            : PersonalSyncConnectionProblem.network,
-      );
+      _setProblem(switch (error.code) {
+        'authentication_required' =>
+          PersonalSyncConnectionProblem.authenticationRequired,
+        'action_required' => PersonalSyncConnectionProblem.actionRequired,
+        'invalid_response' ||
+        'invalid_batch' => PersonalSyncConnectionProblem.incompatible,
+        _ => PersonalSyncConnectionProblem.network,
+      });
       return false;
     } on Object {
       _setProblem(PersonalSyncConnectionProblem.network);

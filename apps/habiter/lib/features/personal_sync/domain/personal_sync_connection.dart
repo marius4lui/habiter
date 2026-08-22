@@ -19,6 +19,7 @@ enum PersonalSyncConnectionProblem {
   authorizationFailed,
   credentialStorageFailed,
   authenticationRequired,
+  actionRequired,
   network,
 }
 

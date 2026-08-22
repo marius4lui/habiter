@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: shellcheck --version
       - run: shellcheck -x -s sh scripts/install/install.sh scripts/install/test/*.sh scripts/release/package-linux-appimage.sh packaging/linux/AppRun
       - run: sh -n scripts/install/*.sh scripts/install/test/*.sh scripts/release/package-linux-appimage.sh packaging/linux/AppRun
@@ -76,7 +76,7 @@ jobs:
             image: opensuse/leap:15
             expected: opensuse
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: >-
           docker run --rm
           -v "$PWD:/repo:ro"
@@ -89,7 +89,7 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: sh -n scripts/install/install.sh scripts/install/uninstall.sh
       - run: sh scripts/install/test/install-sh.test.sh
       - run: sh scripts/install/test/uninstall-sh.test.sh
@@ -100,7 +100,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - shell: powershell
         run: |
           powershell.exe -NoProfile -File scripts/install/test/install-ps1.test.ps1
@@ -117,7 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
         with:
           version: 11.21.0

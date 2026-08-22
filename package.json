@@ -10,6 +10,7 @@
     "release:test": "pnpm --filter @habiter/release-core test",
     "release:notes": "pnpm --filter @habiter/release-core notes",
     "sync:check": "pnpm --filter @habiter/sync-core check",
+    "sync:auth:check": "pnpm --filter @habiter/sync-auth check",
     "sync:d1:check": "pnpm --filter @habiter/sync-d1 check",
     "sync:sqlite:check": "pnpm --filter @habiter/sync-sqlite check",
     "website:dev": "pnpm --filter @habiter/website dev",

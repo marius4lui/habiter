@@ -57,6 +57,34 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.20.0)
 
+  packages/sync-auth:
+    dependencies:
+      '@habiter/sync-core':
+        specifier: workspace:*
+        version: link:../sync-core
+    devDependencies:
+      '@habiter/sync-d1':
+        specifier: workspace:*
+        version: link:../sync-d1
+      '@habiter/sync-sqlite':
+        specifier: workspace:*
+        version: link:../sync-sqlite
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.13.3
+      esbuild:
+        specifier: ^0.28.1
+        version: 0.28.1
+      miniflare:
+        specifier: 3.20250718.3
+        version: 3.20250718.3
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@24.13.3)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1))
+
   packages/sync-core:
     devDependencies:
       typescript:

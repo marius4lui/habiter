@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["__APPLE_APP_ID__"],
+        "components": [
+          {
+            "/": "/auth/callback",
+            "comment": "Habiter Personal Sync authorization callback; code and state remain in the fragment."
+          }
+        ]
+      }
+    ]
+  }
+}

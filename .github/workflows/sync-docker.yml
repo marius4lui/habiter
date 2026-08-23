@@ -72,9 +72,9 @@ jobs:
           test "$(docker compose exec -T sync stat -c '%a' /var/lib/habiter-sync/instance-key)" = 600
       - name: Replacement, backup, restore, and rollback
         run: |
-          docker compose exec -T sync backup ci.sqlite > /tmp/backup.json
+          docker compose exec -T sync node /app/service.mjs backup ci.sqlite > /tmp/backup.json
           checksum="$(jq -r '.manifest.sha256' /tmp/backup.json)"
-          docker compose exec -T sync verify ci.sqlite "$checksum"
+          docker compose exec -T sync node /app/service.mjs verify ci.sqlite "$checksum"
           docker compose up -d --force-recreate --wait
           curl --fail --silent http://127.0.0.1:8787/v1/instance-info | jq -e '.initialized == true'
           docker compose stop sync

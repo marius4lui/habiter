@@ -108,7 +108,7 @@ class NotificationService implements NotificationGateway {
     );
 
     await _plugin.initialize(
-      initSettings,
+      settings: initSettings,
       onDidReceiveNotificationResponse: _onNotificationResponse,
       onDidReceiveBackgroundNotificationResponse:
           _onBackgroundNotificationResponse,
@@ -214,15 +214,16 @@ class NotificationService implements NotificationGateway {
       categoryIdentifier: presentation.iosCategory,
     );
     await _plugin.zonedSchedule(
-      request.id,
-      request.title,
-      request.body,
-      tz.TZDateTime.from(request.scheduledFor, tz.local),
-      NotificationDetails(android: androidDetails, iOS: iosDetails),
+      id: request.id,
+      title: request.title,
+      body: request.body,
+      scheduledDate: tz.TZDateTime.from(request.scheduledFor, tz.local),
+      notificationDetails: NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      ),
       payload: request.payload['schema'] ?? jsonEncode(request.payload),
       androidScheduleMode: await _getAndroidScheduleMode(),
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
     );
     await _upsertLedger(request);
   }
@@ -230,7 +231,7 @@ class NotificationService implements NotificationGateway {
   @override
   Future<void> cancel(int id) async {
     if (!Platform.isAndroid && !Platform.isIOS) return;
-    await _plugin.cancel(id);
+    await _plugin.cancel(id: id);
     final ledger = await _loadLedger()
       ..remove(id);
     await _writeLedger(ledger);
@@ -341,10 +342,10 @@ class NotificationService implements NotificationGateway {
     const details = NotificationDetails(android: androidDetails);
 
     await _plugin.show(
-      999,
-      'Test Notification',
-      'Notifications funktionieren! 🎉',
-      details,
+      id: 999,
+      title: 'Test Notification',
+      body: 'Notifications funktionieren! 🎉',
+      notificationDetails: details,
     );
   }
 

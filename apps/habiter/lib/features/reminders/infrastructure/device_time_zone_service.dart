@@ -53,7 +53,7 @@ final class DeviceTimeZoneService {
     return DeviceTimeZoneResolution(
       requestedId: requested,
       location: location,
-      usedFallback: requested == null || location.name == 'UTC',
+      usedFallback: requested == null || location == tz.UTC,
     );
   }
 

@@ -12,8 +12,8 @@
     "@habiter/sync-core": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.10"
+    "@types/node": "^26.2.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
   }
 }

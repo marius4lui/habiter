@@ -12,15 +12,15 @@
     "deploy:dry": "wrangler deploy --dry-run"
   },
   "dependencies": {
-    "next": "16.3.1",
+    "next": "16.3.2",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "typescript": "^7.0.2",
-    "wrangler": "4.124.0"
+    "wrangler": "4.125.0"
   }
 }

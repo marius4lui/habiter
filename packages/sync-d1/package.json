@@ -14,11 +14,11 @@
     "@habiter/sync-core": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
-    "esbuild": "^0.28.1",
+    "@types/node": "^26.2.0",
+    "esbuild": "^0.28.2",
     "miniflare": "3.20250718.3",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.10",
-    "wrangler": "4.123.0"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11",
+    "wrangler": "4.125.0"
   }
 }

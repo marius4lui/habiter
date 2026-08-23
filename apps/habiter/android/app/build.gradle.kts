@@ -24,7 +24,9 @@ if (releaseRequested && !releaseSigningAvailable) {
 
 android {
     namespace = "com.habiter.app"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_secure_storage 11 requires API 37; Android builds remain
+    // backwards compatible with the existing minSdk.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     buildFeatures {
@@ -107,7 +109,7 @@ kotlin {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     implementation("androidx.appcompat:appcompat:1.8.0")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.glance:glance:1.1.1")

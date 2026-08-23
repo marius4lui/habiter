@@ -16,12 +16,12 @@
   "devDependencies": {
     "@habiter/sync-d1": "workspace:*",
     "@habiter/sync-sqlite": "workspace:*",
-    "@types/node": "^24.0.0",
-    "@types/jsdom": "^21.1.7",
-    "esbuild": "^0.28.1",
-    "jsdom": "^26.1.0",
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^26.2.0",
+    "esbuild": "^0.28.2",
+    "jsdom": "^30.0.1",
     "miniflare": "3.20250718.3",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.10"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
   }
 }

@@ -23,7 +23,8 @@ void main() {
       ).readAsStringSync(),
       allOf(
         contains('FlutterSecureStorage'),
-        contains('encryptedSharedPreferences: true'),
+        contains('AndroidOptions()'),
+        isNot(contains('encryptedSharedPreferences')),
         contains('first_unlock_this_device'),
       ),
     );

@@ -618,7 +618,7 @@ final class DynamicReminderPlanner {
         localDate: reminder.occurrence,
         twoHourStartMinute: (local.hour * 60 + local.minute) ~/ 120 * 120,
         habitId: reminder.habit.id,
-        timeZoneId: input.location.name,
+        timeZoneId: input.location == tz.UTC ? 'UTC' : input.location.name,
       );
       if (session.coveredBuckets.any(
         (covered) =>

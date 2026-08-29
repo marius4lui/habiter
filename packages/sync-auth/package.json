@@ -15,7 +15,7 @@
   "devDependencies": {
     "@habiter/sync-d1": "workspace:*",
     "@habiter/sync-sqlite": "workspace:*",
-    "@types/node": "^26.2.0",
+    "@types/node": "^26.3.0",
     "esbuild": "^0.28.2",
     "miniflare": "3.20250718.3",
     "typescript": "^7.0.2",

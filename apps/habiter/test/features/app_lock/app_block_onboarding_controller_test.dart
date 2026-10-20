@@ -207,6 +207,19 @@ void main() {
     );
   }
 
+  test('obsolete setup save cannot restore older in-memory state', () async {
+    final repository = _DelayedRepository()..usageWrite = Completer<void>();
+    final controller = _controller(repository, _Gateway());
+    await controller.initialize();
+    final earlier = controller.acceptOffer();
+    await repository.usageStarted.future;
+    await controller.reconsider();
+    repository.usageWrite!.complete();
+    await earlier;
+    expect(controller.state.stage, AppBlockOnboardingStage.reconsider);
+    expect(repository.saved?.stage, AppBlockOnboardingStage.reconsider);
+  });
+
   test('disposed discovery ignores late results', () async {
     final pending = Completer<AppLockResult<List<AppUsageRecord>>>();
     final controller = _controller(
@@ -312,6 +325,8 @@ final class _DelayedRepository implements AppBlockOnboardingRepository {
   AppBlockOnboardingState? saved;
   final selectionWrite = Completer<void>();
   final selectionStarted = Completer<void>();
+  final usageStarted = Completer<void>();
+  Completer<void>? usageWrite;
   Future<void>? deferredWrite;
   bool failDeferred = false;
 
@@ -320,6 +335,11 @@ final class _DelayedRepository implements AppBlockOnboardingRepository {
 
   @override
   Future<void> save(AppBlockOnboardingState state) async {
+    if (state.stage == AppBlockOnboardingStage.usageEducation &&
+        usageWrite != null) {
+      if (!usageStarted.isCompleted) usageStarted.complete();
+      await usageWrite!.future;
+    }
     if (state.stage == AppBlockOnboardingStage.selection) {
       if (!selectionStarted.isCompleted) selectionStarted.complete();
       await selectionWrite.future;

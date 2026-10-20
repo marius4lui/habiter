@@ -261,12 +261,15 @@ final class AppBlockOnboardingController extends ChangeNotifier {
     return ++_persistenceGeneration;
   }
 
-  Future<void> _persist(AppBlockOnboardingState next) async {
-    var generation = _setPersistenceTarget(next);
+  Future<bool> _persist(AppBlockOnboardingState next) async {
+    final originalGeneration = _setPersistenceTarget(next);
+    var generation = originalGeneration;
     var target = next;
     while (true) {
       await _repository.save(target);
-      if (generation == _persistenceGeneration) return;
+      if (generation == _persistenceGeneration) {
+        return originalGeneration == _persistenceGeneration;
+      }
       // A timeout cannot cancel a storage write. Repair an obsolete completion
       // to the latest intent, including intents changed while repair was pending.
       generation = _persistenceGeneration;
@@ -275,7 +278,7 @@ final class AppBlockOnboardingController extends ChangeNotifier {
   }
 
   Future<void> _replace(AppBlockOnboardingState next) async {
-    await _persist(next);
+    if (!await _persist(next)) return;
     _state = next;
     notifyListeners();
   }

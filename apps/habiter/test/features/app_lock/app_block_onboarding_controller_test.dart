@@ -147,6 +147,78 @@ void main() {
     expect(controller.state.stage, AppBlockOnboardingStage.deferred);
     expect((await repository.load())?.stage, AppBlockOnboardingStage.deferred);
   });
+
+  test('late selection save cannot overwrite deferred setup', () async {
+    final repository = _DelayedRepository();
+    final controller = _controller(repository, _Gateway());
+    await controller.initialize();
+    await controller.acceptOffer();
+    final discovery = controller.discover();
+    await repository.selectionStarted.future;
+    await controller.defer();
+    expect(repository.saved?.stage, AppBlockOnboardingStage.deferred);
+    repository.selectionWrite.complete();
+    await discovery;
+    expect(repository.saved?.stage, AppBlockOnboardingStage.deferred);
+    expect(controller.state.stage, AppBlockOnboardingStage.deferred);
+  });
+
+  test(
+    'timed out selection save restores the last safe persisted stage',
+    () async {
+      final repository = _DelayedRepository();
+      final controller = _controller(repository, _Gateway());
+      await controller.initialize();
+      await controller.acceptOffer();
+      await controller.discover();
+      expect(controller.diagnostic, contains('timed out'));
+      repository.selectionWrite.complete();
+      await Future<void>.delayed(Duration.zero);
+      expect(repository.saved?.stage, AppBlockOnboardingStage.usageEducation);
+      expect(controller.state.stage, AppBlockOnboardingStage.discovery);
+    },
+  );
+
+  for (final stalled in [false, true]) {
+    test(
+      'Maybe later exits even when persistence ${stalled ? 'stalls' : 'throws'}',
+      () async {
+        final repository = _DelayedRepository()
+          ..deferredWrite = stalled
+              ? Completer<void>().future
+              : Future<void>.value();
+        repository.failDeferred = !stalled;
+        final pending = Completer<AppLockResult<List<AppUsageRecord>>>();
+        final controller = _controller(
+          repository,
+          _Gateway()..usageResult = () => pending.future,
+        );
+        await controller.initialize();
+        final discovery = controller.discover();
+        final exit = controller.defer();
+        expect(controller.state.stage, AppBlockOnboardingStage.deferred);
+        expect(controller.loading, isFalse);
+        await exit;
+        expect(controller.diagnostic, contains('could not be saved'));
+        pending.complete(const AppLockSuccess<List<AppUsageRecord>>([]));
+        await discovery;
+        expect(controller.state.stage, AppBlockOnboardingStage.deferred);
+      },
+    );
+  }
+
+  test('disposed discovery ignores late results', () async {
+    final pending = Completer<AppLockResult<List<AppUsageRecord>>>();
+    final controller = _controller(
+      KeyValueAppBlockOnboardingRepository(InMemoryKeyValueStore()),
+      _Gateway()..usageResult = () => pending.future,
+    );
+    await controller.initialize();
+    final discovery = controller.discover();
+    controller.dispose();
+    pending.complete(const AppLockSuccess<List<AppUsageRecord>>([]));
+    await discovery;
+  });
 }
 
 AppBlockOnboardingController _controller(
@@ -234,4 +306,28 @@ final class _Gateway implements AppLockGateway {
   @override
   Future<AppLockResult<void>> openBatterySettings() async =>
       const AppLockSuccess<void>(null);
+}
+
+final class _DelayedRepository implements AppBlockOnboardingRepository {
+  AppBlockOnboardingState? saved;
+  final selectionWrite = Completer<void>();
+  final selectionStarted = Completer<void>();
+  Future<void>? deferredWrite;
+  bool failDeferred = false;
+
+  @override
+  Future<AppBlockOnboardingState?> load() async => saved;
+
+  @override
+  Future<void> save(AppBlockOnboardingState state) async {
+    if (state.stage == AppBlockOnboardingStage.selection) {
+      if (!selectionStarted.isCompleted) selectionStarted.complete();
+      await selectionWrite.future;
+    }
+    if (state.stage == AppBlockOnboardingStage.deferred) {
+      await deferredWrite;
+      if (failDeferred) throw StateError('storage unavailable');
+    }
+    saved = state;
+  }
 }

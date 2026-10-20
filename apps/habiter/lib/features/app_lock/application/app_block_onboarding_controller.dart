@@ -30,6 +30,8 @@ final class AppBlockOnboardingController extends ChangeNotifier {
 
   final Duration discoveryTimeout;
   int _discoveryGeneration = 0;
+  int _persistenceGeneration = 0;
+  AppBlockOnboardingState? _persistenceTarget;
 
   final AppBlockOnboardingRepository _repository;
   final AppLockGateway _gateway;
@@ -73,10 +75,21 @@ final class AppBlockOnboardingController extends ChangeNotifier {
   Future<void> skip() => _leaveDiscovery(AppBlockOnboardingStage.skipped);
   Future<void> defer() => _leaveDiscovery(AppBlockOnboardingStage.deferred);
 
-  Future<void> _leaveDiscovery(AppBlockOnboardingStage stage) {
-    _discoveryGeneration++;
+  Future<void> _leaveDiscovery(AppBlockOnboardingStage stage) async {
+    if (_state.stage != AppBlockOnboardingStage.discovery) return _move(stage);
+    final generation = ++_discoveryGeneration;
     _loading = false;
-    return _move(stage);
+    _state = _state.copyWith(stage: stage);
+    _diagnostic = null;
+    notifyListeners();
+    try {
+      await _persist(_state).timeout(discoveryTimeout);
+    } catch (_) {
+      if (generation == _discoveryGeneration) {
+        _diagnostic = 'Setup was closed, but progress could not be saved.';
+        notifyListeners();
+      }
+    }
   }
 
   @override
@@ -111,6 +124,12 @@ final class AppBlockOnboardingController extends ChangeNotifier {
   Future<void> discover() async {
     if (_loading) return;
     final generation = ++_discoveryGeneration;
+    final fallback =
+        _persistenceTarget ??
+        (_state.stage == AppBlockOnboardingStage.discovery
+            ? _state.copyWith(stage: AppBlockOnboardingStage.usageEducation)
+            : _state);
+    var savingSelection = false;
     _loading = true;
     _diagnostic = null;
     // Discovery is transient: a restart must not restore an idle spinner.
@@ -120,7 +139,8 @@ final class AppBlockOnboardingController extends ChangeNotifier {
       final result = await _loadDiscovery().timeout(discoveryTimeout);
       if (generation != _discoveryGeneration) return;
       final next = _state.copyWith(stage: AppBlockOnboardingStage.selection);
-      await _repository.save(next).timeout(discoveryTimeout);
+      savingSelection = true;
+      await _persist(next).timeout(discoveryTimeout);
       if (generation != _discoveryGeneration) return;
       _installedApps = result.apps;
       _candidates = result.candidates;
@@ -128,10 +148,12 @@ final class AppBlockOnboardingController extends ChangeNotifier {
       _state = next;
     } on TimeoutException {
       if (generation == _discoveryGeneration) {
+        if (savingSelection) _setPersistenceTarget(fallback);
         _diagnostic = 'App analysis timed out. Try again or continue later.';
       }
     } catch (_) {
       if (generation == _discoveryGeneration) {
+        if (savingSelection) _setPersistenceTarget(fallback);
         _diagnostic =
             'App analysis could not finish. Try again or continue later.';
       }
@@ -234,8 +256,26 @@ final class AppBlockOnboardingController extends ChangeNotifier {
   Future<void> _move(AppBlockOnboardingStage stage) =>
       _replace(_state.copyWith(stage: stage));
 
+  int _setPersistenceTarget(AppBlockOnboardingState next) {
+    _persistenceTarget = next;
+    return ++_persistenceGeneration;
+  }
+
+  Future<void> _persist(AppBlockOnboardingState next) async {
+    var generation = _setPersistenceTarget(next);
+    var target = next;
+    while (true) {
+      await _repository.save(target);
+      if (generation == _persistenceGeneration) return;
+      // A timeout cannot cancel a storage write. Repair an obsolete completion
+      // to the latest intent, including intents changed while repair was pending.
+      generation = _persistenceGeneration;
+      target = _persistenceTarget!;
+    }
+  }
+
   Future<void> _replace(AppBlockOnboardingState next) async {
-    await _repository.save(next);
+    await _persist(next);
     _state = next;
     notifyListeners();
   }

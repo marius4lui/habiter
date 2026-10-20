@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../../../models/locked_app.dart';
@@ -17,6 +19,7 @@ final class AppBlockOnboardingController extends ChangeNotifier {
     AppBlockRecommendationService recommendations =
         const AppBlockRecommendationService(),
     DateTime Function()? now,
+    this.discoveryTimeout = const Duration(seconds: 20),
     Future<bool> Function(List<AppBlockRule> rules)? activate,
   }) : _repository = repository,
        _gateway = gateway,
@@ -24,6 +27,9 @@ final class AppBlockOnboardingController extends ChangeNotifier {
        _recommendations = recommendations,
        _now = now ?? DateTime.now,
        _activate = activate ?? _defaultActivate;
+
+  final Duration discoveryTimeout;
+  int _discoveryGeneration = 0;
 
   final AppBlockOnboardingRepository _repository;
   final AppLockGateway _gateway;
@@ -51,7 +57,9 @@ final class AppBlockOnboardingController extends ChangeNotifier {
     if (_initialized) return;
     try {
       _state = await _repository.load() ?? const AppBlockOnboardingState();
-      _diagnostic = null;
+      _diagnostic = _state.stage == AppBlockOnboardingStage.discovery
+          ? 'App analysis was interrupted. Try again or continue later.'
+          : null;
     } on FormatException {
       _state = const AppBlockOnboardingState();
       _diagnostic = 'Saved App Block setup could not be restored.';
@@ -62,8 +70,20 @@ final class AppBlockOnboardingController extends ChangeNotifier {
 
   Future<void> acceptOffer() => _move(AppBlockOnboardingStage.usageEducation);
   Future<void> reconsider() => _move(AppBlockOnboardingStage.reconsider);
-  Future<void> skip() => _move(AppBlockOnboardingStage.skipped);
-  Future<void> defer() => _move(AppBlockOnboardingStage.deferred);
+  Future<void> skip() => _leaveDiscovery(AppBlockOnboardingStage.skipped);
+  Future<void> defer() => _leaveDiscovery(AppBlockOnboardingStage.deferred);
+
+  Future<void> _leaveDiscovery(AppBlockOnboardingStage stage) {
+    _discoveryGeneration++;
+    _loading = false;
+    return _move(stage);
+  }
+
+  @override
+  void dispose() {
+    _discoveryGeneration++;
+    super.dispose();
+  }
 
   Future<void> requestUsageAccess() async {
     await _replace(_state.copyWith(usagePermissionSeen: true));
@@ -89,28 +109,69 @@ final class AppBlockOnboardingController extends ChangeNotifier {
   }
 
   Future<void> discover() async {
+    if (_loading) return;
+    final generation = ++_discoveryGeneration;
     _loading = true;
-    await _move(AppBlockOnboardingStage.discovery);
+    _diagnostic = null;
+    // Discovery is transient: a restart must not restore an idle spinner.
+    _state = _state.copyWith(stage: AppBlockOnboardingStage.discovery);
+    notifyListeners();
+    try {
+      final result = await _loadDiscovery().timeout(discoveryTimeout);
+      if (generation != _discoveryGeneration) return;
+      final next = _state.copyWith(stage: AppBlockOnboardingStage.selection);
+      await _repository.save(next).timeout(discoveryTimeout);
+      if (generation != _discoveryGeneration) return;
+      _installedApps = result.apps;
+      _candidates = result.candidates;
+      _diagnostic = result.diagnostic;
+      _state = next;
+    } on TimeoutException {
+      if (generation == _discoveryGeneration) {
+        _diagnostic = 'App analysis timed out. Try again or continue later.';
+      }
+    } catch (_) {
+      if (generation == _discoveryGeneration) {
+        _diagnostic =
+            'App analysis could not finish. Try again or continue later.';
+      }
+    } finally {
+      if (generation == _discoveryGeneration) {
+        _loading = false;
+        notifyListeners();
+      }
+    }
+  }
+
+  Future<
+    ({
+      List<LockedApp> apps,
+      List<AppBlockCandidate> candidates,
+      String? diagnostic,
+    })
+  >
+  _loadDiscovery() async {
     final usage = await _gateway.recentUsage();
     final apps = await _gateway.installedApps();
-    if (apps case AppLockSuccess<List<LockedApp>>(:final value)) {
-      _installedApps = value;
+    if (apps is! AppLockSuccess<List<LockedApp>>) {
+      throw StateError('Installed apps could not be loaded.');
     }
     if (usage case AppLockSuccess<List<AppUsageRecord>>(:final value)) {
-      _candidates = _recommendations.rank(
-        usage: value,
-        catalog: await _loadCatalog(),
-        now: _now(),
+      return (
+        apps: apps.value,
+        candidates: _recommendations.rank(
+          usage: value,
+          catalog: await _loadCatalog(),
+          now: _now(),
+        ),
+        diagnostic: null,
       );
-      _diagnostic = null;
-    } else if (usage case AppLockFailure<List<AppUsageRecord>>(
-      :final safeMessage,
-    )) {
-      _candidates = const <AppBlockCandidate>[];
-      _diagnostic = safeMessage;
     }
-    _loading = false;
-    await _move(AppBlockOnboardingStage.selection);
+    return (
+      apps: apps.value,
+      candidates: const <AppBlockCandidate>[],
+      diagnostic: (usage as AppLockFailure<List<AppUsageRecord>>).safeMessage,
+    );
   }
 
   Future<void> setSelectedPackages(Set<String> packages) =>

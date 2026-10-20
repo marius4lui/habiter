@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/features/app_lock/application/app_block_onboarding_controller.dart';
 import 'package:habiter/features/app_lock/application/app_block_onboarding_state.dart';
@@ -45,6 +47,106 @@ void main() {
       );
     },
   );
+
+  test(
+    'restored discovery is recoverable instead of an idle spinner',
+    () async {
+      final repository = KeyValueAppBlockOnboardingRepository(
+        InMemoryKeyValueStore(),
+      );
+      await repository.save(
+        const AppBlockOnboardingState(stage: AppBlockOnboardingStage.discovery),
+      );
+      final controller = _controller(repository, _Gateway());
+      await controller.initialize();
+      expect(controller.loading, isFalse);
+      expect(controller.diagnostic, isNotNull);
+    },
+  );
+
+  test('discovery timeout releases loading and supports retry', () async {
+    final repository = KeyValueAppBlockOnboardingRepository(
+      InMemoryKeyValueStore(),
+    );
+    final pending = Completer<AppLockResult<List<AppUsageRecord>>>();
+    final gateway = _Gateway()..usageResult = () => pending.future;
+    final controller = _controller(repository, gateway);
+    await controller.initialize();
+    await controller.acceptOffer();
+    await controller.discover();
+    expect(controller.loading, isFalse);
+    expect(controller.diagnostic, contains('timed out'));
+    expect(controller.state.stage, AppBlockOnboardingStage.discovery);
+    expect(
+      (await repository.load())?.stage,
+      AppBlockOnboardingStage.usageEducation,
+    );
+
+    gateway.usageResult = null;
+    await controller.discover();
+    expect(controller.state.stage, AppBlockOnboardingStage.selection);
+    expect(controller.diagnostic, isNull);
+    pending.complete(const AppLockSuccess<List<AppUsageRecord>>([]));
+    await Future<void>.delayed(Duration.zero);
+    expect(controller.candidates, isNotEmpty);
+  });
+
+  test('duplicate discovery calls do not repeat platform work', () async {
+    final gateway = _Gateway();
+    final controller = _controller(
+      KeyValueAppBlockOnboardingRepository(InMemoryKeyValueStore()),
+      gateway,
+    );
+    await controller.initialize();
+    await Future.wait([controller.discover(), controller.discover()]);
+    expect(gateway.usageCalls, 1);
+  });
+
+  test(
+    'thrown platform and catalog errors leave discovery recoverable',
+    () async {
+      final gateway = _Gateway()
+        ..usageResult = () async => throw StateError('private detail');
+      final controller = _controller(
+        KeyValueAppBlockOnboardingRepository(InMemoryKeyValueStore()),
+        gateway,
+      );
+      await controller.initialize();
+      await controller.discover();
+      expect(controller.loading, isFalse);
+      expect(controller.diagnostic, isNotNull);
+      expect(controller.diagnostic, isNot(contains('private detail')));
+
+      final catalogController = AppBlockOnboardingController(
+        repository: KeyValueAppBlockOnboardingRepository(
+          InMemoryKeyValueStore(),
+        ),
+        gateway: _Gateway(),
+        loadCatalog: () async => throw StateError('bad catalog'),
+      );
+      await catalogController.initialize();
+      await catalogController.discover();
+      expect(catalogController.loading, isFalse);
+      expect(catalogController.diagnostic, isNotNull);
+    },
+  );
+
+  test('late discovery cannot undo Maybe later', () async {
+    final pending = Completer<AppLockResult<List<AppUsageRecord>>>();
+    final gateway = _Gateway()..usageResult = () => pending.future;
+    final repository = KeyValueAppBlockOnboardingRepository(
+      InMemoryKeyValueStore(),
+    );
+    final controller = _controller(repository, gateway);
+    await controller.initialize();
+    final discovery = controller.discover();
+    await controller.defer();
+    pending.complete(const AppLockSuccess<List<AppUsageRecord>>([]));
+    await discovery;
+    expect(controller.loading, isFalse);
+    expect(controller.state.stage, AppBlockOnboardingStage.deferred);
+    expect((await repository.load())?.stage, AppBlockOnboardingStage.deferred);
+  });
 }
 
 AppBlockOnboardingController _controller(
@@ -53,6 +155,7 @@ AppBlockOnboardingController _controller(
 ) => AppBlockOnboardingController(
   repository: repository,
   gateway: gateway,
+  discoveryTimeout: const Duration(milliseconds: 30),
   loadCatalog: () async =>
       const LocalDistractionCatalog(<String, DistractionCatalogEntry>{}),
   now: () => DateTime(2026, 8, 19),
@@ -62,6 +165,8 @@ final class _Gateway implements AppLockGateway {
   _Gateway({this.usageAccess = false});
 
   final bool usageAccess;
+  int usageCalls = 0;
+  Future<AppLockResult<List<AppUsageRecord>>> Function()? usageResult;
 
   @override
   bool get isSupported => true;
@@ -73,15 +178,18 @@ final class _Gateway implements AppLockGateway {
       ]);
 
   @override
-  Future<AppLockResult<List<AppUsageRecord>>> recentUsage() async =>
-      const AppLockSuccess<List<AppUsageRecord>>(<AppUsageRecord>[
-        AppUsageRecord(
-          packageName: 'social.example',
-          appName: 'Social',
-          foregroundDuration: Duration(hours: 1),
-          lastUsed: null,
-        ),
-      ]);
+  Future<AppLockResult<List<AppUsageRecord>>> recentUsage() async {
+    usageCalls++;
+    if (usageResult != null) return usageResult!();
+    return const AppLockSuccess<List<AppUsageRecord>>(<AppUsageRecord>[
+      AppUsageRecord(
+        packageName: 'social.example',
+        appName: 'Social',
+        foregroundDuration: Duration(hours: 1),
+        lastUsed: null,
+      ),
+    ]);
+  }
 
   @override
   Future<AppLockResult<AppLockPermissionSnapshot>> permissions() async =>

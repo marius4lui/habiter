@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habiter/features/app_lock/application/app_block_onboarding_controller.dart';
@@ -71,6 +73,58 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(controller.state.stage, AppBlockOnboardingStage.selection);
+  });
+
+  testWidgets('timed out analysis offers Retry and recovers to selection', (
+    tester,
+  ) async {
+    final pending = Completer<AppLockResult<List<AppUsageRecord>>>();
+    final gateway = _Gateway()..usageResult = () => pending.future;
+    final controller = _controller(gateway);
+    await tester.pumpWidget(_app(controller, (_) {}));
+    await tester.pumpAndSettle();
+    final discovery = controller.discover();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await discovery;
+    await tester.pumpAndSettle();
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(
+      find.text('App analysis timed out. Try again or continue later.'),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('app-block-defer-discovery')), findsOneWidget);
+
+    gateway.usageResult = null;
+    await tester.tap(find.byKey(const Key('app-block-retry-discovery')));
+    await tester.pumpAndSettle();
+    expect(controller.state.stage, AppBlockOnboardingStage.selection);
+    pending.complete(const AppLockSuccess<List<AppUsageRecord>>([]));
+    await tester.pumpAndSettle();
+    expect(controller.state.stage, AppBlockOnboardingStage.selection);
+  });
+
+  testWidgets('Maybe later exits active analysis and ignores its late result', (
+    tester,
+  ) async {
+    final pending = Completer<AppLockResult<List<AppUsageRecord>>>();
+    final gateway = _Gateway()..usageResult = () => pending.future;
+    final controller = _controller(gateway);
+    final finished = <AppBlockOnboardingResult>[];
+    await tester.pumpWidget(
+      _app(controller, finished.add, reducedMotion: true),
+    );
+    await tester.pumpAndSettle();
+    final discovery = controller.discover();
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('app-block-defer-discovery')));
+    await tester.pumpAndSettle();
+    expect(finished, [AppBlockOnboardingResult.deferred]);
+    pending.complete(const AppLockSuccess<List<AppUsageRecord>>([]));
+    await tester.pumpAndSettle();
+    await discovery;
+    expect(controller.state.stage, AppBlockOnboardingStage.deferred);
+    expect(finished, [AppBlockOnboardingResult.deferred]);
   });
 
   testWidgets('reduced motion exposes the final protection illustration', (
@@ -186,6 +240,7 @@ AppBlockOnboardingController _controller(AppLockGateway gateway) =>
     AppBlockOnboardingController(
       repository: KeyValueAppBlockOnboardingRepository(InMemoryKeyValueStore()),
       gateway: gateway,
+      discoveryTimeout: const Duration(milliseconds: 100),
       loadCatalog: () async =>
           const LocalDistractionCatalog(<String, DistractionCatalogEntry>{}),
     );
@@ -203,6 +258,7 @@ final class _Gateway implements AppLockGateway {
   final List<AppUsageRecord> usage;
   int usageRequests = 0;
   int overlayRequests = 0;
+  Future<AppLockResult<List<AppUsageRecord>>> Function()? usageResult;
 
   @override
   bool get isSupported => true;
@@ -211,7 +267,9 @@ final class _Gateway implements AppLockGateway {
       AppLockSuccess<List<LockedApp>>(apps);
   @override
   Future<AppLockResult<List<AppUsageRecord>>> recentUsage() async =>
-      AppLockSuccess<List<AppUsageRecord>>(usage);
+      usageResult == null
+      ? AppLockSuccess<List<AppUsageRecord>>(usage)
+      : await usageResult!();
   @override
   Future<AppLockResult<AppLockPermissionSnapshot>> permissions() async =>
       AppLockSuccess<AppLockPermissionSnapshot>(

@@ -86,8 +86,9 @@ final class _AppBlockOnboardingFlowState extends State<AppBlockOnboardingFlow>
             key: const ValueKey('usage-education'),
             controller: widget.controller,
           ),
-          AppBlockOnboardingStage.discovery => const DistractionAnalysisPage(
-            key: ValueKey('discovery'),
+          AppBlockOnboardingStage.discovery => DistractionAnalysisPage(
+            key: const ValueKey('discovery'),
+            controller: widget.controller,
           ),
           AppBlockOnboardingStage.selection => DistractionSelectionPage(
             key: const ValueKey('selection'),
